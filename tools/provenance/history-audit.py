@@ -167,6 +167,33 @@ def tool_ref_findings(root: Path) -> list[dict[str, object]]:
     return reports
 
 
+def unreachable_summary(root: Path) -> dict[str, object]:
+    """Summarize unreachable commits without pruning or changing Git state."""
+
+    fsck_lines = git(root, "fsck", "--full", "--no-reflogs", "--unreachable").splitlines()
+    commits = sorted(
+        {
+            line.split()[2]
+            for line in fsck_lines
+            if len(line.split()) >= 3 and line.split()[1] == "commit"
+        }
+    )
+    if not commits:
+        return {"commit_count": 0, "forbidden_object_count": 0, "forbidden_paths": []}
+
+    objects = git(root, "rev-list", "--objects", *commits).splitlines()
+    forbidden_entries = {
+        line.split(" ", 1)[0]: line.split(" ", 1)[1]
+        for line in objects
+        if " " in line and line.split(" ", 1)[1] in FORBIDDEN_PATHS
+    }
+    return {
+        "commit_count": len(commits),
+        "forbidden_object_count": len(forbidden_entries),
+        "forbidden_paths": sorted(set(forbidden_entries.values())),
+    }
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
@@ -186,6 +213,7 @@ def main() -> int:
     retained_backups = backup_refs(root)
     non_active_findings = non_active_ref_findings(root)
     tool_findings = tool_ref_findings(root)
+    unreachable = unreachable_summary(root)
     first = root_commit(root)
     license_text = git(root, "show", f"{first}:LICENSE")
     copyright_text = git(root, "show", f"{first}:COPYRIGHT")
@@ -198,6 +226,7 @@ def main() -> int:
         "retained_backup_refs": retained_backups,
         "non_active_ref_findings": non_active_findings,
         "tool_ref_findings": tool_findings,
+        "unreachable_objects": unreachable,
         "root_has_agplv3": "GNU AFFERO GENERAL PUBLIC LICENSE" in license_text,
         "root_names_james_cardona": "James Cardona" in copyright_text,
     }

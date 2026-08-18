@@ -15,6 +15,9 @@ Los respaldos se mantienen para recuperación; no deben usarse como la rama de
 distribución. Además reporta snapshots internos bajo `refs/codex/` como
 `tool_ref_findings`: son residuos del agente local, no ramas de distribución,
 pero deben purgarse cuando ningún proceso los necesite.
+También resume los commits inalcanzables bajo `unreachable_objects`. Ese
+resumen es de solo lectura: no ejecuta `git gc`, no poda objetos y no cambia
+la recuperabilidad local.
 
 Uso desde la raíz del repositorio:
 
