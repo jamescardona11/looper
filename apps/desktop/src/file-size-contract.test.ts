@@ -16,7 +16,6 @@ const MAX_LINES = 1000;
 // Pueden reducirse (y salir de la lista), no seguir creciendo sin tope.
 const LEGACY_BUDGET = 3000;
 const LEGACY = new Set([
-  "src/features/pill/PillOverlay.tsx",
   "src-tauri/src/assistive.rs",
   "src-tauri/src/library/meeting_capture.rs",
   "src-tauri/src/library/processing.rs",
