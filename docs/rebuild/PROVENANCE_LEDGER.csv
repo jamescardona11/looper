@@ -283,6 +283,11 @@ apps/desktop/src/features/settings/components/tabs/AppPermissionStatus.test.tsx,
 apps/desktop/src/features/settings/components/tabs/GeneralMicrophoneTest.tsx,replaced,desktop-microphone-test-view,authored-external-store-adapter-level-meter-and-localized-errors,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
 apps/desktop/src/features/settings/components/tabs/microphone-test-store.ts,replaced,desktop-microphone-test-session,authored-subscribable-media-session-device-resolution-analysis-and-cleanup,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
 apps/desktop/src/features/settings/components/tabs/microphone-test-store.test.ts,owned,desktop-microphone-test-session-tests,authored-device-signal-lifecycle-and-browser-error-tests,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/features/settings/components/tabs/GeneralShortcuts.tsx,replaced,desktop-shortcut-mode-row,authored-mode-header-toggle-and-binding-list-composition,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/features/settings/components/tabs/ShortcutBindingList.tsx,replaced,desktop-shortcut-binding-editor,authored-shared-primary-alternative-capture-flag-and-expansion-rendering,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/features/settings/components/tabs/shortcut-binding-model.ts,replaced,desktop-shortcut-binding-state,authored-empty-primary-maximum-capture-and-validation-view-model,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/features/settings/components/tabs/shortcut-binding-model.test.ts,owned,desktop-shortcut-binding-state-tests,authored-empty-maximum-capture-and-validation-tests,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/features/settings/components/tabs/GeneralShortcuts.test.tsx,owned,desktop-shortcut-editor-tests,authored-toggle-flags-addition-and-removal-action-tests,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
 apps/desktop/src-tauri/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/desktop/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/mobile/**,unreviewed,mobile,,pending,-,pending,uncommitted
