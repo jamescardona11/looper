@@ -24,19 +24,17 @@ private func testCounters() throws {
 
     repo.incrementApp()
     repo.incrementApp()
-    repo.incrementKeyboard()
+    defaults.set(1, forKey: "looper_keyboard_update_counter")
 
-    try require(repo.getApp() == 2, "App counter direction or increment changed")
     try require(repo.getKeyboard() == 1, "Keyboard counter direction changed")
     try require(
         defaults.integer(forKey: "looper_app_update_counter") == 2,
         "App counter storage key changed"
     )
     try require(
-        defaults.integer(forKey: "looper_keyboard_update_counter") == 1,
-        "Keyboard counter storage key changed"
+        CounterRepo(defaults: nil).getKeyboard() == 0,
+        "Unavailable defaults must read zero"
     )
-    try require(CounterRepo(defaults: nil).getApp() == 0, "Unavailable defaults must read zero")
 }
 
 private func testTranscriptionHistory() throws {
@@ -67,7 +65,11 @@ private func testTranscriptionHistory() throws {
         audioSourceUrl: source
     )
 
-    let first = try requireFirst(repo.loadAll())
+    func loadAll() -> [[String: Any]] {
+        defaults.array(forKey: "looper_transcriptions") as? [[String: Any]] ?? []
+    }
+
+    let first = try requireFirst(loadAll())
     try require(first["id"] as? String == "first", "Generated transcription id changed")
     try require(first["text"] as? String == "clean text", "Text trimming changed")
     try require(first["rawTranscript"] as? String == "raw text", "Raw text changed")
@@ -91,7 +93,7 @@ private func testTranscriptionHistory() throws {
         audioSourceUrl: source
     )
 
-    let capped = repo.loadAll()
+    let capped = loadAll()
     try require(capped.count == 50, "History capacity changed")
     try require(capped.first?["id"] as? String == "newest", "Newest record is not first")
     try require(!FileManager.default.fileExists(atPath: discardedAudio.path), "Evicted audio remains")

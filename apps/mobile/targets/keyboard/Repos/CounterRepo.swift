@@ -29,14 +29,6 @@ class CounterRepo {
         increment(.app)
     }
 
-    func getApp() -> Int {
-        value(for: .app)
-    }
-
-    func incrementKeyboard() {
-        increment(.keyboard)
-    }
-
     func getKeyboard() -> Int {
         value(for: .keyboard)
     }

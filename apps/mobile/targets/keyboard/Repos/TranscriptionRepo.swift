@@ -75,11 +75,6 @@ class TranscriptionRepo {
         services.didSave()
     }
 
-    func loadAll() -> [[String: Any]] {
-        guard let stored = services.defaults?.array(forKey: Self.storageKey) else { return [] }
-        return stored as? [[String: Any]] ?? []
-    }
-
     private func archiveAudio(id: String, source: URL, container: URL) -> String? {
         let directory = container.appendingPathComponent("audio", isDirectory: true)
         try? services.files.createDirectory(
