@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 import { spawn, spawnSync } from "node:child_process";
+import { generateKeyPairSync } from "node:crypto";
 import { existsSync, readFileSync } from "node:fs";
 import { createServer } from "node:net";
 import { resolve } from "node:path";
@@ -154,8 +155,88 @@ function runPlaywright(convexUrl, webPort) {
   }
 }
 
+function runConvexEnv(command, name, value) {
+  const args = ["--dir", "backend", "exec", "convex", "env", command];
+  if (name !== undefined) args.push("--", name);
+  if (value !== undefined) args.push(value);
+  const result = spawnSync("pnpm", args, {
+    cwd: repoRoot,
+    env: process.env,
+    encoding: "utf8",
+    stdio: "pipe",
+  });
+  if (result.error) throw result.error;
+  if (result.status !== 0) {
+    throw new Error(`Could not ${command} Convex environment variable ${name}.`);
+  }
+  return result.stdout ?? "";
+}
+
+function localAuthEnvState() {
+  const output = runConvexEnv("list");
+  return {
+    hasPrivateKey: /^JWT_PRIVATE_KEY=/m.test(output),
+    hasJwks: /^JWKS=/m.test(output),
+  };
+}
+
+function generateLocalAuthKeys() {
+  const { privateKey, publicKey } = generateKeyPairSync("rsa", {
+    modulusLength: 2048,
+    publicExponent: 0x10001,
+  });
+  const privateKeyValue = privateKey
+    .export({ type: "pkcs8", format: "pem" })
+    .toString()
+    .trimEnd()
+    .replace(/\n/g, " ");
+  const publicJwk = publicKey.export({ format: "jwk" });
+  return {
+    privateKey: privateKeyValue,
+    jwks: JSON.stringify({ keys: [{ use: "sig", ...publicJwk }] }),
+  };
+}
+
+function ensureLocalAuthKeys() {
+  const state = localAuthEnvState();
+  if (state.hasPrivateKey && state.hasJwks) return false;
+  if (state.hasPrivateKey || state.hasJwks) {
+    throw new Error(
+      "Local Convex auth has only one of JWT_PRIVATE_KEY/JWKS; repair the deployment before running web E2E.",
+    );
+  }
+
+  const keys = generateLocalAuthKeys();
+  try {
+    runConvexEnv("set", "JWT_PRIVATE_KEY", keys.privateKey);
+    runConvexEnv("set", "JWKS", keys.jwks);
+  } catch (error) {
+    try {
+      runConvexEnv("remove", "JWT_PRIVATE_KEY");
+    } catch {
+      // Preserve the original provisioning error; cleanup is best effort.
+    }
+    throw error;
+  }
+  return true;
+}
+
+function removeLocalAuthKeys(created) {
+  if (!created) return;
+  try {
+    runConvexEnv("remove", "JWT_PRIVATE_KEY");
+    runConvexEnv("remove", "JWKS");
+  } catch (error) {
+    console.error(
+      "Could not remove ephemeral local Convex auth keys; inspect the local deployment before reusing it.",
+      error instanceof Error ? error.message : String(error),
+    );
+  }
+}
+
 export async function main() {
   let convexProcess = null;
+  let ephemeralAuthKeys = false;
   try {
     let convexUrl = readBackendUrl();
     if (convexUrl) {
@@ -170,8 +251,10 @@ export async function main() {
       console.log(`Reusing Convex backend at ${convexUrl}.`);
     }
 
+    ephemeralAuthKeys = ensureLocalAuthKeys();
     runPlaywright(convexUrl, await findAvailablePort());
   } finally {
+    removeLocalAuthKeys(ephemeralAuthKeys);
     await stopProcess(convexProcess);
   }
 }
