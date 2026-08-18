@@ -16,5 +16,5 @@ backend/**,owned,backend,product code and contracts,AGPL-3.0-or-later,backend ga
 packages/ts/**,owned,packages,product code and contracts,AGPL-3.0-or-later,package gates,current,
 packages/rust/**,replaced,rust,feature refactors and contracts,AGPL-3.0-or-later,cargo gates,current,
 apps/mobile/THIRD_PARTY_NOTICES.md,permissive,third_party,react-native-sherpa-onnx,MIT,notice retained,current,apps/mobile/THIRD_PARTY_NOTICES.md
-packages/rust/looper-ts/THIRD_PARTY_NOTICES.md,permissive,third_party,Silero/parakeet/transcribe-rs,MIT,notice retained,current,packages/rust/looper-ts/THIRD_PARTY_NOTICES.md
+packages/rust/looper-ts/THIRD_PARTY_NOTICES.md,permissive,third_party,Glimpse-Speech/Silero/parakeet/transcribe-rs,MIT,notice retained,current,packages/rust/looper-ts/THIRD_PARTY_NOTICES.md
 packages/rust/audio/LICENSE,permissive,third_party,audio dependency license,MIT,license retained,current,packages/rust/audio/LICENSE
