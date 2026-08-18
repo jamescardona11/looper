@@ -9,7 +9,6 @@ export {
   useLibraryItems,
   useLibraryTags,
   useLibraryWatchFolders,
-  useProbeLibraryYoutubeUrl,
   useRemoveLibraryWatchFolder,
   useRetryLibraryTranscription,
   useScanLibraryWatchFolders,
@@ -17,7 +16,6 @@ export {
 } from "./library-item-query-hooks";
 export {
   useAskMeeting,
-  useCaptureMeetingNote,
   useGenerateMeetingSummary,
   useMeetingCapture,
   useMeetingDetails,

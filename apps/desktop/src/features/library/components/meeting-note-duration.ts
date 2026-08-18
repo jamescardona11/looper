@@ -36,7 +36,3 @@ export function remainingHoldStepMs(
     ? selection.hold_step_ms
     : selection.hold_step_ms - elapsedInStep;
 }
-
-export function formatNoteDuration(durationMs: number) {
-  return `${Math.max(1, Math.ceil(durationMs / 1_000))} s`;
-}

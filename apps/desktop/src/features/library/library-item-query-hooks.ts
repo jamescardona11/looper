@@ -100,10 +100,6 @@ export const useScanLibraryWatchFolders = invalidatingHook<number, void>(() =>
   libraryApi.scanLibraryWatchFoldersNow(),
 );
 
-export const useProbeLibraryYoutubeUrl = mutationHook(
-  libraryApi.probeLibraryYoutubeUrl,
-);
-
 export const useCreateLibraryYoutubeItem = invalidatingHook(
   ({ metadata, options }: YoutubeImport) =>
     libraryApi.createLibraryYoutubeItem(metadata, options),

@@ -71,15 +71,6 @@ export function useStopMeetingCapture() {
   );
 }
 
-export function useCaptureMeetingNote() {
-  const client = useQueryClient();
-  return useMutation({
-    mutationFn: libraryApi.captureMeetingNote,
-    onSuccess: () =>
-      void client.invalidateQueries({ queryKey: libraryKeys.meetingCapture() }),
-  });
-}
-
 export function useMeetingDetails(id: string, enabled: boolean = true) {
   const client = useQueryClient();
   useEffect(() => {

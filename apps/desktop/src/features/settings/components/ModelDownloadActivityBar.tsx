@@ -11,7 +11,7 @@ import {
   type ModelDownloadActivity,
 } from "../modelDownloadActivity";
 
-export const formatDownloadBytes = (bytes: number) => {
+const formatDownloadBytes = (bytes: number) => {
   const safeBytes = Math.max(0, bytes);
   if (safeBytes >= 1_000_000_000) {
     return `${(safeBytes / 1_000_000_000).toFixed(1)} GB`;

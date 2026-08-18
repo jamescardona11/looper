@@ -41,7 +41,7 @@ function endOfCurrentPeriod(now: Date) {
   return nextMorning;
 }
 
-export function millisecondsUntilHomeClockChange(now: Date = new Date()) {
+function millisecondsUntilHomeClockChange(now: Date = new Date()) {
   const nextBoundary = Math.min(
     endOfCurrentPeriod(now).getTime(),
     startOfNextLocalDay(now).getTime(),

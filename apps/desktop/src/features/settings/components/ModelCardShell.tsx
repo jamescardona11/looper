@@ -1,7 +1,7 @@
 import type { CSSProperties, KeyboardEvent, ReactNode } from "react";
 import DotMatrix from "../../../shared/ui/DotMatrix";
 
-export const CARD_WIDTH = 300;
+const CARD_WIDTH = 300;
 const SIGNAL_ROWS = 13;
 export const WAVE_COLS = 44;
 const SIGNAL_MIDDLE = Math.floor(SIGNAL_ROWS / 2);

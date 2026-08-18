@@ -30,7 +30,7 @@ const expanded = (tone: string, text: string, usedScreenContext = false) => [
   },
 ];
 
-export const PILL_PREVIEW_STATES: PillPreviewState[] = [
+const PILL_PREVIEW_STATES: PillPreviewState[] = [
   {
     id: "idle",
     label: "Idle · dock",

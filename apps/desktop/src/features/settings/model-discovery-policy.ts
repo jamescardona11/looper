@@ -19,7 +19,7 @@ const belongsToCurrentRequest = (
   requestSeq: number,
 ) => state.requestSeq === requestSeq;
 
-export function transitionModelDiscovery(
+function transitionModelDiscovery(
   current: ModelDiscoveryState,
   event: ModelDiscoveryEvent,
 ): ModelDiscoveryState {

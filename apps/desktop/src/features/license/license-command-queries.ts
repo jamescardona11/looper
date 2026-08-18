@@ -17,10 +17,6 @@ export function useActivateLicense() {
   return useLicenseCommand(licenseApi.activateLicense);
 }
 
-export function useRefreshLicense() {
-  return useLicenseCommand<void>(() => licenseApi.refreshLicense());
-}
-
 export function useDeactivateLicense() {
   return useLicenseCommand<void>(() => licenseApi.deactivateLicense());
 }

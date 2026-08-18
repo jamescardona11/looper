@@ -12,7 +12,7 @@ export type ActionCardPresentation = {
   descriptionClassName: string;
 };
 
-export function joinActionCardClasses(
+function joinActionCardClasses(
   ...classes: Array<string | false | null | undefined>
 ): string {
   return classes.filter(Boolean).join(" ");
