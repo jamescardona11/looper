@@ -44,6 +44,21 @@ La captura `desktop-packaged-ac7277f.png` se tomó después del fallback
 macOS por PID del commit `ac7277f`; confirma que el bundle reconstruido abre
 Home, pero no sustituye el smoke específico de inserción en TextEdit.
 
+Ejecución Tauri de la rama AGPL actual (18 de agosto de 2026):
+
+- Comando: `pnpm --dir apps/desktop tauri dev`
+- Resultado: Vite listo en `http://localhost:8735/`, Rust compilado y proceso
+  `target/debug/Looper` iniciado sin error de arranque.
+- Captura: `.tcompound/evidence/runtime/looper-tauri-startup.png`
+- SHA-256: `c32362517a2d8c6a24e53f150b82e38b356447f2292570c3e4ef90dc8a777538`
+- Resolución: `3024x1964` (1,489,161 bytes).
+
+Durante esa ejecución el entorno informó que la clave cifrada pertenecía a
+otro hardware y que `VITE_CONVEX_URL` no estaba configurado; Looper conservó
+la clave cifrada y desactivó las rutas remotas/sync, pero la ventana local
+abrió Home correctamente. El proceso se cerró con `Ctrl-C` después de tomar
+la captura.
+
 Validación local:
 
 ```sh
