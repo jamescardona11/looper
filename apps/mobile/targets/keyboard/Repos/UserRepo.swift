@@ -1,6 +1,6 @@
 import Foundation
 
-// El teclado consulta la fila del usuario autenticado mediante `users:me`.
+// The keyboard keeps the account row shape local to the extension boundary.
 struct UserInfo {
     let id: String
     let name: String
@@ -8,17 +8,22 @@ struct UserInfo {
     let createdAt: String
 }
 
-class UserRepo {
+final class UserRepo {
     private let config: RepoConfig
 
     init(config: RepoConfig) {
         self.config = config
     }
 
-    // No mutation in backend/convex/ persists word counters server-side (see
-    // header comment) — documented no-op instead of calling the nonexistent
-    // nonexistent word-count mutation.
-    // TODO: sin equivalente real en el backend Convex.
+    // The current backend has no counter mutation. Keep the call explicit so
+    // the extension does not invent a network side effect.
     func incrementWordCount(text: String, timezone: String? = nil) {
+        CounterEndpoint.record(text: text, timezone: timezone, config: config)
+    }
+}
+
+private enum CounterEndpoint {
+    static func record(text: String, timezone: String?, config: RepoConfig) {
+        _ = (text, timezone, config)
     }
 }
