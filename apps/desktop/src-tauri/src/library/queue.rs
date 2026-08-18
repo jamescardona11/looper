@@ -1,6 +1,7 @@
-use std::path::{Path, PathBuf};
-use std::sync::Arc;
-use std::time::Instant;
+use std::{
+    path::{Path, PathBuf},
+    time::Instant,
+};
 
 use anyhow::{anyhow, Result};
 use chrono::Utc;
@@ -19,12 +20,19 @@ use super::processing::{
 };
 use super::types::{
     cancelled_error, is_cancelled_error, is_ffmpeg_error_message, LibraryCompletePayload,
-    LibraryErrorPayload, LibraryItem, LibraryItemPatch, LibraryItemStatus, LibraryProgressPayload,
-    LibraryProgressUpdate, LibraryTranscriptionResult, MeetingTranscriptSegment, Speaker,
-    TranscriptSegment, CHUNK_OVERLAP_SECONDS, DIRECT_TRANSCRIBE_MINUTES, EVENT_LIBRARY_COMPLETE,
-    EVENT_LIBRARY_ERROR, EVENT_LIBRARY_PROGRESS, MAX_CHUNK_MINUTES,
+    LibraryItem, LibraryItemPatch, LibraryItemStatus, LibraryProgressUpdate,
+    LibraryTranscriptionResult, CHUNK_OVERLAP_SECONDS, DIRECT_TRANSCRIBE_MINUTES,
+    EVENT_LIBRARY_COMPLETE, MAX_CHUNK_MINUTES,
 };
 use crate::speech::{VAD_MIN_SPEECH_PERCENT_CHUNK, VAD_MIN_SPEECH_PERCENT_FILE};
+
+#[path = "queue_fallback.rs"]
+mod fallback;
+#[path = "queue_progress.rs"]
+mod progress;
+
+use fallback::load_live_meeting_fallback;
+use progress::{emit_library_error, set_library_status, LibraryProgress};
 
 enum JobPreparation {
     File {
@@ -99,101 +107,6 @@ impl JobPreparation {
     }
 }
 
-struct ProgressReporter<'a> {
-    app: &'a AppHandle<AppRuntime>,
-    storage: Arc<StorageManager>,
-    item_id: &'a str,
-}
-
-impl<'a> ProgressReporter<'a> {
-    fn new(app: &'a AppHandle<AppRuntime>, storage: Arc<StorageManager>, item_id: &'a str) -> Self {
-        Self {
-            app,
-            storage,
-            item_id,
-        }
-    }
-
-    fn begin(&self) {
-        let _ = self.storage.update_library_item(
-            self.item_id,
-            LibraryItemPatch {
-                status: Some(LibraryItemStatus::Transcribing { progress: 0.0 }),
-                transcript: Some(String::new()),
-                segments: Some(Vec::new()),
-                ..Default::default()
-            },
-        );
-        self.emit(LibraryProgressPayload {
-            id: self.item_id.to_owned(),
-            progress: 0.0,
-            current_chunk: 0,
-            total_chunks: 0,
-            chunk_text: None,
-            chunk_segments: None,
-        });
-    }
-
-    fn publish(&self, update: LibraryProgressUpdate) {
-        let LibraryProgressUpdate {
-            progress,
-            current_chunk,
-            total_chunks,
-            transcript,
-            segments,
-            chunk_text,
-            chunk_segments,
-        } = update;
-        let _ = self.storage.update_library_item(
-            self.item_id,
-            LibraryItemPatch {
-                status: Some(LibraryItemStatus::Transcribing { progress }),
-                transcript,
-                segments,
-                ..Default::default()
-            },
-        );
-        self.emit(LibraryProgressPayload {
-            id: self.item_id.to_owned(),
-            progress,
-            current_chunk,
-            total_chunks,
-            chunk_text,
-            chunk_segments,
-        });
-    }
-
-    fn emit(&self, payload: LibraryProgressPayload) {
-        let _ = self.app.emit(EVENT_LIBRARY_PROGRESS, payload);
-    }
-}
-
-fn emit_library_error(
-    app: &AppHandle<AppRuntime>,
-    id: &str,
-    message: impl Into<String>,
-    cancelled: bool,
-) {
-    let _ = app.emit(
-        EVENT_LIBRARY_ERROR,
-        LibraryErrorPayload {
-            id: id.to_owned(),
-            message: message.into(),
-            cancelled,
-        },
-    );
-}
-
-fn set_library_status(storage: &StorageManager, id: &str, status: LibraryItemStatus) {
-    let _ = storage.update_library_item(
-        id,
-        LibraryItemPatch {
-            status: Some(status),
-            ..Default::default()
-        },
-    );
-}
-
 fn start_library_job_internal(app: &AppHandle<AppRuntime>, job: LibraryJob) {
     let app_handle = app.clone();
     async_runtime::spawn(async move {
@@ -261,7 +174,7 @@ fn start_library_transcription_internal(
         return;
     }
 
-    ProgressReporter::new(app, storage.clone(), &id).begin();
+    LibraryProgress::new(app, storage.clone(), &id).begin();
 
     let token = state.register_library_transcription(id.clone());
     let app_handle = app.clone();
@@ -369,20 +282,6 @@ fn apply_timed_replacements(result: &mut LibraryTranscriptionResult, settings: &
     let timed_entries = result.segments.iter_mut().chain(result.words.iter_mut());
     for entry in timed_entries.flatten() {
         entry.text = dictionary::apply_replacements(&entry.text, &settings.replacements);
-    }
-}
-
-fn load_live_meeting_fallback(
-    storage: &StorageManager,
-    id: &str,
-) -> Option<LiveMeetingTranscriptFallback> {
-    match storage.get_meeting_details(id) {
-        Ok(Some(details)) => live_meeting_transcript_fallback(&details.live_transcript),
-        Ok(None) => None,
-        Err(error) => {
-            tracing::warn!("Failed to read persisted live transcript for {id}: {error}");
-            None
-        }
     }
 }
 
@@ -545,58 +444,6 @@ pub(super) fn persist_successful_transcription(
     }
 }
 
-struct LiveMeetingTranscriptFallback {
-    transcript: String,
-    segments: Vec<TranscriptSegment>,
-    speakers: Vec<Speaker>,
-}
-
-fn live_meeting_transcript_fallback(
-    live_transcript: &[MeetingTranscriptSegment],
-) -> Option<LiveMeetingTranscriptFallback> {
-    let mut segments = live_transcript
-        .iter()
-        .filter(|segment| count_words(segment.text.trim()) > 0)
-        .collect::<Vec<_>>();
-    segments.sort_by_key(|segment| (segment.start_ms, segment.end_ms, segment.id.as_str()));
-    if segments.is_empty() {
-        return None;
-    }
-
-    let transcript = segments
-        .iter()
-        .map(|segment| segment.text.trim())
-        .collect::<Vec<_>>()
-        .join(" ");
-    let timed_segments = segments
-        .iter()
-        .map(|segment| TranscriptSegment {
-            start_ms: segment.start_ms,
-            end_ms: segment.end_ms,
-            text: segment.text.trim().to_string(),
-            speaker_id: Some(segment.source.as_str().to_string()),
-        })
-        .collect();
-    let speakers = [
-        (super::types::MeetingTranscriptSource::You, "You"),
-        (super::types::MeetingTranscriptSource::Them, "Them"),
-    ]
-    .into_iter()
-    .filter(|(source, _)| segments.iter().any(|segment| segment.source == *source))
-    .map(|(source, name)| Speaker {
-        id: source.as_str().to_string(),
-        name: name.to_string(),
-        color: None,
-    })
-    .collect();
-
-    Some(LiveMeetingTranscriptFallback {
-        transcript,
-        segments: timed_segments,
-        speakers,
-    })
-}
-
 pub(crate) fn schedule_library_job(app: &AppHandle<AppRuntime>, state: &AppState, job: LibraryJob) {
     if !state.enqueue_library_job(job) {
         return;
@@ -723,7 +570,7 @@ impl<'a> LibraryTranscriber<'a> {
         match attempt {
             remote_speech::RemoteAttempt::Success(success) => {
                 let result = success.transcription;
-                ProgressReporter::new(self.app, self.state.storage(), &self.item.id)
+                LibraryProgress::new(self.app, self.state.storage(), &self.item.id)
                     .publish(LibraryProgressUpdate::with_chunk_counts(1.0, 1, 1));
                 let (segments, speakers) = match success.diarized_segments.as_deref() {
                     Some(diarized) => {
@@ -815,7 +662,7 @@ impl LocalRun<'_> {
             looper_ts::estimated_chunk_count(wav_info.total_samples, self.sample_rate, config)
                 .max(1);
         let options = long_form_options(self, config);
-        let reporter = ProgressReporter::new(self.app, self.state.storage(), &self.item.id);
+        let reporter = LibraryProgress::new(self.app, self.state.storage(), &self.item.id);
         let transcript = transcriber.with_long_form_session(
             self.model,
             self.sample_rate,
@@ -922,7 +769,6 @@ fn progress_update(
 
 #[cfg(test)]
 mod tests {
-    use super::super::types::MeetingTranscriptSource;
     use super::*;
 
     #[test]
@@ -954,61 +800,5 @@ mod tests {
         assert!(may_begin_transcription(&LibraryItemStatus::Importing {
             progress: 1.0,
         }));
-    }
-
-    #[test]
-    fn live_meeting_transcript_is_a_complete_fallback_when_final_pass_is_empty() {
-        let fallback = live_meeting_transcript_fallback(&[
-            MeetingTranscriptSegment {
-                id: "them-2".to_string(),
-                source: MeetingTranscriptSource::Them,
-                text: "Second decision.".to_string(),
-                start_ms: 2_000,
-                end_ms: 3_000,
-            },
-            MeetingTranscriptSegment {
-                id: "blank".to_string(),
-                source: MeetingTranscriptSource::You,
-                text: "  ".to_string(),
-                start_ms: 500,
-                end_ms: 800,
-            },
-            MeetingTranscriptSegment {
-                id: "you-1".to_string(),
-                source: MeetingTranscriptSource::You,
-                text: "First point.".to_string(),
-                start_ms: 1_000,
-                end_ms: 1_800,
-            },
-        ])
-        .expect("persisted speech should produce a fallback");
-
-        assert_eq!(fallback.transcript, "First point. Second decision.");
-        assert_eq!(fallback.segments.len(), 2);
-        assert_eq!(fallback.segments[0].speaker_id.as_deref(), Some("you"));
-        assert_eq!(fallback.segments[1].speaker_id.as_deref(), Some("them"));
-        assert_eq!(
-            fallback
-                .speakers
-                .iter()
-                .map(|speaker| speaker.id.as_str())
-                .collect::<Vec<_>>(),
-            vec!["you", "them"]
-        );
-    }
-
-    #[test]
-    fn empty_live_meeting_transcript_does_not_hide_a_real_no_speech_error() {
-        assert!(live_meeting_transcript_fallback(&[]).is_none());
-        assert!(
-            live_meeting_transcript_fallback(&[MeetingTranscriptSegment {
-                id: "blank".to_string(),
-                source: MeetingTranscriptSource::You,
-                text: "   ".to_string(),
-                start_ms: 0,
-                end_ms: 100,
-            }])
-            .is_none()
-        );
     }
 }
