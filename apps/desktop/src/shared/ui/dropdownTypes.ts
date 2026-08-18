@@ -2,25 +2,28 @@ import type { ReactNode } from "react";
 
 export type DropdownValue = string | number;
 
-export interface DropdownOption<T extends DropdownValue> {
+type OptionalFields<Names extends PropertyKey, Value> = {
+  [Field in Names]?: Value;
+};
+
+type DropdownBadge = {
+  label: string;
+} & OptionalFields<"highlighted" | "visible", boolean>;
+
+type DropdownOptionFlags =
+  "fixedBadgeSlots" | "isHeader" | "prominentHeader" | "locked";
+
+export type DropdownOption<T extends DropdownValue> = {
   value: T;
   label: string;
-  description?: string;
-  icon?: ReactNode;
-  badges?: Array<{
-    label: string;
-    highlighted?: boolean;
-    visible?: boolean;
-  }>;
-  fixedBadgeSlots?: boolean;
-  isHeader?: boolean;
-  prominentHeader?: boolean;
-  locked?: boolean;
-}
+} & OptionalFields<"description", string> &
+  OptionalFields<"icon", ReactNode> &
+  OptionalFields<"badges", DropdownBadge[]> &
+  OptionalFields<DropdownOptionFlags, boolean>;
 
-export type DropdownEditableInput = {
-  value: string;
-  onChange: (value: string) => void;
-  placeholder?: string;
-  ariaLabel?: string;
-};
+export type DropdownEditableInput = { value: string } & OptionalFields<
+  "placeholder" | "ariaLabel",
+  string
+> & {
+    onChange: (value: string) => void;
+  };

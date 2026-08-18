@@ -1,49 +1,58 @@
-export interface DetectedApp {
-  id: string;
-  name: string;
-}
+type Fields<Names extends PropertyKey, Value> = {
+  [Field in Names]: Value;
+};
 
-interface ImportContentCounts {
-  dictionaryCount: number;
-  replacementsCount: number;
-  personalitiesCount: number;
-  transcriptCount: number;
-}
+export type DetectedApp = Fields<"id" | "name", string>;
 
-export interface ImportPreview extends DetectedApp, ImportContentCounts {
-  shortcut: string | null;
-  language: string | null;
-  autoLaunch: boolean | null;
-  modelSource: string | null;
-  modelKey: string | null;
-  modelRecognized: boolean;
-}
+type ImportContentCounts = Fields<
+  | "dictionaryCount"
+  | "replacementsCount"
+  | "personalitiesCount"
+  | "transcriptCount",
+  number
+>;
 
-export type ImportSelection =
-  | "dictionary"
-  | "replacements"
-  | "personalities"
-  | "shortcut"
-  | "language"
-  | "autoLaunch"
-  | "model"
-  | "history";
+type PreviewMetadata = Fields<
+  "shortcut" | "language" | "modelSource" | "modelKey",
+  string | null
+> &
+  Fields<"autoLaunch", boolean | null> &
+  Fields<"modelRecognized", boolean>;
 
-export type ImportSelections = Record<ImportSelection, boolean>;
+export interface ImportPreview
+  extends DetectedApp, ImportContentCounts, PreviewMetadata {}
 
-interface ImportedContentCounts {
-  dictionaryAdded: number;
-  replacementsAdded: number;
-  personalitiesAdded: number;
-  transcriptsAdded: number;
-}
+type ImportSelectionCatalog = {
+  dictionary: unknown;
+  replacements: unknown;
+  personalities: unknown;
+  shortcut: unknown;
+  language: unknown;
+  autoLaunch: unknown;
+  model: unknown;
+  history: unknown;
+};
 
-export interface ImportResult extends ImportedContentCounts {
-  shortcutApplied: boolean;
-  shortcut: string | null;
-  languageApplied: boolean;
-  autoLaunchApplied: boolean;
-  autoLaunch: boolean | null;
-  modelKey: string | null;
-  modelUnrecognized: boolean;
-}
+export type ImportSelection = keyof ImportSelectionCatalog;
+export type ImportSelections = Fields<ImportSelection, boolean>;
+
+type ImportedContentCounts = Fields<
+  | "dictionaryAdded"
+  | "replacementsAdded"
+  | "personalitiesAdded"
+  | "transcriptsAdded",
+  number
+>;
+
+type ImportApplicationResult = Fields<
+  | "shortcutApplied"
+  | "languageApplied"
+  | "autoLaunchApplied"
+  | "modelUnrecognized",
+  boolean
+> &
+  Fields<"shortcut" | "modelKey", string | null> &
+  Fields<"autoLaunch", boolean | null>;
+
+export interface ImportResult
+  extends ImportedContentCounts, ImportApplicationResult {}

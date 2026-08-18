@@ -1,40 +1,48 @@
 import type { TranscriptSegment } from "./items";
 
-export type LibraryImportOptions = {
-  store_original: boolean;
-  model_key: string;
-  llm_cleanup_enabled: boolean;
-  denoise_enabled: boolean;
-  show_timestamps: boolean;
-  detect_speakers: boolean;
+type Fields<Names extends PropertyKey, Value> = {
+  [Field in Names]: Value;
 };
 
-export type LibraryWatchFolder = {
-  path: string;
-  options: LibraryImportOptions;
-  enabled: boolean;
+type ImportToggle =
+  | "store_original"
+  | "llm_cleanup_enabled"
+  | "denoise_enabled"
+  | "show_timestamps"
+  | "detect_speakers";
+
+export type LibraryImportOptions = Fields<ImportToggle, boolean> &
+  Fields<"model_key", string>;
+
+export type LibraryWatchFolder = Fields<"path", string> &
+  Fields<"enabled", boolean> &
+  Fields<"options", LibraryImportOptions>;
+
+export type YoutubeImportMetadata = Fields<
+  "url" | "video_id" | "title",
+  string
+> &
+  Fields<"channel", string | null> &
+  Fields<"duration_seconds", number | null>;
+
+type ExportFormatCatalog = {
+  txt: unknown;
+  md: unknown;
+  srt: unknown;
+  vtt: unknown;
 };
+export type ExportFormat = keyof ExportFormatCatalog;
 
-export type YoutubeImportMetadata = {
-  url: string;
-  video_id: string;
-  title: string;
-  channel: string | null;
-  duration_seconds: number | null;
-};
+type ProgressEnvelope<Details = object> = Fields<"id", string> &
+  Fields<"progress", number> &
+  Details;
 
-export type ExportFormat = "txt" | "md" | "srt" | "vtt";
-
-export type LibraryProgressPayload = {
-  id: string;
-  progress: number;
+type ChunkProgress = {
   current_chunk: number;
   total_chunks: number;
   chunk_text?: string | null;
   chunk_segments?: TranscriptSegment[] | null;
 };
 
-export type LibraryImportProgressPayload = {
-  id: string;
-  progress: number;
-};
+export type LibraryProgressPayload = ProgressEnvelope<ChunkProgress>;
+export type LibraryImportProgressPayload = ProgressEnvelope;

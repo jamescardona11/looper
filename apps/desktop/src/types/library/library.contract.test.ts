@@ -1,10 +1,13 @@
 import { describe, expectTypeOf, test } from "vitest";
 import type {
   LibraryImportOptions,
+  LibraryImportProgressPayload,
   LibraryItem,
   LibraryItemStatus,
+  LibraryProgressPayload,
   MeetingCaptureHealth,
   MeetingCaptureState,
+  YoutubeImportMetadata,
 } from "../library";
 
 describe("library wire contract", () => {
@@ -23,5 +26,20 @@ describe("library wire contract", () => {
       MeetingCaptureState["capture_health"]
     >().toEqualTypeOf<MeetingCaptureHealth>();
     expectTypeOf<LibraryImportOptions>().toHaveProperty("detect_speakers");
+  });
+
+  test("keeps import progress and video metadata wire fields", () => {
+    expectTypeOf<
+      LibraryProgressPayload["current_chunk"]
+    >().toEqualTypeOf<number>();
+    expectTypeOf<LibraryProgressPayload["chunk_segments"]>().toEqualTypeOf<
+      import("../library").TranscriptSegment[] | null | undefined
+    >();
+    expectTypeOf<
+      LibraryImportProgressPayload["progress"]
+    >().toEqualTypeOf<number>();
+    expectTypeOf<YoutubeImportMetadata["channel"]>().toEqualTypeOf<
+      string | null
+    >();
   });
 });
