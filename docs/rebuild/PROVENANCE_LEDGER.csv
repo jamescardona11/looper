@@ -13,6 +13,8 @@ packages/rust/looper-ts/src/parakeet/vocab.rs,permissive,parakeet,parakeet-rs@7d
 packages/rust/looper-ts/src/cohere/decoder.rs,permissive,cohere-engine,transcribe-rs@343768c100d566b135fbb7a2441e61fa8aa177f2,MIT,packages/rust/looper-ts/THIRD_PARTY_NOTICES.md,upstream-license-verified-2026-08-16,pending
 packages/rust/looper-ts/src/cohere/mod.rs,permissive,cohere-engine,transcribe-rs@343768c100d566b135fbb7a2441e61fa8aa177f2,MIT,packages/rust/looper-ts/THIRD_PARTY_NOTICES.md,upstream-license-verified-2026-08-16,pending
 packages/rust/looper-ts/src/cohere/vocab.rs,permissive,cohere-engine,transcribe-rs@343768c100d566b135fbb7a2441e61fa8aa177f2,MIT,packages/rust/looper-ts/THIRD_PARTY_NOTICES.md,upstream-license-verified-2026-08-16,pending
+packages/rust/looper-ts/src/vad/mod.rs,replaced,audio-vad,manual-review-quiet-cut-replaced,project-license-pending,-,targeted-tests-pending,pending
+packages/rust/looper-ts/src/vad/quiet_cut.rs,replaced,audio-vad,authored-quiet-cut-search,project-license-pending,-,targeted-tests-pending,pending
 apps/desktop/src-tauri/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/desktop/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/mobile/**,unreviewed,mobile,,pending,-,pending,uncommitted
