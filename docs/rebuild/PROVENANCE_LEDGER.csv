@@ -863,6 +863,10 @@ apps/desktop/src/features/library/components/library-card-body.tsx,replaced,desk
 apps/desktop/src/features/library/components/library-card-content.tsx,replaced,desktop-library-card-content,authored-library-card-content-orchestration,project-license-pending,-,corpus-containment-27.3-library-card-11-tests-typecheck-eslint-prettier-2026-08-17,pending
 apps/desktop/src/features/library/components/library-card-model.ts,replaced,desktop-library-card-model,authored-library-card-status-and-interaction-policy,project-license-pending,-,corpus-containment-17.7-library-card-11-tests-typecheck-eslint-prettier-2026-08-17,pending
 apps/desktop/src/features/library/components/library-card-model.test.ts,owned,desktop-library-card-model-tests,authored-library-card-model-contract-tests,project-license-pending,-,corpus-containment-9.1-permissive-library-card-11-tests-typecheck-eslint-prettier-2026-08-17,pending
+apps/desktop/src-tauri/src/core/settings.rs,replaced,desktop-core-settings,authored-stable-settings-command-facade,project-license-pending,-,corpus-containment-no-reportable-signal-core-settings-6-tests-cargo-all-targets-rustfmt-2026-08-17,pending
+apps/desktop/src-tauri/src/core/settings_input.rs,replaced,desktop-core-settings-input,authored-grouped-settings-input-and-validation-policy,project-license-pending,-,corpus-containment-29.8-core-settings-6-tests-cargo-all-targets-rustfmt-2026-08-17,pending
+apps/desktop/src-tauri/src/core/settings_onboarding.rs,replaced,desktop-core-settings-onboarding,authored-onboarding-transition-persistence,project-license-pending,-,corpus-containment-24.0-core-settings-6-tests-cargo-all-targets-rustfmt-2026-08-17,pending
+apps/desktop/src-tauri/src/core/settings_runtime.rs,replaced,desktop-core-settings-runtime,authored-settings-persistence-and-side-effect-orchestration,project-license-pending,-,corpus-containment-6.2-core-settings-6-tests-cargo-all-targets-rustfmt-2026-08-17,pending
 apps/desktop/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/mobile/**,unreviewed,mobile,,pending,-,pending,uncommitted
 apps/web/**,unreviewed,web,,pending,-,pending,uncommitted
