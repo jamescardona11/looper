@@ -16,6 +16,9 @@ packages/rust/looper-ts/src/cohere/vocab.rs,permissive,cohere-engine,transcribe-
 packages/rust/looper-ts/src/vad/mod.rs,replaced,audio-vad,manual-review-quiet-cut-replaced,project-license-pending,-,targeted-tests-pending,pending
 packages/rust/looper-ts/src/vad/quiet_cut.rs,replaced,audio-vad,authored-quiet-cut-search,project-license-pending,-,targeted-tests-pending,pending
 packages/rust/looper-ts/src/long_form.rs,replaced,long-form,manual-review-dedupe-clean-room,project-license-pending,-,cargo-test-long-form-2026-08-16,pending
+packages/rust/looper-ts/src/types.rs,owned,transcription-contracts,manual-review-low-similarity,project-license-pending,-,cargo-test-types-2026-08-16,pending
+packages/rust/looper-ts/src/error.rs,owned,transcription-contracts,manual-review-low-similarity,project-license-pending,-,cargo-test-error-2026-08-16,pending
+packages/rust/looper-ts/src/runtime.rs,owned,transcription-runtime,manual-review-low-similarity,project-license-pending,-,cargo-test-runtime-2026-08-16,pending
 apps/desktop/src-tauri/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/desktop/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/mobile/**,unreviewed,mobile,,pending,-,pending,uncommitted
