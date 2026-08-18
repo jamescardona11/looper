@@ -252,6 +252,10 @@ apps/desktop/src/features/settings/components/ProviderConfigurationPanel.tsx,rep
 apps/desktop/src/features/settings/components/LanguageModelPanel.tsx,replaced,desktop-writing-provider-adapter,authored-provider-catalog-preset-and-model-adapter,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
 apps/desktop/src/features/settings/components/SpeechModelPanel.tsx,replaced,desktop-speech-provider-adapter,authored-provider-catalog-auto-model-and-discovery-adapter,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
 apps/desktop/src/features/settings/components/ProviderPanels.test.tsx,owned,desktop-provider-configuration-tests,authored-toggle-preset-dedup-discovery-and-auto-model-tests,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/features/settings/components/AccountView.tsx,replaced,desktop-account-settings-view,authored-status-activation-errors-and-confirmation-composition,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/features/settings/components/AccountView.test.tsx,owned,desktop-account-settings-view-tests,authored-trial-normalized-activation-and-two-step-deactivation-tests,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/features/settings/timed-confirmation-store.ts,replaced,desktop-timed-confirmation-state,authored-external-timer-store-with-disposal,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/features/settings/timed-confirmation-store.test.ts,owned,desktop-timed-confirmation-tests,authored-second-action-expiry-and-disposal-tests,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
 apps/desktop/src-tauri/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/desktop/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/mobile/**,unreviewed,mobile,,pending,-,pending,uncommitted
