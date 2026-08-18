@@ -5,10 +5,20 @@ import com.j11.looper.mobile.repos.SttProtocol
 import com.j11.looper.mobile.repos.TextDestination
 import com.j11.looper.mobile.repos.TextProtocol
 import com.j11.looper.mobile.repos.MultipartAudio
+import com.j11.looper.mobile.repos.ConvexFunctionKind
+import com.j11.looper.mobile.repos.ConvexWire
+import com.j11.looper.mobile.repos.HttpResponse
+import com.j11.looper.mobile.repos.RepoConfig
+import com.j11.looper.mobile.repos.UploadDestination
 import com.j11.looper.mobile.repos.addJsonResponseFormat
 import com.j11.looper.mobile.repos.buildConversationMessages
+import com.j11.looper.mobile.repos.postBytesSync
+import com.j11.looper.mobile.repos.postJsonSync
+import com.sun.net.httpserver.HttpExchange
+import com.sun.net.httpserver.HttpServer
 import org.json.JSONObject
 import java.io.ByteArrayOutputStream
+import java.net.InetSocketAddress
 
 private fun expect(value: Boolean, message: String) {
     check(value) { message }
@@ -85,6 +95,111 @@ private fun wireContracts() {
     expect(multipart.endsWith("--boundary--\r\n"), "Multipart terminator changed")
 }
 
+private fun apiUtilityContracts() {
+    val arguments = JSONObject().put("threadId", "thread")
+    val call = ConvexWire.call(
+        RepoConfig("https://example.convex.cloud", "token"),
+        ConvexFunctionKind.QUERY,
+        "agent/messages:list",
+        arguments,
+    )
+    expect(call.destination == "https://example.convex.cloud/api/query", "Convex endpoint changed")
+    expect(call.authorization == "Bearer token", "Convex authorization changed")
+    expect(call.payload.getString("path") == "agent/messages:list", "Convex path changed")
+    expect(call.payload.getString("format") == "convex_encoded_json", "Convex format changed")
+    expect(
+        call.payload.getJSONArray("args").getJSONObject(0).getString("threadId") == "thread",
+        "Convex argument envelope changed",
+    )
+    expect(
+        ConvexWire.readValue("operation", HttpResponse(200, "{\"status\":\"success\",\"value\":\"ok\"}")) == "ok",
+        "Convex scalar decoding changed",
+    )
+
+    expect(
+        UploadDestination.resolve(
+            "http://127.0.0.1:3210/api/storage/upload?token=one",
+            "https://deployment.convex.cloud",
+        ) == "https://deployment.convex.cloud/api/storage/upload?token=one",
+        "Loopback upload rewriting changed",
+    )
+    expect(
+        UploadDestination.resolve(
+            "https://uploads.example.test/file",
+            "https://deployment.convex.cloud",
+        ) == "https://uploads.example.test/file",
+        "External upload URLs must stay intact",
+    )
+    expect(
+        UploadDestination.resolve(
+            "http://localhost:3210/file",
+            "http://127.0.0.1:3210",
+        ) == "http://localhost:3210/file",
+        "Local-to-local upload URLs must stay intact",
+    )
+    expect(
+        UploadDestination.resolve("not a URL", "https://deployment.convex.cloud") == "not a URL",
+        "Malformed upload URLs must fall back unchanged",
+    )
+
+    val server = HttpServer.create(InetSocketAddress("127.0.0.1", 0), 0)
+    var jsonExchange: CapturedExchange? = null
+    var bytesExchange: CapturedExchange? = null
+    server.createContext("/json") { exchange ->
+        jsonExchange = exchange.capture()
+        exchange.respond(201, "json-response")
+    }
+    server.createContext("/bytes") { exchange ->
+        bytesExchange = exchange.capture()
+        exchange.respond(418, "byte-error")
+    }
+    server.start()
+    try {
+        val base = "http://127.0.0.1:${server.address.port}"
+        val jsonResponse = postJsonSync(
+            "$base/json",
+            JSONObject().put("value", 42),
+            authorization = "Bearer secret",
+            extraHeaders = mapOf("X-Contract" to "json", "Content-Type" to "application/custom"),
+        )
+        expect(jsonResponse == HttpResponse(201, "json-response"), "JSON HTTP response changed")
+        expect(jsonExchange?.method == "POST", "JSON request method changed")
+        expect(jsonExchange?.body == "{\"value\":42}", "JSON request body changed")
+        expect(jsonExchange?.headers?.get("Authorization") == "Bearer secret", "Authorization header changed")
+        expect(jsonExchange?.headers?.get("Content-type") == "application/custom", "Header overrides changed")
+
+        val bytesResponse = postBytesSync(
+            "$base/bytes",
+            "audio".toByteArray(),
+            "audio/mp4",
+            mapOf("X-Contract" to "bytes"),
+        )
+        expect(bytesResponse == HttpResponse(418, "byte-error"), "Byte error response changed")
+        expect(bytesExchange?.body == "audio", "Byte request body changed")
+        expect(bytesExchange?.headers?.get("Content-type") == "audio/mp4", "Byte content type changed")
+    } finally {
+        server.stop(0)
+    }
+}
+
+private data class CapturedExchange(
+    val method: String,
+    val body: String,
+    val headers: Map<String, String>,
+)
+
+private fun HttpExchange.capture(): CapturedExchange = CapturedExchange(
+    requestMethod,
+    requestBody.bufferedReader().use { it.readText() },
+    requestHeaders.entries.associate { it.key to it.value.joinToString(",") },
+)
+
+private fun HttpExchange.respond(status: Int, body: String) {
+    val content = body.toByteArray()
+    sendResponseHeaders(status, content.size.toLong())
+    responseBody.use { it.write(content) }
+}
+
 private fun workflowContracts() {
     val manual = KeyboardWorkflow(
         "manual",
@@ -141,6 +256,7 @@ private fun promptContracts() {
 fun main() {
     providerRoutingContracts()
     wireContracts()
+    apiUtilityContracts()
     workflowContracts()
     promptContracts()
     println("Android keyboard contract checks passed")
