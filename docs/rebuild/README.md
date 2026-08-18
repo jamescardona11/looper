@@ -25,8 +25,9 @@ procedencia ni comportamiento en un dispositivo real.
 2. Un archivo mixto se divide por bloques cuando sea separable. Un archivo cuya
    organización y expresión dependan principalmente de una referencia se
    reemplaza como módulo, conservando su contrato público.
-3. Código propio, generado y dependencias permisivas verificadas se conserva.
-   Las dependencias MIT/Apache mantienen su copyright, licencia y NOTICE.
+3. Sólo se commitea código, documentación y configuración escritos por
+   nosotros. Código o assets de terceros, aun cuando tengan una licencia
+   permisiva, no entran en este árbol; se reemplazan antes de incorporarlos.
 4. Los contratos observables se mantienen: comandos Tauri, eventos, payloads,
    almacenamiento, deep links, hotkeys, identificadores nativos y APIs de
    backend. Una migración compatible acompaña cualquier cambio necesario.

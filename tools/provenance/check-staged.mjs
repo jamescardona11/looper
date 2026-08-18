@@ -6,7 +6,7 @@ import { resolve } from "node:path";
 
 const root = resolve(import.meta.dirname, "../..");
 const ledgerPath = resolve(root, "docs/rebuild/PROVENANCE_LEDGER.csv");
-const allowed = new Set(["owned", "replaced", "derived", "permissive", "generated"]);
+const allowed = new Set(["owned", "replaced"]);
 
 function csvFields(line) {
   return line.split(",").map((field) => field.trim());
