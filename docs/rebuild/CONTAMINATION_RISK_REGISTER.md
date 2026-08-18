@@ -21,7 +21,7 @@ la revisión de los casos históricos de alto riesgo.
 | Archivo actual | Señal histórica | Estado técnico actual | Riesgo que permanece |
 | --- | ---: | ---: | --- |
 | `apps/desktop/src-tauri/src/core/keyboard/macos.rs` | 97.6% | 15.2% | Revisión sustantiva aplicada: la frontera nativa ahora traduce eventos a una sesión propia, el estado usa familias de modificadores y el catálogo está agrupado por función; falta validación en una ventana macOS real. |
-| `apps/desktop/src-tauri/src/core/keyboard/catalog.rs` | 100% | 4.6% | La tabla de teclas y alias conserva restricciones externas; verificar qué datos son inevitables y qué decisiones son propias. |
+| `apps/desktop/src-tauri/src/core/keyboard/catalog.rs` | 100% | 4.6% | Revisión de contrato completada: variantes, etiquetas y aliases son datos de interoperabilidad con eventos del sistema y se generan desde un keybook local; falta validación con códigos de teclado de cada host real. |
 | `apps/desktop/src-tauri/src/music.rs` | 95.7% | 15.6% | La coordinación usa una máquina de fases propia y los programas JXA separan dispatch, identidad y volumen; falta observar pause/duck en reproductores reales. |
 | `apps/desktop/src-tauri/src/platform/macos/audio_devices.rs` | 98.5% | 21.0% | Revisión de contrato completada: registro/eliminación CoreAudio, mailbox acotado, orden de suscripciones y refresh de menús están cubiertos; el smoke nativo sigue pendiente de permisos/host. |
 | `apps/desktop/src-tauri/src/core/keyboard/mod.rs` | 96.3% | 24.1% | Revisión de contrato completada: el parser de modificadores usa una tabla de alias propia, el matching separa familias izquierda/derecha y el lifecycle de shutdown conserva join explícito; falta validación con hotkeys globales en un host real. |
@@ -102,3 +102,14 @@ implementación actual separa `ModifierGroup`, `EventPolicy` y
 reducir la señal. Las pruebas focales cubren la tabla de verdad, aliases,
 forwarding y ambos bordes de un modificador; la evidencia no incluye una
 ventana macOS/Windows real ni una hotkey global disparada por dispositivo.
+
+El catálogo `core/keyboard/catalog.rs` se revisó por separado porque su
+señal histórica correspondía a una tabla completa de claves. Las etiquetas,
+variantes y aliases son parte del protocolo observable entre el parser de
+shortcuts y los códigos nativos; cambiarlos por nombres inventados rompería
+configuraciones existentes. La implementación actual usa un `keybook` local
+que genera el enum y sus metadatos, encapsula la búsqueda en `KeyEntry` y
+mantiene el error público `Unknown key`. Las pruebas cubren round-trip de
+todas las etiquetas, aliases de puntuación, mouse y keypad; no se eliminaron
+tests para bajar la señal. Falta todavía una prueba de dispositivo para cada
+layout físico de teclado.
