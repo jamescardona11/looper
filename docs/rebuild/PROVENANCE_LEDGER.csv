@@ -160,6 +160,8 @@ apps/desktop/src/types/library/library.contract.test.ts,owned,desktop-library-co
 apps/desktop/src/types/howler.d.ts,replaced,desktop-audio-player-types,authored-minimum-declaration-from-local-call-sites,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
 apps/desktop/src/types/howler.contract.test.ts,owned,desktop-audio-player-type-tests,authored-consumer-boundary-tests,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
 apps/desktop/src/types/index.ts,replaced,desktop-public-type-surface,authored-domain-ordered-export-surface,project-license-pending,-,desktop-typecheck-2026-08-16,pending
+apps/desktop/src/features/settings/modelDiscovery.ts,replaced,desktop-model-discovery,authored-request-generation-state-transitions,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/features/settings/modelDiscovery.test.ts,owned,desktop-model-discovery-tests,authored-stale-result-and-reset-tests,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
 apps/desktop/src-tauri/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/desktop/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/mobile/**,unreviewed,mobile,,pending,-,pending,uncommitted
