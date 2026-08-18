@@ -164,6 +164,8 @@ apps/desktop/src/features/settings/modelDiscovery.ts,replaced,desktop-model-disc
 apps/desktop/src/features/settings/modelDiscovery.test.ts,owned,desktop-model-discovery-tests,authored-stale-result-and-reset-tests,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
 apps/desktop/src/features/settings/settings-navigation.ts,owned,desktop-settings-navigation,no-material-corpus-match,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
 apps/desktop/src/features/settings/settings-navigation.test.ts,owned,desktop-settings-navigation-tests,authored-section-routing-tests,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/data/settings.ts,owned,desktop-settings-native-gateway,no-material-corpus-match,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/data/settings.test.ts,owned,desktop-settings-native-gateway-tests,authored-command-and-event-contract-tests,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
 apps/desktop/src-tauri/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/desktop/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/mobile/**,unreviewed,mobile,,pending,-,pending,uncommitted
