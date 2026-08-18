@@ -1065,4 +1065,12 @@ apps/mobile/src/features/library/library-logic.test.ts,owned,mobile-library-test
 apps/mobile/src/features/library/library-logic.ts,owned,mobile-library,authored-library-state-policy,project-license-pending,-,mobile-library-tests-typecheck-2026-08-17,pending
 apps/mobile/src/features/library/library-screen.tsx,owned,mobile-library,authored-library-screen,project-license-pending,-,mobile-library-tests-typecheck-2026-08-17,pending
 apps/mobile/src/features/library/local-content-sync.tsx,owned,mobile-library,authored-local-content-sync,project-license-pending,-,mobile-library-tests-typecheck-2026-08-17,pending
+apps/mobile/src/features/meetings/index.ts,owned,mobile-meetings,authored-meeting-exports,project-license-pending,-,mobile-meetings-tests-typecheck-2026-08-17,pending
+apps/mobile/src/features/meetings/live-meeting-screen.tsx,owned,mobile-meetings,authored-live-meeting-screen,project-license-pending,-,mobile-meetings-tests-typecheck-2026-08-17,pending
+apps/mobile/src/features/meetings/meeting-capture-logic.test.ts,owned,mobile-meetings-tests,authored-meeting-capture-contract-tests,project-license-pending,-,mobile-meetings-tests-typecheck-2026-08-17,pending
+apps/mobile/src/features/meetings/meeting-capture-logic.ts,owned,mobile-meetings,authored-meeting-capture-policy,project-license-pending,-,mobile-meetings-tests-typecheck-2026-08-17,pending
+apps/mobile/src/features/meetings/meeting-detail-screen.tsx,owned,mobile-meetings,authored-meeting-detail-screen,project-license-pending,-,mobile-meetings-tests-typecheck-2026-08-17,pending
+apps/mobile/src/features/meetings/native-live-activity-contract.test.ts,owned,mobile-meetings-tests,authored-live-activity-contract-tests,project-license-pending,-,mobile-meetings-tests-typecheck-2026-08-17,pending
+apps/mobile/src/features/meetings/native-live-activity.ts,owned,mobile-meetings,authored-live-activity-adapter,project-license-pending,-,mobile-meetings-tests-typecheck-2026-08-17,pending
+apps/mobile/src/features/meetings/use-meeting-capture.ts,owned,mobile-meetings,authored-meeting-capture-hook,project-license-pending,-,mobile-meetings-tests-typecheck-2026-08-17,pending
 .gitignore,owned,repository-hygiene,authored-ignore-boundaries-for-local-docs-and-audit-artifacts,project-license-pending,-,git-check-ignore-verification-2026-08-17,pending
