@@ -327,6 +327,8 @@ apps/desktop/src/features/settings/model-deletion-policy.ts,replaced,desktop-mod
 apps/desktop/src/features/settings/model-deletion-policy.test.ts,owned,desktop-model-deletion-policy-tests,authored-selection-priority-locale-and-language-fallback-tests,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
 apps/desktop/src/features/settings/useModelTransfers.ts,replaced,desktop-model-transfer-controller,authored-reducer-driven-transfer-events-cache-updates-cancellation-and-deletion-callbacks,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
 apps/desktop/src/features/settings/useModelTransfers.test.ts,owned,desktop-model-transfer-controller-tests,authored-state-transition-error-cancellation-event-and-deletion-tests,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/features/settings/useSettingsDraft.ts,replaced,desktop-settings-draft,authored-single-draft-store-typed-field-updates-and-normalized-hydration,project-license-pending,-,corpus-containment-8.5-and-desktop-tests-typecheck-2026-08-16,pending
+apps/desktop/src/features/settings/useSettingsDraft.test.tsx,owned,desktop-settings-draft-tests,authored-default-background-functional-update-and-hydration-tests,project-license-pending,-,corpus-containment-5.3-and-desktop-tests-typecheck-2026-08-16,pending
 apps/desktop/src-tauri/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/desktop/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/mobile/**,unreviewed,mobile,,pending,-,pending,uncommitted
