@@ -614,6 +614,7 @@ apps/desktop/src/features/license/components/member-card-visual-policy.test.ts,r
 apps/desktop/src-tauri/src/platform/overlay.rs,replaced,desktop-native-overlay,authored-platform-cfg-routing-content-protection-and-error-reporting-facade,project-license-pending,-,corpus-containment-20.5-overlay-tests-cargo-all-targets-rustfmt-2026-08-16,pending
 apps/desktop/src-tauri/src/platform/macos/overlay.rs,replaced,desktop-native-overlay,authored-nspanel-style-space-level-pointer-reveal-and-main-thread-policies,project-license-pending,-,corpus-containment-26.3-overlay-tests-cargo-all-targets-native-suite-rustfmt-2026-08-16,pending
 apps/desktop/src-tauri/src/platform/windows/overlay.rs,replaced,desktop-native-overlay,authored-win32-extended-style-plan-native-adapter-nonactivating-topmost-reveal-and-pointer-policy,project-license-pending,-,corpus-containment-23.2-cargo-all-targets-native-suite-rustfmt-windows-runtime-pending-2026-08-16,pending
+apps/desktop/src-tauri/src/crypto.rs,replaced,desktop-native-secret-storage,authored-device-key-cache-cipher-adapter-persisted-envelope-hardware-id-parsers-and-encryption-heuristic,project-license-pending,-,corpus-containment-17.0-crypto-12-tests-persisted-vector-cargo-all-targets-native-suite-rustfmt-2026-08-16,pending
 apps/desktop/src-tauri/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/desktop/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/mobile/**,unreviewed,mobile,,pending,-,pending,uncommitted
