@@ -70,6 +70,7 @@ mod macos_ax {
     use core_foundation::data::{CFData, CFDataRef};
     use core_foundation::string::{CFString, CFStringRef};
     use std::ffi::c_void;
+    use std::process::Command;
     use std::ptr;
     use std::sync::OnceLock;
 
@@ -109,6 +110,11 @@ mod macos_ax {
             let element = AXUIElementCreateSystemWide();
             (!element.is_null()).then_some(Self(element))
         }
+
+        unsafe fn application(pid: i32) -> Option<Self> {
+            let element = AXUIElementCreateApplication(pid);
+            (!element.is_null()).then_some(Self(element))
+        }
     }
 
     impl Drop for AxElement {
@@ -120,6 +126,7 @@ mod macos_ax {
     #[link(name = "ApplicationServices", kind = "framework")]
     extern "C" {
         fn AXUIElementCreateSystemWide() -> AXUIElementRef;
+        fn AXUIElementCreateApplication(pid: i32) -> AXUIElementRef;
         fn AXUIElementCopyAttributeValue(
             element: *mut c_void,
             attribute: *const c_void,
@@ -264,8 +271,7 @@ mod macos_ax {
     }
 
     unsafe fn focused_window_text_snapshot() -> Option<super::FocusedTextSnapshot> {
-        let system = AxElement::system_wide()?;
-        let app_element = copy_element_attribute(system.as_ptr(), "AXFocusedApplication")?;
+        let app_element = focused_application()?;
         let window = copy_element_attribute(app_element.as_ptr(), "AXFocusedWindow")?;
 
         let mut budget = 80;
@@ -334,8 +340,8 @@ mod macos_ax {
         }
 
         unsafe {
-            let system = AxElement::system_wide()?;
-
+            let system = AxElement::system_wide();
+            if let Some(system) = system {
             let focused_attr = CFString::new("AXFocusedUIElement");
             let mut focused: *mut c_void = ptr::null_mut();
             let err = AXUIElementCopyAttributeValue(
@@ -345,11 +351,37 @@ mod macos_ax {
             );
 
             if err != AX_ERROR_SUCCESS || focused.is_null() {
-                return None;
+                // Some macOS sessions reject the system-wide element with
+                // kAXErrorCannotComplete while allowing app-scoped queries.
+            } else {
+                return Some(AxElement(focused));
+            }
             }
 
-            Some(AxElement(focused))
+            let app = focused_application()?;
+            copy_element_attribute(app.as_ptr(), "AXFocusedUIElement")
         }
+    }
+
+    unsafe fn focused_application() -> Option<AxElement> {
+        if let Some(system) = AxElement::system_wide() {
+            if let Some(app) = copy_element_attribute(system.as_ptr(), "AXFocusedApplication") {
+                return Some(app);
+            }
+        }
+
+        let output = Command::new("osascript")
+            .args([
+                "-e",
+                r#"tell application "System Events" to unix id of first application process whose frontmost is true"#,
+            ])
+            .output()
+            .ok()?;
+        if !output.status.success() {
+            return None;
+        }
+        let pid = String::from_utf8_lossy(&output.stdout).trim().parse().ok()?;
+        AxElement::application(pid)
     }
 
     #[cfg(test)]
@@ -390,11 +422,7 @@ mod macos_ax {
     #[cfg(test)]
     pub(super) fn focused_window_debug_for_host_smoke() -> String {
         unsafe {
-            let Some(system) = AxElement::system_wide() else {
-                return "focused_window=system-null".to_string();
-            };
-            let Some(app_element) = copy_element_attribute(system.as_ptr(), "AXFocusedApplication")
-            else {
+            let Some(app_element) = focused_application() else {
                 return "focused_window=app-none".to_string();
             };
             let Some(window) = copy_element_attribute(app_element.as_ptr(), "AXFocusedWindow")
