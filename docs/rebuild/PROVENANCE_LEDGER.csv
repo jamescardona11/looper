@@ -161,7 +161,7 @@ apps/desktop/src/types/library/library.contract.test.ts,owned,desktop-library-co
 apps/desktop/src/types/import.contract.test.ts,owned,desktop-import-contract,authored-import-identity-selection-preview-and-result-field-contract-tests,project-license-pending,-,corpus-containment-15.4-import-library-contract-tests-eslint-typecheck-2026-08-16,pending
 apps/desktop/src/types/howler.d.ts,replaced,desktop-audio-player-types,authored-minimum-declaration-from-local-call-sites,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
 apps/desktop/src/types/howler.contract.test.ts,owned,desktop-audio-player-type-tests,authored-consumer-boundary-tests,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
-apps/desktop/src/types/index.ts,replaced,desktop-public-type-surface,authored-domain-ordered-export-surface,project-license-pending,-,desktop-typecheck-2026-08-16,pending
+apps/desktop/src/types/index.ts,replaced,desktop-public-type-surface,authored-explicit-leaf-module-value-and-type-export-manifest,project-license-pending,-,corpus-containment-10.9-export-parity-101-of-101-typecheck-prettier-2026-08-16,pending
 apps/desktop/src/features/settings/modelDiscovery.ts,replaced,desktop-model-discovery,authored-request-generation-state-transitions,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
 apps/desktop/src/features/settings/modelDiscovery.test.ts,owned,desktop-model-discovery-tests,authored-stale-result-and-reset-tests,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
 apps/desktop/src/features/settings/settings-navigation.ts,owned,desktop-settings-navigation,no-material-corpus-match,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
