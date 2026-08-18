@@ -1024,3 +1024,4 @@ tools/architecture-check/test/engine.test.ts,owned,architecture-tool-tests,autho
 tools/e2e/package.json,owned,e2e-tool,authored-local-web-e2e-package,project-license-pending,-,e2e-tool-tests-2026-08-17,pending
 tools/e2e/run-local-e2e.mjs,owned,e2e-tool,authored-local-web-e2e-runner,project-license-pending,-,e2e-tool-tests-2026-08-17,pending
 tools/e2e/run-local-e2e.test.mjs,owned,e2e-tool-tests,authored-local-web-e2e-runner-tests,project-license-pending,-,e2e-tool-tests-2026-08-17,pending
+test-support/scripts/remote-dictation-pairing-smoke.mjs,owned,remote-pairing-smoke,authored-convex-pairing-smoke-runner,project-license-pending,-,node-syntax-check-and-source-review-2026-08-17,pending
