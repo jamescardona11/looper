@@ -223,11 +223,17 @@ def parse_args() -> argparse.Namespace:
         default=Path(__file__).resolve().parents[2],
         help="Looper checkout root",
     )
+    parser.add_argument(
+        "--strict",
+        action="store_true",
+        help="Fail unless the active history and local repository are clean",
+    )
     return parser.parse_args()
 
 
 def main() -> int:
-    root = parse_args().root.resolve()
+    args = parse_args()
+    root = args.root.resolve()
     paths = reachable_paths(root)
     forbidden_paths = sorted(path for path in paths if path in FORBIDDEN_PATHS)
     ledger_hits = ledger_history_hits(root)
@@ -275,7 +281,7 @@ def main() -> int:
     # explicit cleanup fields expose residue without hiding a clean active tree.
     report["ok"] = active_ok
     print(json.dumps(report, indent=2, ensure_ascii=False))
-    return 0 if report["ok"] else 1
+    return 0 if report["ok"] and (not args.strict or report["repository_clean"]) else 1
 
 
 if __name__ == "__main__":

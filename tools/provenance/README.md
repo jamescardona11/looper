@@ -31,7 +31,13 @@ Uso desde la raíz del repositorio:
 ```sh
 node tools/provenance/check-staged.mjs
 python3 tools/provenance/history-audit.py
+# For the final purge gate:
+python3 tools/provenance/history-audit.py --strict
 ```
+
+El modo normal falla solo si la rama activa no es distribuible. `--strict`
+también falla mientras exista cualquier residuo contaminado en refs, snapshots,
+backups u objetos inalcanzables.
 
 La compuerta no determina una conclusión legal ni sustituye la revisión de un
 bloque. Su función es evitar que una ruta ajena, generada o sin clasificación
