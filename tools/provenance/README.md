@@ -12,7 +12,9 @@ ni una raíz sin GNU AGPLv3 y COPYRIGHT de James Cardona.
 También informa, sin incorporarlos al resultado activo, los refs locales de
 respaldo `codex/rebuild/agpl-history-root-*` y si alguno conserva esas rutas.
 Los respaldos se mantienen para recuperación; no deben usarse como la rama de
-distribución.
+distribución. Además reporta snapshots internos bajo `refs/codex/` como
+`tool_ref_findings`: son residuos del agente local, no ramas de distribución,
+pero deben purgarse cuando ningún proceso los necesite.
 
 Uso desde la raíz del repositorio:
 
