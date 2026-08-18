@@ -208,6 +208,12 @@ apps/desktop/src/features/settings/queries.ts,replaced,desktop-settings-query-bo
 apps/desktop/src/features/settings/queries.test.ts,owned,desktop-settings-query-tests,authored-cache-key-tests,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
 apps/desktop/src/features/settings/local-llm-queries.ts,owned,desktop-meeting-intelligence-query,no-corpus-match,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
 apps/desktop/src/features/settings/local-llm-queries.test.ts,owned,desktop-meeting-intelligence-query-tests,authored-polling-and-key-tests,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/data/library.ts,replaced,desktop-library-native-boundary,authored-domain-export-facade,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/data/library/items.ts,replaced,desktop-library-item-gateway,authored-item-command-dispatch-and-media-boundary,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/data/library/imports.ts,replaced,desktop-library-import-gateway,reconstructed-from-native-import-command-contracts,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/data/library/meetings.ts,replaced,desktop-meeting-native-gateway,reconstructed-from-native-meeting-command-contracts,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/data/library/events.ts,replaced,desktop-library-event-gateway,authored-drag-payload-and-combined-subscription-boundary,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/data/library/library.test.ts,owned,desktop-library-native-boundary-tests,authored-item-import-meeting-drag-event-and-asset-tests,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
 apps/desktop/src-tauri/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/desktop/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/mobile/**,unreviewed,mobile,,pending,-,pending,uncommitted
