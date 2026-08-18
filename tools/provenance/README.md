@@ -6,10 +6,15 @@ una fila explícita en `docs/rebuild/PROVENANCE_LEDGER.csv` con estado `owned`,
 `replaced` o `permissive`. Las filas `permissive` también deben indicar el
 archivo NOTICE que conserva la atribución.
 
+`history-audit.py` comprueba la historia alcanzable desde `HEAD`: no permite
+que regresen las rutas retiradas de Handy/Wispr, sus filas históricas del ledger
+ni una raíz sin GNU AGPLv3 y COPYRIGHT de James Cardona.
+
 Uso desde la raíz del repositorio:
 
 ```sh
 node tools/provenance/check-staged.mjs
+python3 tools/provenance/history-audit.py
 ```
 
 La compuerta no determina una conclusión legal ni sustituye la revisión de un
