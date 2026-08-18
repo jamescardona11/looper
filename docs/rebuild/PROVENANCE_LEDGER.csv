@@ -1025,3 +1025,13 @@ tools/e2e/package.json,owned,e2e-tool,authored-local-web-e2e-package,project-lic
 tools/e2e/run-local-e2e.mjs,owned,e2e-tool,authored-local-web-e2e-runner,project-license-pending,-,e2e-tool-tests-2026-08-17,pending
 tools/e2e/run-local-e2e.test.mjs,owned,e2e-tool-tests,authored-local-web-e2e-runner-tests,project-license-pending,-,e2e-tool-tests-2026-08-17,pending
 test-support/scripts/remote-dictation-pairing-smoke.mjs,owned,remote-pairing-smoke,authored-convex-pairing-smoke-runner,project-license-pending,-,node-syntax-check-and-source-review-2026-08-17,pending
+apps/mobile/package.json,owned,mobile-config,authored-expo-mobile-package,project-license-pending,-,mobile-typecheck-and-vitest-2026-08-17,pending
+apps/mobile/app.config.ts,owned,mobile-config,authored-expo-app-config,project-license-pending,-,mobile-typecheck-and-vitest-2026-08-17,pending
+apps/mobile/babel.config.js,owned,mobile-config,authored-mobile-babel-config,project-license-pending,-,mobile-typecheck-and-vitest-2026-08-17,pending
+apps/mobile/metro.config.cjs,owned,mobile-config,authored-mobile-metro-config,project-license-pending,-,mobile-typecheck-and-vitest-2026-08-17,pending
+apps/mobile/tsconfig.json,owned,mobile-config,authored-mobile-typescript-config,project-license-pending,-,mobile-typecheck-and-vitest-2026-08-17,pending
+apps/mobile/vitest.config.ts,owned,mobile-config,authored-mobile-vitest-config,project-license-pending,-,mobile-typecheck-and-vitest-2026-08-17,pending
+apps/mobile/plugins/with-looper-keyboard/package.json,owned,mobile-keyboard-plugin,authored-expo-keyboard-plugin-package,project-license-pending,-,mobile-typecheck-and-vitest-2026-08-17,pending
+apps/mobile/plugins/with-looper-keyboard/index.js,owned,mobile-keyboard-plugin,authored-expo-keyboard-plugin,project-license-pending,-,mobile-typecheck-and-vitest-2026-08-17,pending
+apps/mobile/targets/keyboard/package.json,owned,mobile-keyboard-config,authored-keyboard-target-package,project-license-pending,-,mobile-typecheck-and-vitest-2026-08-17,pending
+apps/mobile/targets/widgets/package.json,owned,mobile-widget-config,authored-widget-target-package,project-license-pending,-,mobile-typecheck-and-vitest-2026-08-17,pending
