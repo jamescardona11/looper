@@ -80,7 +80,7 @@ describe("onboardingMachine navigation", () => {
     const actor = startMachine(
       platform("macos", { requiresAccessibilityPermission: true }),
     );
-    const app = { id: "wispr-flow", name: "Wispr Flow" } as never;
+    const app = { id: "aqua", name: "Aqua Voice" } as never;
 
     expect(
       move(actor, [

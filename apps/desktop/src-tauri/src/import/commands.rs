@@ -160,12 +160,12 @@ mod tests {
     #[test]
     fn preview_maps_counts_metadata_and_recognized_model() {
         let preview = ImportPreview::from_bundle(
-            "wispr".to_string(),
+            "aqua".to_string(),
             bundle_with_every_category(),
             &["whisper-large-v3".to_string()],
         );
 
-        assert_eq!(preview.name, "Wispr Flow");
+        assert_eq!(preview.name, "Aqua Voice");
         assert_eq!(preview.dictionary_count, 2);
         assert_eq!(preview.replacements_count, 1);
         assert_eq!(preview.personalities_count, 1);
@@ -182,7 +182,7 @@ mod tests {
             source_id: "custom-source".to_string(),
             family: None,
         });
-        let preview = ImportPreview::from_bundle("handy".to_string(), bundle, &[]);
+        let preview = ImportPreview::from_bundle("superwhisper".to_string(), bundle, &[]);
 
         assert_eq!(preview.model_source.as_deref(), Some("custom-source"));
         assert_eq!(preview.model_key, None);

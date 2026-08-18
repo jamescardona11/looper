@@ -3,7 +3,7 @@ use std::path::Path;
 use serde::{Deserialize, Serialize};
 
 use super::shared::{normalize_language, ImportBundle};
-use super::{aqua, handy, superwhisper, wispr};
+use super::{aqua, superwhisper};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -23,7 +23,7 @@ struct ImportSource {
     parse: Parser,
 }
 
-const SOURCES: [ImportSource; 4] = [
+const SOURCES: [ImportSource; 2] = [
     ImportSource {
         id: aqua::ID,
         display_name: aqua::DISPLAY_NAME,
@@ -35,18 +35,6 @@ const SOURCES: [ImportSource; 4] = [
         display_name: superwhisper::DISPLAY_NAME,
         detect: superwhisper::detect,
         parse: superwhisper::parse,
-    },
-    ImportSource {
-        id: wispr::ID,
-        display_name: wispr::DISPLAY_NAME,
-        detect: wispr::detect,
-        parse: wispr::parse,
-    },
-    ImportSource {
-        id: handy::ID,
-        display_name: handy::DISPLAY_NAME,
-        detect: handy::detect,
-        parse: handy::parse,
     },
 ];
 
@@ -121,8 +109,6 @@ mod tests {
             vec![
                 ("aqua", "Aqua Voice"),
                 ("superwhisper", "superwhisper"),
-                ("wispr", "Wispr Flow"),
-                ("handy", "Handy"),
             ]
         );
     }
@@ -203,10 +189,10 @@ mod tests {
     #[test]
     fn detected_app_wire_contract_stays_id_and_name() {
         let value = serde_json::to_value(DetectedApp {
-            id: "wispr".to_string(),
-            name: "Wispr Flow".to_string(),
+            id: "aqua".to_string(),
+            name: "Aqua Voice".to_string(),
         })
         .unwrap();
-        assert_eq!(value, json!({ "id": "wispr", "name": "Wispr Flow" }));
+        assert_eq!(value, json!({ "id": "aqua", "name": "Aqua Voice" }));
     }
 }

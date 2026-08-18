@@ -13,11 +13,11 @@ describe("import commands", () => {
 
   test("requests detected apps and previews by identifier", async () => {
     await detectImportableApps();
-    await previewImport("wispr");
+    await previewImport("aqua");
 
     expect(invoke).toHaveBeenNthCalledWith(1, "detect_importable_apps");
     expect(invoke).toHaveBeenNthCalledWith(2, "preview_import", {
-      id: "wispr",
+      id: "aqua",
     });
   });
 
@@ -33,10 +33,10 @@ describe("import commands", () => {
       history: false,
     };
 
-    await applyImport("handy", selections);
+    await applyImport("superwhisper", selections);
 
     expect(invoke).toHaveBeenCalledWith("apply_import", {
-      id: "handy",
+      id: "superwhisper",
       selections,
     });
   });

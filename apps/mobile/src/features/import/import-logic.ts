@@ -87,7 +87,7 @@ function detectSource(
 ): string {
   if (Array.isArray(root.vocabulary) || Array.isArray(root.favoriteModelIDs)) return "superwhisper";
   if (root.customInstructions !== undefined || root.startOnStartup !== undefined) return "Aqua Voice";
-  if (settings.custom_words !== undefined || settings.selected_model !== undefined) return "Handy";
+  if (settings.custom_words !== undefined || settings.selected_model !== undefined) return "Other app";
   return stringValue(root.source) ?? fallback;
 }
 

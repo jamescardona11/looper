@@ -4,7 +4,7 @@ macro_rules! register_sources {
     };
 }
 
-register_sources!(aqua, handy, superwhisper, wispr);
+register_sources!(aqua, superwhisper);
 
 pub(crate) mod apply;
 pub(crate) mod commands;

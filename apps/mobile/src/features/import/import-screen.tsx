@@ -147,7 +147,7 @@ export function ImportScreen() {
           <View style={styles.hero}>
             <Text style={styles.eyebrow}>DESDE OTRAS APPS</Text>
             <Text style={styles.heroTitle}>Tu contexto no empieza de cero.</Text>
-            <Text style={styles.body}>Selecciona una exportación JSON, Markdown o texto de Wispr, superwhisper, Aqua, Handy u otra app.</Text>
+            <Text style={styles.body}>Selecciona una exportación JSON, Markdown o texto de superwhisper, Aqua u otra app.</Text>
             <View style={styles.infoCard}>
               <Text style={styles.infoTitle}>Compatible ahora</Text>
               <Text style={styles.body}>Diccionario · reemplazos · estilos · historial de texto</Text>
