@@ -1099,3 +1099,17 @@ pnpm-lock.yaml,owned,repository-infrastructure,generated-workspace-lockfile,proj
 .github/ISSUE_TEMPLATE/bug_report.yml,owned,repository-governance,authored-bug-report-template,project-license-pending,-,root-infrastructure-review-2026-08-17,pending
 apps/mobile/src/features/studio/index.ts,owned,mobile-studio,authored-studio-exports,project-license-pending,-,mobile-studio-typecheck-and-tests-2026-08-17,pending
 apps/mobile/src/features/studio/studio-screen.tsx,replaced,mobile-studio,authored-studio-screen-recomposition,AGPL-3.0,-,mobile-corpus-containment-1.3-typecheck-tests-2026-08-17,pending
+apps/mobile/src/app/_layout.tsx,replaced,mobile-navigation,authored-app-shell-recomposition,AGPL-3.0,-,mobile-corpus-containment-3.4-typecheck-tests-2026-08-17,pending
+apps/mobile/src/app/index.tsx,owned,mobile-navigation,authored-root-route,project-license-pending,-,mobile-typecheck-tests-2026-08-17,pending
+apps/mobile/src/app/dictate.tsx,owned,mobile-navigation,authored-dictate-route,project-license-pending,-,mobile-typecheck-tests-2026-08-17,pending
+apps/mobile/src/app/upgrade.tsx,owned,mobile-navigation,authored-upgrade-route,project-license-pending,-,mobile-typecheck-tests-2026-08-17,pending
+apps/mobile/src/app/(app)/_layout.tsx,owned,mobile-navigation,authored-app-route-layout,project-license-pending,-,mobile-typecheck-tests-2026-08-17,pending
+apps/mobile/src/app/(app)/index.tsx,owned,mobile-navigation,authored-home-route,project-license-pending,-,mobile-typecheck-tests-2026-08-17,pending
+apps/mobile/src/app/(app)/ask.tsx,owned,mobile-navigation,authored-ask-route,project-license-pending,-,mobile-typecheck-tests-2026-08-17,pending
+apps/mobile/src/app/(app)/capture.tsx,owned,mobile-navigation,authored-capture-route,project-license-pending,-,mobile-typecheck-tests-2026-08-17,pending
+apps/mobile/src/app/(app)/dictation.tsx,owned,mobile-navigation,authored-dictation-route,project-license-pending,-,mobile-typecheck-tests-2026-08-17,pending
+apps/mobile/src/app/(app)/import.tsx,owned,mobile-navigation,authored-import-route,project-license-pending,-,mobile-typecheck-tests-2026-08-17,pending
+apps/mobile/src/app/(app)/keyboard.tsx,owned,mobile-navigation,authored-keyboard-route,project-license-pending,-,mobile-typecheck-tests-2026-08-17,pending
+apps/mobile/src/app/(app)/meeting/[id].tsx,replaced,mobile-navigation,authored-meeting-route-recomposition,MIT,-,mobile-corpus-containment-10.0-typecheck-tests-2026-08-17,pending
+apps/mobile/src/app/(app)/notes.tsx,replaced,mobile-navigation,authored-notes-route-recomposition,AGPL-3.0,-,mobile-corpus-containment-4.0-typecheck-tests-2026-08-17,pending
+apps/mobile/src/app/(app)/studio.tsx,owned,mobile-navigation,authored-studio-route,project-license-pending,-,mobile-typecheck-tests-2026-08-17,pending
