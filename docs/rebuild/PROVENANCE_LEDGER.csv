@@ -110,6 +110,10 @@ apps/desktop/src/shared/ui/Dropdown.test.tsx,owned,desktop-dropdown-tests,author
 apps/desktop/src/shared/ui/dropdownOptions.test.ts,owned,desktop-dropdown-filter-tests,authored-section-filter-tests,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
 apps/desktop/src/shared/ui/FAQModal.tsx,replaced,desktop-faq-modal,authored-scroll-edge-store-and-modal-composition,project-license-pending,-,targeted-tests-and-typecheck-2026-08-16,pending
 apps/desktop/src/shared/ui/FAQModal.test.tsx,owned,desktop-faq-modal-tests,authored-visibility-and-dismissal-tests,project-license-pending,-,targeted-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/shared/lib/speechPlayback.ts,owned,desktop-speech-playback-text,manual-review-low-similarity,project-license-pending,-,targeted-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/shared/lib/speechPlayback.test.ts,owned,desktop-speech-playback-text-tests,authored-language-and-chunk-tests,project-license-pending,-,targeted-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/shared/hooks/useSpeechPlayback.ts,owned,desktop-speech-playback-controller,manual-review-low-similarity-and-external-store-refactor,project-license-pending,-,targeted-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/shared/hooks/useSpeechPlayback.test.tsx,owned,desktop-speech-playback-controller-tests,authored-browser-speech-tests,project-license-pending,-,targeted-tests-and-typecheck-2026-08-16,pending
 apps/desktop/src-tauri/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/desktop/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/mobile/**,unreviewed,mobile,,pending,-,pending,uncommitted
