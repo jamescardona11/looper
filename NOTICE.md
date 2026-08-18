@@ -8,5 +8,14 @@ their upstream notices in their owning package:
 - [Rust transcription notices](packages/rust/looper-ts/THIRD_PARTY_NOTICES.md)
 - [Audio license](packages/rust/audio/LICENSE)
 
+## AGPL source lineage
+
+The reconstruction includes code adapted from the AGPL-3.0 Glimpse project
+used as a source reference during development. The complete GNU AGPL v3 text
+is included in the root `LICENSE`; the product name, artwork, and trademarks
+used here are Looper's and are not Glimpse branding. The provenance process and
+the remaining manual-risk cases are recorded in
+[`docs/rebuild/CONTAMINATION_RISK_REGISTER.md`](docs/rebuild/CONTAMINATION_RISK_REGISTER.md).
+
 Those files must travel with the corresponding package. This index is not a
 replacement for the complete upstream license texts.
