@@ -13,65 +13,79 @@ import type {
 import type { ShortcutBindings } from "./shortcuts";
 import type { ModeRule } from "./workflows";
 
-export type ApplicationPreferences = {
-  onboarding_completed: boolean;
-  language: string;
-  app_locale: AppLocaleSetting;
-  theme_mode: ThemeMode;
-  auto_update_enabled: boolean;
-  auto_launch_enabled: boolean;
-  start_in_background: boolean;
-  calendar_meeting_awareness_enabled: boolean;
-  hide_overlays_from_capture: boolean;
-  analytics_enabled: boolean;
-  analytics_install_id: string;
+type PreferenceFields<Names extends PropertyKey, Value> = {
+  [Name in Names]: Value;
 };
 
-export type ShortcutPreferences = {
-  smart_shortcut: string;
-  smart_enabled: boolean;
-  hold_shortcut: string;
-  hold_enabled: boolean;
-  toggle_shortcut: string;
-  toggle_enabled: boolean;
-  shortcut_bindings: ShortcutBindings;
-};
+type ApplicationFlags =
+  | "onboarding_completed"
+  | "auto_update_enabled"
+  | "auto_launch_enabled"
+  | "start_in_background"
+  | "calendar_meeting_awareness_enabled"
+  | "hide_overlays_from_capture"
+  | "analytics_enabled";
 
-export type SpeechPreferences = {
+export type ApplicationPreferences = PreferenceFields<
+  ApplicationFlags,
+  boolean
+> &
+  PreferenceFields<"language" | "analytics_install_id", string> & {
+    app_locale: AppLocaleSetting;
+    theme_mode: ThemeMode;
+  };
+
+type ShortcutNames = "smart_shortcut" | "hold_shortcut" | "toggle_shortcut";
+type ShortcutFlags = "smart_enabled" | "hold_enabled" | "toggle_enabled";
+
+export type ShortcutPreferences = PreferenceFields<ShortcutNames, string> &
+  PreferenceFields<ShortcutFlags, boolean> & {
+    shortcut_bindings: ShortcutBindings;
+  };
+
+type SpeechTextFields =
+  | "local_model"
+  | "remote_speech_endpoint"
+  | "remote_speech_api_key"
+  | "remote_speech_model";
+
+export type SpeechPreferences = PreferenceFields<SpeechTextFields, string> & {
   transcription_mode: TranscriptionMode;
-  local_model: string;
   remote_speech_enabled: boolean;
   remote_speech_provider: RemoteSpeechProvider;
-  remote_speech_endpoint: string;
-  remote_speech_api_key: string;
-  remote_speech_model: string;
   microphone_device: string | null;
   media_action: MediaAction;
 };
 
-export type IntelligencePreferences = {
-  llm_enabled: boolean;
-  cleanup_enabled: boolean;
-  llm_provider: LlmProvider;
-  llm_endpoint: string;
-  llm_api_key: string;
-  llm_model: string;
-  meeting_ai_provider: MeetingAiProvider;
-  local_llm_model: string;
-};
+type IntelligenceTextFields =
+  "llm_endpoint" | "llm_api_key" | "llm_model" | "local_llm_model";
 
-export type PersonalizationPreferences = {
+export type IntelligencePreferences = PreferenceFields<
+  IntelligenceTextFields,
+  string
+> &
+  PreferenceFields<"llm_enabled" | "cleanup_enabled", boolean> & {
+    llm_provider: LlmProvider;
+    meeting_ai_provider: MeetingAiProvider;
+  };
+
+type PersonalizationFlags =
+  | "auto_dictionary_enabled"
+  | "edit_mode_enabled"
+  | "preview_before_insert_enabled"
+  | "preview_before_insert_selection_enabled"
+  | "use_screen_context";
+
+export type PersonalizationPreferences = PreferenceFields<
+  PersonalizationFlags,
+  boolean
+> & {
   dictionary: string[];
-  auto_dictionary_enabled: boolean;
   auto_dictionary_ignored: string[];
   replacements: Replacement[];
   user_snippets: UserSnippet[];
   personalities: Personality[];
   mode_rules: ModeRule[];
-  edit_mode_enabled: boolean;
-  preview_before_insert_enabled: boolean;
-  preview_before_insert_selection_enabled: boolean;
-  use_screen_context: boolean;
 };
 
 export type StoragePreferences = {

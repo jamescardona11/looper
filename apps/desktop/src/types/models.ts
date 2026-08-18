@@ -1,27 +1,22 @@
-export type SupportedLanguage = {
-  code: string;
-  name: string;
+type Fields<Names extends PropertyKey, Value> = {
+  [Name in Names]: Value;
 };
 
-type ModelDescriptor = {
-  key: string;
-  label: string;
-  description: string;
-  size_mb: number;
-  engine_id: string;
-  variant: string;
-  tags: string[];
-  capabilities: string[];
-  supported_languages: SupportedLanguage[];
-};
+export type SupportedLanguage = Fields<"code" | "name", string>;
 
-export type ModelInfo = ModelDescriptor & {
-  family: string;
-  category: string;
-  downloadable: boolean;
-  language_selection_mode: "auto_detect" | "user_select";
-  ane_size_mb: number | null;
-};
+type ModelTextField = "key" | "label" | "description" | "engine_id" | "variant";
+type ModelDescriptor = Fields<ModelTextField, string> &
+  Fields<"tags" | "capabilities", string[]> & {
+    size_mb: number;
+    supported_languages: SupportedLanguage[];
+  };
+
+export type ModelInfo = ModelDescriptor &
+  Fields<"family" | "category", string> & {
+    downloadable: boolean;
+    language_selection_mode: "auto_detect" | "user_select";
+    ane_size_mb: number | null;
+  };
 
 export type SpeechModel = ModelDescriptor & {
   id: string;
@@ -29,41 +24,39 @@ export type SpeechModel = ModelDescriptor & {
   installed: boolean;
 };
 
-export type ModelStatus = {
-  key: string;
-  installed: boolean;
-  ane_installed: boolean;
-  bytes_on_disk: number;
-  missing_files: string[];
-  directory: string;
-};
+export type ModelStatus = Fields<"installed" | "ane_installed", boolean> &
+  Fields<"key" | "directory", string> & {
+    bytes_on_disk: number;
+    missing_files: string[];
+  };
 
 export type { DownloadProgressPayload } from "../shared/lib/modelDownloadEvents";
 
-export type AneCompileEvent = {
-  model: string;
-  label: string;
+export type AneCompileEvent = Fields<"model" | "label", string> & {
   status: "start" | "done" | "error";
 };
 
-type DownloadEventState =
-  | { status: "idle"; file?: string }
-  | { status: "downloading"; file: string; verifying?: boolean }
-  | { status: "complete" }
-  | { status: "cancelled" }
-  | { status: "error"; message: string };
+type DownloadDetails = {
+  idle: { file?: string };
+  downloading: { file: string; verifying?: boolean };
+  complete: object;
+  cancelled: object;
+  error: { message: string };
+};
+type DownloadEventState = {
+  [Status in keyof DownloadDetails]: {
+    status: Status;
+  } & DownloadDetails[Status];
+}[keyof DownloadDetails];
 
 export type DownloadEvent = DownloadEventState & { percent: number };
 
-export type CliInstallStatus = {
-  installed: boolean;
-  managedByApp: boolean;
-  sourceAvailable: boolean;
-  installPath: string | null;
-  sourcePath: string | null;
-  command: string;
-  pathInShell: boolean;
-};
+type CliStatusFlags =
+  "installed" | "managedByApp" | "sourceAvailable" | "pathInShell";
+export type CliInstallStatus = Fields<CliStatusFlags, boolean> &
+  Fields<"installPath" | "sourcePath", string | null> & {
+    command: string;
+  };
 
 export const LOCAL_LLM_MODEL_STATES = [
   "not_installed",
@@ -76,23 +69,14 @@ export const LOCAL_LLM_MODEL_STATES = [
 
 export type LocalLlmModelState = (typeof LOCAL_LLM_MODEL_STATES)[number];
 
-export type LocalLlmModelInfo = {
-  id: string;
-  label: string;
-  fileName: string;
-  sizeBytes: number;
-  contextTokens: number;
-  license: string;
-  attributionUrl: string;
-};
+export type LocalLlmModelInfo = Fields<"id" | "label" | "fileName", string> &
+  Fields<"sizeBytes" | "contextTokens", number> &
+  Fields<"license" | "attributionUrl", string>;
 
-export type LocalLlmModelStatus = {
-  model: string;
-  state: LocalLlmModelState;
-  bytesOnDisk: number;
-  totalBytes: number;
-  path: string;
-};
+export type LocalLlmModelStatus = Fields<"model" | "path", string> &
+  Fields<"bytesOnDisk" | "totalBytes", number> & {
+    state: LocalLlmModelState;
+  };
 
 export type MeetingAiStatus = {
   provider: "local" | "writing" | "none";
@@ -101,10 +85,7 @@ export type MeetingAiStatus = {
   actionableMessage: string | null;
 };
 
-export type LocalLlmDownloadProgress = {
-  model: string;
-  downloaded: number;
-  total: number;
-  percent: number;
-  verifying: boolean;
-};
+export type LocalLlmDownloadProgress = Fields<"model", string> &
+  Fields<"downloaded" | "total" | "percent", number> & {
+    verifying: boolean;
+  };

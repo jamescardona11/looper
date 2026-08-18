@@ -141,7 +141,7 @@ apps/desktop/src/data/shortcuts.ts,owned,desktop-shortcut-native-bridge,no-mater
 apps/desktop/src/data/shortcuts.test.ts,owned,desktop-shortcut-native-bridge-tests,authored-command-and-event-tests,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
 apps/desktop/src/shared/hooks/useShortcutCapture.ts,replaced,desktop-shortcut-capture,authored-external-subscription-state-machine,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
 apps/desktop/src/shared/hooks/useShortcutCapture.test.tsx,owned,desktop-shortcut-capture-tests,authored-preview-completion-and-cancel-tests,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
-apps/desktop/src/types/models.ts,replaced,desktop-model-contracts,reconstructed-from-native-model-serializers,project-license-pending,-,targeted-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/types/models.ts,replaced,desktop-model-contracts,authored-field-family-composition-event-state-map-and-model-wire-contracts,project-license-pending,-,corpus-containment-16.7-model-contract-tests-typecheck-prettier-2026-08-17,pending
 apps/desktop/src/types/models.test.ts,owned,desktop-model-contract-tests,authored-state-and-download-tests,project-license-pending,-,targeted-tests-and-typecheck-2026-08-16,pending
 apps/desktop/src/shared/ui/ModelPickerModal.tsx,replaced,desktop-model-picker,authored-panel-and-modal-orchestration,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
 apps/desktop/src/shared/ui/ModelPickerRow.tsx,replaced,desktop-model-picker-row,authored-row-state-and-action-components,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
@@ -156,7 +156,7 @@ apps/desktop/src/types/settings/preferences.ts,replaced,desktop-settings-prefere
 apps/desktop/src/types/settings/personalization.ts,replaced,desktop-settings-personalization,reconstructed-from-native-serialized-structs,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
 apps/desktop/src/types/settings/shortcuts.ts,replaced,desktop-settings-shortcuts,reconstructed-from-native-serialized-structs,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
 apps/desktop/src/types/settings/workflows.ts,replaced,desktop-settings-workflows,reconstructed-from-native-tagged-enums,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
-apps/desktop/src/types/settings/stored-settings.ts,replaced,desktop-settings-storage,authored-composed-domain-contract-from-native-settings,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/types/settings/stored-settings.ts,replaced,desktop-settings-storage,authored-typed-preference-field-groups-and-domain-contract-intersections,project-license-pending,-,corpus-containment-19.5-settings-contract-tests-typecheck-prettier-2026-08-17,pending
 apps/desktop/src/types/settings/settings.contract.test.ts,owned,desktop-settings-contract-tests,authored-composition-and-tagged-union-tests,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
 apps/desktop/src/types/library.ts,replaced,desktop-library-contract,authored-domain-export-facade,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
 apps/desktop/src/types/library/items.ts,replaced,desktop-library-items,reconstructed-and-composed-from-native-serialized-payloads,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
