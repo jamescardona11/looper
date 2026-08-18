@@ -173,6 +173,11 @@ apps/desktop/src/data/notetaking.ts,owned,desktop-note-dock-gateway,no-corpus-ma
 apps/desktop/src/data/capture-dock.test.ts,owned,desktop-capture-dock-gateway-tests,authored-command-and-event-contract-tests,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
 apps/desktop/src/data/overlay.ts,owned,desktop-overlay-native-gateway,no-material-corpus-match,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
 apps/desktop/src/data/overlay.test.ts,owned,desktop-overlay-native-gateway-tests,authored-position-presentation-and-event-tests,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/data/cli.ts,owned,desktop-cli-native-gateway,no-corpus-match,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/data/navigation.ts,owned,desktop-navigation-event-gateway,no-corpus-match,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/data/telemetry.ts,owned,desktop-crash-telemetry-gateway,no-corpus-match,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/data/updates.ts,owned,desktop-update-native-gateway,no-corpus-match,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/data/shell-gateways.test.ts,owned,desktop-shell-gateway-tests,authored-cli-navigation-update-and-crash-tests,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
 apps/desktop/src-tauri/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/desktop/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/mobile/**,unreviewed,mobile,,pending,-,pending,uncommitted
