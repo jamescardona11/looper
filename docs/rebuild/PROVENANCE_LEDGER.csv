@@ -924,6 +924,10 @@ apps/mobile/targets/keyboard/Repos/ByokTranscribeAudioRepo.swift,replaced,mobile
 apps/mobile/tests/native/ByokReposContractTests.swift,owned,mobile-byok-contract-tests,authored-provider-wire-error-and-retry-contract-coverage,project-license-pending,-,mobile-corpus-containment-0.9-swift-contracts-10-groups-mobile-typecheck-tests-2026-08-17,pending
 ai_docs/legal/corpus-audit.py,owned,mobile-provenance-audit,expanded-source-scope-to-mobile-native-targets-and-corrected-reference-metadata,project-license-pending,-,corpus-audit-mobile-scope-run-2026-08-17,pending
 apps/desktop/src-tauri/src/accessibility_context.rs,replaced,desktop-accessibility-context,authored-native-context-collection-and-fallback-policy,project-license-pending,-,corpus-containment-11.0-accessibility-context-8-tests-787-rust-tests-cargo-all-targets-native-qa-2026-08-17,pending
+apps/mobile/targets/keyboard/Utils/RetryUtils.swift,replaced,mobile-keyboard-retry,authored-retry-schedule-and-cancelable-executor,project-license-pending,-,mobile-corpus-containment-16.0-swift-contracts-mobile-typecheck-tests-2026-08-17,pending
+apps/mobile/targets/keyboard/Repos/CounterRepo.swift,replaced,mobile-keyboard-counter,authored-typed-counter-storage-and-policy,project-license-pending,-,mobile-corpus-containment-25.9-swift-contracts-mobile-typecheck-tests-2026-08-17,pending
+apps/mobile/targets/keyboard/Repos/TranscriptionRepo.swift,replaced,mobile-keyboard-transcription-history,authored-history-services-record-factory-and-retention-policy,project-license-pending,-,mobile-corpus-containment-14.5-swift-contracts-mobile-typecheck-tests-2026-08-17,pending
+apps/mobile/tests/native/KeyboardReposContractTests.swift,owned,mobile-keyboard-repos-contract-tests,authored-retry-counter-and-history-contract-coverage,project-license-pending,-,mobile-corpus-containment-swift-contracts-mobile-typecheck-tests-2026-08-17,pending
 apps/desktop/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/mobile/**,unreviewed,mobile,,pending,-,pending,uncommitted
 apps/web/**,unreviewed,web,,pending,-,pending,uncommitted
