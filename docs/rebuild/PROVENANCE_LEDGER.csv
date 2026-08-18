@@ -127,6 +127,10 @@ apps/desktop/src/shared/lib/remote-speech-defaults.json,owned,desktop-speech-mod
 apps/desktop/src/shared/lib/llmProviders.ts,replaced,desktop-language-model-providers,authored-compact-provider-catalog,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
 apps/desktop/src/shared/lib/speechProviders.ts,replaced,desktop-speech-providers,authored-normalized-speech-provider-catalog,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
 apps/desktop/src/shared/lib/providerCatalogs.test.ts,owned,desktop-provider-catalog-tests,authored-resolution-and-formatting-tests,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/shared/lib/modelDownloadEvents.ts,replaced,desktop-model-download-events,reconstructed-from-native-event-payloads,project-license-pending,-,targeted-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/shared/lib/modelDownloadEvents.test.ts,owned,desktop-model-download-event-tests,authored-native-channel-routing-tests,project-license-pending,-,targeted-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/shared/hooks/useModelDownloadEvents.ts,replaced,desktop-model-download-subscription,authored-stable-lifecycle-subscription,project-license-pending,-,targeted-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/shared/hooks/useModelDownloadEvents.test.tsx,owned,desktop-model-download-hook-tests,authored-enabled-latest-handler-and-cleanup-tests,project-license-pending,-,targeted-tests-and-typecheck-2026-08-16,pending
 apps/desktop/src-tauri/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/desktop/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/mobile/**,unreviewed,mobile,,pending,-,pending,uncommitted
