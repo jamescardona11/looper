@@ -1,94 +1,113 @@
 import type { ModelInfo } from "../../types";
 
-export type TranscriptionLanguageOption = {
-  code: string;
-  name: string;
-  locked?: boolean;
-  isHeader?: boolean;
-  prominentHeader?: boolean;
-  description?: string;
-};
+type LanguageIdentity = Record<"code" | "name", string>;
+type LanguageOptionFlags = Partial<
+  Record<"locked" | "isHeader" | "prominentHeader", boolean>
+>;
 
-const DICTATION_LANGUAGE_CATALOG = {
-  es: "Español",
-  en: "English",
-  pt: "Português",
-} as const;
+export type TranscriptionLanguageOption = LanguageIdentity &
+  LanguageOptionFlags & {
+    description?: string;
+  };
 
-function baseLanguage(language: string) {
-  return language.trim().toLowerCase().split(/[-_]/, 1)[0] ?? "";
-}
+const DICTATION_LANGUAGES = [
+  ["es", "Español"],
+  ["en", "English"],
+  ["pt", "Português"],
+] as const;
 
-export function languageSupportedByModel(
+const localeLanguage = (locale: string) =>
+  locale.trim().toLowerCase().split(/[-_]/).at(0) ?? "";
+
+export const languageSupportedByModel = (
   model: ModelInfo | undefined,
   language: string,
-): boolean {
-  const code = language.trim();
-  if (!code) return true;
-  return (
-    model?.supported_languages.some((entry) => entry.code === code) ?? false
+): boolean => {
+  const requested = language.trim();
+  if (!requested) return true;
+  return Boolean(
+    model?.supported_languages.find(({ code }) => code === requested),
   );
-}
+};
 
-export function collectAllTranscriptionLanguages(
+export const collectAllTranscriptionLanguages = (
   _models: ModelInfo[],
-): TranscriptionLanguageOption[] {
-  return Object.entries(DICTATION_LANGUAGE_CATALOG).map(([code, name]) => ({
-    code,
-    name,
-  }));
-}
+): TranscriptionLanguageOption[] =>
+  DICTATION_LANGUAGES.map(([code, name]) => ({ code, name }));
+
+const selectableLanguageCodes = (options: TranscriptionLanguageOption[]) =>
+  options.flatMap((option) =>
+    option.locked || option.isHeader ? [] : [option.code],
+  );
 
 export function resolveTranscriptionLanguage(
   language: string,
   options: TranscriptionLanguageOption[],
   fallbackLanguage = "en",
 ): string {
-  const availableCodes = options
-    .filter((option) => !option.locked && !option.isHeader)
-    .map((option) => option.code);
-  const available = new Set(availableCodes);
-
-  for (const candidate of [language, fallbackLanguage, "en"]) {
-    const code = baseLanguage(candidate);
-    if (available.has(code)) return code;
-  }
-  return availableCodes[0] ?? "en";
+  const selectable = selectableLanguageCodes(options);
+  const supported = new Set(selectable);
+  const match = [language, fallbackLanguage, "en"]
+    .map(localeLanguage)
+    .find((code) => supported.has(code));
+  return match ?? selectable.at(0) ?? "en";
 }
 
-export function buildActiveTranscriptionLanguageOptions(
-  model: ModelInfo | undefined,
-  allLanguages: TranscriptionLanguageOption[],
-  remoteSpeechActive: boolean,
-  unsupportedLabel: string,
-  unsupportedDescription: string,
-): TranscriptionLanguageOption[] {
-  const partitions = allLanguages.reduce(
-    (result, language) => {
-      const supported =
-        remoteSpeechActive || languageSupportedByModel(model, language.code);
-      result[supported ? "available" : "unavailable"].push({
-        ...language,
-        locked: !supported,
-      });
-      return result;
-    },
-    {
-      available: [] as TranscriptionLanguageOption[],
-      unavailable: [] as TranscriptionLanguageOption[],
-    },
-  );
+type LanguagePartitions = Record<
+  "available" | "unavailable",
+  TranscriptionLanguageOption[]
+>;
 
-  if (!partitions.unavailable.length) return partitions.available;
-  return [
-    ...partitions.available,
-    {
-      code: "__unsupported__",
-      name: unsupportedLabel,
-      description: unsupportedDescription,
-      isHeader: true,
-      prominentHeader: true,
-    },
-    ...partitions.unavailable,
-  ];
+const partitionLanguages = (
+  languages: TranscriptionLanguageOption[],
+  supports: (language: TranscriptionLanguageOption) => boolean,
+): LanguagePartitions => {
+  const result: LanguagePartitions = { available: [], unavailable: [] };
+  for (const language of languages) {
+    const available = supports(language);
+    result[available ? "available" : "unavailable"].push({
+      ...language,
+      locked: !available,
+    });
+  }
+  return result;
+};
+
+type ActiveLanguageArguments = readonly [
+  selectedModel: ModelInfo | undefined,
+  catalog: TranscriptionLanguageOption[],
+  remoteActive: boolean,
+  blockedLabel: string,
+  blockedDescription: string,
+];
+
+const unavailableDivider = (
+  label: string,
+  description: string,
+): TranscriptionLanguageOption => ({
+  code: "__unsupported__",
+  name: label,
+  description,
+  isHeader: true,
+  prominentHeader: true,
+});
+
+export function buildActiveTranscriptionLanguageOptions(
+  ...[
+    model,
+    allLanguages,
+    remoteSpeechActive,
+    unsupportedLabel,
+    unsupportedDescription,
+  ]: ActiveLanguageArguments
+): TranscriptionLanguageOption[] {
+  const groups = partitionLanguages(
+    allLanguages,
+    (language) =>
+      remoteSpeechActive || languageSupportedByModel(model, language.code),
+  );
+  if (groups.unavailable.length === 0) return groups.available;
+
+  const divider = unavailableDivider(unsupportedLabel, unsupportedDescription);
+  return groups.available.concat(divider, groups.unavailable);
 }

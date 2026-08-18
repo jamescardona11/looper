@@ -7,11 +7,14 @@ import {
   resolvedLlmEndpoint,
 } from "./llmProviders";
 import {
+  CLOUD_SPEECH_PROVIDERS,
   formatTranscriptionSpeechModel,
   getSpeechProviderPreset,
   isRemoteSpeechConfigured,
   isRemoteTranscriptionSpeechModel,
+  LOCAL_SPEECH_PROVIDERS,
   resolvedSpeechModel,
+  SPEECH_PROVIDERS,
 } from "./speechProviders";
 
 describe("provider catalogs", () => {
@@ -62,6 +65,29 @@ describe("provider catalogs", () => {
         model: "auto",
       }),
     ).toBe(false);
+  });
+
+  test("keeps the ordered speech provider catalog and proxy boundaries", () => {
+    expect(SPEECH_PROVIDERS.map(({ id }) => id)).toEqual([
+      "openai",
+      "groq",
+      "mistral",
+      "fireworks",
+      "openrouter",
+      "deepgram",
+      "elevenlabs",
+    ]);
+    expect(LOCAL_SPEECH_PROVIDERS).toEqual([]);
+    expect(CLOUD_SPEECH_PROVIDERS).toEqual(SPEECH_PROVIDERS);
+    expect(getSpeechProviderPreset("custom")).toMatchObject({
+      endpoint: "",
+      defaultModel: "auto",
+      apiKeyRequired: false,
+    });
+    expect(getSpeechProviderPreset("fireworks")).toMatchObject({
+      endpoint: "https://audio-prod.api.fireworks.ai/v1",
+      compatibility: "direct-openai-compatible",
+    });
   });
 
   test("formats current and legacy remote speech selections", () => {
