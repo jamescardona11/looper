@@ -1,0 +1,157 @@
+/*
+ * Capa de motion de Looper: micro-interacciones compartidas con nombre propio
+ * (shimmer de carga, squish al presionar, poof al eliminar, conteo animado).
+ * Cada animación declara su fallback de prefers-reduced-motion junto a su
+ * definición para que ninguna interacción dependa de que el consumidor lo
+ * recuerde.
+ */
+
+@keyframes looper-shimmer {
+  from {
+    background-position: 200% 0;
+  }
+
+  to {
+    background-position: -200% 0;
+  }
+}
+
+.looper-shimmer {
+  background: linear-gradient(
+    100deg,
+    var(--color-bg-elevated) 40%,
+    var(--color-bg-elevated-hover) 50%,
+    var(--color-bg-elevated) 60%
+  );
+  background-size: 200% 100%;
+  animation: looper-shimmer 1.6s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .looper-shimmer {
+    animation: none;
+    background: var(--color-bg-elevated);
+  }
+}
+
+/*
+ * Squish táctil para superficies interactivas que no traen sus propias
+ * utilidades de transición. Usa la propiedad nativa `scale` para componer
+ * con translate/rotate sin pisar `transform`.
+ */
+.looper-pressable {
+  transition: scale 120ms ease-out;
+}
+
+.looper-pressable:active {
+  scale: 0.97;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .looper-pressable {
+    transition: none;
+  }
+}
+
+@keyframes looper-poof-out {
+  from {
+    opacity: 1;
+    scale: 1;
+    filter: blur(0);
+  }
+
+  to {
+    opacity: 0;
+    scale: 0.92;
+    filter: blur(3px);
+  }
+}
+
+.looper-poof-out {
+  animation: looper-poof-out 220ms ease-in both;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .looper-poof-out {
+    animation-duration: 1ms;
+  }
+}
+
+/* Entrada del pill: aparece con spring desde abajo al empezar la captura. */
+@keyframes looper-pill-pop {
+  from {
+    transform: translateY(10px) scale(0.9);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+}
+
+.looper-pill-enter {
+  animation: looper-pill-pop 480ms cubic-bezier(0.34, 1.4, 0.4, 1) both;
+}
+
+@keyframes looper-recording-signal {
+  0%,
+  100% {
+    transform: scaleY(0.35);
+    opacity: 0.55;
+  }
+
+  50% {
+    transform: scaleY(1);
+    opacity: 1;
+  }
+}
+
+.looper-recording-signal {
+  display: inline-flex;
+  height: 14px;
+  align-items: center;
+  gap: 2px;
+}
+
+.looper-recording-signal > span {
+  width: 2px;
+  height: 12px;
+  border-radius: 999px;
+  background: var(--color-error);
+  transform-origin: center;
+  animation: looper-recording-signal 840ms ease-in-out infinite;
+}
+
+.looper-recording-signal > span:nth-child(2),
+.looper-recording-signal > span:nth-child(4) {
+  animation-delay: -420ms;
+}
+
+.looper-recording-signal > span:nth-child(3) {
+  animation-delay: -210ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .looper-pill-enter {
+    animation-duration: 1ms;
+  }
+
+  .looper-recording-signal > span {
+    animation: none;
+    opacity: 0.85;
+    transform: scaleY(0.55);
+  }
+
+  .looper-recording-signal > span:nth-child(2),
+  .looper-recording-signal > span:nth-child(4) {
+    transform: scaleY(0.9);
+  }
+}
+
+.looper-animated-count {
+  display: inline-flex;
+  overflow: hidden;
+  font-variant-numeric: tabular-nums;
+}

@@ -378,6 +378,7 @@ apps/desktop/src/app/document-theme.ts,replaced,desktop-document-theme-policy,au
 apps/desktop/src/app/document-theme.test.ts,owned,desktop-document-theme-tests,authored-stored-and-system-theme-policy-tests,project-license-pending,-,corpus-no-relevant-match-and-full-desktop-suite-2026-08-16,pending
 apps/desktop/src/app/window-route.ts,replaced,desktop-window-route-policy,authored-native-window-preview-and-query-surface-routing,project-license-pending,-,corpus-no-relevant-match-and-full-desktop-suite-typecheck-2026-08-16,pending
 apps/desktop/src/app/window-route.test.ts,owned,desktop-window-route-tests,authored-native-preview-and-query-route-tests,project-license-pending,-,corpus-no-relevant-match-and-full-desktop-suite-2026-08-16,pending
+apps/desktop/src/app/animations.css,owned,desktop-shared-motion,authored-looper-shimmer-press-poof-pill-signal-count-and-reduced-motion-fallbacks,project-license-pending,-,corpus-containment-15.6-and-full-desktop-suite-2026-08-16,pending
 apps/desktop/src-tauri/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/desktop/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/mobile/**,unreviewed,mobile,,pending,-,pending,uncommitted
