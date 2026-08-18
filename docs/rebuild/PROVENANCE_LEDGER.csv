@@ -896,6 +896,7 @@ apps/desktop/src-tauri/src/settings_store.rs,replaced,desktop-settings-store,aut
 apps/desktop/src-tauri/src/library/repo.rs,replaced,desktop-library-repo,authored-library-watch-translation-meeting-storage-and-item-contract-facade,project-license-pending,-,corpus-containment-6.5-library-repo-3-focal-tests-80-library-tests-cargo-all-targets-rustfmt-2026-08-17,pending
 apps/desktop/src-tauri/src/library/repo/items.rs,replaced,desktop-library-repo-items,authored-library-item-sql-codec-filter-and-patch-policy,project-license-pending,-,corpus-containment-8.2-library-repo-3-focal-tests-80-library-tests-cargo-all-targets-rustfmt-2026-08-17,pending
 apps/desktop/src-tauri/src/dictionary.rs,replaced,desktop-native-dictionary,authored-dictionary-sanitization-replacement-and-usage-policy,project-license-pending,-,corpus-containment-10.2-dictionary-25-tests-754-rust-tests-cargo-all-targets-rustfmt-2026-08-17,pending
+apps/desktop/src-tauri/src/speech/menu.rs,replaced,desktop-speech-menu,authored-speech-mode-menu-plan-event-and-selection-policy,project-license-pending,-,corpus-containment-14.4-speech-menu-12-tests-755-rust-tests-cargo-all-targets-rustfmt-2026-08-17,pending
 apps/desktop/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/mobile/**,unreviewed,mobile,,pending,-,pending,uncommitted
 apps/web/**,unreviewed,web,,pending,-,pending,uncommitted
