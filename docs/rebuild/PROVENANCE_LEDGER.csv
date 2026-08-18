@@ -188,6 +188,8 @@ apps/desktop/src/data/personalization.ts,replaced,desktop-personalization-gatewa
 apps/desktop/src/data/personalization.test.ts,owned,desktop-personalization-gateway-tests,authored-command-and-payload-tests,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
 apps/desktop/src/data/local-llm.ts,owned,desktop-local-intelligence-gateway,no-material-corpus-match,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
 apps/desktop/src/data/local-llm.test.ts,owned,desktop-local-intelligence-tests,authored-command-event-and-cleanup-tests,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/data/memory.ts,replaced,desktop-local-memory-gateway,reconstructed-and-composed-from-native-serialized-contracts,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/data/memory.test.ts,owned,desktop-local-memory-tests,authored-source-and-filter-command-tests,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
 apps/desktop/src-tauri/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/desktop/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/mobile/**,unreviewed,mobile,,pending,-,pending,uncommitted
