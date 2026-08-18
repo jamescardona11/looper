@@ -119,12 +119,6 @@ pub fn debug_show_toast(
     );
 }
 
-#[allow(dead_code)]
-#[tauri::command]
-pub fn show_celebration_toast(app: AppHandle<AppRuntime>) {
-    emit_toast(&app, Payload::celebration());
-}
-
 #[cfg(test)]
 mod tests {
     use super::{should_dismiss_silence_warning, Payload, EVENT_HIDE, EVENT_SHOW, WINDOW_LABEL};

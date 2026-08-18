@@ -166,10 +166,6 @@ pub(crate) fn resolve_model(provider: &str, model: &str) -> Option<String> {
     ProviderId::parse(provider).default_model()
 }
 
-pub(crate) fn resolved_model_name(settings: &UserSettings) -> Option<String> {
-    RemoteConfiguration::new(settings).model()
-}
-
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
 pub(crate) struct TranscribeOptions {
     pub timestamps: bool,
