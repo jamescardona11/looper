@@ -874,6 +874,7 @@ apps/desktop/src-tauri/src/toast.rs,replaced,desktop-native-toast,authored-toast
 apps/desktop/src-tauri/src/toast/payload.rs,replaced,desktop-native-toast-payload,authored-toast-payload-builders-and-serde-contract,project-license-pending,-,corpus-containment-27.2-toast-18-tests-cargo-all-targets-rustfmt-2026-08-17,pending
 apps/desktop/src-tauri/src/toast/placement.rs,replaced,desktop-native-toast-placement,authored-toast-monitor-and-geometry-policy,project-license-pending,-,corpus-containment-4.3-toast-18-tests-cargo-all-targets-rustfmt-2026-08-17,pending
 apps/desktop/src-tauri/src/toast/permission_watch.rs,replaced,desktop-native-toast-permission-watch,authored-toast-permission-poll-and-generation-lifecycle,project-license-pending,-,corpus-containment-3.8-toast-18-tests-cargo-all-targets-rustfmt-2026-08-17,pending
+apps/desktop/src-tauri/src/mode_context.rs,replaced,desktop-native-mode-context,authored-host-application-context-matching-guidance-and-rule-environment,project-license-pending,-,corpus-containment-5.8-mode-context-18-tests-cargo-all-targets-rustfmt-2026-08-17,pending
 apps/desktop/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/mobile/**,unreviewed,mobile,,pending,-,pending,uncommitted
 apps/web/**,unreviewed,web,,pending,-,pending,uncommitted
