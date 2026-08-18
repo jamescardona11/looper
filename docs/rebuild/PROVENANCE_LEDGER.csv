@@ -241,6 +241,8 @@ apps/desktop/src/features/settings/meeting-model-store.test.ts,owned,desktop-mee
 apps/desktop/src/features/settings/components/AneCompileOverlay.tsx,replaced,desktop-neural-engine-compile-overlay,authored-external-store-render-boundary,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
 apps/desktop/src/features/settings/ane-compile-store.ts,replaced,desktop-neural-engine-compile-events,authored-lifecycle-safe-native-event-store,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
 apps/desktop/src/features/settings/ane-compile-store.test.ts,owned,desktop-neural-engine-compile-tests,authored-start-finish-and-late-cleanup-tests,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/features/settings/components/ModelCardShell.tsx,replaced,desktop-model-card-frame,authored-xorshift-signal-composition-and-keyboard-contract,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/features/settings/components/ModelCardShell.test.tsx,owned,desktop-model-card-frame-tests,authored-signal-bounds-selection-and-keyboard-tests,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
 apps/desktop/src-tauri/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/desktop/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/mobile/**,unreviewed,mobile,,pending,-,pending,uncommitted
