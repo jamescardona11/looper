@@ -20,6 +20,8 @@ packages/rust/looper-ts/src/types.rs,owned,transcription-contracts,manual-review
 packages/rust/looper-ts/src/error.rs,owned,transcription-contracts,manual-review-low-similarity,project-license-pending,-,cargo-test-error-2026-08-16,pending
 packages/rust/looper-ts/src/runtime.rs,owned,transcription-runtime,manual-review-low-similarity,project-license-pending,-,cargo-test-runtime-2026-08-16,pending
 packages/rust/looper-ts/src/audio.rs,replaced,audio-preparation,authored-rate-conversion,project-license-pending,-,cargo-test-audio-2026-08-16,pending
+apps/desktop/src/shared/lib/modelStats.ts,replaced,model-statistics,authored-model-display-rules,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/shared/lib/modelStats.test.ts,owned,model-statistics-tests,authored-model-statistics-tests,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
 apps/desktop/src-tauri/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/desktop/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/mobile/**,unreviewed,mobile,,pending,-,pending,uncommitted
