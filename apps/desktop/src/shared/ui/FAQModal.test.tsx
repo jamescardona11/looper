@@ -56,4 +56,31 @@ describe("FAQModal", () => {
     fireEvent.click(screen.getByText("How does Looper work?"));
     expect(onClose).not.toHaveBeenCalled();
   });
+
+  test("renders title, actions, questions, and answers from their message ids", () => {
+    const translated = setupI18n();
+    translated.loadAndActivate({
+      locale: "distinct",
+      messages: {
+        "faq.title": "DISTINCT FAQ TITLE",
+        "faq.close_aria": "DISTINCT FAQ CLOSE",
+        "faq.how_it_works.question": "DISTINCT FAQ QUESTION",
+        "faq.how_it_works.answer": "DISTINCT FAQ ANSWER",
+      },
+    });
+    render(
+      <I18nProvider i18n={translated}>
+        <FAQModal isOpen onClose={vi.fn()} />
+      </I18nProvider>,
+    );
+
+    expect(
+      screen.getByRole("dialog", { name: "DISTINCT FAQ TITLE" }),
+    ).toBeTruthy();
+    expect(
+      screen.getByRole("button", { name: "DISTINCT FAQ CLOSE" }),
+    ).toBeTruthy();
+    expect(screen.getByText("DISTINCT FAQ QUESTION")).toBeTruthy();
+    expect(screen.getByText("DISTINCT FAQ ANSWER")).toBeTruthy();
+  });
 });
