@@ -889,6 +889,10 @@ apps/desktop/src-tauri/src/library/commands/recovery.rs,replaced,desktop-library
 apps/desktop/src-tauri/src/library/commands/files.rs,replaced,desktop-library-command-files,authored-library-managed-path-and-export-boundary,project-license-pending,-,corpus-containment-9.7-library-commands-4-focal-tests-79-library-tests-cargo-all-targets-rustfmt-2026-08-17,pending
 apps/desktop/src-tauri/src/library/commands/translations.rs,replaced,desktop-library-command-translations,authored-library-translation-command-policy,project-license-pending,-,corpus-containment-5.5-library-commands-4-focal-tests-79-library-tests-cargo-all-targets-rustfmt-2026-08-17,pending
 apps/desktop/src-tauri/src/speech/remote.rs,replaced,desktop-speech-remote,authored-remote-provider-configuration-request-retry-response-and-fallback-policy,project-license-pending,-,corpus-containment-14.7-speech-remote-21-tests-737-rust-tests-cargo-all-targets-rustfmt-2026-08-17,pending
+apps/desktop/src-tauri/src/settings.rs,replaced,desktop-settings,authored-stable-settings-public-facade,project-license-pending,-,corpus-containment-8.3-settings-47-tests-cargo-all-targets-rustfmt-2026-08-17,pending
+apps/desktop/src-tauri/src/settings_model.rs,replaced,desktop-settings-model,authored-settings-model-and-serde-contracts,project-license-pending,-,corpus-containment-26.1-settings-47-tests-cargo-all-targets-rustfmt-2026-08-17,pending
+apps/desktop/src-tauri/src/settings_policy.rs,replaced,desktop-settings-policy,authored-settings-defaults-migration-locale-shortcut-and-personality-policy,project-license-pending,-,corpus-containment-27.7-settings-47-tests-cargo-all-targets-rustfmt-2026-08-17,pending
+apps/desktop/src-tauri/src/settings_store.rs,replaced,desktop-settings-store,authored-settings-sqlite-typed-key-and-secret-storage,project-license-pending,-,corpus-containment-15.9-settings-47-tests-cargo-all-targets-rustfmt-2026-08-17,pending
 apps/desktop/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/mobile/**,unreviewed,mobile,,pending,-,pending,uncommitted
 apps/web/**,unreviewed,web,,pending,-,pending,uncommitted
