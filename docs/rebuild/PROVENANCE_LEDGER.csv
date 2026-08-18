@@ -971,3 +971,5 @@ apps/mobile/**,unreviewed,mobile,,pending,-,pending,uncommitted
 apps/web/**,unreviewed,web,,pending,-,pending,uncommitted
 backend/**,unreviewed,backend,,pending,-,pending,uncommitted
 packages/**,unreviewed,packages,,pending,-,pending,uncommitted
+apps/desktop/src/features/memory/queries.ts,owned,memory-query,authored-react-query-memory-gateway,project-license-pending,-,memory-query-test-and-desktop-audit-2026-08-17,pending
+apps/desktop/src/features/memory/queries.test.tsx,owned,memory-query-tests,authored-react-query-cache-contract-tests,project-license-pending,-,memory-query-test-and-desktop-audit-2026-08-17,pending
