@@ -243,6 +243,9 @@ apps/desktop/src/features/settings/ane-compile-store.ts,replaced,desktop-neural-
 apps/desktop/src/features/settings/ane-compile-store.test.ts,owned,desktop-neural-engine-compile-tests,authored-start-finish-and-late-cleanup-tests,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
 apps/desktop/src/features/settings/components/ModelCardShell.tsx,replaced,desktop-model-card-frame,authored-xorshift-signal-composition-and-keyboard-contract,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
 apps/desktop/src/features/settings/components/ModelCardShell.test.tsx,owned,desktop-model-card-frame-tests,authored-signal-bounds-selection-and-keyboard-tests,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/features/settings/components/ModelStatCard.tsx,replaced,desktop-local-model-status-card,authored-presentation-driven-render-and-isolated-actions,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/features/settings/model-card-presentation.ts,replaced,desktop-model-card-presentation,authored-state-activity-theme-progress-and-action-derivation,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/features/settings/model-card-presentation.test.tsx,owned,desktop-model-card-presentation-tests,authored-progress-signal-and-action-propagation-tests,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
 apps/desktop/src-tauri/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/desktop/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/mobile/**,unreviewed,mobile,,pending,-,pending,uncommitted
