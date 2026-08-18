@@ -29,6 +29,20 @@ la revisión de los casos históricos de alto riesgo.
 | `apps/desktop/src-tauri/src/recorder.rs` | 96.3% | 17.3% | Persistencia, validación y orden del pipeline deben mantenerse bajo la licencia aplicable o reescribirse por comportamiento. |
 | `apps/desktop/src-tauri/src/analytics.rs` | 97.1% | 28.8% | Clasificación de fallos, nombres de eventos y marcador de crash son decisiones creativas potencialmente derivadas. |
 
+## Casos móviles
+
+La misma auditoría incluye `apps/mobile` y no encontró filas sobre el umbral
+técnico (`86` archivos auditables, máximo actual `27.7%`). Aun así, estos son
+los casos que requieren revisión sustantiva por su referencia principal:
+
+| Archivo actual | Señal actual | Referencia principal | Riesgo que permanece |
+| --- | ---: | --- | --- |
+| `apps/mobile/targets/keyboard/KeyboardViewController.swift` | 27.7% | Voquill (AGPLv3) | Flujo de teclado, permisos, ciclo de captura e inserción deben verificarse en una extensión real. |
+| `apps/mobile/targets/_shared/DarwinNotificationManager.swift` | 23.7% | Voquill (AGPLv3) | Notificaciones Darwin y coordinación entre procesos requieren validar el contrato nativo. |
+| `apps/mobile/targets/widgets/MeetingLiveActivity.swift` | 23.1% | Voquill (AGPLv3) | Estado y lifecycle de Live Activity requieren validación en dispositivo. |
+| `apps/mobile/targets/keyboard/Repos/MemberRepo.swift` | 22.9% | Voquill (AGPLv3) | Persistencia de identidad/trial y wire de Convex requieren revisar paridad y atribución. |
+| `apps/mobile/targets/keyboard/Types/SharedWorkflow.swift` | 11.8% | typewhisper-mac (GPL) | El contrato de workflows debe conservar el aviso y la licencia aplicable. |
+
 ## Regla de remediación
 
 Cambiar nombres, mover archivos o eliminar tests no se considera por sí mismo
