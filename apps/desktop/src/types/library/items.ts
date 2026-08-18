@@ -1,93 +1,85 @@
-export type TranscriptSegment = {
-  start_ms: number;
-  end_ms: number;
-  text: string;
-  speaker_id?: string | null;
+type Fields<Key extends PropertyKey, Value> = Record<Key, Value>;
+type OptionalFields<Key extends PropertyKey, Value> = Partial<
+  Fields<Key, Value>
+>;
+
+export type TranscriptSegment = Fields<"start_ms" | "end_ms", number> &
+  Fields<"text", string> &
+  OptionalFields<"speaker_id", string | null>;
+
+export type Speaker = Fields<"id" | "name", string> &
+  OptionalFields<"color", string | null>;
+
+type LibraryKinds = ["import", "recording", "meeting"];
+export type LibraryItemKind = LibraryKinds[number];
+
+type LibraryStatusByType = {
+  pending: Fields<"type", "pending">;
+  recording: Fields<"type", "recording">;
+  importing: Fields<"type", "importing"> & Fields<"progress", number>;
+  transcribing: Fields<"type", "transcribing"> & Fields<"progress", number>;
+  complete: Fields<"type", "complete">;
+  cancelling: Fields<"type", "cancelling">;
+  cancelled: Fields<"type", "cancelled">;
+  error: Fields<"type", "error"> & Fields<"message", string>;
 };
+export type LibraryItemStatus = LibraryStatusByType[keyof LibraryStatusByType];
 
-export type Speaker = {
-  id: string;
-  name: string;
-  color?: string | null;
-};
+export type LibraryMedia = Fields<
+  "audio_path" | "source_path" | "original_format",
+  string
+> &
+  Fields<"store_original", boolean> &
+  Fields<"duration_seconds" | "file_size_bytes", number>;
 
-export type LibraryItemKind = "import" | "recording" | "meeting";
+export type LibraryProcessing = OptionalFields<"transcript", string | null> &
+  OptionalFields<"segments" | "words", TranscriptSegment[] | null> &
+  Fields<
+    | "llm_cleanup_enabled"
+    | "denoise_enabled"
+    | "show_timestamps"
+    | "detect_speakers",
+    boolean
+  > &
+  Fields<"speech_model", string> &
+  OptionalFields<"speakers", Speaker[] | null>;
 
-export type LibraryItemStatus =
-  | { type: "pending" }
-  | { type: "recording" }
-  | { type: "importing"; progress: number }
-  | { type: "transcribing"; progress: number }
-  | { type: "complete" }
-  | { type: "cancelling" }
-  | { type: "cancelled" }
-  | { type: "error"; message: string };
+type LibraryIdentity = Fields<"id" | "name" | "created_at", string> &
+  OptionalFields<"transcribed_at", string | null> &
+  Fields<"tags", string[]> &
+  Fields<"kind", LibraryItemKind> &
+  Fields<"status", LibraryItemStatus>;
 
-export type LibraryMedia = {
-  audio_path: string;
-  source_path: string;
-  store_original: boolean;
-  duration_seconds: number;
-  file_size_bytes: number;
-  original_format: string;
-};
+export type LibraryItem = LibraryMedia & LibraryProcessing & LibraryIdentity;
 
-export type LibraryProcessing = {
-  transcript?: string | null;
-  segments?: TranscriptSegment[] | null;
-  words?: TranscriptSegment[] | null;
-  llm_cleanup_enabled: boolean;
-  denoise_enabled: boolean;
-  speech_model: string;
-  show_timestamps: boolean;
-  detect_speakers: boolean;
-  speakers?: Speaker[] | null;
-};
+export type LibraryItemsPage = Fields<"items", LibraryItem[]> &
+  Fields<"has_more", boolean>;
 
-export type LibraryItem = LibraryMedia &
-  LibraryProcessing & {
-    id: string;
-    name: string;
-    status: LibraryItemStatus;
-    created_at: string;
-    transcribed_at?: string | null;
-    tags: string[];
-    kind: LibraryItemKind;
-  };
+export type LibraryFilter = OptionalFields<
+  "search" | "status" | "tag",
+  string | null
+> &
+  OptionalFields<"since_days", number | null>;
 
-export type LibraryItemsPage = {
-  items: LibraryItem[];
-  has_more: boolean;
-};
+export type LibraryItemPatch = OptionalFields<
+  "name" | "transcript" | "speech_model" | "transcribed_at",
+  string | null
+> &
+  OptionalFields<"segments", TranscriptSegment[] | null> &
+  OptionalFields<"tags", string[] | null> &
+  OptionalFields<"status", LibraryItemStatus | null> &
+  OptionalFields<
+    | "llm_cleanup_enabled"
+    | "denoise_enabled"
+    | "show_timestamps"
+    | "detect_speakers",
+    boolean | null
+  > &
+  OptionalFields<"duration_seconds", number | null> &
+  OptionalFields<"kind", LibraryItemKind | null> &
+  OptionalFields<"speakers", Speaker[] | null>;
 
-export type LibraryFilter = {
-  search?: string | null;
-  status?: string | null;
-  tag?: string | null;
-  since_days?: number | null;
-};
-
-export type LibraryItemPatch = {
-  name?: string | null;
-  transcript?: string | null;
-  segments?: TranscriptSegment[] | null;
-  tags?: string[] | null;
-  status?: LibraryItemStatus | null;
-  llm_cleanup_enabled?: boolean | null;
-  denoise_enabled?: boolean | null;
-  speech_model?: string | null;
-  transcribed_at?: string | null;
-  show_timestamps?: boolean | null;
-  detect_speakers?: boolean | null;
-  duration_seconds?: number | null;
-  kind?: LibraryItemKind | null;
-  speakers?: Speaker[] | null;
-};
-
-export type LibraryTranslation = {
-  item_id: string;
-  language: string;
-  text: string;
-  model: string;
-  created_at: string;
-};
+export type LibraryTranslation = Fields<
+  "item_id" | "language" | "text" | "model" | "created_at",
+  string
+>;
