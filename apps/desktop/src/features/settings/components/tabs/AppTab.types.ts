@@ -1,82 +1,65 @@
 import type { Variants } from "framer-motion";
-import type { PlatformCapabilities } from "../../../../shared/lib/platform";
-import type {
-  AppLocaleSetting,
-  AutoDeleteTarget,
-  MediaAction,
-  RecordingPrunePolicy,
-  TextSizeMode,
-  ThemeMode,
-} from "../../../../types";
+import type { useSettingsForm } from "../../useSettingsForm";
 
 export type AppSection = "appearance" | "calendar" | "privacy" | "storage";
 
-export type AppFrameProps = {
-  activeSection?: AppSection;
-  variants: Variants;
-};
+type AppForm = ReturnType<typeof useSettingsForm>["tabs"]["app"];
+type Scoped = { activeSection?: AppSection };
+type SectionProps<Keys extends keyof AppForm> = Scoped & Pick<AppForm, Keys>;
 
-export type AppAppearanceProps = {
-  activeSection?: AppSection;
-  textSizeMode: TextSizeMode;
-  onTextSizeModeChange: (mode: TextSizeMode) => void;
-  themeMode: ThemeMode;
-  onThemeModeChange: (mode: ThemeMode) => void;
-  appLocale: AppLocaleSetting;
-  onAppLocaleChange: (locale: AppLocaleSetting) => void;
-};
+export type AppFrameProps = Scoped & { variants: Variants };
 
-export type AppPrivacyProps = {
-  activeSection?: AppSection;
-  micPermission: boolean | null;
-  accessibilityPermission: boolean | null;
-  inputMonitoringPermission: boolean | null;
-  onRequestMicrophonePermission: () => Promise<void>;
-  hideOverlaysFromCapture: boolean;
-  onHideOverlaysFromCaptureChange: (enabled: boolean) => void;
-  analyticsEnabled: boolean;
-  onAnalyticsEnabledChange: (enabled: boolean) => void;
-  platformCapabilities: PlatformCapabilities;
-};
+export type AppAppearanceProps = SectionProps<
+  | "textSizeMode"
+  | "onTextSizeModeChange"
+  | "themeMode"
+  | "onThemeModeChange"
+  | "appLocale"
+  | "onAppLocaleChange"
+>;
 
-export type AppCalendarProps = {
-  activeSection?: AppSection;
-  calendarMeetingAwarenessEnabled: boolean;
-  onCalendarMeetingAwarenessEnabledChange: (enabled: boolean) => void;
-  platformCapabilities: PlatformCapabilities;
-};
+export type AppPrivacyProps = SectionProps<
+  | "micPermission"
+  | "accessibilityPermission"
+  | "inputMonitoringPermission"
+  | "onRequestMicrophonePermission"
+  | "hideOverlaysFromCapture"
+  | "onHideOverlaysFromCaptureChange"
+  | "analyticsEnabled"
+  | "onAnalyticsEnabledChange"
+  | "platformCapabilities"
+>;
 
-export type AppAutomationProps = {
-  activeSection?: AppSection;
-  textSizeMode: TextSizeMode;
-  mediaAction: MediaAction;
-  onMediaActionChange: (action: MediaAction) => void;
-  autoUpdateEnabled: boolean;
-  onAutoUpdateEnabledChange: (enabled: boolean) => void;
-  autoLaunchEnabled: boolean;
-  onAutoLaunchEnabledChange: (enabled: boolean) => void;
-  startInBackground: boolean;
-  onStartInBackgroundChange: (enabled: boolean) => void;
-  autoDeleteTarget: AutoDeleteTarget;
-  onAutoDeleteTargetChange: (target: AutoDeleteTarget) => void;
-  autoDeleteDuration: RecordingPrunePolicy;
-  onAutoDeleteDurationChange: (duration: RecordingPrunePolicy) => void;
-  audioStorageBudgetMb: number;
-  onAudioStorageBudgetMbChange: (budgetMb: number) => void;
-  platformCapabilities: PlatformCapabilities;
-};
+export type AppCalendarProps = SectionProps<
+  | "calendarMeetingAwarenessEnabled"
+  | "onCalendarMeetingAwarenessEnabledChange"
+  | "platformCapabilities"
+>;
 
-export type AppArchiveProps = {
-  activeSection?: AppSection;
-  markdownMirrorEnabled: boolean;
-  onMarkdownMirrorEnabledChange: (enabled: boolean) => void;
-  markdownMirrorPath: string;
-  onMarkdownMirrorPathChange: (path: string) => void;
-};
+export type AppAutomationProps = SectionProps<
+  | "textSizeMode"
+  | "mediaAction"
+  | "onMediaActionChange"
+  | "autoUpdateEnabled"
+  | "onAutoUpdateEnabledChange"
+  | "autoLaunchEnabled"
+  | "onAutoLaunchEnabledChange"
+  | "startInBackground"
+  | "onStartInBackgroundChange"
+  | "autoDeleteTarget"
+  | "onAutoDeleteTargetChange"
+  | "autoDeleteDuration"
+  | "onAutoDeleteDurationChange"
+  | "audioStorageBudgetMb"
+  | "onAudioStorageBudgetMbChange"
+  | "platformCapabilities"
+>;
 
-export type AppTabProps = AppFrameProps &
-  AppAppearanceProps &
-  AppPrivacyProps &
-  AppCalendarProps &
-  AppAutomationProps &
-  AppArchiveProps;
+export type AppArchiveProps = SectionProps<
+  | "markdownMirrorEnabled"
+  | "onMarkdownMirrorEnabledChange"
+  | "markdownMirrorPath"
+  | "onMarkdownMirrorPathChange"
+>;
+
+export type AppTabProps = AppFrameProps & AppForm;
