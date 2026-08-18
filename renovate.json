@@ -1,0 +1,50 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:recommended",
+    ":dependencyDashboard",
+    ":semanticCommits",
+    "group:monorepos",
+    "group:recommended"
+  ],
+  "timezone": "UTC",
+  "schedule": ["before 6am on monday"],
+  "labels": ["dependencies"],
+  "prConcurrentLimit": 5,
+  "rangeStrategy": "bump",
+  "lockFileMaintenance": { "enabled": true, "schedule": ["before 6am on monday"] },
+  "packageRules": [
+    {
+      "description": "Group all non-major updates into one PR to reduce noise",
+      "matchUpdateTypes": ["minor", "patch", "pin", "digest"],
+      "groupName": "all non-major dependencies",
+      "groupSlug": "all-minor-patch"
+    },
+    {
+      "description": "Keep the Convex client in lockstep across web, mobile, and backend",
+      "matchPackageNames": ["convex"],
+      "groupName": "convex"
+    },
+    {
+      "description": "Group the AI SDK provider packages together",
+      "matchPackageNames": [
+        "ai",
+        "@ai-sdk/openai",
+        "@ai-sdk/anthropic",
+        "@ai-sdk/google",
+        "@ai-sdk/xai"
+      ],
+      "groupName": "ai-sdk"
+    },
+    {
+      "description": "Convex components move as a set",
+      "matchPackagePrefixes": ["@convex-dev/"],
+      "groupName": "convex components"
+    },
+    {
+      "description": "Pin GitHub Actions to digests for supply-chain safety",
+      "matchManagers": ["github-actions"],
+      "pinDigests": true
+    }
+  ]
+}

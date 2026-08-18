@@ -1,0 +1,207 @@
+name: CI
+
+on:
+  push:
+    branches: [main, feat/*]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  convex:
+    name: Verify Convex
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Publish functions, typecheck, and test
+        env:
+          CONVEX_AGENT_MODE: anonymous
+        run: pnpm run convex:verify
+
+  verify:
+    name: Verify repository
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm typecheck
+      - run: pnpm test
+      - run: pnpm run qa:external-readiness
+      - run: pnpm exec biome ci .
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: external-readiness-audit
+          path: |
+            .tcompound/evidence/qa/external-readiness-audit.txt
+            .tcompound/evidence/qa/external-readiness-audit.json
+          retention-days: 7
+  mobile:
+    name: Verify mobile React Native
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm run qa:mobile
+
+  web-build:
+    name: Build web
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @looper/web build
+
+  web-e2e:
+    name: E2E Web with Convex
+    runs-on: ubuntu-latest
+    needs: [convex, verify]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @looper/web exec playwright install --with-deps chromium
+      - name: Run Web/Desktop Playwright QA
+        env:
+          CI: "true"
+          CONVEX_AGENT_MODE: anonymous
+          MOCK_MODE: "true"
+        run: pnpm run qa:web-e2e
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: web-e2e-local-qa
+          path: .tcompound/evidence/qa/web-e2e-local-gate.txt
+          retention-days: 7
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: web-e2e-playwright-report
+          path: apps/web/playwright-report/
+          retention-days: 7
+
+  remote-dictation-local:
+    name: Verify remote dictation cross-client pairing
+    runs-on: ubuntu-latest
+    needs: [convex, verify]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Run remote dictation local pairing QA
+        env:
+          CI: "true"
+          CONVEX_AGENT_MODE: anonymous
+          MOCK_MODE: "true"
+          MOCK_EMAIL_OTP_CODE: "57575757"
+        run: pnpm run qa:remote-dictation-local
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: remote-dictation-local-qa
+          path: .tcompound/evidence/qa/remote-dictation-cross-client-pairing.txt
+          retention-days: 7
+
+  desktop-native:
+    name: Verify desktop native Rust
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm run qa:desktop-native
+      - run: pnpm run qa:meeting-audio
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: desktop-native-local-qa
+          path: .tcompound/evidence/qa/desktop-native-local-gate.txt
+          retention-days: 7
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: meeting-audio-automated-qa
+          path: .tcompound/evidence/qa/meeting-audio-automated.txt
+          retention-days: 7
+
+  desktop-windows:
+    name: Verify desktop Windows
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+      - uses: dtolnay/rust-toolchain@stable
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --dir apps/desktop build
+      - uses: actions/cache@v4
+        id: vulkan-sdk-cache
+        with:
+          path: C:\VulkanSDK\1.4.350.0
+          key: vulkan-sdk-windows-x64-1.4.350.0
+      - name: Install Vulkan SDK
+        if: steps.vulkan-sdk-cache.outputs.cache-hit != 'true'
+        shell: pwsh
+        run: |
+          $version = "1.4.350.0"
+          $expectedHash = "855b27ba05d2d8119c5114c5d4ff870ca38f2c632b11e1bb9923b9b7e6ecfe7b"
+          $installer = Join-Path $env:RUNNER_TEMP "vulkan-sdk.exe"
+          $destination = "C:\VulkanSDK\$version"
+          Invoke-WebRequest "https://sdk.lunarg.com/sdk/download/$version/windows/vulkan-sdk.exe" -OutFile $installer
+          $actualHash = (Get-FileHash $installer -Algorithm SHA256).Hash.ToLowerInvariant()
+          if ($actualHash -ne $expectedHash) {
+            throw "Vulkan SDK checksum mismatch: $actualHash"
+          }
+          & $installer --root $destination --accept-licenses --default-answer --confirm-command install copy_only=1
+          if ($LASTEXITCODE -ne 0) {
+            throw "Vulkan SDK installer exited with code $LASTEXITCODE"
+          }
+      - name: Configure Vulkan SDK
+        shell: pwsh
+        run: |
+          $sdk = "C:\VulkanSDK\1.4.350.0"
+          "VULKAN_SDK=$sdk" >> $env:GITHUB_ENV
+          "$sdk\Bin" >> $env:GITHUB_PATH
+      - run: cargo check --tests --locked --manifest-path apps/desktop/src-tauri/Cargo.toml
+      - run: cargo test --locked --lib --manifest-path apps/desktop/src-tauri/Cargo.toml
+      - run: cargo test --locked --workspace --manifest-path packages/rust/audio/Cargo.toml
+      - run: cargo test --locked --lib --manifest-path packages/rust/looper-ts/Cargo.toml

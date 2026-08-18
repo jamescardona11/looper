@@ -1086,3 +1086,14 @@ apps/mobile/src/features/dictation/local-stt-smoke.ts,owned,mobile-dictation,aut
 apps/mobile/src/features/dictation/use-audio-recorder.ts,owned,mobile-dictation,authored-mobile-audio-recorder-hook,project-license-pending,-,mobile-dictation-tests-typecheck-2026-08-17,pending
 apps/mobile/src/features/dictation/use-local-stt.ts,owned,mobile-dictation,authored-local-stt-hook,project-license-pending,-,mobile-dictation-tests-typecheck-2026-08-17,pending
 .gitignore,owned,repository-hygiene,authored-ignore-boundaries-for-local-docs-and-audit-artifacts,project-license-pending,-,git-check-ignore-verification-2026-08-17,pending
+.editorconfig,owned,repository-infrastructure,authored-editor-format-contract,project-license-pending,-,root-infrastructure-review-2026-08-17,pending
+.lintstagedrc.json,owned,repository-infrastructure,authored-staged-tooling-contract,project-license-pending,-,root-infrastructure-review-2026-08-17,pending
+Makefile,owned,repository-infrastructure,authored-workspace-command-contract,project-license-pending,-,root-infrastructure-review-2026-08-17,pending
+README.md,owned,repository-documentation,authored-product-and-development-overview,project-license-pending,-,root-infrastructure-review-2026-08-17,pending
+renovate.json,owned,repository-infrastructure,authored-dependency-update-policy,project-license-pending,-,root-infrastructure-review-2026-08-17,pending
+pnpm-lock.yaml,owned,repository-infrastructure,generated-workspace-lockfile,project-license-pending,-,root-infrastructure-review-2026-08-17,pending
+.github/workflows/deploy.yml,owned,repository-ci,authored-convex-deploy-workflow,project-license-pending,-,root-infrastructure-review-2026-08-17,pending
+.github/workflows/ci.yml,owned,repository-ci,authored-verification-workflow,project-license-pending,-,root-infrastructure-review-2026-08-17,pending
+.github/PULL_REQUEST_TEMPLATE.md,owned,repository-governance,authored-pull-request-template,project-license-pending,-,root-infrastructure-review-2026-08-17,pending
+.github/ISSUE_TEMPLATE/feature_request.yml,owned,repository-governance,authored-feature-request-template,project-license-pending,-,root-infrastructure-review-2026-08-17,pending
+.github/ISSUE_TEMPLATE/bug_report.yml,owned,repository-governance,authored-bug-report-template,project-license-pending,-,root-infrastructure-review-2026-08-17,pending
