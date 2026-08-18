@@ -3,7 +3,10 @@ const meetingTimeFormatter = new Intl.DateTimeFormat("es", {
   minute: "2-digit",
 });
 
-export function createMeetingIdentity(now: number, suffix: string): {
+export function createMeetingIdentity(
+  now: number,
+  suffix: string,
+): {
   meetingId: string;
   title: string;
 } {

@@ -118,9 +118,7 @@ export function useCheckout(): {
 export function usePolarCheckout(): {
   createCheckout: (input: PolarCheckoutInput) => Promise<CheckoutResult>;
   openPortal: (input: PortalInput) => Promise<CheckoutResult>;
-  createOneTimeCheckout: (
-    input: OneTimeCheckoutInput,
-  ) => Promise<CheckoutResult>;
+  createOneTimeCheckout: (input: OneTimeCheckoutInput) => Promise<CheckoutResult>;
   available: boolean;
 } {
   const createCheckoutAction = useAction(api.payments.polar.createCheckout);
@@ -157,8 +155,7 @@ export function usePurchaseSync(): {
   appUserId: string | null;
 } {
   const me = useQuery(api.users.me);
-  const appUserId = ((me as { _id?: string } | null | undefined)?._id ??
-    null) as string | null;
+  const appUserId = ((me as { _id?: string } | null | undefined)?._id ?? null) as string | null;
   const syncAction = useAction(api.payments.revenueCat.syncRevenueCatPurchase);
 
   const sync = useCallback(async (): Promise<void> => {

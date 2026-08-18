@@ -131,6 +131,8 @@ function NoteEditor({
     savedBody: note.body,
   });
 
+  // retryCount intentionally restarts the autosave effect after a failed save.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: retryCount is a deliberate retrigger
   useEffect(() => {
     if (!isDirty) {
       setSaveState("saved");
@@ -191,7 +193,11 @@ function NoteEditor({
           accessibilityLiveRegion="polite"
           style={[styles.saveStatus, saveState === "error" && styles.saveError]}
         >
-          {saveState === "saving" ? "Guardando…" : saveState === "error" ? "Error al guardar" : "Guardado"}
+          {saveState === "saving"
+            ? "Guardando…"
+            : saveState === "error"
+              ? "Error al guardar"
+              : "Guardado"}
         </Text>
       </View>
       {saveError ? (

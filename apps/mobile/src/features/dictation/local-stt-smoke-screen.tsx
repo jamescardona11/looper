@@ -63,7 +63,9 @@ export function LocalSttSmokeScreen() {
       const transcriptionMs = Date.now() - transcriptionStartedAt;
       const evaluation = evaluateLocalSttSmokeTranscript(nextTranscript);
       if (!evaluation.ok) {
-        throw new Error(`Faltan anclas de la transcripción: ${evaluation.missingPhrases.join(", ")}`);
+        throw new Error(
+          `Faltan anclas de la transcripción: ${evaluation.missingPhrases.join(", ")}`,
+        );
       }
 
       setTranscript(nextTranscript);

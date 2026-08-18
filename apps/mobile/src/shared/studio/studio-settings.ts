@@ -29,21 +29,24 @@ export const builtInStyles: WritingStyle[] = [
     id: "concise",
     name: "Claro y breve",
     description: "Directo, limpio, sin muletillas",
-    promptTemplate: "Rewrite concisely and directly. Remove filler while preserving every fact and the speaker's intent.",
+    promptTemplate:
+      "Rewrite concisely and directly. Remove filler while preserving every fact and the speaker's intent.",
     example: "Te envío la propuesta hoy. Incluye alcance, tiempos y próximos pasos.",
   },
   {
     id: "warm",
     name: "Cálido",
     description: "Cercano y profesional",
-    promptTemplate: "Use a warm, natural, professional tone. Do not add promises, greetings, or facts the speaker did not say.",
+    promptTemplate:
+      "Use a warm, natural, professional tone. Do not add promises, greetings, or facts the speaker did not say.",
     example: "Hola Ana, te comparto la propuesta. Quedo atento a tus comentarios.",
   },
   {
     id: "structured",
     name: "Notas estructuradas",
     description: "Títulos, bullets y tareas",
-    promptTemplate: "Organize the exact content into concise headings, bullets, and explicit action items when present.",
+    promptTemplate:
+      "Organize the exact content into concise headings, bullets, and explicit action items when present.",
     example: "Propuesta\n• Envío: hoy\n• Incluye: alcance y tiempos\n• Siguiente: revisión",
   },
 ];
@@ -54,15 +57,13 @@ export function normalizeStudioSettings(value: unknown): MobileStudioSettings {
     ? root.styles.flatMap((item, index) => styleFromUnknown(item, index))
     : [];
   const styles = dedupeStyles([...builtInStyles, ...customStyles]);
-  const smartModes = Array.isArray(root.smartModes)
-    ? root.smartModes.flatMap(modeFromUnknown)
-    : [];
+  const smartModes = Array.isArray(root.smartModes) ? root.smartModes.flatMap(modeFromUnknown) : [];
   const requestedActive = stringValue(root.activeStyleId);
   return {
     styles,
     activeStyleId: styles.some((style) => style.id === requestedActive)
-      ? requestedActive as string
-      : styles[0]?.id ?? "concise",
+      ? (requestedActive as string)
+      : (styles[0]?.id ?? "concise"),
     smartModes,
     ...(stringValue(root.language) ? { language: stringValue(root.language) as string } : {}),
   };
@@ -70,7 +71,9 @@ export function normalizeStudioSettings(value: unknown): MobileStudioSettings {
 
 export function studioSettingsData(settings: MobileStudioSettings): Record<string, unknown> {
   return {
-    styles: settings.styles.filter((style) => !builtInStyles.some((builtIn) => builtIn.id === style.id)),
+    styles: settings.styles.filter(
+      (style) => !builtInStyles.some((builtIn) => builtIn.id === style.id),
+    ),
     activeStyleId: settings.activeStyleId,
     smartModes: settings.smartModes,
     ...(settings.language ? { language: settings.language } : {}),
@@ -108,13 +111,15 @@ function styleFromUnknown(value: unknown, index: number): WritingStyle[] {
   const name = stringValue(row.name);
   const promptTemplate = stringValue(row.promptTemplate) ?? stringValue(row.instructions);
   if (!name || !promptTemplate) return [];
-  return [{
-    id: stringValue(row.id) ?? `imported-${slug(name)}-${index}`,
-    name,
-    description: stringValue(row.description) ?? "Importado",
-    promptTemplate,
-    example: stringValue(row.example) ?? "Vista previa disponible al usar este estilo.",
-  }];
+  return [
+    {
+      id: stringValue(row.id) ?? `imported-${slug(name)}-${index}`,
+      name,
+      description: stringValue(row.description) ?? "Importado",
+      promptTemplate,
+      example: stringValue(row.example) ?? "Vista previa disponible al usar este estilo.",
+    },
+  ];
 }
 
 function modeFromUnknown(value: unknown): SmartMode[] {
@@ -125,23 +130,31 @@ function modeFromUnknown(value: unknown): SmartMode[] {
   const styleId = stringValue(row.styleId);
   if (!id || !name || !styleId) return [];
   const format = stringValue(row.format);
-  return [{
-    id,
-    name,
-    enabled: row.enabled !== false,
-    triggerType: row.triggerType === "bundle_id" ? "bundle_id" : "manual",
-    triggerValue: stringValue(row.triggerValue) ?? "",
-    styleId,
-    format: format === "email" || format === "message" || format === "bullets" || format === "todo" ? format : "none",
-    instructions: stringValue(row.instructions) ?? "",
-  }];
+  return [
+    {
+      id,
+      name,
+      enabled: row.enabled !== false,
+      triggerType: row.triggerType === "bundle_id" ? "bundle_id" : "manual",
+      triggerValue: stringValue(row.triggerValue) ?? "",
+      styleId,
+      format:
+        format === "email" || format === "message" || format === "bullets" || format === "todo"
+          ? format
+          : "none",
+      instructions: stringValue(row.instructions) ?? "",
+    },
+  ];
 }
 
 function formatInstruction(format: SmartMode["format"]): string {
-  if (format === "email") return "Format as an email using short paragraphs. Preserve only greetings and sign-offs the speaker said.";
+  if (format === "email")
+    return "Format as an email using short paragraphs. Preserve only greetings and sign-offs the speaker said.";
   if (format === "message") return "Format as a concise chat message, not a formal email.";
-  if (format === "bullets") return "Format explicit points as a bulleted list in their original order.";
-  if (format === "todo") return "Format explicit tasks as a checklist; preserve owners and dates only when spoken.";
+  if (format === "bullets")
+    return "Format explicit points as a bulleted list in their original order.";
+  if (format === "todo")
+    return "Format explicit tasks as a checklist; preserve owners and dates only when spoken.";
   return "";
 }
 
@@ -150,7 +163,10 @@ function dedupeStyles(styles: WritingStyle[]): WritingStyle[] {
 }
 
 function slug(value: string): string {
-  return value.toLocaleLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+  return value
+    .toLocaleLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "");
 }
 
 function stringValue(value: unknown): string | null {
@@ -160,6 +176,6 @@ function stringValue(value: unknown): string | null {
 
 function asRecord(value: unknown): Record<string, unknown> | null {
   return value && typeof value === "object" && !Array.isArray(value)
-    ? value as Record<string, unknown>
+    ? (value as Record<string, unknown>)
     : null;
 }

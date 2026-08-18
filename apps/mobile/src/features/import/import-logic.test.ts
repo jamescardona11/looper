@@ -33,8 +33,6 @@ describe("parseMobileImport", () => {
   });
 
   it("rejects unrelated JSON", () => {
-    expect(() => parseMobileImport("other.json", '{"theme":"dark"}')).toThrow(
-      "No encontramos",
-    );
+    expect(() => parseMobileImport("other.json", '{"theme":"dark"}')).toThrow("No encontramos");
   });
 });

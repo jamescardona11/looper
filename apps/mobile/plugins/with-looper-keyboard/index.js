@@ -85,8 +85,7 @@ function withAndroidKeyboardPackage(config) {
 
 function withAndroidSherpaClasses(config) {
   return withAppBuildGradle(config, (config) => {
-    const classesJar =
-      'compileOnly files("${rootProject.projectDir}/../../../node_modules/react-native-sherpa-onnx/android/build/sherpa-onnx-classes/classes.jar")';
+    const classesJar = `compileOnly files("\${rootProject.projectDir}/../../../node_modules/react-native-sherpa-onnx/android/build/sherpa-onnx-classes/classes.jar")`;
     if (!config.modResults.contents.includes(classesJar)) {
       config.modResults.contents = config.modResults.contents.replace(
         "dependencies {",

@@ -7,9 +7,7 @@ export default function MeetingRoute() {
   return (
     <MeetingDetailScreen
       meetingId={id}
-      onAsk={(meetingId) =>
-        router.push(`/ask?meetingId=${encodeURIComponent(meetingId)}` as Href)
-      }
+      onAsk={(meetingId) => router.push(`/ask?meetingId=${encodeURIComponent(meetingId)}` as Href)}
       onBack={() => router.replace("/")}
     />
   );

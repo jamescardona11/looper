@@ -37,12 +37,7 @@ export const agentTables = {
     // User rating on an assistant reply (👍/👎) — feeds eval/quality dashboards.
     feedback: v.optional(v.union(v.literal("up"), v.literal("down"))),
     memoryScope: v.optional(
-      v.union(
-        v.literal("all"),
-        v.literal("notes"),
-        v.literal("dictations"),
-        v.literal("meetings"),
-      ),
+      v.union(v.literal("all"), v.literal("notes"), v.literal("dictations"), v.literal("meetings")),
     ),
     meetingId: v.optional(v.string()),
     createdAt: v.number(),

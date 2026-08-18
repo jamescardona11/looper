@@ -14,7 +14,6 @@ describe("citationsFromAnswer", () => {
   });
 
   it("ignores unrelated markdown brackets", () => {
-    expect(citationsFromAnswer("Usa [este enlace](https://example.com)."))
-      .toEqual([]);
+    expect(citationsFromAnswer("Usa [este enlace](https://example.com).")).toEqual([]);
   });
 });

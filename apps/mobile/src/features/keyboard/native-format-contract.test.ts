@@ -60,7 +60,7 @@ describe("native keyboard output formats", () => {
     expect(androidModule).toContain('payload.getMap("toneById")');
     expect(androidModule).toContain("KEY_KEYBOARD_UPDATE_COUNTER");
     expect(androidKeyboard).toContain("manualSmartModeRules");
-    expect(androidKeyboard).toContain('contentDescription = "Smart Mode: ${workflow.name}"');
+    expect(androidKeyboard).toContain(`contentDescription = "Smart Mode: \${workflow.name}"`);
     expect(androidKeyboard).toContain("resolveActiveSmartModeRule");
   });
 
@@ -71,7 +71,9 @@ describe("native keyboard output formats", () => {
     expect(iosKeyboard).toContain("transformationPanel");
     expect(iosKeyboard).toContain("updateTransformationSummary");
     expect(iosKeyboard).toContain("pillButton.widthAnchor.constraint(equalToConstant: 64)");
-    expect(iosKeyboard).toContain("pillButton.centerXAnchor.constraint(equalTo: dictationRail.centerXAnchor)");
+    expect(iosKeyboard).toContain(
+      "pillButton.centerXAnchor.constraint(equalTo: dictationRail.centerXAnchor)",
+    );
     expect(iosKeyboard).toContain("preferredContentSize = CGSize(width: 0, height: 240)");
     expect(iosKeyboard).toContain("view.heightAnchor.constraint(equalToConstant: 240)");
     expect(iosKeyboard).not.toContain("heightAnchor.constraint(equalToConstant: 286)");
@@ -93,7 +95,9 @@ describe("native keyboard output formats", () => {
     expect(iosKeyboard).toContain("private let highlightColor = UIColor.white");
     expect(iosKeyboard).toContain("waveformView.widthAnchor.constraint(equalToConstant: 32)");
     expect(iosKeyboard).toContain("waveformView.heightAnchor.constraint(equalToConstant: 18)");
-    expect(iosKeyboard).toContain("let columnSmoothing: CGFloat = desired > columnLevels[index] ? 0.5 : 0.1");
+    expect(iosKeyboard).toContain(
+      "let columnSmoothing: CGFloat = desired > columnLevels[index] ? 0.5 : 0.1",
+    );
     expect(iosKeyboard).not.toContain("private struct WaveConfig");
     expect(iosKeyboard).toContain("progressView?.barColor = Palette.accent");
     expect(iosKeyboard).not.toContain('for (index, iconName) in ["at", "space"');

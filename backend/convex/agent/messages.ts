@@ -26,12 +26,7 @@ export const addUserMessage = mutation({
     threadId: v.id("agentThreads"),
     content: v.string(),
     memoryScope: v.optional(
-      v.union(
-        v.literal("all"),
-        v.literal("notes"),
-        v.literal("dictations"),
-        v.literal("meetings"),
-      ),
+      v.union(v.literal("all"), v.literal("notes"), v.literal("dictations"), v.literal("meetings")),
     ),
     meetingId: v.optional(v.string()),
   },

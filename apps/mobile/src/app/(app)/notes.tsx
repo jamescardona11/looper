@@ -11,7 +11,8 @@ export function ErrorBoundary({ retry }: ErrorBoundaryProps) {
       <View style={styles.card}>
         <Text style={styles.title}>No se pudieron cargar las notas</Text>
         <Text style={styles.detail}>
-          Comprueba la conexión o despliega las funciones de notas en el backend y vuelve a intentarlo.
+          Comprueba la conexión o despliega las funciones de notas en el backend y vuelve a
+          intentarlo.
         </Text>
         <Pressable onPress={() => void retry()} style={styles.retryButton}>
           <Text style={styles.retryText}>Reintentar</Text>

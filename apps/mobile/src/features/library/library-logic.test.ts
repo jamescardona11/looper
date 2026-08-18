@@ -23,7 +23,9 @@ const meeting: MeetingSession = {
 
 describe("Library", () => {
   it("unifies meetings and notes by recent activity without losing dictation kind", () => {
-    expect(buildLibraryItems([note], [meeting], "all").map(({ id, kind }) => ({ id, kind }))).toEqual([
+    expect(
+      buildLibraryItems([note], [meeting], "all").map(({ id, kind }) => ({ id, kind })),
+    ).toEqual([
       { id: "meeting-1", kind: "meeting" },
       { id: "note-1", kind: "dictation" },
     ]);

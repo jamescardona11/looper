@@ -16,11 +16,7 @@ import { internal } from "../_generated/api";
 import { internalAction, internalQuery } from "../_generated/server";
 import { resolveLanguageModel } from "./models";
 import { buildTools } from "./tools";
-import {
-  buildModelMessages,
-  latestTurnRequiresMemorySearch,
-  runAssistantStream,
-} from "./turn";
+import { buildModelMessages, latestTurnRequiresMemorySearch, runAssistantStream } from "./turn";
 import {
   appendMemoryCitations,
   type MemoryCitation,
@@ -103,10 +99,12 @@ export const replyToThread = internalAction({
                   : {},
               onStepFinish: ({ toolResults }: { toolResults: readonly unknown[] }) => {
                 memoryCitations.push(
-                  ...memoryCitationsFromToolResults(toolResults as Array<{
-                    toolName?: unknown;
-                    output?: unknown;
-                  }>),
+                  ...memoryCitationsFromToolResults(
+                    toolResults as Array<{
+                      toolName?: unknown;
+                      output?: unknown;
+                    }>,
+                  ),
                 );
               },
             }

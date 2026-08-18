@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { createLocalNote, normalizeStoredNotes, sortNotesByUpdatedAt, updateLocalNote } from "./local-notes-logic";
+import {
+  createLocalNote,
+  normalizeStoredNotes,
+  sortNotesByUpdatedAt,
+  updateLocalNote,
+} from "./local-notes-logic";
 
 describe("local notes", () => {
   it("creates an untitled note and keeps the newest note first", () => {

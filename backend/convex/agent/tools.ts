@@ -158,7 +158,8 @@ function normalizedTerms(query: string): string[] {
 }
 
 function normalizedLimit(limit: number | undefined): number {
-  const value = typeof limit === "number" && Number.isFinite(limit) ? Math.trunc(limit) : DEFAULT_MEMORY_LIMIT;
+  const value =
+    typeof limit === "number" && Number.isFinite(limit) ? Math.trunc(limit) : DEFAULT_MEMORY_LIMIT;
   return Math.max(1, Math.min(value, MAX_MEMORY_LIMIT));
 }
 

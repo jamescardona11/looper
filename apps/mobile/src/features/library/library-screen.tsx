@@ -1,14 +1,7 @@
 import { useMeetingSessions, useNotes } from "@looper/data";
 import { type Href, useRouter } from "expo-router";
 import { useCallback, useMemo, useState } from "react";
-import {
-  ActivityIndicator,
-  FlatList,
-  Pressable,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
+import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { colors } from "@/shared/theme/colors";
 import { buildLibraryItems, type LibraryFilter, type LibraryItem } from "./library-logic";

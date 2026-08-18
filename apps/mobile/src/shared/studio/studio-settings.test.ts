@@ -13,15 +13,20 @@ describe("studio settings", () => {
 
   it("combines style, format, and mode instructions", () => {
     const settings = normalizeStudioSettings(null);
-    expect(smartModePrompt({
-      id: "work",
-      name: "Work",
-      enabled: true,
-      triggerType: "manual",
-      triggerValue: "",
-      styleId: "concise",
-      format: "email",
-      instructions: "End with the stated next step.",
-    }, settings.styles)).toContain("Format as an email");
+    expect(
+      smartModePrompt(
+        {
+          id: "work",
+          name: "Work",
+          enabled: true,
+          triggerType: "manual",
+          triggerValue: "",
+          styleId: "concise",
+          format: "email",
+          instructions: "End with the stated next step.",
+        },
+        settings.styles,
+      ),
+    ).toContain("Format as an email");
   });
 });

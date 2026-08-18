@@ -29,7 +29,12 @@ export function useDictationHistory({ loadList = true }: { loadList?: boolean } 
   const rows = useQuery(api.dictation.transcriptions.list, loadList ? {} : "skip");
   const recordMutation = useMutation(api.dictation.transcriptions.record);
   const record = useCallback(
-    async ({ text, source = "local", sourceId, occurredAt }: {
+    async ({
+      text,
+      source = "local",
+      sourceId,
+      occurredAt,
+    }: {
       text: string;
       source?: "local" | "remote";
       sourceId?: string;

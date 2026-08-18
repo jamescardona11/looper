@@ -45,7 +45,9 @@ export function AgentScreen({ meetingId }: { meetingId?: string }) {
         <View style={styles.header}>
           <Text style={styles.title}>Ask Looper</Text>
           <Text style={styles.subtitle}>
-            {meetingId ? "Pregunta solo sobre este meeting." : "Respuestas privadas con fuentes de tu Library."}
+            {meetingId
+              ? "Pregunta solo sobre este meeting."
+              : "Respuestas privadas con fuentes de tu Library."}
           </Text>
         </View>
         <View accessibilityLabel="Ámbito de búsqueda" style={styles.scopes}>
@@ -105,11 +107,19 @@ export function AgentScreen({ meetingId }: { meetingId?: string }) {
             value={draft}
           />
           {agent.isBusy ? (
-            <Pressable accessibilityLabel="Detener respuesta" onPress={() => void agent.stop()} style={styles.send}>
+            <Pressable
+              accessibilityLabel="Detener respuesta"
+              onPress={() => void agent.stop()}
+              style={styles.send}
+            >
               <Text style={styles.sendText}>■</Text>
             </Pressable>
           ) : (
-            <Pressable accessibilityLabel="Enviar pregunta" onPress={() => void submit()} style={styles.send}>
+            <Pressable
+              accessibilityLabel="Enviar pregunta"
+              onPress={() => void submit()}
+              style={styles.send}
+            >
               <Text style={styles.sendText}>↑</Text>
             </Pressable>
           )}
@@ -156,7 +166,9 @@ function MessageRow({ message }: { message: ChatMessage }) {
         {message.status === "streaming" && !message.content ? (
           <ActivityIndicator color={colors.accent} />
         ) : (
-          <Text style={[styles.messageText, isUser && styles.userMessageText]}>{message.content}</Text>
+          <Text style={[styles.messageText, isUser && styles.userMessageText]}>
+            {message.content}
+          </Text>
         )}
       </View>
       {citations.length > 0 ? (
@@ -164,7 +176,9 @@ function MessageRow({ message }: { message: ChatMessage }) {
           {citations.map((citation) => (
             <View key={`${citation.kind}:${citation.title}`} style={styles.citation}>
               <Text style={styles.citationKind}>{citation.kind}</Text>
-              <Text numberOfLines={1} style={styles.citationTitle}>{citation.title}</Text>
+              <Text numberOfLines={1} style={styles.citationTitle}>
+                {citation.title}
+              </Text>
             </View>
           ))}
         </View>
@@ -180,7 +194,14 @@ const styles = StyleSheet.create({
   title: { color: colors.text, fontSize: 27, fontWeight: "700", letterSpacing: -0.7 },
   subtitle: { color: colors.muted, fontSize: 13, lineHeight: 18 },
   scopes: { flexDirection: "row", gap: 7, paddingHorizontal: 18, paddingVertical: 14 },
-  scope: { borderColor: colors.border, borderRadius: 10, borderWidth: 1, minHeight: 38, justifyContent: "center", paddingHorizontal: 11 },
+  scope: {
+    borderColor: colors.border,
+    borderRadius: 10,
+    borderWidth: 1,
+    minHeight: 38,
+    justifyContent: "center",
+    paddingHorizontal: 11,
+  },
   scopeSelected: { backgroundColor: colors.accentSubtle, borderColor: colors.accent },
   scopeText: { color: colors.muted, fontSize: 12, fontWeight: "700" },
   scopeTextSelected: { color: colors.accentLight },
@@ -190,23 +211,80 @@ const styles = StyleSheet.create({
   emptyTitle: { color: colors.text, fontSize: 22, fontWeight: "700" },
   emptyBody: { color: colors.textSecondary, lineHeight: 21 },
   suggestions: { gap: 8, marginTop: 8 },
-  suggestion: { backgroundColor: colors.backgroundSecondary, borderColor: colors.border, borderRadius: 13, borderWidth: 1, padding: 14 },
+  suggestion: {
+    backgroundColor: colors.backgroundSecondary,
+    borderColor: colors.border,
+    borderRadius: 13,
+    borderWidth: 1,
+    padding: 14,
+  },
   suggestionText: { color: colors.textSecondary, fontSize: 13, lineHeight: 18 },
   messageWrap: { alignSelf: "stretch", gap: 7 },
   userWrap: { alignItems: "flex-end" },
-  assistantLabel: { color: colors.accentLight, fontSize: 10, fontWeight: "800", letterSpacing: 0.8 },
+  assistantLabel: {
+    color: colors.accentLight,
+    fontSize: 10,
+    fontWeight: "800",
+    letterSpacing: 0.8,
+  },
   message: { borderRadius: 15, maxWidth: "88%", paddingHorizontal: 14, paddingVertical: 11 },
   userMessage: { backgroundColor: colors.accent },
-  assistantMessage: { backgroundColor: colors.backgroundSecondary, borderColor: colors.border, borderWidth: 1, maxWidth: "100%" },
+  assistantMessage: {
+    backgroundColor: colors.backgroundSecondary,
+    borderColor: colors.border,
+    borderWidth: 1,
+    maxWidth: "100%",
+  },
   messageText: { color: colors.text, fontSize: 14, lineHeight: 21 },
   userMessageText: { color: colors.onAccent },
   citations: { gap: 6 },
-  citation: { alignItems: "center", borderColor: colors.border, borderRadius: 10, borderWidth: 1, flexDirection: "row", gap: 8, minHeight: 38, paddingHorizontal: 10 },
-  citationKind: { color: colors.accentLight, fontSize: 10, fontWeight: "800", textTransform: "uppercase" },
+  citation: {
+    alignItems: "center",
+    borderColor: colors.border,
+    borderRadius: 10,
+    borderWidth: 1,
+    flexDirection: "row",
+    gap: 8,
+    minHeight: 38,
+    paddingHorizontal: 10,
+  },
+  citationKind: {
+    color: colors.accentLight,
+    fontSize: 10,
+    fontWeight: "800",
+    textTransform: "uppercase",
+  },
   citationTitle: { color: colors.textSecondary, flex: 1, fontSize: 12 },
   error: { color: colors.danger, fontSize: 12, paddingHorizontal: 18, paddingVertical: 6 },
-  composer: { alignItems: "flex-end", backgroundColor: colors.background, borderTopColor: colors.border, borderTopWidth: StyleSheet.hairlineWidth, flexDirection: "row", gap: 9, padding: 12 },
-  input: { backgroundColor: colors.backgroundSecondary, borderColor: colors.border, borderRadius: 15, borderWidth: 1, color: colors.text, flex: 1, fontSize: 14, maxHeight: 110, minHeight: 46, paddingHorizontal: 14, paddingVertical: 12 },
-  send: { alignItems: "center", backgroundColor: colors.accent, borderRadius: 13, height: 46, justifyContent: "center", width: 46 },
+  composer: {
+    alignItems: "flex-end",
+    backgroundColor: colors.background,
+    borderTopColor: colors.border,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    flexDirection: "row",
+    gap: 9,
+    padding: 12,
+  },
+  input: {
+    backgroundColor: colors.backgroundSecondary,
+    borderColor: colors.border,
+    borderRadius: 15,
+    borderWidth: 1,
+    color: colors.text,
+    flex: 1,
+    fontSize: 14,
+    maxHeight: 110,
+    minHeight: 46,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+  },
+  send: {
+    alignItems: "center",
+    backgroundColor: colors.accent,
+    borderRadius: 13,
+    height: 46,
+    justifyContent: "center",
+    width: 46,
+  },
   sendText: { color: colors.onAccent, fontSize: 21, fontWeight: "800" },
 });

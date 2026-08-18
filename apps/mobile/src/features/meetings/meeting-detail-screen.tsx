@@ -7,7 +7,12 @@ import { colors } from "@/shared/theme/colors";
 import { formatMeetingDuration } from "./meeting-capture-logic";
 
 type DetailTab = "summary" | "notes" | "transcript";
-const meetingDateFormatter = new Intl.DateTimeFormat("es", { day: "numeric", month: "short", hour: "numeric", minute: "2-digit" });
+const meetingDateFormatter = new Intl.DateTimeFormat("es", {
+  day: "numeric",
+  month: "short",
+  hour: "numeric",
+  minute: "2-digit",
+});
 
 export function MeetingDetailScreen({
   meetingId,
@@ -24,7 +29,9 @@ export function MeetingDetailScreen({
   if (meeting.isLoading) {
     return (
       <SafeAreaView style={styles.safeArea}>
-        <View style={styles.loading}><ActivityIndicator color={colors.accent} size="large" /></View>
+        <View style={styles.loading}>
+          <ActivityIndicator color={colors.accent} size="large" />
+        </View>
       </SafeAreaView>
     );
   }
@@ -34,7 +41,9 @@ export function MeetingDetailScreen({
       <SafeAreaView style={styles.safeArea}>
         <View style={styles.loading}>
           <Text style={styles.emptyTitle}>No encontramos este meeting.</Text>
-          <Pressable onPress={onBack} style={styles.secondaryButton}><Text style={styles.secondaryText}>Volver</Text></Pressable>
+          <Pressable onPress={onBack} style={styles.secondaryButton}>
+            <Text style={styles.secondaryText}>Volver</Text>
+          </Pressable>
         </View>
       </SafeAreaView>
     );
@@ -48,9 +57,19 @@ export function MeetingDetailScreen({
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.header}>
-        <Pressable accessibilityLabel="Volver" accessibilityRole="button" hitSlop={8} onPress={onBack} style={styles.headerButton}><Text style={styles.backText}>‹</Text></Pressable>
+        <Pressable
+          accessibilityLabel="Volver"
+          accessibilityRole="button"
+          hitSlop={8}
+          onPress={onBack}
+          style={styles.headerButton}
+        >
+          <Text style={styles.backText}>‹</Text>
+        </Pressable>
         <View style={styles.headerCopy}>
-          <Text numberOfLines={1} style={styles.title}>{meeting.session.title}</Text>
+          <Text numberOfLines={1} style={styles.title}>
+            {meeting.session.title}
+          </Text>
           <Text style={styles.saved}>Guardado · {formatDate(meeting.session.lastActiveAt)}</Text>
         </View>
         <View style={styles.headerButton} />
@@ -70,14 +89,20 @@ export function MeetingDetailScreen({
               onPress={() => setTab(id)}
               style={[styles.tab, tab === id && styles.activeTab]}
             >
-              <Text style={[styles.tabText, tab === id && styles.activeTabText]}>{tabLabel(id)}</Text>
+              <Text style={[styles.tabText, tab === id && styles.activeTabText]}>
+                {tabLabel(id)}
+              </Text>
             </Pressable>
           ))}
         </View>
         {tab === "summary" ? <SummaryTab brief={meeting.brief} /> : null}
         {tab === "notes" ? <NotesTab contexts={meeting.contexts} /> : null}
         {tab === "transcript" ? <TranscriptTab transcript={meeting.transcript} /> : null}
-        <Pressable accessibilityRole="button" onPress={() => onAsk(meetingId)} style={styles.askButton}>
+        <Pressable
+          accessibilityRole="button"
+          onPress={() => onAsk(meetingId)}
+          style={styles.askButton}
+        >
           <Text style={styles.askText}>Preguntar sobre este meeting</Text>
         </Pressable>
       </ScrollView>
@@ -86,28 +111,58 @@ export function MeetingDetailScreen({
 }
 
 function SummaryTab({ brief }: { brief: MeetingBrief | null }) {
-  if (!brief || (brief.decisions.length === 0 && brief.tasks.length === 0 && brief.questions.length === 0)) {
-    return <EmptySection title="Todavía no hay resumen" body="Cuando la transcripción contiene decisiones o tareas, Looper las reúne aquí." />;
+  if (
+    !brief ||
+    (brief.decisions.length === 0 && brief.tasks.length === 0 && brief.questions.length === 0)
+  ) {
+    return (
+      <EmptySection
+        title="Todavía no hay resumen"
+        body="Cuando la transcripción contiene decisiones o tareas, Looper las reúne aquí."
+      />
+    );
   }
   return (
     <View style={styles.document}>
-      <DocumentSection title="Decisiones" items={brief.decisions} empty="No se detectaron decisiones." />
-      <DocumentSection title="Próximas acciones" items={brief.tasks} empty="No se detectaron tareas." />
-      <DocumentSection title="Preguntas abiertas" items={brief.questions} empty="No quedaron preguntas abiertas." />
+      <DocumentSection
+        title="Decisiones"
+        items={brief.decisions}
+        empty="No se detectaron decisiones."
+      />
+      <DocumentSection
+        title="Próximas acciones"
+        items={brief.tasks}
+        empty="No se detectaron tareas."
+      />
+      <DocumentSection
+        title="Preguntas abiertas"
+        items={brief.questions}
+        empty="No quedaron preguntas abiertas."
+      />
     </View>
   );
 }
 
 function NotesTab({ contexts }: { contexts: MeetingContext[] }) {
   const notes = contexts.filter((context) => context.kind === "note");
-  if (notes.length === 0) return <EmptySection title="Sin notas manuales" body="Las notas escritas durante el meeting aparecerán aquí." />;
+  if (notes.length === 0)
+    return (
+      <EmptySection
+        title="Sin notas manuales"
+        body="Las notas escritas durante el meeting aparecerán aquí."
+      />
+    );
   return (
     <View style={styles.document}>
       {notes.map((note) => (
         <View key={note.id} style={styles.section}>
           <Text style={styles.sectionTitle}>{note.title}</Text>
           {note.title === "Momentos marcados" ? (
-            note.content.split("\n").map((value) => <Text key={value} style={styles.body}>• {formatMeetingDuration(Number(value))}</Text>)
+            note.content.split("\n").map((value) => (
+              <Text key={value} style={styles.body}>
+                • {formatMeetingDuration(Number(value))}
+              </Text>
+            ))
           ) : (
             <Text style={styles.body}>{note.content}</Text>
           )}
@@ -118,12 +173,21 @@ function NotesTab({ contexts }: { contexts: MeetingContext[] }) {
 }
 
 function TranscriptTab({ transcript }: { transcript: MeetingTranscriptSegment[] }) {
-  if (transcript.length === 0) return <EmptySection title="Sin transcripción" body="No se detectó voz o el meeting todavía no terminó de procesarse." />;
+  if (transcript.length === 0)
+    return (
+      <EmptySection
+        title="Sin transcripción"
+        body="No se detectó voz o el meeting todavía no terminó de procesarse."
+      />
+    );
   return (
     <View style={styles.document}>
       {transcript.map((segment) => (
         <View key={segment.id} style={styles.section}>
-          <Text style={styles.sectionTitle}>{formatMeetingDuration(segment.timestampMs)}{segment.speaker ? ` · ${segment.speaker}` : ""}</Text>
+          <Text style={styles.sectionTitle}>
+            {formatMeetingDuration(segment.timestampMs)}
+            {segment.speaker ? ` · ${segment.speaker}` : ""}
+          </Text>
           <Text style={styles.body}>{segment.text}</Text>
         </View>
       ))}
@@ -131,17 +195,38 @@ function TranscriptTab({ transcript }: { transcript: MeetingTranscriptSegment[] 
   );
 }
 
-function DocumentSection({ title, items, empty }: { title: string; items: string[]; empty: string }) {
+function DocumentSection({
+  title,
+  items,
+  empty,
+}: {
+  title: string;
+  items: string[];
+  empty: string;
+}) {
   return (
     <View style={styles.section}>
       <Text style={styles.sectionTitle}>{title}</Text>
-      {items.length > 0 ? items.map((item, index) => <Text key={`${index}-${item}`} style={styles.body}>• {item}</Text>) : <Text style={styles.mutedBody}>{empty}</Text>}
+      {items.length > 0 ? (
+        items.map((item) => (
+          <Text key={item} style={styles.body}>
+            • {item}
+          </Text>
+        ))
+      ) : (
+        <Text style={styles.mutedBody}>{empty}</Text>
+      )}
     </View>
   );
 }
 
 function EmptySection({ title, body }: { title: string; body: string }) {
-  return <View style={styles.emptySection}><Text style={styles.emptyTitle}>{title}</Text><Text style={styles.mutedBody}>{body}</Text></View>;
+  return (
+    <View style={styles.emptySection}>
+      <Text style={styles.emptyTitle}>{title}</Text>
+      <Text style={styles.mutedBody}>{body}</Text>
+    </View>
+  );
 }
 
 function tabLabel(tab: DetailTab): string {
@@ -157,7 +242,14 @@ function formatDate(timestamp: number): string {
 const styles = StyleSheet.create({
   safeArea: { backgroundColor: colors.background, flex: 1 },
   loading: { alignItems: "center", flex: 1, gap: 14, justifyContent: "center", padding: 24 },
-  header: { alignItems: "center", borderBottomColor: colors.border, borderBottomWidth: StyleSheet.hairlineWidth, flexDirection: "row", minHeight: 58, paddingHorizontal: 12 },
+  header: {
+    alignItems: "center",
+    borderBottomColor: colors.border,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    flexDirection: "row",
+    minHeight: 58,
+    paddingHorizontal: 12,
+  },
   headerButton: { alignItems: "center", height: 44, justifyContent: "center", width: 44 },
   backText: { color: colors.textSecondary, fontSize: 30, lineHeight: 34 },
   headerCopy: { flex: 1, gap: 3 },
@@ -166,20 +258,59 @@ const styles = StyleSheet.create({
   content: { padding: 18, paddingBottom: 38 },
   metaRow: { flexDirection: "row", flexWrap: "wrap", gap: 12, paddingBottom: 16 },
   meta: { color: colors.muted, fontSize: 12 },
-  tabs: { borderBottomColor: colors.border, borderBottomWidth: 1, flexDirection: "row", marginBottom: 20 },
-  tab: { borderBottomColor: "transparent", borderBottomWidth: 2, minHeight: 44, justifyContent: "center", paddingHorizontal: 12 },
+  tabs: {
+    borderBottomColor: colors.border,
+    borderBottomWidth: 1,
+    flexDirection: "row",
+    marginBottom: 20,
+  },
+  tab: {
+    borderBottomColor: "transparent",
+    borderBottomWidth: 2,
+    minHeight: 44,
+    justifyContent: "center",
+    paddingHorizontal: 12,
+  },
   activeTab: { borderBottomColor: colors.accent },
   tabText: { color: colors.muted, fontSize: 13, fontWeight: "700" },
   activeTabText: { color: colors.text },
   document: { gap: 20 },
-  section: { borderBottomColor: colors.border, borderBottomWidth: StyleSheet.hairlineWidth, gap: 8, paddingBottom: 18 },
+  section: {
+    borderBottomColor: colors.border,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    gap: 8,
+    paddingBottom: 18,
+  },
   sectionTitle: { color: colors.text, fontSize: 15, fontWeight: "700" },
   body: { color: colors.textSecondary, fontSize: 14, lineHeight: 22 },
   mutedBody: { color: colors.muted, fontSize: 14, lineHeight: 21 },
-  emptySection: { alignItems: "center", backgroundColor: colors.backgroundSecondary, borderColor: colors.border, borderRadius: 16, borderWidth: 1, gap: 8, padding: 28 },
+  emptySection: {
+    alignItems: "center",
+    backgroundColor: colors.backgroundSecondary,
+    borderColor: colors.border,
+    borderRadius: 16,
+    borderWidth: 1,
+    gap: 8,
+    padding: 28,
+  },
   emptyTitle: { color: colors.text, fontSize: 17, fontWeight: "700", textAlign: "center" },
-  askButton: { alignItems: "center", borderColor: colors.borderStrong, borderRadius: 13, borderWidth: 1, justifyContent: "center", marginTop: 24, minHeight: 48 },
+  askButton: {
+    alignItems: "center",
+    borderColor: colors.borderStrong,
+    borderRadius: 13,
+    borderWidth: 1,
+    justifyContent: "center",
+    marginTop: 24,
+    minHeight: 48,
+  },
   askText: { color: colors.text, fontSize: 13, fontWeight: "700" },
-  secondaryButton: { borderColor: colors.borderStrong, borderRadius: 12, borderWidth: 1, minHeight: 44, justifyContent: "center", paddingHorizontal: 16 },
+  secondaryButton: {
+    borderColor: colors.borderStrong,
+    borderRadius: 12,
+    borderWidth: 1,
+    minHeight: 44,
+    justifyContent: "center",
+    paddingHorizontal: 16,
+  },
   secondaryText: { color: colors.text, fontWeight: "700" },
 });

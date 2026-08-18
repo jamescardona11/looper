@@ -13,16 +13,18 @@ export function LocalContentSync({ children }: { children: ReactNode }) {
     started.current = true;
     void loadLocalNotes()
       .then(async (localNotes) => {
-        await Promise.all(localNotes.map(async (note) => {
-          await notes.upsertFromDevice({ ...note, sourceId: note.id });
-          if (note.kind === "dictation" && note.body.trim()) {
-            await dictations.record({
-              text: note.body,
-              sourceId: note.id,
-              occurredAt: note.createdAt,
-            });
-          }
-        }));
+        await Promise.all(
+          localNotes.map(async (note) => {
+            await notes.upsertFromDevice({ ...note, sourceId: note.id });
+            if (note.kind === "dictation" && note.body.trim()) {
+              await dictations.record({
+                text: note.body,
+                sourceId: note.id,
+                occurredAt: note.createdAt,
+              });
+            }
+          }),
+        );
       })
       .catch((cause: unknown) => {
         if (__DEV__) console.warn("No se pudo migrar el contenido local", cause);

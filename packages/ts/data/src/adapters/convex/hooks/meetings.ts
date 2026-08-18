@@ -76,11 +76,7 @@ export function useMeetingSessions({ limit = 50 }: { limit?: number } = {}): {
     [startMutation],
   );
   const setState = useCallback(
-    async (input: {
-      meetingId: string;
-      state: MeetingSessionState;
-      sharingEnabled: boolean;
-    }) => {
+    async (input: { meetingId: string; state: MeetingSessionState; sharingEnabled: boolean }) => {
       await setStateMutation(input);
     },
     [setStateMutation],
@@ -124,18 +120,12 @@ export function useMeetingDetail(meetingId: string | null): {
   brief: MeetingBrief | null;
   isLoading: boolean;
 } {
-  const sessionRow = useQuery(
-    api.meetings.sessions.getSession,
-    meetingId ? { meetingId } : "skip",
-  );
+  const sessionRow = useQuery(api.meetings.sessions.getSession, meetingId ? { meetingId } : "skip");
   const transcriptPage = useQuery(
     api.meetings.sessions.getTranscriptSince,
     meetingId ? { meetingId, afterSequence: 0, limit: 200 } : "skip",
   );
-  const brief = useQuery(
-    api.meetings.sessions.getMeetingBrief,
-    meetingId ? { meetingId } : "skip",
-  );
+  const brief = useQuery(api.meetings.sessions.getMeetingBrief, meetingId ? { meetingId } : "skip");
   const contextRows = useQuery(
     api.meetings.sessions.listContexts,
     meetingId ? { meetingId } : "skip",

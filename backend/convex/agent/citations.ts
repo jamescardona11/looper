@@ -42,9 +42,7 @@ function isMemoryCitation(value: unknown): value is MemoryCitation {
   if (!value || typeof value !== "object") return false;
   const candidate = value as { kind?: unknown; title?: unknown };
   return (
-    (candidate.kind === "note" ||
-      candidate.kind === "dictation" ||
-      candidate.kind === "meeting") &&
+    (candidate.kind === "note" || candidate.kind === "dictation" || candidate.kind === "meeting") &&
     typeof candidate.title === "string" &&
     candidate.title.trim().length > 0
   );
