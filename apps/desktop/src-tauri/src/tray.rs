@@ -11,18 +11,20 @@ use crate::settings::UserSettings;
 use crate::speech::menu::{
     build_model_status_items, build_models_submenu, handle_speech_menu_event,
 };
-use crate::{audio, AppRuntime, AppState, SETTINGS_WINDOW_LABEL};
-use chrono::{DateTime, Duration as ChronoDuration, Local, Utc};
+use crate::{audio, AppRuntime, AppState};
+use chrono::Utc;
 use parking_lot::Mutex;
-use std::sync::{atomic::Ordering, OnceLock};
-#[cfg(target_os = "macos")]
-use std::time::Duration;
+use std::sync::OnceLock;
 use tauri::menu::{CheckMenuItemBuilder, Menu, MenuBuilder, MenuItem, SubmenuBuilder};
 use tauri::tray::{TrayIcon, TrayIconBuilder};
-use tauri::{AppHandle, Emitter, Manager, WebviewUrl, WebviewWindowBuilder, WindowEvent};
+use tauri::{AppHandle, Emitter, Manager};
 
-#[cfg(target_os = "macos")]
-use tauri::ActivationPolicy;
+mod tray_calendar;
+mod tray_pill_menu;
+mod tray_settings_window;
+use tray_calendar::{calendar_agenda_entries, calendar_menu_bar_title};
+use tray_pill_menu::{build_capture_pill_submenu, build_dictation_language_submenu};
+pub use tray_settings_window::toggle_settings_window;
 
 // On macOS, share mic constants with the app menu; on other platforms, define locally
 #[cfg(target_os = "macos")]
@@ -36,16 +38,10 @@ const MENU_ID_FEATURE_LAB: &str = "menu_feature_lab";
 const MENU_ID_CALENDAR_NEXT: &str = "menu_calendar_next";
 const MENU_ID_CALENDAR_EMPTY: &str = "menu_calendar_empty";
 const MENU_ID_CALENDAR_JOIN_PREFIX: &str = "menu_calendar_join:";
-const MAX_CALENDAR_AGENDA_ITEMS: usize = 10;
-const MAX_CALENDAR_TITLE_CHARS: usize = 30;
-const CALENDAR_TITLE_HORIZON_HOURS: i64 = 24;
 const MENU_ID_PILL_POSITION_PREFIX: &str = "menu_pill_position:";
 const MENU_ID_PILL_PRESENTATION_PREFIX: &str = "menu_pill_presentation:";
 const MENU_ID_DICTATION_LANGUAGE_PREFIX: &str = "menu_dictation_language:";
 pub(crate) const EVENT_SETTINGS_RENDERER_READY: &str = "settings:renderer_ready";
-
-#[cfg(target_os = "macos")]
-const BACKGROUND_SURFACE_RESTORE_DELAY_MS: u64 = 120;
 
 const EVENT_NAVIGATE_ABOUT: &str = "navigate:about";
 const EVENT_NAVIGATE_SETTINGS: &str = "navigate:settings";
@@ -60,154 +56,6 @@ enum SettingsNavigationTarget {
     History,
     Models,
     FeatureLab,
-}
-
-#[derive(Debug, Clone, PartialEq, Eq)]
-struct CalendarAgendaEntry {
-    event_id: String,
-    label: String,
-}
-
-struct CalendarWindow<'a> {
-    meeting: &'a crate::meeting_awareness::CalendarMeeting,
-    starts_at: DateTime<Utc>,
-    ends_at: DateTime<Utc>,
-}
-
-impl<'a> CalendarWindow<'a> {
-    fn parse(meeting: &'a crate::meeting_awareness::CalendarMeeting) -> Option<Self> {
-        Some(Self {
-            meeting,
-            starts_at: DateTime::parse_from_rfc3339(&meeting.started_at)
-                .ok()?
-                .with_timezone(&Utc),
-            ends_at: DateTime::parse_from_rfc3339(&meeting.ended_at)
-                .ok()?
-                .with_timezone(&Utc),
-        })
-    }
-
-    fn belongs_to_agenda(&self, now: DateTime<Utc>, horizon: DateTime<Utc>) -> bool {
-        self.ends_at > now && self.starts_at <= horizon
-    }
-
-    fn is_active(&self, now: DateTime<Utc>) -> bool {
-        self.starts_at <= now && self.ends_at > now
-    }
-
-    fn starts_within(&self, now: DateTime<Utc>, horizon: DateTime<Utc>) -> bool {
-        self.starts_at > now && self.starts_at <= horizon
-    }
-}
-
-fn calendar_windows(
-    meetings: &[crate::meeting_awareness::CalendarMeeting],
-) -> Vec<CalendarWindow<'_>> {
-    meetings.iter().filter_map(CalendarWindow::parse).collect()
-}
-
-fn calendar_agenda_entries(
-    meetings: &[crate::meeting_awareness::CalendarMeeting],
-    now: DateTime<Utc>,
-) -> Vec<CalendarAgendaEntry> {
-    let horizon = now + ChronoDuration::days(7);
-    let mut upcoming = calendar_windows(meetings)
-        .into_iter()
-        .filter(|window| window.belongs_to_agenda(now, horizon))
-        .collect::<Vec<_>>();
-    upcoming.sort_by_key(|window| window.starts_at);
-    upcoming
-        .into_iter()
-        .take(MAX_CALENDAR_AGENDA_ITEMS)
-        .map(|window| CalendarAgendaEntry {
-            event_id: window.meeting.id.clone(),
-            label: calendar_agenda_label(&window.meeting.title, window.starts_at, now),
-        })
-        .collect()
-}
-
-fn calendar_agenda_label(title: &str, starts_at: DateTime<Utc>, now: DateTime<Utc>) -> String {
-    let starts_local = starts_at.with_timezone(&Local);
-    let now_local = now.with_timezone(&Local);
-    let day = if starts_local.date_naive() == now_local.date_naive() {
-        "Today".to_string()
-    } else if starts_local.date_naive() == now_local.date_naive() + ChronoDuration::days(1) {
-        "Tomorrow".to_string()
-    } else {
-        starts_local.format("%a %b %-d").to_string()
-    };
-    format!(
-        "{day} {} · {}",
-        starts_local.format("%H:%M"),
-        truncate_calendar_title(title, 42)
-    )
-}
-
-fn truncate_calendar_title(title: &str, max_chars: usize) -> String {
-    let title = title.split_whitespace().collect::<Vec<_>>().join(" ");
-    let title = if title.is_empty() {
-        "Untitled meeting".to_string()
-    } else {
-        title
-    };
-    if title.chars().count() <= max_chars {
-        return title;
-    }
-    let mut truncated = title
-        .chars()
-        .take(max_chars.saturating_sub(1))
-        .collect::<String>();
-    truncated.push('…');
-    truncated
-}
-
-fn calendar_menu_bar_title(
-    meetings: &[crate::meeting_awareness::CalendarMeeting],
-    now: DateTime<Utc>,
-) -> Option<String> {
-    let windows = calendar_windows(meetings);
-    if let Some(active) = windows
-        .iter()
-        .filter(|window| window.is_active(now))
-        .min_by_key(|window| window.ends_at)
-    {
-        let suffix = format!(
-            " • {} left",
-            compact_calendar_duration(active.ends_at - now)
-        );
-        return Some(compact_calendar_title(&active.meeting.title, &suffix));
-    }
-
-    let horizon = now + ChronoDuration::hours(CALENDAR_TITLE_HORIZON_HOURS);
-    let next = windows
-        .iter()
-        .filter(|window| window.starts_within(now, horizon))
-        .min_by_key(|window| window.starts_at)?;
-    let suffix = format!(" • in {}", compact_calendar_duration(next.starts_at - now));
-    Some(compact_calendar_title(&next.meeting.title, &suffix))
-}
-
-fn compact_calendar_title(title: &str, suffix: &str) -> String {
-    let title_limit = MAX_CALENDAR_TITLE_CHARS.saturating_sub(suffix.chars().count());
-    format!("{}{suffix}", truncate_calendar_title(title, title_limit))
-}
-
-fn compact_calendar_duration(duration: ChronoDuration) -> String {
-    let seconds = duration.num_seconds().max(1) as u64;
-    if seconds < 60 {
-        return format!("{seconds}s");
-    }
-    let minutes = seconds / 60;
-    if minutes < 60 {
-        return format!("{minutes}m");
-    }
-    let hours = minutes / 60;
-    let remaining_minutes = minutes % 60;
-    if remaining_minutes == 0 {
-        format!("{hours}h")
-    } else {
-        format!("{hours}h {remaining_minutes}m")
-    }
 }
 
 impl SettingsNavigationTarget {
@@ -274,8 +122,9 @@ mod navigation_tests {
 
 #[cfg(test)]
 mod calendar_agenda_tests {
+    use super::tray_calendar::{normalized_title, MENU_TITLE_LIMIT};
     use super::*;
-    use chrono::TimeZone;
+    use chrono::{DateTime, Duration as ChronoDuration, TimeZone, Utc};
 
     fn meeting(
         id: &str,
@@ -345,7 +194,7 @@ mod calendar_agenda_tests {
     #[test]
     fn agenda_labels_bound_long_titles() {
         let title = "A very long calendar meeting title that should not take over the tray menu";
-        let truncated = truncate_calendar_title(title, 24);
+        let truncated = normalized_title(title, 24);
 
         assert_eq!(truncated.chars().count(), 24);
         assert!(truncated.ends_with('…'));
@@ -389,7 +238,7 @@ mod calendar_agenda_tests {
         );
 
         let title = calendar_menu_bar_title(&[far, next], now).unwrap();
-        assert_eq!(title.chars().count(), MAX_CALENDAR_TITLE_CHARS);
+        assert_eq!(title.chars().count(), MENU_TITLE_LIMIT);
         assert!(title.ends_with(" • in 5m"));
     }
 }
@@ -608,66 +457,6 @@ fn build_tray_menu(
     menu = menu.item(&open_settings).item(&quit);
 
     menu.build()
-}
-
-fn build_capture_pill_submenu(
-    app: &AppHandle<AppRuntime>,
-    settings: &UserSettings,
-) -> tauri::Result<tauri::menu::Submenu<AppRuntime>> {
-    let mut capture_pill = SubmenuBuilder::new(app, "Capture Pill");
-    for (label, value, presentation) in [
-        ("Dock", "dock", CapturePillPresentation::Dock),
-        ("Floating", "floating", CapturePillPresentation::Floating),
-    ] {
-        let item = CheckMenuItemBuilder::with_id(
-            format!("{MENU_ID_PILL_PRESENTATION_PREFIX}{value}"),
-            label,
-        )
-        .checked(settings.capture_pill_presentation == presentation)
-        .build(app)?;
-        capture_pill = capture_pill.item(&item);
-    }
-
-    let mut position = SubmenuBuilder::new(app, "Dock Position");
-    for (label, dock_position) in [
-        ("Top Center", CapturePillDockPosition::TopCenter),
-        ("Left Center", CapturePillDockPosition::LeftCenter),
-        ("Right Center", CapturePillDockPosition::RightCenter),
-        ("Bottom Center", CapturePillDockPosition::BottomCenter),
-    ] {
-        let item = CheckMenuItemBuilder::with_id(
-            format!(
-                "{MENU_ID_PILL_POSITION_PREFIX}{}",
-                dock_position.menu_value()
-            ),
-            label,
-        )
-        .checked(
-            settings.capture_pill_presentation == CapturePillPresentation::Dock
-                && settings.capture_pill_dock_position == dock_position,
-        )
-        .build(app)?;
-        position = position.item(&item);
-    }
-
-    capture_pill.item(&position.build()?).build()
-}
-
-fn build_dictation_language_submenu(
-    app: &AppHandle<AppRuntime>,
-    settings: &UserSettings,
-) -> tauri::Result<tauri::menu::Submenu<AppRuntime>> {
-    let mut language = SubmenuBuilder::new(app, "Dictation Language");
-    for (label, code) in [("Español", "es"), ("English", "en"), ("Português", "pt")] {
-        let item = CheckMenuItemBuilder::with_id(
-            format!("{MENU_ID_DICTATION_LANGUAGE_PREFIX}{code}"),
-            label,
-        )
-        .checked(settings.language == code)
-        .build(app)?;
-        language = language.item(&item);
-    }
-    language.build()
 }
 
 pub(crate) fn refresh_tray_menu(
@@ -993,104 +782,4 @@ pub fn build_tray(app: &AppHandle<AppRuntime>) -> tauri::Result<TrayIcon<AppRunt
         app.state::<AppState>().meeting_awareness().agenda(),
     )?;
     Ok(tray)
-}
-
-pub fn toggle_settings_window(app: &AppHandle<AppRuntime>) -> tauri::Result<()> {
-    let state = app.state::<AppState>();
-    let mut reset_close_flag = false;
-
-    let window = if let Some(existing) = app.get_webview_window(SETTINGS_WINDOW_LABEL) {
-        existing
-    } else {
-        reset_close_flag = true;
-        let builder = WebviewWindowBuilder::new(app, SETTINGS_WINDOW_LABEL, WebviewUrl::default())
-            .title("Looper")
-            .inner_size(900.0, 750.0)
-            .min_inner_size(900.0, 750.0)
-            .resizable(true)
-            .visible(false);
-
-        #[cfg(target_os = "macos")]
-        let builder = builder.hidden_title(true);
-
-        #[cfg(target_os = "windows")]
-        let builder = builder.decorations(false);
-
-        builder.build()?
-    };
-
-    if reset_close_flag {
-        state
-            .settings_close_handler_registered
-            .store(false, Ordering::SeqCst);
-    }
-
-    #[cfg(target_os = "macos")]
-    let _ = app.set_activation_policy(ActivationPolicy::Regular);
-
-    if window.is_minimized().unwrap_or(false) {
-        window.unminimize()?;
-    }
-    window.show()?;
-    window.set_focus()?;
-
-    // Show a toast if the app just restarted via auto-update
-    if state.take_auto_update_completed() {
-        let current_version = env!("CARGO_PKG_VERSION");
-        crate::toast::emit_toast(
-            app,
-            crate::toast::Payload {
-                toast_type: "success".to_string(),
-                title: None,
-                message: format!("Looper updated to v{current_version}."),
-                auto_dismiss: Some(true),
-                duration: Some(5000),
-                retry_id: None,
-                mode: None,
-                action: None,
-                action_label: None,
-                secondary_action: None,
-                secondary_action_label: None,
-            },
-        );
-    }
-
-    let already_registered = state
-        .settings_close_handler_registered
-        .swap(true, Ordering::SeqCst);
-    if !already_registered {
-        let app_handle = app.clone();
-        let window_clone = window.clone();
-        window.on_window_event(move |event| {
-            if let WindowEvent::CloseRequested { api, .. } = event {
-                api.prevent_close();
-                let _ = window_clone.hide();
-                if let Err(error) = crate::restore_recording_shortcuts(&app_handle) {
-                    tracing::error!(
-                        "Failed to restore recording shortcuts after closing Settings: {error}"
-                    );
-                }
-                #[cfg(target_os = "macos")]
-                {
-                    let _ = app_handle.set_activation_policy(ActivationPolicy::Accessory);
-                    restore_background_surfaces_after_settings_close(app_handle.clone());
-                }
-            }
-        });
-    }
-
-    Ok(())
-}
-
-#[cfg(target_os = "macos")]
-fn restore_background_surfaces_after_settings_close(app: AppHandle<AppRuntime>) {
-    std::thread::spawn(move || {
-        std::thread::sleep(Duration::from_millis(BACKGROUND_SURFACE_RESTORE_DELAY_MS));
-        if let Err(error) = crate::pill::show_idle_sticky(&app) {
-            tracing::error!("Failed to restore Dictation after closing Looper: {error}");
-        }
-        app.state::<AppState>()
-            .meeting_awareness()
-            .request_refresh();
-    });
 }
