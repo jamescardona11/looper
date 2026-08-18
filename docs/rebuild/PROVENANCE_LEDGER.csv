@@ -74,6 +74,10 @@ apps/desktop/src/shared/ui/WorkspacePage.tsx,owned,desktop-workspace-layout,manu
 apps/desktop/src/shared/ui/WorkspacePage.test.tsx,owned,desktop-workspace-layout-tests,authored-workspace-layout-tests,project-license-pending,-,targeted-tests-and-typecheck-2026-08-16,pending
 apps/desktop/src/shared/ui/WorkspaceRoute.tsx,owned,desktop-workspace-routing,manual-review-low-similarity,project-license-pending,-,targeted-tests-and-typecheck-2026-08-16,pending
 apps/desktop/src/shared/ui/WorkspaceRoute.test.tsx,owned,desktop-workspace-routing-tests,authored-workspace-route-tests,project-license-pending,-,targeted-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/shared/ui/DotMatrix.tsx,replaced,desktop-dot-matrix,authored-cell-renderer-and-grid-contract,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/shared/ui/ActivityDots.tsx,replaced,desktop-activity-indicator,authored-external-store-clock,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/shared/ui/IntelligencePixel.tsx,replaced,desktop-intelligence-indicator,authored-state-and-size-mapping,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/shared/ui/StatusPixels.test.tsx,owned,desktop-status-indicator-tests,authored-visual-contract-tests,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
 apps/desktop/src-tauri/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/desktop/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/mobile/**,unreviewed,mobile,,pending,-,pending,uncommitted
