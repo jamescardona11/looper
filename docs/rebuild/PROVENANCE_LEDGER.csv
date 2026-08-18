@@ -194,6 +194,11 @@ apps/desktop/src/data/license.ts,replaced,desktop-entitlement-gateway,authored-t
 apps/desktop/src/data/license.test.ts,owned,desktop-entitlement-gateway-tests,authored-state-activation-usage-and-event-tests,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
 apps/desktop/src/data/insertion.ts,owned,desktop-assistive-insertion-gateway,no-corpus-match,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
 apps/desktop/src/data/insertion.test.ts,owned,desktop-assistive-insertion-tests,authored-preview-selection-suggestion-and-undo-tests,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/data/transcription.ts,replaced,desktop-transcription-gateway,authored-domain-export-facade,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/data/transcription/models.ts,replaced,desktop-speech-model-gateway,reconstructed-from-native-command-contracts,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/data/transcription/history.ts,replaced,desktop-transcription-history-gateway,authored-record-command-dispatch-and-retention-boundary,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/data/transcription/events.ts,replaced,desktop-transcription-event-gateway,authored-payload-subscription-composition,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/data/transcription/transcription.test.ts,owned,desktop-transcription-gateway-tests,authored-command-normalization-and-event-tests,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
 apps/desktop/src-tauri/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/desktop/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/mobile/**,unreviewed,mobile,,pending,-,pending,uncommitted
