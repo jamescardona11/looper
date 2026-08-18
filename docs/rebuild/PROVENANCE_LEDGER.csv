@@ -746,6 +746,7 @@ apps/desktop/src/features/memory/components/memory-result-row.tsx,replaced,deskt
 apps/desktop/src/features/memory/components/memory-view-model.ts,replaced,desktop-memory-view-model,authored-result-group-priority-index-selection-and-toggle-policies,project-license-pending,-,corpus-containment-2.1-memory-view-25-tests-full-suite-typecheck-eslint-prettier-2026-08-17,pending
 apps/desktop/src/features/memory/components/memory-view-model.test.ts,owned,desktop-memory-view-model-tests,authored-group-priority-index-and-immutable-toggle-tests,project-license-pending,-,corpus-containment-below-threshold-memory-view-25-tests-full-suite-typecheck-eslint-prettier-2026-08-17,pending
 apps/desktop/src/features/memory/components/memory-view-contract.test.tsx,owned,desktop-memory-view-contract-tests,authored-copy-prefill-persistence-class-selection-and-control-contract-tests,project-license-pending,-,corpus-containment-below-threshold-memory-view-25-tests-full-suite-typecheck-eslint-prettier-2026-08-17,pending
+apps/desktop/src-tauri/src/integrations/handlers.rs,replaced,desktop-native-integration-handlers,authored-command-route-payload-validation-domain-policies-cleanup-and-wav-decoder-boundary,project-license-pending,-,corpus-containment-9.5-integration-handlers-9-tests-native-suite-cargo-all-targets-rustfmt-2026-08-17,pending
 apps/desktop/src-tauri/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/desktop/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/mobile/**,unreviewed,mobile,,pending,-,pending,uncommitted
