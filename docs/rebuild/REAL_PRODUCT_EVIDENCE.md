@@ -63,6 +63,17 @@ Ejecución Tauri de la rama AGPL actual (18 de agosto de 2026):
   las advertencias de entorno de Convex sin URL y de la clave cifrada de otro
   hardware descritas arriba.
 
+Smoke de inserción en host macOS ejecutado el mismo día:
+
+- Comando: `LOOPER_HOST_INSERTION_SMOKE=1 pnpm run qa:external-desktop-host`
+- Resultado: `assistive::host_smoke_tests::host_insertion_smoke_in_textedit`
+  pasó (`1 passed`, `0 failed`) con Accessibility/Input Monitoring disponibles.
+- Evidencia: `.tcompound/evidence/release/desktop-host-insertion.json` y
+  `.tcompound/evidence/release/desktop-host-insertion.txt`.
+- El smoke confirma escritura en un documento TextEdit enfocado; no demuestra
+  por sí solo hotkey global, captura de micrófono, STT real o inserción desde
+  un proveedor remoto.
+
 Durante esa ejecución el entorno informó que la clave cifrada pertenecía a
 otro hardware y que `VITE_CONVEX_URL` no estaba configurado; Looper conservó
 la clave cifrada y desactivó las rutas remotas/sync, pero la ventana local
@@ -78,9 +89,10 @@ shasum -a 256 .tcompound/evidence/real-product/desktop-home-positive.*
 ## Alcance de esta evidencia
 
 Esto prueba que el shell desktop puede abrirse y renderizar Home en el host
-macOS utilizado para la reconstrucción. No prueba por sí solo micrófono,
-Accessibility, hotkeys globales, inserción en otra aplicación, modelos locales,
-proveedores remotos, checkout, Windows, iOS, Android ni producción.
+macOS utilizado para la reconstrucción y que el canal de inserción puede escribir
+en TextEdit con los permisos nativos disponibles. No prueba por sí solo
+micrófono, hotkeys globales, modelos locales, proveedores remotos, checkout,
+Windows, iOS, Android ni producción.
 
 La matriz completa de paridad mantiene esas capacidades como `pending` cuando
 requieren un dispositivo, permisos o un servicio externo.
