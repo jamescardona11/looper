@@ -10,6 +10,9 @@ packages/rust/looper-ts/src/parakeet/mod.rs,permissive,parakeet,parakeet-rs@7deb
 packages/rust/looper-ts/src/parakeet/model.rs,permissive,parakeet,parakeet-rs@7deba612fc9a30c4a7182f4eaa53554cb2fa42c8,MIT,packages/rust/looper-ts/THIRD_PARTY_NOTICES.md,upstream-license-verified-2026-08-16,pending
 packages/rust/looper-ts/src/parakeet/timestamps.rs,permissive,parakeet,parakeet-rs@7deba612fc9a30c4a7182f4eaa53554cb2fa42c8,MIT,packages/rust/looper-ts/THIRD_PARTY_NOTICES.md,upstream-license-verified-2026-08-16,pending
 packages/rust/looper-ts/src/parakeet/vocab.rs,permissive,parakeet,parakeet-rs@7deba612fc9a30c4a7182f4eaa53554cb2fa42c8,MIT,packages/rust/looper-ts/THIRD_PARTY_NOTICES.md,upstream-license-verified-2026-08-16,pending
+packages/rust/looper-ts/src/cohere/decoder.rs,permissive,cohere-engine,transcribe-rs@343768c100d566b135fbb7a2441e61fa8aa177f2,MIT,packages/rust/looper-ts/THIRD_PARTY_NOTICES.md,upstream-license-verified-2026-08-16,pending
+packages/rust/looper-ts/src/cohere/mod.rs,permissive,cohere-engine,transcribe-rs@343768c100d566b135fbb7a2441e61fa8aa177f2,MIT,packages/rust/looper-ts/THIRD_PARTY_NOTICES.md,upstream-license-verified-2026-08-16,pending
+packages/rust/looper-ts/src/cohere/vocab.rs,permissive,cohere-engine,transcribe-rs@343768c100d566b135fbb7a2441e61fa8aa177f2,MIT,packages/rust/looper-ts/THIRD_PARTY_NOTICES.md,upstream-license-verified-2026-08-16,pending
 apps/desktop/src-tauri/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/desktop/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/mobile/**,unreviewed,mobile,,pending,-,pending,uncommitted

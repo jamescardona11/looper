@@ -71,6 +71,10 @@ SOFTWARE.
 - Source revision: `343768c100d566b135fbb7a2441e61fa8aa177f2`
 - Copyright: Copyright (c) 2025 Ilya Stupakov
 - License: MIT
+- Adapted paths:
+  - `src/cohere/decoder.rs`
+  - `src/cohere/mod.rs`
+  - `src/cohere/vocab.rs`
 
 ```text
 Permission is hereby granted, free of charge, to any person obtaining a copy
