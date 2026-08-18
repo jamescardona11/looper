@@ -31,6 +31,10 @@ apps/desktop/src/shared/lib/modelCapabilities.ts,replaced,model-capabilities,aut
 apps/desktop/src/shared/lib/modelCapabilities.test.ts,owned,model-capabilities-tests,authored-capability-tests,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
 apps/desktop/src/shared/lib/textSize.ts,replaced,text-scaling,authored-platform-scale-table,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
 apps/desktop/src/shared/lib/textSize.test.ts,owned,text-scaling-tests,authored-text-scale-tests,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/features/library/components/format-timestamp.ts,replaced,library-timestamps,authored-elapsed-time-formatting,project-license-pending,-,targeted-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/features/library/components/format-timestamp.test.ts,owned,library-timestamp-tests,authored-elapsed-time-tests,project-license-pending,-,targeted-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/features/library/components/meeting-note-markers.ts,owned,meeting-note-transcript,manual-review-low-similarity,project-license-pending,-,targeted-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/features/library/components/meeting-note-markers.test.ts,owned,meeting-note-transcript-tests,manual-review-low-similarity,project-license-pending,-,targeted-tests-and-typecheck-2026-08-16,pending
 apps/desktop/src-tauri/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/desktop/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/mobile/**,unreviewed,mobile,,pending,-,pending,uncommitted
