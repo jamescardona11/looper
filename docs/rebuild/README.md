@@ -12,8 +12,9 @@ externa por inercia.
 - `COPYRIGHT` identifica a James Cardona como titular de las contribuciones
   originales de Looper.
 - Handy y Wispr no forman parte del árbol reconstruido.
-- La rama activa se verifica con `tools/provenance/corpus-audit.py` y la
-  compuerta `tools/provenance/check-staged.mjs`.
+- La rama activa se verifica con `tools/provenance/history-audit.py`,
+  `tools/provenance/corpus-audit.py` y la compuerta
+  `tools/provenance/check-staged.mjs`.
 
 ## Auditoría reproducible
 
@@ -22,11 +23,18 @@ Desde la raíz del checkout:
 ```sh
 python3 tools/provenance/corpus-audit.py /tmp/looper-audit \
   --refs /ruta/a/voices/refs
+python3 tools/provenance/history-audit.py
 ```
 
 La salida contiene `corpus-inventory.csv` y `corpus-summary.json`. El umbral
 del informe es una señal técnica de revisión; no es un dictamen jurídico ni
 prueba por sí solo autoría independiente.
+
+`history-audit.py` inspecciona la historia alcanzable desde `HEAD`: comprueba
+la ausencia de las rutas retiradas, sus filas históricas del ledger y la
+presencia de AGPLv3 y COPYRIGHT en el commit raíz. Los backups locales de
+reescrituras anteriores se conservan fuera de la historia alcanzable de la
+rama activa.
 
 Antes de cada commit de trabajo:
 
