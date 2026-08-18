@@ -83,6 +83,8 @@ apps/desktop/src/shared/ui/ScreenHeader.tsx,replaced,desktop-screen-heading,auth
 apps/desktop/src/shared/ui/SharedHeadings.test.tsx,owned,desktop-heading-tests,authored-heading-contract-tests,project-license-pending,-,targeted-tests-and-typecheck-2026-08-16,pending
 apps/desktop/src/shared/ui/TranscriptText.tsx,replaced,desktop-transcript-markdown,authored-safe-markdown-rendering-boundary,project-license-pending,-,targeted-tests-and-typecheck-2026-08-16,pending
 apps/desktop/src/shared/ui/TranscriptText.test.tsx,owned,desktop-transcript-markdown-tests,authored-format-and-html-safety-tests,project-license-pending,-,targeted-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/shared/ui/TypewriterText.tsx,replaced,desktop-typewriter-text,authored-external-store-reveal-clock,project-license-pending,-,targeted-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/shared/ui/TypewriterText.test.tsx,owned,desktop-typewriter-text-tests,authored-timing-and-motion-tests,project-license-pending,-,targeted-tests-and-typecheck-2026-08-16,pending
 apps/desktop/src-tauri/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/desktop/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/mobile/**,unreviewed,mobile,,pending,-,pending,uncommitted
