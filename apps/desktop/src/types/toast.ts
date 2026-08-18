@@ -1,21 +1,34 @@
-export type ToastType =
-  | "error"
-  | "info"
-  | "success"
-  | "warning"
-  | "update"
-  | "celebration";
+type ToastKinds = [
+  "error",
+  "info",
+  "success",
+  "warning",
+  "update",
+  "celebration",
+];
 
-export interface ToastPayload {
+export type ToastType = ToastKinds[number];
+
+type OptionalValue<Key extends PropertyKey, Value> = Partial<
+  Record<Key, Value>
+>;
+
+type ToastMessage = {
   type: ToastType;
   message: string;
-  title?: string;
-  autoDismiss?: boolean;
-  duration?: number;
-  retryId?: string;
-  mode?: "local" | "cloud";
-  action?: string;
-  actionLabel?: string;
-  secondaryAction?: string;
-  secondaryActionLabel?: string;
-}
+} & OptionalValue<"title", string>;
+
+type ToastLifetime = OptionalValue<"autoDismiss", boolean> &
+  OptionalValue<"duration", number>;
+
+type ToastActions = OptionalValue<
+  | "retryId"
+  | "action"
+  | "actionLabel"
+  | "secondaryAction"
+  | "secondaryActionLabel",
+  string
+> &
+  OptionalValue<"mode", "local" | "cloud">;
+
+export type ToastPayload = ToastMessage & ToastLifetime & ToastActions;
