@@ -868,6 +868,7 @@ apps/desktop/src-tauri/src/core/settings_input.rs,replaced,desktop-core-settings
 apps/desktop/src-tauri/src/core/settings_onboarding.rs,replaced,desktop-core-settings-onboarding,authored-onboarding-transition-persistence,project-license-pending,-,corpus-containment-24.0-core-settings-6-tests-cargo-all-targets-rustfmt-2026-08-17,pending
 apps/desktop/src-tauri/src/core/settings_runtime.rs,replaced,desktop-core-settings-runtime,authored-settings-persistence-and-side-effect-orchestration,project-license-pending,-,corpus-containment-6.2-core-settings-6-tests-cargo-all-targets-rustfmt-2026-08-17,pending
 apps/desktop/src-tauri/src/cli_install.rs,replaced,desktop-native-cli-install,authored-cli-install-resolution-status-and-platform-backends,project-license-pending,-,corpus-containment-16.5-cli-install-6-tests-627-rust-tests-cargo-all-targets-rustfmt-2026-08-17,pending
+apps/desktop/src-tauri/src/assistive.rs,replaced,desktop-native-assistive,authored-accessibility-element-ownership-focused-write-selection-fallback-and-insertion-assessment,project-license-pending,-,corpus-containment-29.5-assistive-19-tests-cargo-all-targets-rustfmt-2026-08-17,pending
 apps/desktop/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/mobile/**,unreviewed,mobile,,pending,-,pending,uncommitted
 apps/web/**,unreviewed,web,,pending,-,pending,uncommitted
