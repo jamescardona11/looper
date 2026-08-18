@@ -6,6 +6,7 @@ COPYRIGHT,owned,governance,authored_for_rebuild,AGPL-3.0-or-later,root copyright
 NOTICE.md,owned,governance,authored_for_rebuild,AGPL-3.0-or-later,notice index,current,
 docs/rebuild/**,owned,governance,authored_for_rebuild,AGPL-3.0-or-later,tracked process docs,current,
 tools/provenance/**,owned,governance,authored_for_rebuild,AGPL-3.0-or-later,reproducible gates,current,
+tools/qa/**,owned,governance,authored_for_rebuild,AGPL-3.0-or-later,local and external readiness gates,current,
 apps/desktop/public/fonts/**,permissive,ui-font,Indian Type Foundry Satoshi,ITF-FFL,asset hashes plus notice,current,apps/desktop/public/fonts/NOTICE.md
 apps/desktop/**,replaced,desktop,feature refactors and contracts,AGPL-3.0-or-later,corpus audit plus desktop gates,current,
 apps/mobile/**,replaced,mobile,feature refactors and contracts,AGPL-3.0-or-later,mobile gates,current,

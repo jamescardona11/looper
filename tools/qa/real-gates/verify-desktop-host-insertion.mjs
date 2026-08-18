@@ -44,11 +44,15 @@ async function main() {
   const stdout = result.stdout.trim();
   const stderr = result.stderr.trim();
   const combined = `${stdout}\n${stderr}`;
-  const ok =
+  const noFocusedTextEditSnapshot = combined.includes("No focused TextEdit snapshot");
+  const testPassed =
     result.status === 0 &&
     combined.includes("host_insertion_smoke_in_textedit") &&
     combined.includes("test result: ok");
-  const noFocusedTextEditSnapshot = combined.includes("No focused TextEdit snapshot");
+  // The ignored smoke can return Ok after recording that AX could not see a
+  // focused TextEdit element. That is a useful diagnostic, never a release
+  // pass, so the runner must reject it explicitly.
+  const ok = testPassed && !noFocusedTextEditSnapshot;
 
   const evidence = {
     ok,
