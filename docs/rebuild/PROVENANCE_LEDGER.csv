@@ -192,6 +192,8 @@ apps/desktop/src/data/memory.ts,replaced,desktop-local-memory-gateway,reconstruc
 apps/desktop/src/data/memory.test.ts,owned,desktop-local-memory-tests,authored-source-and-filter-command-tests,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
 apps/desktop/src/data/license.ts,replaced,desktop-entitlement-gateway,authored-typed-command-dispatcher-from-native-contracts,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
 apps/desktop/src/data/license.test.ts,owned,desktop-entitlement-gateway-tests,authored-state-activation-usage-and-event-tests,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/data/insertion.ts,owned,desktop-assistive-insertion-gateway,no-corpus-match,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/data/insertion.test.ts,owned,desktop-assistive-insertion-tests,authored-preview-selection-suggestion-and-undo-tests,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
 apps/desktop/src-tauri/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/desktop/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/mobile/**,unreviewed,mobile,,pending,-,pending,uncommitted
