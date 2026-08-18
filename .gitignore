@@ -74,6 +74,17 @@ pnpm-debug.log*
 /corpus-inventory.csv
 /corpus-summary.json
 
+# Product artwork/assets stay local and are never part of reconstruction commits.
+apps/desktop/assets/
+apps/desktop/public/fonts/
+apps/desktop/src-tauri/icons/
+apps/desktop/src-tauri/macos/*.png
+apps/mobile/assets/
+apps/mobile/targets/**/Assets.xcassets/
+apps/web/public/shots/
+assets/brand/
+tact-design/assets/
+
 # Worktrunk worktree container — per-machine worktrees, never tracked.
 .claude/worktrees/
 
