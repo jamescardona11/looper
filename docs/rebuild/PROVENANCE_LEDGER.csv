@@ -256,6 +256,11 @@ apps/desktop/src/features/settings/components/AccountView.tsx,replaced,desktop-a
 apps/desktop/src/features/settings/components/AccountView.test.tsx,owned,desktop-account-settings-view-tests,authored-trial-normalized-activation-and-two-step-deactivation-tests,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
 apps/desktop/src/features/settings/timed-confirmation-store.ts,replaced,desktop-timed-confirmation-state,authored-external-timer-store-with-disposal,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
 apps/desktop/src/features/settings/timed-confirmation-store.test.ts,owned,desktop-timed-confirmation-tests,authored-second-action-expiry-and-disposal-tests,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/features/license/queries.ts,replaced,desktop-entitlement-query-layer,authored-shared-command-mutation-and-identity-hydration-query,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/features/license/queries.test.tsx,owned,desktop-entitlement-query-tests,authored-identity-target-cache-hydration-and-once-tests,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/features/settings/components/tabs/AccountTab.tsx,replaced,desktop-account-settings-tab,authored-query-checkout-and-view-composition,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/features/settings/useAccountCheckout.ts,replaced,desktop-account-checkout-controller,authored-tier-resolution-external-open-and-error-state,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/features/settings/useAccountCheckout.test.tsx,owned,desktop-account-checkout-tests,authored-configured-open-and-missing-target-tests,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
 apps/desktop/src-tauri/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/desktop/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/mobile/**,unreviewed,mobile,,pending,-,pending,uncommitted
