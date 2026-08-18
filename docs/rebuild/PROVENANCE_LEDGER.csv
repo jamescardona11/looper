@@ -827,6 +827,8 @@ apps/desktop/src/features/pill/use-pill-interactions.ts,replaced,desktop-pill-in
 apps/desktop/src/features/pill/use-pill-preflight.ts,replaced,desktop-pill-preflight-controller,authored-preflight-preferences-language-model-and-start-lifecycle,project-license-pending,-,corpus-containment-6.1-pill-overlay-24-tests-typecheck-eslint-prettier-2026-08-17,pending
 apps/desktop/src/features/pill/use-pill-visualizer.ts,replaced,desktop-pill-visualizer,authored-canvas-resize-animation-frame-and-signal-lifecycle,project-license-pending,-,corpus-containment-3.5-pill-overlay-24-tests-typecheck-eslint-prettier-2026-08-17,pending
 apps/desktop/src/features/pill/PillOverlay.test.tsx,owned,desktop-pill-overlay-tests,authored-keyboard-typography-and-overlay-interaction-contract-tests,project-license-pending,-,corpus-containment-2.1-permissive-pill-overlay-24-tests-typecheck-eslint-prettier-2026-08-17,pending
+apps/desktop/src/features/pill/usePillState.ts,replaced,desktop-pill-state,authored-reducer-visual-snapshot-subscription-registry-and-timer-lifecycle,project-license-pending,-,corpus-containment-7.0-pill-state-24-tests-typecheck-eslint-prettier-2026-08-17,pending
+apps/desktop/src/features/pill/usePillState.test.tsx,owned,desktop-pill-state-tests,authored-snapshot-listener-timer-spectrum-and-cleanup-contract-tests,project-license-pending,-,corpus-containment-1.8-permissive-pill-state-24-tests-typecheck-eslint-prettier-2026-08-17,pending
 apps/desktop/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/mobile/**,unreviewed,mobile,,pending,-,pending,uncommitted
 apps/web/**,unreviewed,web,,pending,-,pending,uncommitted
