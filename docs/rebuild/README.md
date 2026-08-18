@@ -28,8 +28,10 @@ procedencia ni comportamiento en un dispositivo real.
 3. Código, documentación y configuración escritos por nosotros pueden entrar
    directamente. Código o assets de terceros sólo entran cuando la licencia
    permisiva está verificada y su copyright, licencia y NOTICE quedan
-   registrados junto al uso concreto. AGPL/GPL, licencia incierta o atribución
-   incompleta quedan fuera hasta resolverlos.
+   registrados junto al uso concreto. Un bloque AGPL/GPL derivado no entra tal
+   cual: se reemplaza o adapta de forma sustantiva, conservando su contrato y
+   comportamiento. Una etiqueta AGPL en un archivo no demuestra por sí sola
+   que todo el archivo sea externo; la revisión separa lo propio de lo ajeno.
 4. Los contratos observables se mantienen: comandos Tauri, eventos, payloads,
    almacenamiento, deep links, hotkeys, identificadores nativos y APIs de
    backend. Una migración compatible acompaña cualquier cambio necesario.
