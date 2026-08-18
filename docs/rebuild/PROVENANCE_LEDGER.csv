@@ -157,6 +157,9 @@ apps/desktop/src/types/library/items.ts,replaced,desktop-library-items,reconstru
 apps/desktop/src/types/library/meetings.ts,replaced,desktop-meeting-contracts,reconstructed-from-native-meeting-events,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
 apps/desktop/src/types/library/imports.ts,replaced,desktop-library-import-contracts,reconstructed-from-native-import-events,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
 apps/desktop/src/types/library/library.contract.test.ts,owned,desktop-library-contract-tests,authored-union-composition-and-payload-tests,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/types/howler.d.ts,replaced,desktop-audio-player-types,authored-minimum-declaration-from-local-call-sites,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/types/howler.contract.test.ts,owned,desktop-audio-player-type-tests,authored-consumer-boundary-tests,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/types/index.ts,replaced,desktop-public-type-surface,authored-domain-ordered-export-surface,project-license-pending,-,desktop-typecheck-2026-08-16,pending
 apps/desktop/src-tauri/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/desktop/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/mobile/**,unreviewed,mobile,,pending,-,pending,uncommitted
