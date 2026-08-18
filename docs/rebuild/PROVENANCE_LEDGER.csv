@@ -919,6 +919,9 @@ apps/desktop/src-tauri/src/desktop_runtime/commands/preferences.rs,replaced,desk
 apps/desktop/src-tauri/src/desktop_runtime/commands/system.rs,replaced,desktop-runtime-system-commands,authored-runtime-system-command-policy,project-license-pending,-,corpus-containment-25.1-runtime-13-tests-788-rust-tests-cargo-all-targets-rustfmt-2026-08-17,pending
 apps/desktop/src-tauri/src/desktop_runtime/commands/history.rs,replaced,desktop-runtime-history-commands,authored-runtime-history-command-policy,project-license-pending,-,corpus-containment-22.4-runtime-13-tests-788-rust-tests-cargo-all-targets-rustfmt-2026-08-17,pending
 apps/desktop/src-tauri/src/desktop_runtime/commands/interaction.rs,replaced,desktop-runtime-interaction-commands,authored-runtime-interaction-command-policy,project-license-pending,-,corpus-containment-7.9-runtime-13-tests-788-rust-tests-cargo-all-targets-rustfmt-2026-08-17,pending
+apps/mobile/targets/keyboard/Repos/ByokGenerateTextRepo.swift,replaced,mobile-byok-generate,authored-provider-plan-request-factory-decoder-and-transport-boundary,project-license-pending,-,mobile-corpus-containment-9.7-swift-contracts-10-groups-mobile-typecheck-tests-2026-08-17,pending
+apps/mobile/targets/keyboard/Repos/ByokTranscribeAudioRepo.swift,replaced,mobile-byok-transcribe,authored-provider-plan-request-factory-decoder-and-transport-boundary,project-license-pending,-,mobile-corpus-containment-7.4-swift-contracts-10-groups-mobile-typecheck-tests-2026-08-17,pending
+apps/mobile/tests/native/ByokReposContractTests.swift,owned,mobile-byok-contract-tests,authored-provider-wire-error-and-retry-contract-coverage,project-license-pending,-,mobile-corpus-containment-0.9-swift-contracts-10-groups-mobile-typecheck-tests-2026-08-17,pending
 apps/desktop/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/mobile/**,unreviewed,mobile,,pending,-,pending,uncommitted
 apps/web/**,unreviewed,web,,pending,-,pending,uncommitted
