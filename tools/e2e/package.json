@@ -1,0 +1,10 @@
+{
+  "name": "@looper/web-e2e",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Base local web E2E orchestrator (starts Convex, runs the web Playwright suite).",
+  "scripts": {
+    "test": "node --test *.test.mjs"
+  }
+}

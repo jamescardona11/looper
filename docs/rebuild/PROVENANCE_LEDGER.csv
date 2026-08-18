@@ -1017,3 +1017,10 @@ packages/ts/data/src/adapters/convex/hooks/voice.ts,owned,data-hooks,authored-vo
 packages/ts/data/src/agent/index.ts,owned,data-agent,authored-agent-exports,project-license-pending,-,data-contract-tests-and-typecheck-2026-08-17,pending
 packages/ts/data/src/agent/quota.ts,owned,data-agent,authored-agent-quota-policy,project-license-pending,-,data-contract-tests-and-typecheck-2026-08-17,pending
 packages/ts/data/src/agent/quota.test.ts,owned,data-agent-tests,authored-agent-quota-contract-tests,project-license-pending,-,data-contract-tests-and-typecheck-2026-08-17,pending
+tools/architecture-check/package.json,owned,architecture-tool,authored-architecture-check-package,project-license-pending,-,architecture-tool-tests-and-typecheck-2026-08-17,pending
+tools/architecture-check/tsconfig.json,owned,architecture-tool,authored-architecture-check-typescript-config,project-license-pending,-,architecture-tool-tests-and-typecheck-2026-08-17,pending
+tools/architecture-check/src/index.ts,owned,architecture-tool,authored-architecture-rule-engine,project-license-pending,-,architecture-tool-tests-and-typecheck-2026-08-17,pending
+tools/architecture-check/test/engine.test.ts,owned,architecture-tool-tests,authored-architecture-rule-contract-tests,project-license-pending,-,architecture-tool-tests-and-typecheck-2026-08-17,pending
+tools/e2e/package.json,owned,e2e-tool,authored-local-web-e2e-package,project-license-pending,-,e2e-tool-tests-2026-08-17,pending
+tools/e2e/run-local-e2e.mjs,owned,e2e-tool,authored-local-web-e2e-runner,project-license-pending,-,e2e-tool-tests-2026-08-17,pending
+tools/e2e/run-local-e2e.test.mjs,owned,e2e-tool-tests,authored-local-web-e2e-runner-tests,project-license-pending,-,e2e-tool-tests-2026-08-17,pending
