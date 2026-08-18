@@ -24,6 +24,9 @@ TARGETS = [
     Path("/Users/zoro/j11/looper/apps/mobile/targets/keyboard"),
     Path("/Users/zoro/j11/looper/apps/mobile/targets/_shared"),
     Path("/Users/zoro/j11/looper/apps/mobile/targets/widgets"),
+    Path("/Users/zoro/j11/looper/apps/web/src"),
+    Path("/Users/zoro/j11/looper/backend/convex"),
+    Path("/Users/zoro/j11/looper/packages/ts"),
 ]
 LOOPER_ROOT = Path("/Users/zoro/j11/looper")
 
