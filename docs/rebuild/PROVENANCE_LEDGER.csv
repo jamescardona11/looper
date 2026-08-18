@@ -544,6 +544,8 @@ apps/desktop/src/shared/types/license.ts,replaced,desktop-license-contracts,auth
 apps/desktop/src/shared/types/license.contract.test.ts,replaced,desktop-license-contracts,authored-license-catalog-order-and-field-contract-tests,project-license-pending,-,corpus-no-relevant-match-license-contract-consumer-tests-typecheck-2026-08-16,pending
 apps/desktop/src/types/settings/personalization.ts,replaced,desktop-personalization-contracts,authored-string-field-and-typed-collection-map-composition-preserving-wire-shapes,project-license-pending,-,corpus-containment-7.7-mit-personalization-contract-consumer-tests-typecheck-2026-08-16,pending
 apps/desktop/src/types/settings/personalization.contract.test.ts,replaced,desktop-personalization-contracts,authored-personalization-field-contract-tests,project-license-pending,-,corpus-containment-4.3-personalization-contract-consumer-tests-typecheck-2026-08-16,pending
+apps/desktop/src-tauri/src/platform/macos/audio_devices.rs,replaced,desktop-native-audio-devices,authored-raii-coreaudio-subscriptions-bounded-notification-mailbox-and-menu-refresh-coordinator,project-license-pending,-,corpus-containment-21.0-cargo-all-targets-audio-listener-tests-native-suite-host-smokes-2026-08-16,pending
+apps/desktop/src-tauri/src/audio.rs,replaced,desktop-native-audio-devices,authored-default-device-fingerprint-candidate-inventory-wire-payload-and-ordering-policy,project-license-pending,-,corpus-containment-10.3-cargo-all-targets-audio-listener-tests-native-suite-host-smokes-2026-08-16,pending
 apps/desktop/src-tauri/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/desktop/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/mobile/**,unreviewed,mobile,,pending,-,pending,uncommitted
