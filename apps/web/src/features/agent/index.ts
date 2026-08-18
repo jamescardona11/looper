@@ -1,0 +1,11 @@
+export type { CreditsBalance } from "@looper/data";
+export { useCredits, useThreads } from "@looper/data";
+export { AgentWorkspace } from "./components/agent-workspace";
+export { ChatComposer } from "./components/chat-composer";
+export { ChatEmptyState } from "./components/chat-empty-state";
+export { ChatUI } from "./components/chat-ui";
+export { SuggestedPrompts } from "./components/suggested-prompts";
+export { ThreadSidebar } from "./components/thread-sidebar";
+export type { ChatMessage } from "./hooks/use-messages";
+export { useMessages } from "./hooks/use-messages";
+export { useSuggestions } from "./hooks/use-suggestions";
