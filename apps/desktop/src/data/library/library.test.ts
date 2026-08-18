@@ -18,14 +18,23 @@ vi.mock("@tauri-apps/api/event", () => ({
 
 import {
   askMeeting,
+  cancelLibraryTranscription,
   createLibraryItem,
+  deleteLibraryItem,
+  deleteLibraryTranslation,
+  exportLibraryItemToPath,
   getLibraryItemsPage,
+  getLibraryTags,
+  getLibraryTranslations,
   notifyLibraryRendererReady,
   probeLibraryImportFiles,
   resolveLibraryAudioUrl,
+  retryLibraryTranscription,
   startMeetingCapture,
   subscribeLibraryDragEnter,
   subscribeLibraryEvents,
+  translateLibraryItem,
+  updateLibraryItem,
   updateMeetingNotes,
 } from "../library";
 
@@ -112,5 +121,34 @@ describe("library native boundary", () => {
     expect(resolveLibraryAudioUrl("/tmp/audio.wav")).toBe("asset://audio.wav");
     await notifyLibraryRendererReady();
     expect(tauri.emit).toHaveBeenCalledWith("library:renderer_ready");
+  });
+
+  test("keeps item lifecycle and translation command payloads exact", async () => {
+    tauri.invoke.mockResolvedValue(undefined);
+
+    await updateLibraryItem("item-1", { name: "Interview" });
+    await deleteLibraryItem("item-1");
+    await cancelLibraryTranscription("item-2");
+    await retryLibraryTranscription("item-3");
+    await exportLibraryItemToPath("item-4", "md", "/tmp/item.md");
+    await getLibraryTags();
+    await getLibraryTranslations("item-5");
+    await translateLibraryItem("item-5", "es");
+    await deleteLibraryTranslation("item-5", "es");
+
+    expect(tauri.invoke.mock.calls).toEqual([
+      ["update_library_item", { id: "item-1", patch: { name: "Interview" } }],
+      ["delete_library_item", { id: "item-1" }],
+      ["cancel_library_transcription", { id: "item-2" }],
+      ["retry_library_transcription", { id: "item-3" }],
+      [
+        "export_library_item_to_path",
+        { id: "item-4", format: "md", outputPath: "/tmp/item.md" },
+      ],
+      ["get_library_tags"],
+      ["get_library_translations", { itemId: "item-5" }],
+      ["translate_library_item", { itemId: "item-5", language: "es" }],
+      ["delete_library_translation", { itemId: "item-5", language: "es" }],
+    ]);
   });
 });

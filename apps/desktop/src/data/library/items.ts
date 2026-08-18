@@ -1,72 +1,81 @@
 import { convertFileSrc, invoke } from "@tauri-apps/api/core";
-import type {
-  ExportFormat,
-  LibraryFilter,
-  LibraryImportOptions,
-  LibraryItem,
-  LibraryItemPatch,
-  LibraryItemsPage,
-  LibraryTranslation,
-} from "../../types";
+import type * as LibraryContract from "../../types";
+
+const command = {
+  create: "create_library_item",
+  page: "get_library_items_page",
+  update: "update_library_item",
+  delete: "delete_library_item",
+  cancel: "cancel_library_transcription",
+  retry: "retry_library_transcription",
+  export: "export_library_item_to_path",
+  tags: "get_library_tags",
+  translations: "get_library_translations",
+  translate: "translate_library_item",
+  deleteTranslation: "delete_library_translation",
+} as const;
+
+type NativePayload = Record<string, unknown>;
+
+const run = <Result>(name: string, payload?: NativePayload) =>
+  payload === undefined ? invoke<Result>(name) : invoke<Result>(name, payload);
+
+const runForItem = (name: string, id: string) => run<void>(name, { id });
 
 export const resolveLibraryAudioUrl = (audioPath: string): string =>
   convertFileSrc(audioPath);
 
-export const createLibraryItem = (
+type CreateArguments = [
   path: string,
-  options: LibraryImportOptions,
-): Promise<LibraryItem> => invoke("create_library_item", { path, options });
+  options: LibraryContract.LibraryImportOptions,
+];
+export const createLibraryItem = (...[path, options]: CreateArguments) =>
+  run<LibraryContract.LibraryItem>(command.create, { path, options });
 
-export const getLibraryItemsPage = (
-  filter: LibraryFilter,
+type PageArguments = [
+  filter: LibraryContract.LibraryFilter,
   limit: number,
   offset: number,
-): Promise<LibraryItemsPage> =>
-  invoke("get_library_items_page", { filter, limit, offset });
+];
+export const getLibraryItemsPage = (
+  ...[filter, limit, offset]: PageArguments
+) =>
+  run<LibraryContract.LibraryItemsPage>(command.page, {
+    filter,
+    limit,
+    offset,
+  });
 
 export const updateLibraryItem = (
   id: string,
-  patch: LibraryItemPatch,
-): Promise<LibraryItem> => invoke("update_library_item", { id, patch });
+  patch: LibraryContract.LibraryItemPatch,
+) => run<LibraryContract.LibraryItem>(command.update, { id, patch });
 
-async function runItemCommand(command: string, id: string): Promise<void> {
-  await invoke(command, { id });
-}
+export const deleteLibraryItem = (id: string) => runForItem(command.delete, id);
+export const cancelLibraryTranscription = (id: string) =>
+  runForItem(command.cancel, id);
+export const retryLibraryTranscription = (id: string) =>
+  runForItem(command.retry, id);
 
-export const deleteLibraryItem = (id: string): Promise<void> =>
-  runItemCommand("delete_library_item", id);
-
-export const cancelLibraryTranscription = (id: string): Promise<void> =>
-  runItemCommand("cancel_library_transcription", id);
-
-export const retryLibraryTranscription = (id: string): Promise<void> =>
-  runItemCommand("retry_library_transcription", id);
-
-export async function exportLibraryItemToPath(
+type ExportArguments = [
   id: string,
-  format: ExportFormat,
+  format: LibraryContract.ExportFormat,
   outputPath: string,
-): Promise<void> {
-  await invoke("export_library_item_to_path", { id, format, outputPath });
-}
+];
+export const exportLibraryItemToPath = (
+  ...[id, format, outputPath]: ExportArguments
+) => run<void>(command.export, { id, format, outputPath });
 
-export const getLibraryTags = (): Promise<string[]> =>
-  invoke("get_library_tags");
+export const getLibraryTags = () => run<string[]>(command.tags);
 
-export const getLibraryTranslations = (
-  itemId: string,
-): Promise<LibraryTranslation[]> =>
-  invoke("get_library_translations", { itemId });
+export const getLibraryTranslations = (itemId: string) =>
+  run<LibraryContract.LibraryTranslation[]>(command.translations, { itemId });
 
-export const translateLibraryItem = (
-  itemId: string,
-  language: string,
-): Promise<LibraryTranslation> =>
-  invoke("translate_library_item", { itemId, language });
+export const translateLibraryItem = (itemId: string, language: string) =>
+  run<LibraryContract.LibraryTranslation>(command.translate, {
+    itemId,
+    language,
+  });
 
-export async function deleteLibraryTranslation(
-  itemId: string,
-  language: string,
-): Promise<void> {
-  await invoke("delete_library_translation", { itemId, language });
-}
+export const deleteLibraryTranslation = (itemId: string, language: string) =>
+  run<void>(command.deleteTranslation, { itemId, language });
