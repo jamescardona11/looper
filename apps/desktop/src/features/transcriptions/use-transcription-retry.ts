@@ -7,6 +7,7 @@ import {
   retryTranscription,
   subscribeTranscriptionEvents,
 } from "../../data/transcription";
+import { safeUnlisten } from "../../shared/lib/safeUnlisten";
 
 function withoutId(ids: string[], removedId: string) {
   return ids.filter((id) => id !== removedId);
@@ -32,14 +33,14 @@ export function useRetryTranscription(enabled = true) {
       onError: clearRetries,
     })) {
       subscription.then((dispose) => {
-        if (disposed) dispose();
+        if (disposed) safeUnlisten(dispose);
         else disposeCallbacks.push(dispose);
       });
     }
 
     return () => {
       disposed = true;
-      disposeCallbacks.forEach((dispose) => dispose());
+      disposeCallbacks.forEach(safeUnlisten);
     };
   }, [listening]);
 

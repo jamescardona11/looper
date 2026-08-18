@@ -4,6 +4,7 @@ import {
   type DownloadProgressPayload,
   type ModelDownloadEventHandlers,
 } from "../lib/modelDownloadEvents";
+import { safeUnlisten } from "../lib/safeUnlisten";
 import { useMountEffect } from "./useMountEffect";
 
 type UseModelDownloadEventsOptions = ModelDownloadEventHandlers & {
@@ -39,7 +40,7 @@ export function useModelDownloadEvents(options: UseModelDownloadEventsOptions) {
       void subscription
         .then((unlisten) => {
           if (mounted) unlisteners.push(unlisten);
-          else unlisten();
+          else safeUnlisten(unlisten);
         })
         .catch((error: unknown) => {
           console.error("Failed to subscribe to download events", error);
@@ -48,7 +49,7 @@ export function useModelDownloadEvents(options: UseModelDownloadEventsOptions) {
 
     return () => {
       mounted = false;
-      unlisteners.forEach((unlisten) => unlisten());
+      unlisteners.forEach(safeUnlisten);
     };
   });
 }
