@@ -21,7 +21,9 @@ function callEntitlement<TResult>(
   command: EntitlementCommand,
   argumentsByName?: Record<string, unknown>,
 ): Promise<TResult> {
-  return invoke(command, argumentsByName);
+  return argumentsByName === undefined
+    ? invoke(command)
+    : invoke(command, argumentsByName);
 }
 
 export const getLicenseState = (): Promise<LicenseState> =>

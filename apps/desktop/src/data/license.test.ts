@@ -33,11 +33,11 @@ describe("entitlement native gateway", () => {
     await getDictationStats();
 
     expect(tauri.invoke.mock.calls).toEqual([
-      ["get_license_state", undefined],
+      ["get_license_state"],
       ["activate_license", { args: { key: "LOOPER-KEY" } }],
-      ["refresh_license", undefined],
-      ["deactivate_license", undefined],
-      ["get_dictation_stats", undefined],
+      ["refresh_license"],
+      ["deactivate_license"],
+      ["get_dictation_stats"],
     ]);
   });
 
