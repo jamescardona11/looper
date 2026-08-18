@@ -9,6 +9,10 @@ archivo NOTICE que conserva la atribución.
 `history-audit.py` comprueba la historia alcanzable desde `HEAD`: no permite
 que regresen las rutas retiradas de Handy/Wispr, sus filas históricas del ledger
 ni una raíz sin GNU AGPLv3 y COPYRIGHT de James Cardona.
+También informa, sin incorporarlos al resultado activo, los refs locales de
+respaldo `codex/rebuild/agpl-history-root-*` y si alguno conserva esas rutas.
+Los respaldos se mantienen para recuperación; no deben usarse como la rama de
+distribución.
 
 Uso desde la raíz del repositorio:
 

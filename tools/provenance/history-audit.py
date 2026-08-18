@@ -13,6 +13,7 @@ FORBIDDEN_PATHS = (
     "apps/desktop/src-tauri/src/import/handy.rs",
     "apps/desktop/src-tauri/src/import/wispr.rs",
 )
+BACKUP_REF_GLOB = "refs/heads/codex/rebuild/agpl-history-root-*"
 
 
 def git(root: Path, *args: str) -> str:
@@ -48,6 +49,41 @@ def ledger_history_hits(root: Path) -> list[str]:
     return hits
 
 
+def backup_refs(root: Path) -> list[dict[str, object]]:
+    """Describe retained history backups without treating them as active code."""
+
+    refs = git(
+        root,
+        "for-each-ref",
+        "--format=%(refname) %(objectname)",
+        BACKUP_REF_GLOB,
+    ).splitlines()
+    reports: list[dict[str, object]] = []
+    for line in refs:
+        ref, commit = line.split(" ", 1)
+        objects = git(root, "rev-list", "--objects", ref)
+        paths = {
+            entry.split(" ", 1)[1]
+            for entry in objects.splitlines()
+            if " " in entry
+        }
+        forbidden = sorted(path for path in paths if path in FORBIDDEN_PATHS)
+        ledger_hits: list[str] = []
+        ledger = "docs/rebuild/PROVENANCE_LEDGER.csv"
+        for needle in FORBIDDEN_PATHS:
+            commits = git(root, "log", ref, "--format=%H", f"-S{needle}", "--", ledger)
+            ledger_hits.extend(f"{hit}:{needle}" for hit in commits.splitlines())
+        reports.append(
+            {
+                "ref": ref,
+                "commit": commit,
+                "forbidden_paths": forbidden,
+                "ledger_history_hits": sorted(ledger_hits),
+            }
+        )
+    return reports
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
@@ -64,6 +100,7 @@ def main() -> int:
     paths = reachable_paths(root)
     forbidden_paths = sorted(path for path in paths if path in FORBIDDEN_PATHS)
     ledger_hits = ledger_history_hits(root)
+    retained_backups = backup_refs(root)
     first = root_commit(root)
     license_text = git(root, "show", f"{first}:LICENSE")
     copyright_text = git(root, "show", f"{first}:COPYRIGHT")
@@ -73,6 +110,7 @@ def main() -> int:
         "root_commit": first,
         "forbidden_paths": forbidden_paths,
         "ledger_history_hits": sorted(ledger_hits),
+        "retained_backup_refs": retained_backups,
         "root_has_agplv3": "GNU AFFERO GENERAL PUBLIC LICENSE" in license_text,
         "root_names_james_cardona": "James Cardona" in copyright_text,
     }
