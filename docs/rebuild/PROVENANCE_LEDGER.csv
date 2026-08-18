@@ -95,6 +95,9 @@ apps/desktop/src/shared/ui/LooperLogo.tsx,owned,desktop-product-mark,looper-prod
 apps/desktop/src/shared/ui/LooperLogo.test.tsx,owned,desktop-product-mark-tests,authored-logo-contract-tests,project-license-pending,-,targeted-tests-and-typecheck-2026-08-16,pending
 apps/desktop/src/shared/ui/Shimmer.tsx,owned,desktop-loading-shimmer,no-material-corpus-match,project-license-pending,-,targeted-tests-and-typecheck-2026-08-16,pending
 apps/desktop/src/shared/ui/Shimmer.test.tsx,owned,desktop-loading-shimmer-tests,authored-loading-surface-test,project-license-pending,-,targeted-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/shared/ui/SegmentedControl.tsx,replaced,desktop-segmented-control,authored-option-component-and-state-contract,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/shared/ui/ToggleSwitch.tsx,replaced,desktop-toggle-switch,authored-css-motion-switch,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/shared/ui/SelectionControls.test.tsx,owned,desktop-selection-control-tests,authored-accessibility-and-interaction-tests,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
 apps/desktop/src-tauri/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/desktop/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/mobile/**,unreviewed,mobile,,pending,-,pending,uncommitted
