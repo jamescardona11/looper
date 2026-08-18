@@ -1,6 +1,6 @@
 import { Minus, Square, X } from "@phosphor-icons/react";
 import { getPlatformCapabilities } from "../../platform/service";
-import { performWindowAction, type WindowAction } from "../lib/windowControls";
+import { performWindowAction, type WindowAction } from "../../data/window";
 
 const BUTTON_CLASS =
   "flex h-8 w-11 items-center justify-center text-content-muted transition-colors hover:bg-surface-elevated hover:text-content-primary";

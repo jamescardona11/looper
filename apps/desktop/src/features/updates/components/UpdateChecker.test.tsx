@@ -35,6 +35,8 @@ vi.mock("../queries", () => ({
 vi.mock("../../../data/updates", () => ({
   checkForUpdates: mocks.check,
   downloadAndInstallUpdate: mocks.download,
+  getInstalledVersion: mocks.getVersion,
+  restartForUpdate: mocks.relaunch,
   subscribeUpdaterCheck: mocks.subscribeCheck,
   subscribeUpdateProgress: mocks.subscribeProgress,
 }));
@@ -46,8 +48,6 @@ vi.mock("@tanstack/react-query", () => ({
   }),
 }));
 
-vi.mock("@tauri-apps/api/app", () => ({ getVersion: mocks.getVersion }));
-vi.mock("@tauri-apps/plugin-process", () => ({ relaunch: mocks.relaunch }));
 
 import { UpdateChecker } from "./UpdateChecker";
 

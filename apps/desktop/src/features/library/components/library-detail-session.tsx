@@ -208,11 +208,12 @@ export function LibraryDetailSession(props: LibraryDetailProps) {
       .then(() => undefined);
   const handleAddSpeaker = async () => {
     const position = speakers.length;
+    const nextIndex = position + 1;
     const speaker: Speaker = {
       id: crypto.randomUUID(),
       name: t({
         id: "library.detail.speaker_default_name",
-        message: `Speaker ${position + 1}`,
+        message: `Speaker ${nextIndex}`,
       }),
       color: speakerColorAt(position),
     };

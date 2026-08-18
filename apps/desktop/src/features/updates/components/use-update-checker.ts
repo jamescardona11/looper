@@ -1,13 +1,13 @@
-import { getVersion } from "@tauri-apps/api/app";
-import type { UnlistenFn } from "@tauri-apps/api/event";
-import { relaunch } from "@tauri-apps/plugin-process";
 import { useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useReducer } from "react";
 import {
   checkForUpdates,
   downloadAndInstallUpdate,
+  getInstalledVersion,
+  restartForUpdate,
   subscribeUpdateProgress,
   subscribeUpdaterCheck,
+  type UnlistenFn,
   type UpdateDownloadProgress,
 } from "../../../data/updates";
 import { updateKeys, useUpdateStatus } from "../queries";
@@ -129,7 +129,7 @@ export function useUpdateChecker(autoCheck: boolean) {
     const pendingVersion = localStorage.getItem(PENDING_RESTART_KEY);
     if (!pendingVersion) return;
 
-    void getVersion().then((currentVersion) => {
+    void getInstalledVersion().then((currentVersion) => {
       if (pendingVersion === currentVersion) {
         localStorage.removeItem(PENDING_RESTART_KEY);
       } else {
@@ -196,7 +196,7 @@ export function useUpdateChecker(autoCheck: boolean) {
 
   const restart = async () => {
     localStorage.removeItem(PENDING_RESTART_KEY);
-    await relaunch();
+    await restartForUpdate();
   };
 
   return {

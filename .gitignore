@@ -79,22 +79,25 @@ pnpm-debug.log*
 !/docs/rebuild/
 !/docs/rebuild/**
 
-# Product artwork/assets stay local and are never part of reconstruction commits.
+# Product artwork Looper owns and ships. Anything the app loads at build or run
+# time is tracked: a clone that cannot produce a bundle is not a release.
+# Marketing and design sources that no build reads stay local.
 apps/desktop/assets/
 apps/desktop/public/fonts/*
 !apps/desktop/public/fonts/
 !apps/desktop/public/fonts/NOTICE.md
 !apps/desktop/public/fonts/*.woff2
-apps/desktop/src-tauri/icons/
 apps/desktop/src-tauri/macos/*.png
-apps/mobile/assets/
-apps/mobile/targets/**/Assets.xcassets/
-apps/web/public/shots/
 assets/brand/
 /tact-design/
 
 # Local audio model/test artifacts; source and manifests remain auditable.
-packages/rust/audio/**/data/models/
+# The 128 weights are the default build and ship inside the binary, so they
+# travel with the source. The 256 and 512 variants are experiment-only: no
+# build enables those features, and they weigh 54 MB.
+packages/rust/audio/**/data/models/*
+!packages/rust/audio/**/data/models/model_128_1.onnx
+!packages/rust/audio/**/data/models/model_128_2.onnx
 packages/rust/audio/**/data/snapshots/
 packages/rust/audio/**/data/inputs/
 packages/rust/audio/**/data/outputs/*

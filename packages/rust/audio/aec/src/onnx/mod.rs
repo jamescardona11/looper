@@ -355,6 +355,11 @@ impl AEC {
 // cargo bench -p aec --no-default-features --features onnx,128
 //
 // Set UPDATE_SNAPSHOTS=1 to regenerate baseline snapshots.
+//
+// Only the 128 weights ship with the source: they are the default feature and
+// the ones the product embeds. The 256 and 512 weights are 54 MB of experiment
+// material, so those two commands need the matching `.onnx` pair placed under
+// data/models/ first, or they fail at include_bytes! with the missing path.
 
 // The upstream tests for this module ran against a 40 MB corpus of audio
 // fixtures that Looper does not vendor. They are dropped rather than left
