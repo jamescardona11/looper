@@ -876,6 +876,7 @@ apps/desktop/src-tauri/src/toast/placement.rs,replaced,desktop-native-toast-plac
 apps/desktop/src-tauri/src/toast/permission_watch.rs,replaced,desktop-native-toast-permission-watch,authored-toast-permission-poll-and-generation-lifecycle,project-license-pending,-,corpus-containment-3.8-toast-18-tests-cargo-all-targets-rustfmt-2026-08-17,pending
 apps/desktop/src-tauri/src/mode_context.rs,replaced,desktop-native-mode-context,authored-host-application-context-matching-guidance-and-rule-environment,project-license-pending,-,corpus-containment-5.8-mode-context-18-tests-cargo-all-targets-rustfmt-2026-08-17,pending
 apps/desktop/src-tauri/src/library/queue.rs,replaced,desktop-library-queue,authored-library-job-preparation-progress-reporting-transcriber-and-finalization-policy,project-license-pending,-,corpus-containment-27.9-library-queue-4-focal-tests-74-library-tests-cargo-all-targets-rustfmt-2026-08-17,pending
+apps/desktop/src-tauri/src/speech/install.rs,replaced,desktop-speech-install,authored-model-repository-progress-events-failure-classification-and-install-orchestration,project-license-pending,-,corpus-containment-20.1-speech-install-16-tests-cargo-all-targets-rustfmt-2026-08-17,pending
 apps/desktop/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/mobile/**,unreviewed,mobile,,pending,-,pending,uncommitted
 apps/web/**,unreviewed,web,,pending,-,pending,uncommitted
