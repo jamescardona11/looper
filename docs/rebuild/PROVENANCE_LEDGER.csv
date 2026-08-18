@@ -168,6 +168,9 @@ apps/desktop/src/data/settings.ts,owned,desktop-settings-native-gateway,no-mater
 apps/desktop/src/data/settings.test.ts,owned,desktop-settings-native-gateway-tests,authored-command-and-event-contract-tests,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
 apps/desktop/src/data/audio.ts,owned,desktop-audio-native-gateway,no-material-corpus-match,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
 apps/desktop/src/data/audio.test.ts,owned,desktop-audio-native-gateway-tests,authored-command-and-event-contract-tests,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/data/dictation.ts,owned,desktop-dictation-dock-gateway,no-material-corpus-match,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/data/notetaking.ts,owned,desktop-note-dock-gateway,no-corpus-match,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/data/capture-dock.test.ts,owned,desktop-capture-dock-gateway-tests,authored-command-and-event-contract-tests,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
 apps/desktop/src-tauri/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/desktop/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/mobile/**,unreviewed,mobile,,pending,-,pending,uncommitted
