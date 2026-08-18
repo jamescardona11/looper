@@ -280,6 +280,9 @@ apps/desktop/src/features/settings/components/tabs/ModelBrowser.tsx,replaced,des
 apps/desktop/src/features/settings/components/tabs/ModelsOverview.tsx,replaced,desktop-models-overview,authored-cloud-local-summary-installed-list-and-settings-routing,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
 apps/desktop/src/features/settings/components/tabs/AppPermissionStatus.tsx,replaced,desktop-app-permission-status,authored-normalized-status-announcement-and-single-indicator-layout,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
 apps/desktop/src/features/settings/components/tabs/AppPermissionStatus.test.tsx,owned,desktop-app-permission-status-tests,authored-normalization-and-accessible-status-tests,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/features/settings/components/tabs/GeneralMicrophoneTest.tsx,replaced,desktop-microphone-test-view,authored-external-store-adapter-level-meter-and-localized-errors,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/features/settings/components/tabs/microphone-test-store.ts,replaced,desktop-microphone-test-session,authored-subscribable-media-session-device-resolution-analysis-and-cleanup,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/features/settings/components/tabs/microphone-test-store.test.ts,owned,desktop-microphone-test-session-tests,authored-device-signal-lifecycle-and-browser-error-tests,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
 apps/desktop/src-tauri/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/desktop/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/mobile/**,unreviewed,mobile,,pending,-,pending,uncommitted
