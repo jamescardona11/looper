@@ -7,7 +7,7 @@ una ejecución real del producto; `pending` no debe presentarse como cerrado.
 | --- | --- | --- | --- |
 | Shell y Home desktop | arranque, navegación, resumen diario | Tauri real + captura/video + suite desktop | manual |
 | Settings y permisos | persistencia, permisos y modelos | suite desktop; permisos nativos no ejercitados | pending |
-| Dictado global | hotkey, captura, STT e inserción | Inserción TextEdit real; hotkey, micrófono y STT reales pendientes | pending |
+| Dictado global | hotkey, captura, STT e inserción | Hotkey `Fn` y pill reales; inserción TextEdit real; micrófono y STT pendientes | pending |
 | Capture Pill | estados, overlays y cancelación | contratos de estado + suite Rust | automated |
 | Historial y Memory | búsqueda, borrado, exportación | SQLite temporal + suite desktop | automated |
 | Library | cola, SQLite, importación y playback | integración Rust + suite desktop | automated |

@@ -94,8 +94,25 @@ Smoke de inserción en host macOS ejecutado el mismo día:
 - Evidencia: `.tcompound/evidence/release/desktop-host-insertion.json` y
   `.tcompound/evidence/release/desktop-host-insertion.txt`.
 - El smoke confirma escritura en un documento TextEdit enfocado; no demuestra
-  por sí solo hotkey global, captura de micrófono, STT real o inserción desde
+  por sí solo captura de micrófono, STT real o inserción desde
   un proveedor remoto.
+
+Smoke host-level del hotkey y Capture Pill:
+
+- Se inició la ventana Tauri real y se emitió el hotkey macOS `Fn` mediante
+  `CGEvent` (tecla virtual 63), manteniéndolo un segundo y soltándolo después.
+- La captura durante la pulsación muestra el pill en `Listening…`; la captura
+  posterior muestra `Ready to write anywhere`.
+- Validador: `pnpm run qa:external-desktop-hotkey-pill` con evidencia real,
+  resultado `pass`.
+- Evidencia: `.tcompound/evidence/release/desktop-hotkey-pill-host-level.json`
+  y `.tcompound/evidence/release/desktop-hotkey-pill-host-level.txt`.
+- Capturas: `.tcompound/evidence/runtime/looper-hotkey-fn-held-cgevent.png`
+  (SHA-256 `02ec4294c7366444b115cb4034b18f9ffe070156d5dd899466167f8ed7c700fc`)
+  y `.tcompound/evidence/runtime/looper-hotkey-fn-after-cgevent.png`
+  (SHA-256 `a30116ec8dd3dad75b8e7cf359ab6949076a0adcf2be8ed36895a3c330195c37`).
+- Esto prueba el hotkey y la transición visual del pill; no prueba todavía
+  audio hablado, STT ni la inserción de texto generada por voz.
 
 Durante esa ejecución el entorno informó que la clave cifrada pertenecía a
 otro hardware y que `VITE_CONVEX_URL` no estaba configurado; Looper conservó
@@ -113,8 +130,9 @@ shasum -a 256 .tcompound/evidence/real-product/desktop-home-positive.*
 
 Esto prueba que el shell desktop puede abrirse y renderizar Home en el host
 macOS utilizado para la reconstrucción y que el canal de inserción puede escribir
-en TextEdit con los permisos nativos disponibles. No prueba por sí solo
-micrófono, hotkeys globales, modelos locales, proveedores remotos, checkout,
+en TextEdit con los permisos nativos disponibles. También prueba el hotkey `Fn`
+y la transición visible del pill. No prueba por sí solo micrófono, STT,
+modelos locales, proveedores remotos, checkout,
 Windows, iOS, Android ni producción.
 
 La matriz completa de paridad mantiene esas capacidades como `pending` cuando
