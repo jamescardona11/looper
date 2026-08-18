@@ -186,6 +186,8 @@ apps/desktop/src/data/toast.ts,owned,desktop-toast-native-gateway,no-material-co
 apps/desktop/src/data/toast.test.ts,owned,desktop-toast-native-gateway-tests,authored-event-action-and-window-tests,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
 apps/desktop/src/data/personalization.ts,replaced,desktop-personalization-gateway,authored-typed-command-dispatcher-from-native-contracts,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
 apps/desktop/src/data/personalization.test.ts,owned,desktop-personalization-gateway-tests,authored-command-and-payload-tests,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/data/local-llm.ts,owned,desktop-local-intelligence-gateway,no-material-corpus-match,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/data/local-llm.test.ts,owned,desktop-local-intelligence-tests,authored-command-event-and-cleanup-tests,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
 apps/desktop/src-tauri/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/desktop/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/mobile/**,unreviewed,mobile,,pending,-,pending,uncommitted
