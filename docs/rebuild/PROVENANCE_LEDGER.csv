@@ -1051,3 +1051,7 @@ apps/mobile/src/features/import/index.ts,owned,mobile-import,authored-import-exp
 apps/mobile/src/features/import/import-logic.test.ts,owned,mobile-import-tests,authored-import-contract-tests,project-license-pending,-,mobile-notes-import-tests-typecheck-2026-08-17,pending
 apps/mobile/src/features/import/import-logic.ts,owned,mobile-import,authored-import-policy,project-license-pending,-,mobile-notes-import-tests-typecheck-2026-08-17,pending
 apps/mobile/src/features/import/import-screen.tsx,owned,mobile-import,authored-import-screen,project-license-pending,-,mobile-notes-import-tests-typecheck-2026-08-17,pending
+apps/mobile/src/shared/theme/colors.test.ts,owned,mobile-theme-tests,authored-theme-color-contract-tests,project-license-pending,-,mobile-shared-tests-typecheck-2026-08-17,pending
+apps/mobile/src/shared/theme/colors.ts,owned,mobile-theme,authored-theme-color-palette,project-license-pending,-,mobile-shared-tests-typecheck-2026-08-17,pending
+apps/mobile/src/shared/studio/studio-settings.test.ts,owned,mobile-studio-tests,authored-studio-settings-contract-tests,project-license-pending,-,mobile-shared-tests-typecheck-2026-08-17,pending
+apps/mobile/src/shared/studio/studio-settings.ts,owned,mobile-studio,authored-studio-settings-policy,project-license-pending,-,mobile-shared-tests-typecheck-2026-08-17,pending
