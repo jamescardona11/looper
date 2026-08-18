@@ -331,6 +331,8 @@ apps/desktop/src/features/settings/useSettingsDraft.ts,replaced,desktop-settings
 apps/desktop/src/features/settings/useSettingsDraft.test.tsx,owned,desktop-settings-draft-tests,authored-default-background-functional-update-and-hydration-tests,project-license-pending,-,corpus-containment-5.3-and-desktop-tests-typecheck-2026-08-16,pending
 apps/desktop/src/features/settings/settings-update-model.ts,replaced,desktop-settings-update-model,authored-draft-composition-shortcut-recovery-endpoint-resolution-and-capability-gates,project-license-pending,-,corpus-containment-15.4-and-desktop-tests-typecheck-2026-08-16,pending
 apps/desktop/src/features/settings/settings-update-model.test.ts,owned,desktop-settings-update-model-tests,authored-local-state-exclusion-capability-invalid-shortcut-and-language-tests,project-license-pending,-,corpus-containment-3.3-and-desktop-tests-typecheck-2026-08-16,pending
+apps/desktop/src/features/settings/useSettingsPersistence.ts,replaced,desktop-settings-persistence,authored-serialized-save-queue-hydration-debounce-close-flush-and-error-boundary,project-license-pending,-,corpus-containment-5.4-and-desktop-tests-typecheck-2026-08-16,pending
+apps/desktop/src/features/settings/useSettingsPersistence.test.tsx,owned,desktop-settings-persistence-tests,authored-initial-hydration-delayed-autosave-and-serialized-write-tests,project-license-pending,-,corpus-containment-4.3-permissive-and-desktop-tests-typecheck-2026-08-16,pending
 apps/desktop/src-tauri/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/desktop/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/mobile/**,unreviewed,mobile,,pending,-,pending,uncommitted
