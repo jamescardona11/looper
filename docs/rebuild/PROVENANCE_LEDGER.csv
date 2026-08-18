@@ -142,6 +142,9 @@ apps/desktop/src/shared/ui/ModelPickerRow.tsx,replaced,desktop-model-picker-row,
 apps/desktop/src/shared/ui/modelPickerLogic.ts,replaced,desktop-model-picker-logic,authored-family-grouping-and-filtering,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
 apps/desktop/src/shared/ui/modelPickerLogic.test.ts,owned,desktop-model-picker-logic-tests,authored-grouping-and-filter-tests,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
 apps/desktop/src/shared/ui/ModelPickerModal.test.tsx,owned,desktop-model-picker-tests,authored-selection-search-and-modal-tests,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/types/audio.ts,owned,desktop-audio-device-contract,no-material-corpus-match,project-license-pending,-,desktop-typecheck-2026-08-16,pending
+apps/desktop/src/types/pill.ts,owned,desktop-pill-contracts,no-material-corpus-match-and-native-wire-contracts,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/types/pill.test.ts,owned,desktop-pill-contract-tests,authored-action-and-preset-order-tests,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
 apps/desktop/src-tauri/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/desktop/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/mobile/**,unreviewed,mobile,,pending,-,pending,uncommitted
