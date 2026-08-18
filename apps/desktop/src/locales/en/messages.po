@@ -611,15 +611,17 @@ msgstr "(if required)"
 msgid "settings.speech_model.api_key.optional_hint"
 msgstr "(if required)"
 
-#. placeholder {0}: stats.llmCleanedCount
+#. js-lingui-explicit-id
+#. placeholder count
 #: src/features/transcriptions/homeHeaderStats.ts
-msgid "{0, plural, one {# dictation polished with AI today} other {# dictations polished with AI today}}"
-msgstr "{0, plural, one {# dictation polished with AI today} other {# dictations polished with AI today}}"
+msgid "home.today.stats.llm_cleaned"
+msgstr "{count, plural, one {# dictation polished with AI today} other {# dictations polished with AI today}}"
 
-#. placeholder {0}: stats.count
+#. js-lingui-explicit-id
+#. placeholder count, words
 #: src/features/transcriptions/homeHeaderStats.ts
-msgid "{0, plural, one {# dictation} other {# dictations}}"
-msgstr "{0, plural, one {# dictation} other {# dictations}}"
+msgid "home.today.stats.dictations_words"
+msgstr "{count, plural, one {# dictation} other {# dictations}} · {words, plural, one {# word} other {# words}} today"
 
 #. js-lingui-explicit-id
 #. placeholder {0}: previewForApp.replacementsCount
@@ -639,10 +641,11 @@ msgstr "{0} saved"
 msgid "import.cat.history.detail"
 msgstr "{0} transcripts"
 
-#. placeholder {0}: stats.words
+#. js-lingui-explicit-id
+#. placeholder duration
 #: src/features/transcriptions/homeHeaderStats.ts
-msgid "{0, plural, one {# word} other {# words}}"
-msgstr "{0, plural, one {# word} other {# words}}"
+msgid "home.today.stats.longest_duration"
+msgstr "Longest recording today: {duration}"
 
 #. js-lingui-explicit-id
 #. placeholder {0}: previewForApp.dictionaryCount
@@ -650,10 +653,11 @@ msgstr "{0, plural, one {# word} other {# words}}"
 msgid "import.cat.dictionary.detail"
 msgstr "{0, plural, one {# word} other {# words}}"
 
-#. placeholder {0}: stats.longestWords
+#. js-lingui-explicit-id
+#. placeholder words
 #: src/features/transcriptions/homeHeaderStats.ts
-msgid "{0, plural, one {Longest dictation today: # word} other {Longest dictation today: # words}}"
-msgstr "{0, plural, one {Longest dictation today: # word} other {Longest dictation today: # words}}"
+msgid "home.today.stats.longest_words"
+msgstr "{words, plural, one {Longest dictation today: # word} other {Longest dictation today: # words}}"
 
 #. js-lingui-explicit-id
 #. placeholder {0}: apps.length
@@ -716,8 +720,9 @@ msgstr "{0} snippets"
 msgid "dictionary.entry.usage"
 msgstr "{0} uses"
 
+#. js-lingui-explicit-id
 #: src/features/transcriptions/homeHeaderStats.ts
-msgid "{avg, plural, one {About # word per dictation today} other {About # words per dictation today}}"
+msgid "home.today.stats.avg_words"
 msgstr "{avg, plural, one {About # word per dictation today} other {About # words per dictation today}}"
 
 #. js-lingui-explicit-id
@@ -725,8 +730,9 @@ msgstr "{avg, plural, one {About # word per dictation today} other {About # word
 msgid "member_card.coverage_with_devices"
 msgstr "{coverageBase} · {activeDevices} of {deviceLimit} devices active"
 
+#. js-lingui-explicit-id
 #: src/features/transcriptions/homeHeaderStats.ts
-msgid "{minutes, plural, one {# minute spoken today} other {# minutes spoken today}}"
+msgid "home.today.stats.minutes_spoken"
 msgstr "{minutes, plural, one {# minute spoken today} other {# minutes spoken today}}"
 
 #. js-lingui-explicit-id
@@ -734,9 +740,15 @@ msgstr "{minutes, plural, one {# minute spoken today} other {# minutes spoken to
 msgid "models.cloud_card.aria"
 msgstr "{providerLabel} cloud model"
 
+#. js-lingui-explicit-id
 #: src/features/transcriptions/homeHeaderStats.ts
-msgid "{seconds, plural, one {# second spoken today} other {# seconds spoken today}}"
+msgid "home.today.stats.seconds_spoken"
 msgstr "{seconds, plural, one {# second spoken today} other {# seconds spoken today}}"
+
+#. js-lingui-explicit-id
+#: src/features/transcriptions/homeHeaderStats.ts
+msgid "home.today.stats.pace_wpm"
+msgstr "About {wpm} words per minute today"
 
 #. js-lingui-explicit-id
 #: src/features/memory/components/MemoryView.tsx
