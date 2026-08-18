@@ -27,7 +27,7 @@ la revisión de los casos históricos de alto riesgo.
 | `apps/desktop/src-tauri/src/core/keyboard/mod.rs` | 96.3% | 24.1% | Revisión de contrato completada: el parser de modificadores usa una tabla de alias propia, el matching separa familias izquierda/derecha y el lifecycle de shutdown conserva join explícito; falta validación con hotkeys globales en un host real. |
 | `apps/desktop/src/features/settings/components/SpeechModelPanel.tsx` | 98.6% | 24.8% | Revisión funcional completada: provider/model discovery, reset de presets, API key, callbacks y copy Lingui viven en contratos propios; la equivalencia visual por píxel aún no está demostrada. |
 | `apps/desktop/src-tauri/src/recorder.rs` | 96.3% | 17.3% | Revisión sustantiva completada: captura, journal parcial, procesamiento, validación, archivo y recovery están separados en límites propios; faltan micrófono, permisos y acústica reales. |
-| `apps/desktop/src-tauri/src/analytics.rs` | 97.1% | 28.8% | Clasificación de fallos, nombres de eventos y marcador de crash son decisiones creativas potencialmente derivadas. |
+| `apps/desktop/src-tauri/src/analytics.rs` | 97.1% | 28.8% | Revisión sustantiva completada: consentimiento, eventos, excepciones, clasificación y markers están encapsulados en políticas propias; nombres de eventos y categorías siguen siendo contratos observables y no se validó envío PostHog real. |
 
 ## Casos móviles
 
@@ -135,3 +135,15 @@ pruebas cubren 15 contratos deterministas, incluyendo persistencia temporal,
 recovery, downmix, límites de señal y WAV. No se eliminaron tests. No se
 afirma evidencia de CPAL, permisos de micrófono, dispositivo, acústica o VAD
 en vivo.
+
+`analytics.rs` se revisó contra el contrato observable de telemetría y
+diagnóstico local: identidad anónima, consentimiento opt-in/final opt-out,
+orden de eventos de settings, payloads acotados, excepciones, clasificación de
+fallos/pánicos y parsing de markers de crash. La implementación actual separa
+`AnalyticsConfig`, `AnalyticsIdentity`, `EventDraft`, `ExceptionDraft`,
+`TelemetryRoute`, tablas de reglas y `CrashMarker`; conserva los nombres de
+eventos, campos públicos, fase monotónica y ausencia de transcript/audio en
+payloads. Las pruebas focales cubren 13 contratos, incluyendo anonimización,
+precedencia de categorías, wire de crash y límites de propiedades. No se
+eliminaron tests. No se ejecutó un envío real a PostHog ni una producción
+Tauri, por lo que esa parte permanece sin evidencia externa.
