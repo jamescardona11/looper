@@ -37,7 +37,7 @@ los casos que requieren revisión sustantiva por su referencia principal:
 
 | Archivo actual | Señal actual | Referencia principal | Riesgo que permanece |
 | --- | ---: | --- | --- |
-| `apps/mobile/targets/keyboard/KeyboardViewController.swift` | 27.7% | Voquill (AGPLv3) | Flujo de teclado, permisos, ciclo de captura e inserción deben verificarse en una extensión real. |
+| `apps/mobile/targets/keyboard/KeyboardViewController.swift` | 27.7% | Voquill (AGPLv3) | Revisión sustantiva aplicada: waveform, estados de dictado, selección de formato/style, refresh de sesión y servicios están separados por políticas/helpers; falta validar extensión, permisos, captura e inserción en un dispositivo real. |
 | `apps/mobile/targets/_shared/DarwinNotificationManager.swift` | 23.7% | Voquill (AGPLv3) | Notificaciones Darwin y coordinación entre procesos requieren validar el contrato nativo. |
 | `apps/mobile/targets/widgets/MeetingLiveActivity.swift` | 23.1% | Voquill (AGPLv3) | Estado y lifecycle de Live Activity requieren validación en dispositivo. |
 | `apps/mobile/targets/keyboard/Repos/MemberRepo.swift` | 22.9% | Voquill (AGPLv3) | Persistencia de identidad/trial y wire de Convex requieren revisar paridad y atribución. |
@@ -147,3 +147,17 @@ payloads. Las pruebas focales cubren 13 contratos, incluyendo anonimización,
 precedencia de categorías, wire de crash y límites de propiedades. No se
 eliminaron tests. No se ejecutó un envío real a PostHog ni una producción
 Tauri, por lo que esa parte permanece sin evidencia externa.
+
+`apps/mobile/targets/keyboard/KeyboardViewController.swift` se revisó contra
+el contrato observable de la extensión: lifecycle de `UIInputViewController`,
+estado idle/recording/loading/error, waveform y progress, acceso completo,
+permisos de micrófono, selección de idioma/formato/style/workflow, refresh de
+sesión, transporte de audio y actualización de `UserDefaults`/Darwin. La
+versión actual cambia la estructura de render y separa políticas de idioma,
+banner de membresía y wire de sesión en helpers propios; conserva callbacks,
+claves, textos, tamaños y rutas de servicio. Los contratos nativos cubren seis
+grupos y el gate móvil pasa typecheck y 35 pruebas Vitest. También se compiló
+el harness Swift con `swiftc -warnings-as-errors`; el linker solo advierte una
+ruta global ausente. No hay proyecto Xcode generado con schemes utilizables,
+por lo que no se afirma prueba de extensión, teclado host, permiso, micrófono,
+inserción ni proveedor real en dispositivo.
