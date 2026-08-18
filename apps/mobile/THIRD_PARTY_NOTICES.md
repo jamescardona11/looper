@@ -25,3 +25,11 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
+## AGPL source lineage
+
+The native keyboard and dictation layer was reviewed against the
+[Voquill project](https://github.com/voquill/voquill), whose non-enterprise
+content is available under the GNU Affero General Public License, version 3.
+Covered Looper portions remain under the root `LICENSE`; the complete license
+text and copyright notice travel with the repository.

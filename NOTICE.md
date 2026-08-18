@@ -14,8 +14,10 @@ The reconstruction includes code adapted from the GNU AGPL-3.0
 [Glimpse application](https://github.com/glimpse-hq/Glimpse), used as a source
 reference during development. Local transcription components also reference
 [Glimpse-Speech](https://github.com/glimpse-hq/Glimpse-Speech) under its own
-upstream terms recorded in the owning package notice. The complete GNU AGPL v3
-text is included in the root `LICENSE`; the product name, artwork, and
+upstream terms recorded in the owning package notice. The mobile keyboard and
+dictation layer was also reviewed against the AGPLv3 [Voquill project](https://github.com/voquill/voquill);
+the mobile-specific attribution is recorded in `apps/mobile/THIRD_PARTY_NOTICES.md`.
+The complete GNU AGPL v3 text is included in the root `LICENSE`; the product name, artwork, and
 trademarks used here are Looper's and are not Glimpse branding. The provenance
 process and the remaining manual-risk cases are recorded in
 [`docs/rebuild/CONTAMINATION_RISK_REGISTER.md`](docs/rebuild/CONTAMINATION_RISK_REGISTER.md).
