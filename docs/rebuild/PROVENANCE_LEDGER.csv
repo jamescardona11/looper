@@ -102,6 +102,12 @@ apps/desktop/src/shared/ui/actionCardButtonAccents.ts,replaced,desktop-action-ca
 apps/desktop/src/shared/ui/ActionCardButton.tsx,replaced,desktop-action-card-button,authored-native-button-card-composition,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
 apps/desktop/src/shared/ui/HoldActionCardButton.tsx,replaced,desktop-hold-action-card,authored-external-store-hold-controller,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
 apps/desktop/src/shared/ui/ActionCards.test.tsx,owned,desktop-action-card-tests,authored-click-hold-and-cancel-tests,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/shared/ui/Dropdown.tsx,replaced,desktop-dropdown,authored-dropdown-orchestrator,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/shared/ui/dropdownTypes.ts,replaced,desktop-dropdown-contract,authored-generic-option-contract,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/shared/ui/dropdownOptions.ts,replaced,desktop-dropdown-filtering,authored-section-aware-search,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/shared/ui/dropdownParts.tsx,replaced,desktop-dropdown-presentation,authored-trigger-and-menu-components,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/shared/ui/Dropdown.test.tsx,owned,desktop-dropdown-tests,authored-interaction-and-search-tests,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/shared/ui/dropdownOptions.test.ts,owned,desktop-dropdown-filter-tests,authored-section-filter-tests,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
 apps/desktop/src-tauri/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/desktop/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/mobile/**,unreviewed,mobile,,pending,-,pending,uncommitted
