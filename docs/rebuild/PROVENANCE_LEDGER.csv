@@ -973,3 +973,13 @@ backend/**,unreviewed,backend,,pending,-,pending,uncommitted
 packages/**,unreviewed,packages,,pending,-,pending,uncommitted
 apps/desktop/src/features/memory/queries.ts,owned,memory-query,authored-react-query-memory-gateway,project-license-pending,-,memory-query-test-and-desktop-audit-2026-08-17,pending
 apps/desktop/src/features/memory/queries.test.tsx,owned,memory-query-tests,authored-react-query-cache-contract-tests,project-license-pending,-,memory-query-test-and-desktop-audit-2026-08-17,pending
+packages/ts/i18n/package.json,owned,i18n-package,authored-looper-i18n-package-manifest,project-license-pending,-,workspace-typecheck-and-i18n-tests-2026-08-17,pending
+packages/ts/i18n/tsconfig.json,owned,i18n-package,authored-looper-i18n-typescript-config,project-license-pending,-,workspace-typecheck-and-i18n-tests-2026-08-17,pending
+packages/ts/i18n/src/index.test.ts,owned,i18n-tests,authored-i18n-export-contract-tests,project-license-pending,-,workspace-typecheck-and-i18n-tests-2026-08-17,pending
+packages/ts/i18n/src/index.ts,owned,i18n-package,authored-looper-i18n-exports,project-license-pending,-,workspace-typecheck-and-i18n-tests-2026-08-17,pending
+packages/ts/i18n/src/locales/en.ts,owned,i18n-catalog,authored-looper-english-catalog,project-license-pending,-,workspace-typecheck-and-i18n-tests-2026-08-17,pending
+packages/ts/i18n/src/locales/es.ts,owned,i18n-catalog,authored-looper-spanish-catalog,project-license-pending,-,workspace-typecheck-and-i18n-tests-2026-08-17,pending
+packages/ts/i18n/src/react.tsx,owned,i18n-react,authored-looper-react-locale-provider,project-license-pending,-,workspace-typecheck-and-i18n-tests-2026-08-17,pending
+apps/desktop/src/i18n.ts,replaced,desktop-i18n,authored-locale-controller-facade-and-catalog-policy,project-license-pending,-,i18n-rebuild-contracts-desktop-typecheck-2026-08-17,pending
+apps/desktop/src/i18n-locale-policy.ts,replaced,desktop-i18n,authored-injected-catalog-and-locale-resolution-policy,project-license-pending,-,i18n-rebuild-contracts-desktop-typecheck-2026-08-17,pending
+apps/desktop/src/i18n.rebuild.test.ts,owned,desktop-i18n-tests,authored-locale-controller-contract-tests,project-license-pending,-,i18n-rebuild-contracts-desktop-typecheck-2026-08-17,pending

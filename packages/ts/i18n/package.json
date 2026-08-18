@@ -1,0 +1,19 @@
+{
+  "name": "@looper/i18n",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./react": "./src/react.tsx",
+    "./locales/*": "./src/locales/*"
+  },
+  "dependencies": {
+    "@lingui/core": "^6.1.0",
+    "@lingui/message-utils": "^6.1.0",
+    "@lingui/react": "^6.1.0"
+  },
+  "peerDependencies": {
+    "react": ">=18"
+  }
+}
