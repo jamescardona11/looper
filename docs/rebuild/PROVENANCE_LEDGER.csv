@@ -1040,3 +1040,14 @@ apps/mobile/src/features/agent/agent-logic.ts,owned,mobile-agent,authored-agent-
 apps/mobile/src/features/agent/agent-screen.tsx,owned,mobile-agent,authored-agent-screen,project-license-pending,-,mobile-agent-tests-typecheck-and-vitest-2026-08-17,pending
 apps/mobile/src/features/agent/index.ts,owned,mobile-agent,authored-agent-exports,project-license-pending,-,mobile-agent-tests-typecheck-and-vitest-2026-08-17,pending
 apps/mobile/src/features/agent/use-mobile-agent.ts,owned,mobile-agent,authored-agent-hook,project-license-pending,-,mobile-agent-tests-typecheck-and-vitest-2026-08-17,pending
+apps/mobile/src/features/notes/index.ts,owned,mobile-notes,authored-notes-exports,project-license-pending,-,mobile-notes-import-tests-typecheck-2026-08-17,pending
+apps/mobile/src/features/notes/local-notes-logic.test.ts,owned,mobile-notes-tests,authored-local-notes-contract-tests,project-license-pending,-,mobile-notes-import-tests-typecheck-2026-08-17,pending
+apps/mobile/src/features/notes/local-notes-logic.ts,owned,mobile-notes,authored-local-notes-policy,project-license-pending,-,mobile-notes-import-tests-typecheck-2026-08-17,pending
+apps/mobile/src/features/notes/local-notes-storage.ts,owned,mobile-notes,authored-local-notes-storage,project-license-pending,-,mobile-notes-import-tests-typecheck-2026-08-17,pending
+apps/mobile/src/features/notes/note-editor-logic.test.ts,owned,mobile-notes-tests,authored-note-editor-contract-tests,project-license-pending,-,mobile-notes-import-tests-typecheck-2026-08-17,pending
+apps/mobile/src/features/notes/note-editor-logic.ts,owned,mobile-notes,authored-note-editor-policy,project-license-pending,-,mobile-notes-import-tests-typecheck-2026-08-17,pending
+apps/mobile/src/features/notes/notes-screen.tsx,owned,mobile-notes,authored-notes-screen,project-license-pending,-,mobile-notes-import-tests-typecheck-2026-08-17,pending
+apps/mobile/src/features/import/index.ts,owned,mobile-import,authored-import-exports,project-license-pending,-,mobile-notes-import-tests-typecheck-2026-08-17,pending
+apps/mobile/src/features/import/import-logic.test.ts,owned,mobile-import-tests,authored-import-contract-tests,project-license-pending,-,mobile-notes-import-tests-typecheck-2026-08-17,pending
+apps/mobile/src/features/import/import-logic.ts,owned,mobile-import,authored-import-policy,project-license-pending,-,mobile-notes-import-tests-typecheck-2026-08-17,pending
+apps/mobile/src/features/import/import-screen.tsx,owned,mobile-import,authored-import-screen,project-license-pending,-,mobile-notes-import-tests-typecheck-2026-08-17,pending
