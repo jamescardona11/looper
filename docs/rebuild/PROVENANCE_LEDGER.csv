@@ -898,6 +898,7 @@ apps/desktop/src-tauri/src/library/repo/items.rs,replaced,desktop-library-repo-i
 apps/desktop/src-tauri/src/dictionary.rs,replaced,desktop-native-dictionary,authored-dictionary-sanitization-replacement-and-usage-policy,project-license-pending,-,corpus-containment-10.2-dictionary-25-tests-754-rust-tests-cargo-all-targets-rustfmt-2026-08-17,pending
 apps/desktop/src-tauri/src/speech/menu.rs,replaced,desktop-speech-menu,authored-speech-mode-menu-plan-event-and-selection-policy,project-license-pending,-,corpus-containment-14.4-speech-menu-12-tests-755-rust-tests-cargo-all-targets-rustfmt-2026-08-17,pending
 apps/desktop/src-tauri/src/library/types.rs,replaced,desktop-library-types,authored-library-wire-model-constant-status-and-error-policy,project-license-pending,-,corpus-containment-8.4-library-types-4-focal-tests-84-library-tests-cargo-all-targets-rustfmt-2026-08-17,pending
+apps/desktop/src-tauri/src/speech/engine.rs,replaced,desktop-speech-engine,authored-local-model-slot-activity-warm-gate-and-streaming-transcript-lifecycle,project-license-pending,-,corpus-containment-13.5-speech-engine-4-tests-cargo-all-targets-rustfmt-2026-08-17,pending
 apps/desktop/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/mobile/**,unreviewed,mobile,,pending,-,pending,uncommitted
 apps/web/**,unreviewed,web,,pending,-,pending,uncommitted
