@@ -1,5 +1,6 @@
 path,status,feature,source_or_basis,license,evidence,commit,notice_path
 .gitignore,owned,governance,authored_for_rebuild,AGPL-3.0-or-later,repository boundary,current,
+pnpm-lock.yaml,owned,build,workspace dependency lock synchronized,AGPL-3.0-or-later,frozen install plus workspace gates,current,
 LICENSE,owned,governance,authored_for_rebuild,AGPL-3.0-or-later,root license,b1efa21,
 COPYRIGHT,owned,governance,authored_for_rebuild,AGPL-3.0-or-later,root copyright,b1efa21,
 NOTICE.md,owned,governance,authored_for_rebuild,AGPL-3.0-or-later,notice index,current,
