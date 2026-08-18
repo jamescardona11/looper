@@ -1,0 +1,60 @@
+{
+  "name": "@looper/backend",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "main": "./convex/_generated/api.js",
+  "types": "./convex/_generated/api.d.ts",
+  "exports": {
+    ".": {
+      "types": "./convex/_generated/api.d.ts",
+      "default": "./convex/_generated/api.js"
+    },
+    "./api": {
+      "types": "./convex/_generated/api.d.ts",
+      "default": "./convex/_generated/api.js"
+    },
+    "./dataModel": {
+      "types": "./convex/_generated/dataModel.d.ts"
+    },
+    "./convex/_generated/*": {
+      "types": "./convex/_generated/*.d.ts",
+      "default": "./convex/_generated/*.js"
+    }
+  },
+  "scripts": {
+    "dev": "convex dev",
+    "deploy": "convex deploy",
+    "push:check": "convex dev --env-file .convex/selfhost.env.local --once --typecheck disable --run health:status --tail-logs disable",
+    "verify:published": "pnpm run typecheck && pnpm run push:check && env -u MOCK_MODE pnpm run test",
+    "dashboard": "convex dashboard",
+    "logs": "convex logs --tail",
+    "typecheck": "tsc --noEmit",
+    "lint": "echo 'lint stub — Convex validates server-side in convex dev'",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@ai-sdk/anthropic": "^3.0.79",
+    "@ai-sdk/google": "^3.0.79",
+    "@ai-sdk/openai": "^3.0.65",
+    "@auth/core": "^0.37.0",
+    "@convex-dev/auth": "^0.0.92",
+    "@convex-dev/polar": "^0.9.1",
+    "@convex-dev/rate-limiter": "^0.3.2",
+    "@looper/config": "workspace:*",
+    "@posthog/convex": "^1.0.6",
+    "@t3-oss/env-core": "^0.13.11",
+    "ai": "^6.0.191",
+    "convex": "^1.38.0",
+    "stripe": "22.1.1",
+    "zod": "^4.3.5"
+  },
+  "devDependencies": {
+    "@edge-runtime/vm": "^5.0.0",
+    "@looper/architecture-check": "workspace:*",
+    "@types/node": "^20.19.0",
+    "convex-test": "^0.0.52",
+    "typescript": "^5.9.3",
+    "vitest": "^3.0.0"
+  }
+}
