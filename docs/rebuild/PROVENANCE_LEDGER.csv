@@ -204,6 +204,8 @@ apps/desktop/src/features/settings/models-queries.test.ts,owned,desktop-model-qu
 apps/desktop/src/features/settings/modelDownloadActivity.tsx,owned,desktop-model-download-activity,no-material-corpus-match,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
 apps/desktop/src/features/settings/components/ModelDownloadActivityBar.tsx,owned,desktop-model-download-activity-ui,no-material-corpus-match,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
 apps/desktop/src/features/settings/modelDownloadActivity.test.tsx,owned,desktop-model-download-activity-tests,authored-navigation-progress-cancel-retry-and-complete-tests,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/features/settings/queries.ts,replaced,desktop-settings-query-boundary,authored-settings-query-options-and-cache-keys,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/features/settings/queries.test.ts,owned,desktop-settings-query-tests,authored-cache-key-tests,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
 apps/desktop/src-tauri/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/desktop/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/mobile/**,unreviewed,mobile,,pending,-,pending,uncommitted
