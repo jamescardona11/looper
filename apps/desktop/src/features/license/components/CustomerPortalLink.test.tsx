@@ -2,7 +2,13 @@
 
 import { setupI18n } from "@lingui/core";
 import { I18nProvider } from "@lingui/react";
-import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import {
+  cleanup,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+} from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 
 const openUrl = vi.hoisted(() => vi.fn());
@@ -16,6 +22,10 @@ i18n.loadAndActivate({ locale: "en", messages: {} });
 beforeEach(() => {
   openUrl.mockReset().mockResolvedValue(undefined);
   vi.stubEnv("VITE_LOOPER_CUSTOMER_PORTAL", "https://billing.test/portal");
+  i18n.loadAndActivate({
+    locale: "distinct",
+    messages: { "license.customer_portal": "OPEN DISTINCT PORTAL" },
+  });
 });
 
 afterEach(() => {
@@ -32,7 +42,9 @@ describe("CustomerPortalLink", () => {
       </I18nProvider>,
     );
 
-    const button = screen.getByRole("button", { name: "Customer portal" });
+    const button = screen.getByRole("button", {
+      name: "OPEN DISTINCT PORTAL",
+    });
     expect(button.className).toBe("portal-link");
     fireEvent.click(button);
 
