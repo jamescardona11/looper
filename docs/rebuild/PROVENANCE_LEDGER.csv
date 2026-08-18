@@ -425,6 +425,9 @@ apps/desktop/src/features/dictionary/queries.ts,replaced,desktop-dictionary-quer
 apps/desktop/src/features/dictionary/dictionary-query-policy.ts,replaced,desktop-dictionary-query-policy,authored-cache-branches-data-gateway-options-enable-gates-and-usage-staleness,project-license-pending,-,corpus-containment-3.8-and-full-desktop-suite-build-2026-08-16,pending
 apps/desktop/src/features/dictionary/dictionary-cache-policy.ts,replaced,desktop-dictionary-cache-policy,authored-settings-patch-merge-and-independent-replacement-snippet-suggestion-cache-writes,project-license-pending,-,corpus-containment-25.9-and-full-desktop-suite-build-2026-08-16,pending
 apps/desktop/src/features/dictionary/queries.test.ts,owned,desktop-dictionary-cache-tests,authored-settings-preservation-unloaded-settings-and-independent-suggestion-cache-contracts,project-license-pending,-,corpus-containment-6.5-and-full-desktop-suite-2026-08-16,pending
+apps/desktop/src/vite-env.d.ts,replaced,desktop-vite-client-types,authored-single-purpose-vite-client-type-reference,project-license-pending,-,corpus-below-minimum-signal-and-full-desktop-suite-build-2026-08-16,pending
+apps/desktop/src/looper-env.d.ts,owned,desktop-looper-environment-contract,authored-looper-checkout-portal-and-convex-environment-declarations,project-license-pending,-,corpus-below-minimum-signal-and-full-desktop-suite-build-2026-08-16,pending
+apps/desktop/src/lingui-catalog.d.ts,owned,desktop-lingui-catalog-contract,authored-po-catalog-module-declaration-for-lingui-message-loading,project-license-pending,-,corpus-below-minimum-signal-and-full-desktop-suite-build-2026-08-16,pending
 apps/desktop/src-tauri/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/desktop/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/mobile/**,unreviewed,mobile,,pending,-,pending,uncommitted
