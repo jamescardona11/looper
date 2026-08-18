@@ -520,6 +520,7 @@ apps/desktop/src/types/settings/shortcuts.ts,replaced,desktop-shortcut-contracts
 apps/desktop/src/types/toast.ts,replaced,desktop-toast-contracts,authored-toast-kind-message-lifetime-action-and-optional-value-schema-composition-preserving-public-payload-shape,project-license-pending,-,corpus-containment-11.8-toast-tests-typecheck-2026-08-16,pending
 apps/desktop/src/types/app.ts,replaced,desktop-app-info-contracts,authored-storage-category-map-app-identity-and-size-schema-composition-preserving-tauri-payload-shape,project-license-pending,-,corpus-containment-23.1-about-settings-tests-typecheck-2026-08-16,pending
 apps/desktop/src/types/transcription.ts,replaced,desktop-transcription-contracts,authored-text-flag-measure-optional-status-and-today-stat-schema-composition-preserving-wire-shape-and-nullability,project-license-pending,-,corpus-containment-5.0-transcription-query-cache-sync-tests-typecheck-2026-08-16,pending
+apps/desktop/src/types/settings/preferences.ts,replaced,desktop-preference-contracts,authored-closed-choice-catalogs-locale-string-provider-identity-and-retention-policy-types-preserving-public-unions,project-license-pending,-,corpus-no-relevant-match-settings-contract-tests-typecheck-2026-08-16,pending
 apps/desktop/src-tauri/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/desktop/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/mobile/**,unreviewed,mobile,,pending,-,pending,uncommitted

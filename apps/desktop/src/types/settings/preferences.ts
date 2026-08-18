@@ -1,16 +1,21 @@
-export type TranscriptionMode = "cloud" | "local";
+type Choice<Tuple extends readonly string[]> = Tuple[number];
 
-export type MediaAction =
-  "off" | "pause" | "duck10" | "duck25" | "duck50" | "duck75";
+export type TranscriptionMode = Choice<["cloud", "local"]>;
 
-export type TextSizeMode = "small" | "default" | "large";
-export type ThemeMode = "system" | "light" | "dark";
-export type AppLocaleSetting = "system" | string;
+export type MediaAction = Choice<
+  ["off", "pause", "duck10", "duck25", "duck50", "duck75"]
+>;
 
-export type RecordingPrunePolicy =
-  "never" | "immediately" | "day" | "week" | "month" | "three_months" | "year";
+export type TextSizeMode = Choice<["small", "default", "large"]>;
+export type ThemeMode = Choice<["system", "light", "dark"]>;
+export type AppLocaleSetting = string;
 
-export type AutoDeleteTarget = "audio" | "transcripts";
-export type LlmProvider = string;
-export type MeetingAiProvider = "local" | "writing" | "none";
-export type RemoteSpeechProvider = string;
+export type RecordingPrunePolicy = Choice<
+  ["never", "immediately", "day", "week", "month", "three_months", "year"]
+>;
+
+export type AutoDeleteTarget = Choice<["audio", "transcripts"]>;
+type ProviderId = string;
+export type LlmProvider = ProviderId;
+export type MeetingAiProvider = Choice<["local", "writing", "none"]>;
+export type RemoteSpeechProvider = ProviderId;
