@@ -152,6 +152,11 @@ apps/desktop/src/types/settings/shortcuts.ts,replaced,desktop-settings-shortcuts
 apps/desktop/src/types/settings/workflows.ts,replaced,desktop-settings-workflows,reconstructed-from-native-tagged-enums,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
 apps/desktop/src/types/settings/stored-settings.ts,replaced,desktop-settings-storage,authored-composed-domain-contract-from-native-settings,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
 apps/desktop/src/types/settings/settings.contract.test.ts,owned,desktop-settings-contract-tests,authored-composition-and-tagged-union-tests,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/types/library.ts,replaced,desktop-library-contract,authored-domain-export-facade,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/types/library/items.ts,replaced,desktop-library-items,reconstructed-and-composed-from-native-serialized-payloads,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/types/library/meetings.ts,replaced,desktop-meeting-contracts,reconstructed-from-native-meeting-events,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/types/library/imports.ts,replaced,desktop-library-import-contracts,reconstructed-from-native-import-events,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/types/library/library.contract.test.ts,owned,desktop-library-contract-tests,authored-union-composition-and-payload-tests,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
 apps/desktop/src-tauri/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/desktop/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/mobile/**,unreviewed,mobile,,pending,-,pending,uncommitted
