@@ -1,17 +1,22 @@
-import { useLingui } from "@lingui/react/macro";
+import { msg } from "@lingui/core/macro";
+import { useLingui } from "@lingui/react";
 import { Broom as BrushCleaning, Ghost } from "@phosphor-icons/react";
 
 const HELP_ITEMS = [
   {
     Icon: Ghost,
-    id: "settings.general.shortcuts.help_temporary",
-    message:
-      "Makes a shortcut temporary. It will not save audio, transcript, or history.",
+    copy: msg({
+      id: "settings.general.shortcuts.help_temporary",
+      message:
+        "Makes a shortcut temporary. It will not save audio, transcript, or history.",
+    }),
   },
   {
     Icon: BrushCleaning,
-    id: "settings.general.shortcuts.help_cleanup",
-    message: "Runs Cleanup for that shortcut only.",
+    copy: msg({
+      id: "settings.general.shortcuts.help_cleanup",
+      message: "Runs Cleanup for that shortcut only.",
+    }),
   },
 ] as const;
 
@@ -24,17 +29,21 @@ function helpPlacementClass(visible: boolean): string {
   ].join(" ");
 }
 
+function helpItemClass(first: boolean): string | undefined {
+  return first ? undefined : "mt-1";
+}
+
 function HelpItem({ item, first }: { item: ShortcutHelpItem; first: boolean }) {
-  const { t } = useLingui();
-  const { Icon, id, message } = item;
+  const { i18n } = useLingui();
+  const { Icon, copy } = item;
   return (
-    <p className={first ? undefined : "mt-1"}>
+    <p className={helpItemClass(first)}>
       <Icon
         size={10}
         className="mr-1 inline-block align-[-1px]"
         aria-hidden="true"
       />
-      {t({ id, message })}
+      {i18n._(copy)}
     </p>
   );
 }
@@ -48,7 +57,7 @@ export function ShortcutHelp({ visible }: { visible: boolean }) {
     >
       <div className="w-56 rounded-lg border border-border-secondary bg-surface-overlay px-2.5 py-1.5 ui-text-micro ui-color-secondary shadow-lg leading-tight">
         {HELP_ITEMS.map((item, index) => (
-          <HelpItem key={item.id} item={item} first={index === 0} />
+          <HelpItem key={item.copy.id} item={item} first={index === 0} />
         ))}
       </div>
     </div>
