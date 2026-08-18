@@ -24,7 +24,7 @@ la revisión de los casos históricos de alto riesgo.
 | `apps/desktop/src-tauri/src/core/keyboard/catalog.rs` | 100% | 4.6% | La tabla de teclas y alias conserva restricciones externas; verificar qué datos son inevitables y qué decisiones son propias. |
 | `apps/desktop/src-tauri/src/music.rs` | 95.7% | 15.6% | La coordinación usa una máquina de fases propia y los programas JXA separan dispatch, identidad y volumen; falta observar pause/duck en reproductores reales. |
 | `apps/desktop/src-tauri/src/platform/macos/audio_devices.rs` | 98.5% | 21.0% | Revisión de contrato completada: registro/eliminación CoreAudio, mailbox acotado, orden de suscripciones y refresh de menús están cubiertos; el smoke nativo sigue pendiente de permisos/host. |
-| `apps/desktop/src-tauri/src/core/keyboard/mod.rs` | 96.3% | 24.1% | Parsing de modificadores, mensajes de error y liberación de hotkeys aún requieren revisión manual. |
+| `apps/desktop/src-tauri/src/core/keyboard/mod.rs` | 96.3% | 24.1% | Revisión de contrato completada: el parser de modificadores usa una tabla de alias propia, el matching separa familias izquierda/derecha y el lifecycle de shutdown conserva join explícito; falta validación con hotkeys globales en un host real. |
 | `apps/desktop/src/features/settings/components/SpeechModelPanel.tsx` | 98.6% | 24.8% | Copy/IDs Lingui y transiciones de proveedor deben conservar función sin reclamar autoría independiente automática. |
 | `apps/desktop/src-tauri/src/recorder.rs` | 96.3% | 17.3% | Persistencia, validación y orden del pipeline deben mantenerse bajo la licencia aplicable o reescribirse por comportamiento. |
 | `apps/desktop/src-tauri/src/analytics.rs` | 97.1% | 28.8% | Clasificación de fallos, nombres de eventos y marcador de crash son decisiones creativas potencialmente derivadas. |
@@ -92,3 +92,13 @@ capacidad uno, actualización de menú/tray, emisión al renderer y eliminación
 RAII de listeners. Las pruebas cubren la dirección de propiedad, el callback
 con contexto nulo y la coalescencia; el smoke que registra listeners reales se
 mantiene explícitamente ignorado porque requiere CoreAudio y permisos del host.
+
+Finalmente se revisó `core/keyboard/mod.rs` contra el contrato observable de
+hotkeys: aliases y parseo de modificadores, representación de lados, matching
+genérico/específico, shortcuts de solo modificador, forwarding de teclas no
+registradas, eventos de liberación y parada ordenada del worker. La
+implementación actual separa `ModifierGroup`, `EventPolicy` y
+`PlatformShutdown`, conserva los mensajes de error y no elimina tests para
+reducir la señal. Las pruebas focales cubren la tabla de verdad, aliases,
+forwarding y ambos bordes de un modificador; la evidencia no incluye una
+ventana macOS/Windows real ni una hotkey global disparada por dispositivo.
