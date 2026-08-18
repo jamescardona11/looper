@@ -9,6 +9,7 @@ import {
 
 export function GeneralProcessingSection(props: GeneralProcessingProps) {
   const { t } = useLingui();
+  const choices = processingChoices(t, props.transcriptionMode);
   const missingLocalModel = shouldWarnMissingLocalModel({
     transcriptionMode: props.transcriptionMode,
     localModel: props.localModel,
@@ -55,32 +56,13 @@ export function GeneralProcessingSection(props: GeneralProcessingProps) {
           message: "Processing Mode",
         })}
       >
-        <ProcessingChoice
-          selected={props.transcriptionMode === "cloud"}
-          tone="cloud"
-          label={t({ id: "settings.general.cloud.label", message: "Cloud" })}
-          badge={t({ id: "settings.general.cloud.badge", message: "fast" })}
-          description={t({
-            id: "settings.general.cloud.description",
-            message: "Uses Looper Cloud",
-          })}
-          accessibleLabel={t({
-            id: "settings.general.cloud.aria",
-            message: "Cloud processing",
-          })}
-          onSelect={() => props.onTranscriptionModeChange("cloud")}
-        />
-        <ProcessingChoice
-          selected={props.transcriptionMode === "local"}
-          tone="local"
-          label={t({ id: "settings.general.local.label", message: "Local" })}
-          badge={t({ id: "settings.general.local.badge", message: "private" })}
-          description={t({
-            id: "settings.general.local.description",
-            message: "Runs entirely on your device",
-          })}
-          onSelect={() => props.onTranscriptionModeChange("local")}
-        />
+        {choices.map(({ mode, ...choice }) => (
+          <ProcessingChoice
+            key={mode}
+            {...choice}
+            onSelect={() => props.onTranscriptionModeChange(mode)}
+          />
+        ))}
       </div>
 
       <AnimatePresence>
@@ -116,6 +98,17 @@ export function GeneralProcessingSection(props: GeneralProcessingProps) {
   );
 }
 
+type ProcessingChoiceProps = {
+  mode: "cloud" | "local";
+  selected: boolean;
+  tone: "cloud" | "local";
+  label: string;
+  badge: string;
+  description: string;
+  accessibleLabel?: string;
+  onSelect: () => void;
+};
+
 function ProcessingChoice({
   selected,
   tone,
@@ -124,15 +117,7 @@ function ProcessingChoice({
   description,
   accessibleLabel,
   onSelect,
-}: {
-  selected: boolean;
-  tone: "cloud" | "local";
-  label: string;
-  badge: string;
-  description: string;
-  accessibleLabel?: string;
-  onSelect: () => void;
-}) {
+}: Omit<ProcessingChoiceProps, "mode">) {
   const selectedClass =
     tone === "cloud"
       ? "border-cloud-30 bg-cloud-5 shadow-[var(--shadow-action-card-cloud-selected)]"
@@ -180,4 +165,38 @@ function ProcessingChoice({
       </span>
     </button>
   );
+}
+
+function processingChoices(
+  t: ReturnType<typeof useLingui>["t"],
+  selectedMode: GeneralProcessingProps["transcriptionMode"],
+): Omit<ProcessingChoiceProps, "onSelect">[] {
+  return [
+    {
+      mode: "cloud",
+      selected: selectedMode === "cloud",
+      tone: "cloud",
+      label: t({ id: "settings.general.cloud.label", message: "Cloud" }),
+      badge: t({ id: "settings.general.cloud.badge", message: "fast" }),
+      description: t({
+        id: "settings.general.cloud.description",
+        message: "Uses Looper Cloud",
+      }),
+      accessibleLabel: t({
+        id: "settings.general.cloud.aria",
+        message: "Cloud processing",
+      }),
+    },
+    {
+      mode: "local",
+      selected: selectedMode === "local",
+      tone: "local",
+      label: t({ id: "settings.general.local.label", message: "Local" }),
+      badge: t({ id: "settings.general.local.badge", message: "private" }),
+      description: t({
+        id: "settings.general.local.description",
+        message: "Runs entirely on your device",
+      }),
+    },
+  ];
 }
