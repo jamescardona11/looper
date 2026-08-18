@@ -20,7 +20,7 @@ la revisión de los casos históricos de alto riesgo.
 
 | Archivo actual | Señal histórica | Estado técnico actual | Riesgo que permanece |
 | --- | ---: | ---: | --- |
-| `apps/desktop/src-tauri/src/core/keyboard/macos.rs` | 97.6% | 27.3% | Secuencia de event tap, estados de modificadores y callback macOS requieren comparar comportamiento, no solo líneas. |
+| `apps/desktop/src-tauri/src/core/keyboard/macos.rs` | 97.6% | 15.2% | Revisión sustantiva aplicada: la frontera nativa ahora traduce eventos a una sesión propia, el estado usa familias de modificadores y el catálogo está agrupado por función; falta validación en una ventana macOS real. |
 | `apps/desktop/src-tauri/src/core/keyboard/catalog.rs` | 100% | 4.6% | La tabla de teclas y alias conserva restricciones externas; verificar qué datos son inevitables y qué decisiones son propias. |
 | `apps/desktop/src-tauri/src/music.rs` | 95.7% | 16.4% | Los scripts JXA/MediaRemote y las transiciones pause/duck siguen siendo el área más sensible. |
 | `apps/desktop/src-tauri/src/platform/macos/audio_devices.rs` | 98.5% | 21.0% | Listener CoreAudio, mailbox y orden de suscripciones deben justificarse por contrato de plataforma. |
@@ -62,3 +62,16 @@ antes de redistribuir.
 Los módulos de producto `import/handy.rs` y `import/wispr.rs` no existen en el
 árbol reconstruido. La mención de `Handy` en el script de auditoría solo identifica
 un repositorio de referencia del corpus y no es una dependencia del producto.
+
+## Revisión sustantiva registrada
+
+El 18 de agosto de 2026 se revisó `core/keyboard/macos.rs` contra el contrato
+observable de `KeyboardListener`: permisos de Accesibilidad, creación y
+reactivación del event tap, traducción de teclas/punteros, Caps Lock, lados de
+modificadores, autorepeat, bloqueo/forwarding y liberación. La implementación
+actual separa `NativeEvent`, `TapSession` y `KeyboardState`; no se eliminaron
+pruebas para reducir la señal. Se añadieron contratos unitarios para la
+traducción de sesión y la recuperación de un tap deshabilitado. Verificación:
+14 pruebas de teclado, `cargo check --all-targets`, suite Rust completa,
+`qa:desktop-native`, `pnpm verify` y auditoría de corpus; la última evidencia
+no prueba interacción nativa con una ventana macOS ni permisos del sistema.
