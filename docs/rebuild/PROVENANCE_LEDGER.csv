@@ -1055,3 +1055,8 @@ apps/mobile/src/shared/theme/colors.test.ts,owned,mobile-theme-tests,authored-th
 apps/mobile/src/shared/theme/colors.ts,owned,mobile-theme,authored-theme-color-palette,project-license-pending,-,mobile-shared-tests-typecheck-2026-08-17,pending
 apps/mobile/src/shared/studio/studio-settings.test.ts,owned,mobile-studio-tests,authored-studio-settings-contract-tests,project-license-pending,-,mobile-shared-tests-typecheck-2026-08-17,pending
 apps/mobile/src/shared/studio/studio-settings.ts,owned,mobile-studio,authored-studio-settings-policy,project-license-pending,-,mobile-shared-tests-typecheck-2026-08-17,pending
+apps/mobile/src/shared/components/pill-listening-signal-logic.test.ts,owned,mobile-pill-tests,authored-listening-signal-contract-tests,project-license-pending,-,mobile-shared-tests-typecheck-2026-08-17,pending
+apps/mobile/src/shared/components/pill-listening-signal-logic.ts,owned,mobile-pill,authored-listening-signal-policy,project-license-pending,-,mobile-shared-tests-typecheck-2026-08-17,pending
+apps/mobile/src/shared/components/pill-listening-signal.tsx,owned,mobile-pill,authored-listening-signal-view,project-license-pending,-,mobile-shared-tests-typecheck-2026-08-17,pending
+apps/mobile/src/shared/components/screen.tsx,owned,mobile-shell,authored-mobile-screen-layout,project-license-pending,-,mobile-shared-tests-typecheck-2026-08-17,pending
+apps/mobile/src/lib/secure-storage.ts,owned,mobile-storage,authored-mobile-secure-storage-adapter,project-license-pending,-,mobile-shared-tests-typecheck-2026-08-17,pending
