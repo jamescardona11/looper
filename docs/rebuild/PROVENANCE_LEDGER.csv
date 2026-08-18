@@ -1060,3 +1060,8 @@ apps/mobile/src/shared/components/pill-listening-signal-logic.ts,owned,mobile-pi
 apps/mobile/src/shared/components/pill-listening-signal.tsx,owned,mobile-pill,authored-listening-signal-view,project-license-pending,-,mobile-shared-tests-typecheck-2026-08-17,pending
 apps/mobile/src/shared/components/screen.tsx,owned,mobile-shell,authored-mobile-screen-layout,project-license-pending,-,mobile-shared-tests-typecheck-2026-08-17,pending
 apps/mobile/src/lib/secure-storage.ts,owned,mobile-storage,authored-mobile-secure-storage-adapter,project-license-pending,-,mobile-shared-tests-typecheck-2026-08-17,pending
+apps/mobile/src/features/library/index.ts,owned,mobile-library,authored-library-exports,project-license-pending,-,mobile-library-tests-typecheck-2026-08-17,pending
+apps/mobile/src/features/library/library-logic.test.ts,owned,mobile-library-tests,authored-library-logic-contract-tests,project-license-pending,-,mobile-library-tests-typecheck-2026-08-17,pending
+apps/mobile/src/features/library/library-logic.ts,owned,mobile-library,authored-library-state-policy,project-license-pending,-,mobile-library-tests-typecheck-2026-08-17,pending
+apps/mobile/src/features/library/library-screen.tsx,owned,mobile-library,authored-library-screen,project-license-pending,-,mobile-library-tests-typecheck-2026-08-17,pending
+apps/mobile/src/features/library/local-content-sync.tsx,owned,mobile-library,authored-local-content-sync,project-license-pending,-,mobile-library-tests-typecheck-2026-08-17,pending
