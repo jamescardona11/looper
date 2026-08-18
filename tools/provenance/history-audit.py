@@ -14,6 +14,7 @@ FORBIDDEN_PATHS = (
     "apps/desktop/src-tauri/src/import/wispr.rs",
 )
 BACKUP_REF_GLOB = "refs/heads/codex/rebuild/agpl-history-root-*"
+TOOL_REF_PREFIX = "refs/codex/"
 
 
 def git(root: Path, *args: str) -> str:
@@ -125,6 +126,47 @@ def non_active_ref_findings(root: Path) -> list[dict[str, object]]:
     return reports
 
 
+def tool_ref_findings(root: Path) -> list[dict[str, object]]:
+    """Report contaminated snapshots kept by the local agent tooling.
+
+    These refs are not release branches and therefore do not make the active
+    history fail, but hiding them would make local provenance reporting
+    incomplete. The caller can decide when it is safe to remove them.
+    """
+
+    refs = git(
+        root,
+        "for-each-ref",
+        "--format=%(refname) %(objectname)",
+        TOOL_REF_PREFIX,
+    ).splitlines()
+    reports: list[dict[str, object]] = []
+    ledger = "docs/rebuild/PROVENANCE_LEDGER.csv"
+    for line in refs:
+        ref, commit = line.split(" ", 1)
+        objects = git(root, "rev-list", "--objects", ref)
+        paths = {
+            entry.split(" ", 1)[1]
+            for entry in objects.splitlines()
+            if " " in entry
+        }
+        forbidden = sorted(path for path in paths if path in FORBIDDEN_PATHS)
+        ledger_hits: list[str] = []
+        for needle in FORBIDDEN_PATHS:
+            commits = git(root, "log", ref, "--format=%H", f"-S{needle}", "--", ledger)
+            ledger_hits.extend(f"{hit}:{needle}" for hit in commits.splitlines())
+        if forbidden or ledger_hits:
+            reports.append(
+                {
+                    "ref": ref,
+                    "commit": commit,
+                    "forbidden_paths": forbidden,
+                    "ledger_history_hits": sorted(ledger_hits),
+                }
+            )
+    return reports
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
@@ -143,6 +185,7 @@ def main() -> int:
     ledger_hits = ledger_history_hits(root)
     retained_backups = backup_refs(root)
     non_active_findings = non_active_ref_findings(root)
+    tool_findings = tool_ref_findings(root)
     first = root_commit(root)
     license_text = git(root, "show", f"{first}:LICENSE")
     copyright_text = git(root, "show", f"{first}:COPYRIGHT")
@@ -154,6 +197,7 @@ def main() -> int:
         "ledger_history_hits": sorted(ledger_hits),
         "retained_backup_refs": retained_backups,
         "non_active_ref_findings": non_active_findings,
+        "tool_ref_findings": tool_findings,
         "root_has_agplv3": "GNU AFFERO GENERAL PUBLIC LICENSE" in license_text,
         "root_names_james_cardona": "James Cardona" in copyright_text,
     }
