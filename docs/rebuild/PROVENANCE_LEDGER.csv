@@ -317,6 +317,8 @@ apps/desktop/src/features/settings/components/tabs/AppAutomationSection.tsx,repl
 apps/desktop/src/features/settings/components/tabs/AppStorageSection.tsx,replaced,desktop-app-storage-section,authored-watch-folder-and-markdown-archive-composition,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
 apps/desktop/src/features/settings/components/tabs/AppConfirmationDialogs.tsx,replaced,desktop-app-destructive-confirmations,authored-shared-dialog-frame-prune-and-budget-content,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
 apps/desktop/src/features/settings/components/tabs/AppSections.test.tsx,owned,desktop-app-settings-section-tests,authored-permission-privacy-media-login-archive-and-confirmation-action-tests,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/features/settings/settings-shortcut-model.ts,replaced,desktop-settings-shortcut-model,authored-platform-default-legacy-restoration-cleanup-and-draft-recovery-rules,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/features/settings/settings-shortcut-model.test.ts,owned,desktop-settings-shortcut-model-tests,authored-default-restoration-cleanup-recovery-and-indexing-tests,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
 apps/desktop/src-tauri/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/desktop/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/mobile/**,unreviewed,mobile,,pending,-,pending,uncommitted
