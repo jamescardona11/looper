@@ -703,6 +703,7 @@ apps/desktop/src/features/library/components/library-detail-state.ts,replaced,de
 apps/desktop/src/features/library/components/library-detail-transcript-autosave.ts,replaced,desktop-library-detail,authored-debounced-transcript-autosave-and-stale-draft-discard,project-license-pending,-,corpus-containment-4.2-library-detail-58-tests-full-suite-typecheck-eslint-prettier-2026-08-17,pending
 apps/desktop/src/features/library/components/library-detail-types.ts,replaced,desktop-library-detail,authored-library-detail-public-props-contract,project-license-pending,-,corpus-containment-5.6-library-detail-58-tests-full-suite-typecheck-eslint-prettier-2026-08-17,pending
 apps/desktop/src-tauri/src/music.rs,replaced,desktop-native-media-coordination,authored-session-ledger-overlap-race-coordinator-macos-script-and-windows-media-session-policies,project-license-pending,-,corpus-containment-16.7-music-8-tests-native-suite-cargo-all-targets-cross-target-harness-rustfmt-2026-08-17,pending
+apps/desktop/src-tauri/src/platform/windows/crash.rs,replaced,desktop-native-windows-crash-reporting,authored-crash-output-native-fault-module-site-marker-minidump-and-replaced-filter-chaining-policies,project-license-pending,-,corpus-containment-5.1-windows-crash-6-cross-target-tests-native-suite-cargo-all-targets-rustfmt-2026-08-17,pending
 apps/desktop/src-tauri/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/desktop/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/mobile/**,unreviewed,mobile,,pending,-,pending,uncommitted
