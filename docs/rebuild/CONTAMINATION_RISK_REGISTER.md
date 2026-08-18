@@ -26,7 +26,7 @@ la revisión de los casos históricos de alto riesgo.
 | `apps/desktop/src-tauri/src/platform/macos/audio_devices.rs` | 98.5% | 21.0% | Revisión de contrato completada: registro/eliminación CoreAudio, mailbox acotado, orden de suscripciones y refresh de menús están cubiertos; el smoke nativo sigue pendiente de permisos/host. |
 | `apps/desktop/src-tauri/src/core/keyboard/mod.rs` | 96.3% | 24.1% | Revisión de contrato completada: el parser de modificadores usa una tabla de alias propia, el matching separa familias izquierda/derecha y el lifecycle de shutdown conserva join explícito; falta validación con hotkeys globales en un host real. |
 | `apps/desktop/src/features/settings/components/SpeechModelPanel.tsx` | 98.6% | 24.8% | Revisión funcional completada: provider/model discovery, reset de presets, API key, callbacks y copy Lingui viven en contratos propios; la equivalencia visual por píxel aún no está demostrada. |
-| `apps/desktop/src-tauri/src/recorder.rs` | 96.3% | 17.3% | Persistencia, validación y orden del pipeline deben mantenerse bajo la licencia aplicable o reescribirse por comportamiento. |
+| `apps/desktop/src-tauri/src/recorder.rs` | 96.3% | 17.3% | Revisión sustantiva completada: captura, journal parcial, procesamiento, validación, archivo y recovery están separados en límites propios; faltan micrófono, permisos y acústica reales. |
 | `apps/desktop/src-tauri/src/analytics.rs` | 97.1% | 28.8% | Clasificación de fallos, nombres de eventos y marcador de crash son decisiones creativas potencialmente derivadas. |
 
 ## Casos móviles
@@ -123,3 +123,15 @@ provider, preservación de API key, normalización de modelos, modelo faltante,
 discovery condicional y nombres accesibles localizados. No se eliminaron
 tests. El gate no prueba renderizado pixel-perfect, GPU ni interacción con un
 backend/proveedor remoto real.
+
+`recorder.rs` se revisó contra el contrato observable de captura: worker de
+CPAL, armado por señal, espectro de 512 muestras, lectura incremental de audio,
+journal parcial con cierre/descartado, downmix, resample, VAD, validación,
+archivo WAV canónico y recuperación de parciales. La implementación actual
+separa `RecorderState`, `CaptureWorker`, `PartialJournal`, `AudioProcessor`,
+`RecordingValidator`, `RecordingArchive` y `RecoveryScan`; conserva las APIs
+públicas, el orden stop→journal→hook→procesado y los errores existentes. Las
+pruebas cubren 15 contratos deterministas, incluyendo persistencia temporal,
+recovery, downmix, límites de señal y WAV. No se eliminaron tests. No se
+afirma evidencia de CPAL, permisos de micrófono, dispositivo, acústica o VAD
+en vivo.
