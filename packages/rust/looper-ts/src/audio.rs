@@ -1,4 +1,4 @@
-use rubato::{audioadapter_buffers::direct::InterleavedSlice, Fft, FixedSync, Resampler};
+use rubato::{audioadapter_buffers::direct::SequentialSlice, Fft, FixedSync, Resampler};
 
 use crate::{AudioInput, Error, Result};
 
@@ -76,77 +76,124 @@ fn validate_pcm(samples: &[f32], sample_rate: u32) -> Result<()> {
 
 #[derive(Debug, Clone, Copy)]
 struct RateConversion {
-    input_rate: u32,
-    output_rate: u32,
+    source_hz: u32,
+    target_hz: u32,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum ConversionRoute {
+    Empty,
+    Identity,
+    BandLimited,
 }
 
 impl RateConversion {
     fn new(input_rate: u32, output_rate: u32) -> Self {
         Self {
-            input_rate,
-            output_rate,
+            source_hz: input_rate,
+            target_hz: output_rate,
         }
     }
 
     fn apply(self, input: &[f32]) -> Vec<f32> {
-        if input.is_empty() {
-            return Vec::new();
+        match self.route(input.len()) {
+            ConversionRoute::Empty => Vec::new(),
+            ConversionRoute::Identity => input.to_vec(),
+            ConversionRoute::BandLimited => self
+                .band_limited(input)
+                .unwrap_or_else(|| self.linear_projection(input)),
         }
-        if self.input_rate == self.output_rate {
-            return input.to_vec();
-        }
-
-        self.with_rubato(input)
-            .unwrap_or_else(|| self.with_linear_interpolation(input))
     }
 
-    fn with_rubato(self, input: &[f32]) -> Option<Vec<f32>> {
-        let mut converter = Fft::<f32>::new(
-            self.input_rate as usize,
-            self.output_rate as usize,
-            1_024,
+    fn route(self, sample_count: usize) -> ConversionRoute {
+        match (sample_count, self.source_hz == self.target_hz) {
+            (0, _) => ConversionRoute::Empty,
+            (_, true) => ConversionRoute::Identity,
+            _ => ConversionRoute::BandLimited,
+        }
+    }
+
+    fn band_limited(self, input: &[f32]) -> Option<Vec<f32>> {
+        const WINDOW_FRAMES: usize = 1_024;
+        const MONO: usize = 1;
+
+        let mut filter = Fft::<f32>::new(
+            self.source_hz as usize,
+            self.target_hz as usize,
+            WINDOW_FRAMES,
             1,
-            1,
+            MONO,
             FixedSync::Both,
         )
         .ok()?;
-        let mono = InterleavedSlice::new(input, 1, input.len()).ok()?;
-        let output_len = converter.process_all_needed_output_len(input.len());
-        let mut output = vec![0.0; output_len];
-        let mut mono_output = InterleavedSlice::new_mut(&mut output, 1, output_len).ok()?;
-        let (_, written) = converter
-            .process_all_into_buffer(&mono, &mut mono_output, input.len(), None)
-            .ok()?;
-        output.truncate(written);
-        Some(output)
+
+        let capacity = filter.process_all_needed_output_len(input.len());
+        let mut rendered = vec![0.0; capacity];
+        let written = {
+            let source = SequentialSlice::new(input, MONO, input.len()).ok()?;
+            let mut destination =
+                SequentialSlice::new_mut(rendered.as_mut_slice(), MONO, capacity).ok()?;
+            filter
+                .process_all_into_buffer(&source, &mut destination, input.len(), None)
+                .ok()?
+                .1
+        };
+
+        rendered.resize(written, 0.0);
+        Some(rendered)
     }
 
-    fn with_linear_interpolation(self, input: &[f32]) -> Vec<f32> {
-        let output_len = self.output_len(input.len());
-        if output_len == 1 {
-            return vec![input[0]];
-        }
-
-        (0..output_len)
-            .map(|output_index| self.interpolate(input, output_index))
+    fn linear_projection(self, input: &[f32]) -> Vec<f32> {
+        SourceTimeline::new(self.source_hz, self.target_hz, self.output_len(input.len()))
+            .map(|position| sample_at(input, position))
             .collect()
     }
 
     fn output_len(self, input_len: usize) -> usize {
-        ((input_len as f64 * f64::from(self.output_rate) / f64::from(self.input_rate)).round()
+        ((input_len as f64 * f64::from(self.target_hz) / f64::from(self.source_hz)).round()
             as usize)
             .max(1)
     }
+}
 
-    fn interpolate(self, input: &[f32], output_index: usize) -> f32 {
-        let source_position =
-            output_index as f64 * f64::from(self.input_rate) / f64::from(self.output_rate);
-        let left = source_position.floor() as usize;
-        let right = left.saturating_add(1).min(input.len() - 1);
-        let fraction = source_position - left as f64;
+struct SourceTimeline {
+    position: f64,
+    step: f64,
+    remaining: usize,
+}
 
-        (f64::from(input[left]) * (1.0 - fraction) + f64::from(input[right]) * fraction) as f32
+impl SourceTimeline {
+    fn new(source_hz: u32, target_hz: u32, output_len: usize) -> Self {
+        Self {
+            position: 0.0,
+            step: f64::from(source_hz) / f64::from(target_hz),
+            remaining: output_len,
+        }
     }
+}
+
+impl Iterator for SourceTimeline {
+    type Item = f64;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        if self.remaining == 0 {
+            return None;
+        }
+
+        let current = self.position;
+        self.position += self.step;
+        self.remaining -= 1;
+        Some(current)
+    }
+}
+
+fn sample_at(input: &[f32], position: f64) -> f32 {
+    let lower = (position.floor() as usize).min(input.len() - 1);
+    let upper = lower.saturating_add(1).min(input.len() - 1);
+    let upper_weight = position - lower as f64;
+    let lower_weight = 1.0 - upper_weight;
+
+    (f64::from(input[lower]) * lower_weight + f64::from(input[upper]) * upper_weight) as f32
 }
 
 #[cfg(test)]
@@ -182,8 +229,49 @@ mod tests {
         let conversion = RateConversion::new(2, 4);
 
         assert_eq!(
-            conversion.with_linear_interpolation(&[0.0, 1.0]),
+            conversion.linear_projection(&[0.0, 1.0]),
             vec![0.0, 0.5, 1.0, 1.0]
+        );
+    }
+
+    #[test]
+    fn routing_skips_filter_work_for_empty_and_matching_rates() {
+        assert_eq!(
+            RateConversion::new(8_000, 16_000).route(0),
+            ConversionRoute::Empty
+        );
+        assert_eq!(
+            RateConversion::new(16_000, 16_000).route(32),
+            ConversionRoute::Identity
+        );
+        assert_eq!(
+            RateConversion::new(48_000, 16_000).route(32),
+            ConversionRoute::BandLimited
+        );
+    }
+
+    #[test]
+    fn source_timeline_advances_by_the_rate_ratio() {
+        let positions = SourceTimeline::new(2, 4, 4).collect::<Vec<_>>();
+
+        assert_eq!(positions, vec![0.0, 0.5, 1.0, 1.5]);
+    }
+
+    #[test]
+    fn one_sample_linear_projection_repeats_the_only_value() {
+        assert_eq!(
+            RateConversion::new(2, 1).linear_projection(&[0.75]),
+            vec![0.75]
+        );
+    }
+
+    #[test]
+    fn i16_identity_conversion_keeps_the_existing_quantization_contract() {
+        let samples = [i16::MIN, -123, 0, 123, i16::MAX];
+
+        assert_eq!(
+            resample_i16(&samples, MODEL_SAMPLE_RATE, MODEL_SAMPLE_RATE),
+            vec![-32_767, -123, 0, 123, 32_767]
         );
     }
 
