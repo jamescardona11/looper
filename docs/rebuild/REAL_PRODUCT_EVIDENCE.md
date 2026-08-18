@@ -62,6 +62,16 @@ Ejecución Tauri de la rama AGPL actual (18 de agosto de 2026):
 - En esa repetición no reaparecieron los errores React de `key`; sí permanecen
   las advertencias de entorno de Convex sin URL y de la clave cifrada de otro
   hardware descritas arriba.
+- Smoke nativo de reunión después de corregir el cleanup asíncrono de listeners:
+  se ejecutó `Looper > Record Meeting`, se esperaron 3 segundos, y se ejecutó
+  `Looper > Stop Meeting Recording` desde el menú nativo. La sesión se inició y
+  se detuvo sin el rechazo no manejado de `unregisterListener` observado en la
+  ejecución anterior.
+- Captura durante la sesión: `.tcompound/evidence/runtime/looper-record-meeting-after-fix-start.png`
+- SHA-256: `0aa52b040b1e5adeabe762ac78db712b0d6e32c58740eaaee5d3506aef0d52c6`
+- La consola aún mostró el warning de desarrollo `Couldn't find callback id`
+  asociado a una recarga mientras había una operación asíncrona; no reapareció
+  `Unhandled rejection` ni `unregisterListener` durante el ciclo de reunión.
 
 Smoke de inserción en host macOS ejecutado el mismo día:
 

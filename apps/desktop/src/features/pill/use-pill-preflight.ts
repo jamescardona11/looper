@@ -19,6 +19,7 @@ import {
   type TranscriptionLanguageOption,
 } from "../../shared/lib/transcriptionLanguages";
 import { isRemoteSpeechConfigured } from "../../shared/lib/speechProviders";
+import { safeUnlisten } from "../../shared/lib/safeUnlisten";
 
 type PreflightState = {
   language: string;
@@ -120,12 +121,12 @@ export function usePillPreflight() {
         language: preferences.language,
       }));
     }).then((unlisten) => {
-      if (disposed) unlisten();
+      if (disposed) safeUnlisten(unlisten);
       else release = unlisten;
     });
     return () => {
       disposed = true;
-      release?.();
+      safeUnlisten(release);
     };
   }, []);
 
