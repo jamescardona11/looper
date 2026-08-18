@@ -70,6 +70,10 @@ apps/desktop/src/shared/hooks/useClickOutside.ts,replaced,react-outside-click,au
 apps/desktop/src/shared/hooks/useCopyToClipboard.ts,replaced,react-clipboard,authored-clipboard-state-boundary,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
 apps/desktop/src/shared/hooks/useShiftHeld.ts,replaced,react-shift-state,authored-external-key-state-store,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
 apps/desktop/src/shared/hooks/interactionHooks.test.tsx,owned,react-interaction-hook-tests,authored-shared-hook-tests,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/shared/ui/WorkspacePage.tsx,owned,desktop-workspace-layout,manual-review-low-similarity,project-license-pending,-,targeted-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/shared/ui/WorkspacePage.test.tsx,owned,desktop-workspace-layout-tests,authored-workspace-layout-tests,project-license-pending,-,targeted-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/shared/ui/WorkspaceRoute.tsx,owned,desktop-workspace-routing,manual-review-low-similarity,project-license-pending,-,targeted-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/shared/ui/WorkspaceRoute.test.tsx,owned,desktop-workspace-routing-tests,authored-workspace-route-tests,project-license-pending,-,targeted-tests-and-typecheck-2026-08-16,pending
 apps/desktop/src-tauri/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/desktop/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/mobile/**,unreviewed,mobile,,pending,-,pending,uncommitted
