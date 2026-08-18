@@ -145,6 +145,13 @@ apps/desktop/src/shared/ui/ModelPickerModal.test.tsx,owned,desktop-model-picker-
 apps/desktop/src/types/audio.ts,owned,desktop-audio-device-contract,no-material-corpus-match,project-license-pending,-,desktop-typecheck-2026-08-16,pending
 apps/desktop/src/types/pill.ts,owned,desktop-pill-contracts,no-material-corpus-match-and-native-wire-contracts,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
 apps/desktop/src/types/pill.test.ts,owned,desktop-pill-contract-tests,authored-action-and-preset-order-tests,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/types/settings.ts,replaced,desktop-settings-contract,authored-domain-export-facade,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/types/settings/preferences.ts,replaced,desktop-settings-preferences,reconstructed-from-native-wire-enums,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/types/settings/personalization.ts,replaced,desktop-settings-personalization,reconstructed-from-native-serialized-structs,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/types/settings/shortcuts.ts,replaced,desktop-settings-shortcuts,reconstructed-from-native-serialized-structs,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/types/settings/workflows.ts,replaced,desktop-settings-workflows,reconstructed-from-native-tagged-enums,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/types/settings/stored-settings.ts,replaced,desktop-settings-storage,authored-composed-domain-contract-from-native-settings,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/types/settings/settings.contract.test.ts,owned,desktop-settings-contract-tests,authored-composition-and-tagged-union-tests,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
 apps/desktop/src-tauri/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/desktop/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/mobile/**,unreviewed,mobile,,pending,-,pending,uncommitted
