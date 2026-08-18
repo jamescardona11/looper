@@ -37,6 +37,12 @@ apps/desktop/src/features/library/components/meeting-note-markers.ts,owned,meeti
 apps/desktop/src/features/library/components/meeting-note-markers.test.ts,owned,meeting-note-transcript-tests,manual-review-low-similarity,project-license-pending,-,targeted-tests-and-typecheck-2026-08-16,pending
 apps/desktop/src/shared/lib/groupByDay.ts,owned,day-grouping,manual-review-low-similarity,project-license-pending,-,targeted-tests-and-typecheck-2026-08-16,pending
 apps/desktop/src/shared/lib/groupByDay.test.ts,owned,day-grouping-tests,manual-review-low-similarity,project-license-pending,-,targeted-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/features/library/components/meeting-transcript.ts,owned,meeting-transcript-grouping,manual-review-low-similarity,project-license-pending,-,targeted-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/features/library/components/meeting-transcript.test.ts,owned,meeting-transcript-grouping-tests,authored-meeting-transcript-tests,project-license-pending,-,targeted-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/features/library/components/library-inbox-groups.ts,owned,library-recency-groups,manual-review-low-similarity,project-license-pending,-,targeted-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/features/library/components/library-inbox-groups.test.ts,owned,library-recency-group-tests,manual-review-low-similarity,project-license-pending,-,targeted-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/features/library/components/library-waveform.ts,owned,library-mini-waveform,manual-review-low-similarity,project-license-pending,-,targeted-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/features/library/components/library-waveform.test.ts,owned,library-mini-waveform-tests,authored-library-waveform-tests,project-license-pending,-,targeted-tests-and-typecheck-2026-08-16,pending
 apps/desktop/src-tauri/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/desktop/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/mobile/**,unreviewed,mobile,,pending,-,pending,uncommitted
