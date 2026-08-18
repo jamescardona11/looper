@@ -76,7 +76,7 @@ const ModelStatCard = ({
     >
       <div className="px-5 pb-4 pt-3.5">
         <div className="flex items-center justify-between gap-3">
-          <h3 className="text-[1.1875rem] font-[650] tracking-[-0.015em] ui-color-primary">
+          <h3 className="tracking-[-0.015em] ui-text-title-strong ui-color-primary">
             {model.label}
           </h3>
           {onSelect && (
@@ -113,7 +113,7 @@ const ActivityLabel = ({ activity }: { activity: ModelCardActivity }) => {
     return (
       <div className="flex min-w-0 items-center gap-2">
         <ActivityDots />
-        <span className="truncate font-mono text-[11.5px] tabular-nums ui-color-muted">
+        <span className="truncate font-mono tabular-nums ui-text-meta ui-color-muted">
           {t({ id: "models.card.verifying", message: "Verifying install" })}
         </span>
       </div>
@@ -122,7 +122,7 @@ const ActivityLabel = ({ activity }: { activity: ModelCardActivity }) => {
   if (activity.kind === "downloading") {
     return (
       <p
-        className="min-w-0 truncate font-mono text-[11.5px] tabular-nums ui-color-muted"
+        className="min-w-0 truncate font-mono tabular-nums ui-text-meta ui-color-muted"
         title={activity.fileName ?? undefined}
       >
         {activity.fileName ??
@@ -131,7 +131,7 @@ const ActivityLabel = ({ activity }: { activity: ModelCardActivity }) => {
     );
   }
   return (
-    <p className="min-w-0 truncate font-mono text-[11.5px] tabular-nums ui-color-muted">
+    <p className="min-w-0 truncate font-mono tabular-nums ui-text-meta ui-color-muted">
       {activity.facts.join("  ·  ")}
     </p>
   );

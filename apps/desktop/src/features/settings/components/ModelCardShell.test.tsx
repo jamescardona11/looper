@@ -7,9 +7,9 @@ import ModelCardShell, { WAVE_COLS, waveDots } from "./ModelCardShell";
 const renderShell = (onClick?: () => void, selected?: boolean) =>
   render(
     <ModelCardShell
-      accent="#35ff9a"
-      glowStrong="rgba(53,255,154,.3)"
-      glowSoft="rgba(53,255,154,.1)"
+      accent="var(--color-success)"
+      glowStrong="var(--model-wave-glow-strong-nvidia)"
+      glowSoft="var(--model-wave-glow-soft-nvidia)"
       dots={waveDots("parakeet")}
       ariaLabel="Parakeet model"
       onClick={onClick}

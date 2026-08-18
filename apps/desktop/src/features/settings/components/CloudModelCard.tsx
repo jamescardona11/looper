@@ -42,13 +42,13 @@ const CloudModelCard = ({
             <Cloud size={17} weight="fill" aria-hidden="true" />
           </span>
           <div className="min-w-0 flex-1">
-            <p className="font-mono text-[10px] uppercase tracking-[0.12em] ui-color-muted">
+            <p className="font-mono uppercase tracking-[0.12em] ui-text-uppercase-micro ui-color-muted">
               {t({
                 id: "models.cloud_card.provider_label",
                 message: "Cloud provider",
               })}
             </p>
-            <h3 className="truncate text-[1.1875rem] font-[650] tracking-[-0.015em] ui-color-primary">
+            <h3 className="truncate tracking-[-0.015em] ui-text-title-strong ui-color-primary">
               {providerLabel}
             </h3>
           </div>
@@ -60,14 +60,14 @@ const CloudModelCard = ({
         </div>
 
         <div className="mt-3 flex items-center justify-between gap-3 border-t border-border-primary pt-3">
-          <span className="text-[10px] uppercase tracking-[0.1em] ui-color-disabled">
+          <span className="uppercase tracking-[0.1em] ui-text-uppercase-micro ui-color-disabled">
             {t({
               id: "models.cloud_card.active_model",
               message: "Active model",
             })}
           </span>
           <span
-            className="min-w-0 truncate font-mono text-[11.5px] tabular-nums ui-color-muted"
+            className="min-w-0 truncate font-mono tabular-nums ui-text-meta ui-color-muted"
             title={modelDescription}
           >
             {modelDescription}
