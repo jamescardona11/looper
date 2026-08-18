@@ -10,11 +10,14 @@ their upstream notices in their owning package:
 
 ## AGPL source lineage
 
-The reconstruction includes code adapted from the AGPL-3.0 Glimpse project
-used as a source reference during development. The complete GNU AGPL v3 text
-is included in the root `LICENSE`; the product name, artwork, and trademarks
-used here are Looper's and are not Glimpse branding. The provenance process and
-the remaining manual-risk cases are recorded in
+The reconstruction includes code adapted from the GNU AGPL-3.0
+[Glimpse application](https://github.com/glimpse-hq/Glimpse), used as a source
+reference during development. Local transcription components also reference
+[Glimpse-Speech](https://github.com/glimpse-hq/Glimpse-Speech) under its own
+upstream terms recorded in the owning package notice. The complete GNU AGPL v3
+text is included in the root `LICENSE`; the product name, artwork, and
+trademarks used here are Looper's and are not Glimpse branding. The provenance
+process and the remaining manual-risk cases are recorded in
 [`docs/rebuild/CONTAMINATION_RISK_REGISTER.md`](docs/rebuild/CONTAMINATION_RISK_REGISTER.md).
 
 Those files must travel with the corresponding package. This index is not a
