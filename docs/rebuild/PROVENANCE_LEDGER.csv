@@ -116,6 +116,10 @@ apps/desktop/src/shared/hooks/useSpeechPlayback.ts,owned,desktop-speech-playback
 apps/desktop/src/shared/hooks/useSpeechPlayback.test.tsx,owned,desktop-speech-playback-controller-tests,authored-browser-speech-tests,project-license-pending,-,targeted-tests-and-typecheck-2026-08-16,pending
 apps/desktop/src/shared/lib/transcriptionLanguages.ts,replaced,desktop-transcription-languages,authored-catalog-resolution-and-partitioning,project-license-pending,-,targeted-tests-and-typecheck-2026-08-16,pending
 apps/desktop/src/shared/lib/transcriptionLanguages.test.ts,owned,desktop-transcription-language-tests,manual-review-low-similarity-and-expanded-tests,project-license-pending,-,targeted-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/shared/types/license.ts,replaced,desktop-edition-state-contract,reconstructed-from-native-rust-serializer,project-license-pending,-,targeted-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/shared/lib/licenseEdition.ts,replaced,desktop-edition-metadata,authored-unified-edition-catalog,project-license-pending,-,targeted-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/shared/lib/purchaseConfig.ts,replaced,desktop-purchase-tier-metadata,authored-tier-catalog,project-license-pending,-,targeted-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/shared/lib/editionAndPurchase.test.ts,owned,desktop-edition-purchase-tests,authored-state-copy-and-price-tests,project-license-pending,-,targeted-tests-and-typecheck-2026-08-16,pending
 apps/desktop/src-tauri/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/desktop/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/mobile/**,unreviewed,mobile,,pending,-,pending,uncommitted
