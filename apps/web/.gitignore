@@ -1,0 +1,9 @@
+node_modules
+dist
+.turbo
+test-results
+playwright-report
+e2e/.auth
+*.tsbuildinfo
+.env.local
+src/routeTree.gen.ts

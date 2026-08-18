@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+
+Disallow: /admin
+Disallow: /billing
+Disallow: /home
+Disallow: /settings
+Disallow: /usage

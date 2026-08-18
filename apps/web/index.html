@@ -1,0 +1,310 @@
+<!doctype html>
+<html lang="en" class="dark">
+  <head>
+    <link
+      rel="preload"
+      href="../../node_modules/@fontsource-variable/bricolage-grotesque/files/bricolage-grotesque-latin-wght-normal.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <link
+      rel="preload"
+      href="../../node_modules/@fontsource-variable/jetbrains-mono/files/jetbrains-mono-latin-wght-normal.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <!-- Apply the saved/system theme before first paint to avoid a flash.
+         Keep in sync with src/lib/theme.ts. -->
+    <script>
+      (function () {
+        try {
+          var t = localStorage.getItem("looper-theme") || "system";
+          var dark =
+            t === "dark" ||
+            (t === "system" && matchMedia("(prefers-color-scheme: dark)").matches);
+          var el = document.documentElement;
+          el.classList.toggle("dark", dark);
+          el.classList.toggle("light", !dark);
+          if (
+            window.__TAURI_INTERNALS__ &&
+            window.__TAURI_INTERNALS__.metadata &&
+            window.__TAURI_INTERNALS__.metadata.currentWindow &&
+            window.__TAURI_INTERNALS__.metadata.currentWindow.label === "quick-pane"
+          ) {
+            el.classList.add("is-quick-pane");
+          }
+        } catch (e) {}
+      })();
+    </script>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta
+      name="description"
+      content="Looper turns voice into useful text for dictation, recordings, and meetings."
+    />
+    <meta name="theme-color" content="#0e0806" />
+
+    <!-- OpenGraph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Looper: voice to useful text" />
+    <meta
+      property="og:description"
+      content="Dictate, transcribe, review, and reuse recordings and meetings with Looper."
+    />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Looper: voice to useful text" />
+    <meta
+      name="twitter:description"
+      content="Dictate, transcribe, review, and reuse recordings and meetings with Looper."
+    />
+    <meta name="format-detection" content="telephone=no" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <title>Looper</title>
+    <style>
+      html,
+      body,
+      #root {
+        min-height: 100%;
+        margin: 0;
+      }
+
+      .boot-loader {
+        min-height: 100vh;
+        box-sizing: border-box;
+        background: #f8f5f2;
+        color: #241b18;
+        font-family: ui-sans-serif, system-ui, sans-serif;
+        padding: clamp(3rem, 10vh, 8rem) 2rem;
+      }
+
+      .boot-loader__content {
+        width: min(56rem, 100%);
+        margin: 0 auto;
+      }
+
+      .boot-loader__header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        padding-bottom: 1.25rem;
+        border-bottom: 1px solid #ded7d2;
+      }
+
+      .boot-loader__brand {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+      }
+
+      .boot-loader__logo {
+        display: grid;
+        width: 2.5rem;
+        height: 2.5rem;
+        place-items: center;
+        box-sizing: border-box;
+        border: 1px solid #ded7d2;
+        border-radius: 0.75rem;
+        background: #fffdfb;
+        color: #b14b25;
+        box-shadow: 0 1px 2px rgba(36, 27, 24, 0.05);
+      }
+
+      .boot-loader__title {
+        margin: 0;
+        font-size: 0.875rem;
+        font-weight: 600;
+        letter-spacing: -0.01em;
+      }
+
+      .boot-loader__hint {
+        margin: 0.25rem 0 0;
+        color: #776a65;
+        font-size: 0.75rem;
+      }
+
+      .boot-loader__spinner {
+        width: 1rem;
+        height: 1rem;
+        box-sizing: border-box;
+        border: 2px solid rgba(177, 75, 37, 0.2);
+        border-top-color: #b14b25;
+        border-radius: 999px;
+        animation: boot-spin 0.8s linear infinite;
+      }
+
+      .boot-loader__grid {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 13.75rem;
+        gap: 1rem;
+        margin-top: 1.5rem;
+      }
+
+      .boot-loader__panel {
+        min-height: 18rem;
+        box-sizing: border-box;
+        padding: 1.25rem;
+        border: 1px solid #ded7d2;
+        border-radius: 1rem;
+        background: #fffdfb;
+      }
+
+      .boot-loader__rail {
+        padding: 1rem;
+      }
+
+      .boot-loader__bar,
+      .boot-loader__hero,
+      .boot-loader__rail-item {
+        border-radius: 0.5rem;
+        background: #eee8e3;
+        animation: boot-pulse 1.6s ease-in-out infinite;
+      }
+
+      .boot-loader__bar {
+        height: 0.75rem;
+      }
+
+      .boot-loader__bar--eyebrow {
+        width: 6rem;
+      }
+
+      .boot-loader__bar--title {
+        width: 66%;
+        height: 2rem;
+        margin-top: 1.25rem;
+      }
+
+      .boot-loader__bar--copy {
+        width: 50%;
+        margin-top: 0.75rem;
+      }
+
+      .boot-loader__hero {
+        height: 7rem;
+        margin-top: 2.5rem;
+      }
+
+      .boot-loader__rail-item {
+        height: 2.25rem;
+        margin-top: 0.75rem;
+      }
+
+      html.dark .boot-loader {
+        background: #0e0806;
+        color: #f5eee9;
+      }
+
+      html.dark .boot-loader__header,
+      html.dark .boot-loader__logo,
+      html.dark .boot-loader__panel {
+        border-color: #382923;
+      }
+
+      html.dark .boot-loader__logo,
+      html.dark .boot-loader__panel {
+        background: #160d0a;
+      }
+
+      html.dark .boot-loader__hint {
+        color: #a99b95;
+      }
+
+      html.dark .boot-loader__bar,
+      html.dark .boot-loader__hero,
+      html.dark .boot-loader__rail-item {
+        background: #2b1d18;
+      }
+
+      html.is-quick-pane .boot-loader {
+        display: none;
+      }
+
+      @keyframes boot-spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      @keyframes boot-pulse {
+        50% {
+          opacity: 0.55;
+        }
+      }
+
+      @media (max-width: 639px) {
+        .boot-loader {
+          padding: 3rem 1.25rem;
+        }
+
+        .boot-loader__grid {
+          grid-template-columns: minmax(0, 1fr);
+        }
+
+        .boot-loader__rail {
+          display: none;
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .boot-loader__spinner,
+        .boot-loader__bar,
+        .boot-loader__hero,
+        .boot-loader__rail-item {
+          animation: none;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root">
+      <div class="boot-loader" data-boot-loader role="status" aria-label="Loading Looper">
+        <div class="boot-loader__content" aria-hidden="true">
+          <div class="boot-loader__header">
+            <div class="boot-loader__brand">
+              <span class="boot-loader__logo">
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path d="M13 2 4.1 14.3a1 1 0 0 0 .8 1.7H11l-1 6 8.9-12.3A1 1 0 0 0 18.1 8H12l1-6Z"></path>
+                </svg>
+              </span>
+              <div>
+                <p class="boot-loader__title">Preparing your workspace</p>
+                <p class="boot-loader__hint">Loading your tools and preferences.</p>
+              </div>
+            </div>
+            <span class="boot-loader__spinner"></span>
+          </div>
+          <div class="boot-loader__grid">
+            <div class="boot-loader__panel">
+              <div class="boot-loader__bar boot-loader__bar--eyebrow"></div>
+              <div class="boot-loader__bar boot-loader__bar--title"></div>
+              <div class="boot-loader__bar boot-loader__bar--copy"></div>
+              <div class="boot-loader__hero"></div>
+            </div>
+            <div class="boot-loader__panel boot-loader__rail">
+              <div class="boot-loader__bar boot-loader__bar--eyebrow"></div>
+              <div class="boot-loader__rail-item"></div>
+              <div class="boot-loader__rail-item"></div>
+              <div class="boot-loader__rail-item"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <noscript>You need to enable JavaScript to run Looper.</noscript>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
