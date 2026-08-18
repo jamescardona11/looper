@@ -18,8 +18,8 @@ const i18n = setupI18n();
 i18n.loadAndActivate({ locale: "en", messages: {} });
 
 const speakers = [
-  { id: "speaker-a", name: "Ana", color: "rgb(10, 20, 30)" },
-  { id: "speaker-b", name: "Bea", color: "rgb(40, 50, 60)" },
+  { id: "speaker-a", name: "Ana", color: "var(--speaker-a)" },
+  { id: "speaker-b", name: "Bea", color: "var(--speaker-b)" },
 ];
 
 afterEach(cleanup);
@@ -59,7 +59,7 @@ describe("transcript speaker interactions", () => {
     );
     const dot = trigger.firstElementChild as HTMLSpanElement;
     expect(dot.className).toBe("inline-block h-2 w-2 rounded-full shrink-0 ");
-    expect(dot.style.backgroundColor).toBe("rgb(10, 20, 30)");
+    expect(dot.style.backgroundColor).toBe("var(--speaker-a)");
 
     fireEvent.click(trigger);
 
