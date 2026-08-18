@@ -2,8 +2,9 @@
 
 `check-staged.mjs` es una compuerta pequeña para el proceso de reconstrucción.
 Sólo inspecciona lo que ya está en el index de Git y exige que cada ruta tenga
-una fila explícita en `docs/rebuild/PROVENANCE_LEDGER.csv` con estado `owned` o
-`replaced`.
+una fila explícita en `docs/rebuild/PROVENANCE_LEDGER.csv` con estado `owned`,
+`replaced` o `permissive`. Las filas `permissive` también deben indicar el
+archivo NOTICE que conserva la atribución.
 
 Uso desde la raíz del repositorio:
 
