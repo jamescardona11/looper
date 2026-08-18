@@ -127,6 +127,12 @@ Intento adicional de voz en host:
 - Resultado: evidencia de que el shortcut inicia captura/pipeline, pero el
   altavoz no constituye una fuente válida de voz para cerrar el gate de STT;
   micrófono físico o fixture de audio inyectado siguen pendientes.
+- Se repitió el intento reproduciendo `test-support/fixtures/audio/harvard.wav`
+  con `afplay` mientras `Fn` estaba sostenido y TextEdit tenía
+  `FIXTURE_SMOKE_BEGIN`. El documento permaneció sin cambios; Tauri registró
+  `mode=Local`, pero solo `0.51s` de audio útil. La reproducción por altavoz no
+  es una inyección de audio válida para este micrófono y no se cuenta como
+  prueba de dictado end-to-end.
 
 STT local con modelo real y fixture de audio:
 
