@@ -1,0 +1,9 @@
+{
+  "openai": "gpt-4o-mini-transcribe",
+  "groq": "whisper-large-v3-turbo",
+  "mistral": "voxtral-mini-latest",
+  "fireworks": "whisper-v3",
+  "openrouter": "openai/whisper-1",
+  "deepgram": "nova-3",
+  "elevenlabs": "scribe_v1"
+}
