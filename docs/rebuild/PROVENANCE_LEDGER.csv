@@ -409,6 +409,9 @@ apps/desktop/src/features/personalization/components/personalization-websites.ts
 apps/desktop/src/features/personalization/components/personalization-utils.test.ts,owned,desktop-personalization-policy-tests,authored-binding-upgrade-unicode-budget-height-domain-icon-initial-and-uuid-contracts,project-license-pending,-,corpus-containment-15.6-and-full-desktop-suite-2026-08-16,pending
 apps/desktop/src/features/license/purchaseConfig.ts,replaced,desktop-purchase-destinations,authored-destination-env-resolution-campaign-matrix-tracking-builder-and-stable-shared-tier-facade,project-license-pending,-,corpus-containment-20.9-and-full-desktop-suite-build-2026-08-16,pending
 apps/desktop/src/features/license/purchaseConfig.test.ts,owned,desktop-purchase-destination-tests,authored-env-trimming-existing-query-campaign-portal-missing-and-invalid-url-contracts,project-license-pending,-,corpus-containment-3.0-permissive-and-full-desktop-suite-2026-08-16,pending
+apps/desktop/src/features/import/queries.ts,replaced,desktop-import-query-boundary,authored-stable-hook-facade-over-import-cache-policy,project-license-pending,-,corpus-no-relevant-match-and-full-desktop-suite-build-2026-08-16,pending
+apps/desktop/src/features/import/import-query-policy.ts,replaced,desktop-import-query-policy,authored-cache-key-tree-detection-and-preview-options-enable-gates-and-infinite-staleness,project-license-pending,-,corpus-containment-17.6-and-full-desktop-suite-build-2026-08-16,pending
+apps/desktop/src/features/import/queries.test.tsx,owned,desktop-import-query-tests,authored-cache-branch-detection-gate-and-selection-gate-contracts,project-license-pending,-,corpus-containment-8.3-permissive-and-full-desktop-suite-2026-08-16,pending
 apps/desktop/src-tauri/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/desktop/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/mobile/**,unreviewed,mobile,,pending,-,pending,uncommitted
