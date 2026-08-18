@@ -354,6 +354,8 @@ apps/desktop/src/features/settings/useSettingsLocalModels.ts,replaced,desktop-se
 apps/desktop/src/features/settings/useSettingsErrors.ts,replaced,desktop-settings-errors,authored-tab-aware-error-routing-and-specialized-provider-shortcut-channels,project-license-pending,-,corpus-containment-5.0-permissive-and-full-desktop-suite-typecheck-2026-08-16,pending
 apps/desktop/src/features/settings/useSettingsErrors.test.tsx,owned,desktop-settings-error-tests,authored-fallback-explicit-routing-and-clear-state-tests,project-license-pending,-,corpus-containment-5.9-permissive-and-full-desktop-suite-2026-08-16,pending
 apps/desktop/src/redesign-interaction-contract.test.ts,owned,desktop-interaction-contract-tests,authored-motion-docking-notification-reduced-motion-and-tab-indicator-contracts,project-license-pending,-,corpus-containment-4.3-permissive-and-full-desktop-suite-2026-08-16,pending
+apps/desktop/src/i18n.ts,replaced,desktop-locale-runtime,authored-validated-catalog-registry-isolated-runtime-and-explicit-load-activate-flow,project-license-pending,-,corpus-containment-26.2-and-full-desktop-suite-typecheck-2026-08-16,pending
+apps/desktop/src/i18n.test.ts,owned,desktop-locale-runtime-tests,authored-catalog-copy-missing-catalog-and-layout-filter-tests,project-license-pending,-,corpus-no-relevant-match-and-full-desktop-suite-2026-08-16,pending
 apps/desktop/src-tauri/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/desktop/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/mobile/**,unreviewed,mobile,,pending,-,pending,uncommitted
