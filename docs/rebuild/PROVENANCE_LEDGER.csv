@@ -732,6 +732,7 @@ apps/desktop/src/features/settings/components/tabs/models-overview-installed.tsx
 apps/desktop/src/features/settings/components/tabs/models-tab-content.tsx,replaced,desktop-models-settings-content,authored-route-state-overview-browser-and-compile-dialog-composition,project-license-pending,-,corpus-containment-20.0-settings-models-29-tests-full-suite-typecheck-eslint-prettier-2026-08-17,pending
 apps/desktop/src-tauri/src/integrations/history.rs,replaced,desktop-native-history-cli,authored-validated-history-actions-typed-requests-sqlite-reader-presenter-and-wire-records,project-license-pending,-,corpus-containment-18.3-history-integration-7-tests-native-suite-cargo-all-targets-rustfmt-2026-08-17,pending
 apps/desktop/src/features/settings/components/tabs/general-tab-contracts.ts,replaced,desktop-general-settings-contracts,authored-form-derived-section-projections-frame-and-navigation-contracts,project-license-pending,-,corpus-containment-4.9-general-contracts-8-tests-typecheck-prettier-2026-08-17,pending
+apps/desktop/src-tauri/src/integrations/client.rs,replaced,desktop-native-integration-client,authored-runtime-access-connection-policy-generic-json-line-transport-response-validation-and-launch-routing,project-license-pending,-,corpus-containment-7.2-integration-client-7-tests-native-suite-cargo-all-targets-rustfmt-2026-08-17,pending
 apps/desktop/src-tauri/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/desktop/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/mobile/**,unreviewed,mobile,,pending,-,pending,uncommitted
