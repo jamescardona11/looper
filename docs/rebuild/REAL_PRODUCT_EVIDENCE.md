@@ -128,6 +128,19 @@ Intento adicional de voz en host:
   altavoz no constituye una fuente válida de voz para cerrar el gate de STT;
   micrófono físico o fixture de audio inyectado siguen pendientes.
 
+STT local con modelo real y fixture de audio:
+
+- Modelo usado: `parakeet_tdt_int8` INT8 instalado en el cache local de Looper
+  (639 MB).
+- Evidencia completa: `.tcompound/evidence/qa/local-stt-real.txt`.
+- `looper-ts` pasó la prueba ignorada de paridad con `harvard.wav`,
+  `es-voxforge.wav` y `pt-voxforge.wav`, incluyendo timestamps y texto dorado.
+- La integración Desktop `library::meeting_live_transcription` pasó con el
+  mismo modelo y `harvard.wav`; devolvió el transcript esperado en 2,42 s.
+- Esto cierra inferencia local real y el wrapper Desktop con audio de fixture.
+  No sustituye una captura desde un micrófono físico ni prueba proveedores
+  remotos.
+
 Durante esa ejecución el entorno informó que la clave cifrada pertenecía a
 otro hardware y que `VITE_CONVEX_URL` no estaba configurado; Looper conservó
 la clave cifrada y desactivó las rutas remotas/sync, pero la ventana local
