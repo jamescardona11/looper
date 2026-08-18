@@ -1,0 +1,31 @@
+[package]
+name = "looper-resampler"
+version = "0.1.0"
+edition = "2024"
+publish = false
+license = "MIT"
+
+[features]
+default = ["async-source"]
+async-source = [
+  "dep:dasp",
+  "dep:futures-util",
+  "dep:looper-audio-interface",
+  "dep:pin-project",
+]
+
+[dependencies]
+audioadapter-buffers = "2.0"
+dasp = { version = "0.11.0", features = ["interpolate", "interpolate-linear"], optional = true }
+futures-util = { version = "0.3.31", optional = true }
+looper-audio-interface = { path = "../interface", optional = true }
+pin-project = { version = "1", optional = true }
+rubato = "1.0.1"
+thiserror = "2"
+tracing = "0.1"
+
+[dev-dependencies]
+futures-util = "0.3.31"
+hound = "3.5.1"
+rodio = { version = "0.22", features = ["symphonia-all"] }
+tokio = { version = "1", features = ["full"] }

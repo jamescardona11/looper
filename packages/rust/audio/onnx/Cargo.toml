@@ -1,0 +1,16 @@
+[package]
+name = "looper-onnx"
+version = "0.1.0"
+edition = "2024"
+license = "MIT"
+
+[features]
+default = []
+cuda = ["ort/cuda"]
+coreml = ["ort/coreml"]
+directml = ["ort/directml"]
+
+[dependencies]
+ndarray = "0.17"
+ort = { version = "=2.0.0-rc.12", features = ["ndarray"] }
+thiserror = "2"

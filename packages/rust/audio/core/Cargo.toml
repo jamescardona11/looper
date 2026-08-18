@@ -1,0 +1,10 @@
+[package]
+name = "looper-audio-core"
+version = "0.1.0"
+edition = "2024"
+publish = false
+license = "MIT"
+
+[dependencies]
+futures-util = "0.3.31"
+thiserror = "2"

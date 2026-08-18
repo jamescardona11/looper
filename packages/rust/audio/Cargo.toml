@@ -1,0 +1,6 @@
+# The capture engine is one unit of work: a change to the resampler or the
+# echo suppressor has to be verified against the crates that consume it. A
+# workspace gives `cargo test --workspace` from here, which is what CI runs.
+[workspace]
+resolver = "3"
+members = ["aec", "capture", "core", "interface", "mime", "onnx", "resampler", "sync", "utils"]

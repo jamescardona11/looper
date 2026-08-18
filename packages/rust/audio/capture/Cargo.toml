@@ -1,0 +1,47 @@
+[package]
+name = "looper-audio-capture"
+version = "0.1.0"
+edition = "2024"
+publish = false
+license = "MIT"
+
+[dependencies]
+looper-aec = { path = "../aec" }
+looper-audio-core = { path = "../core" }
+looper-audio-interface = { path = "../interface" }
+looper-audio-sync = { path = "../sync" }
+looper-audio-utils = { path = "../utils" }
+looper-resampler = { path = "../resampler" }
+
+anyhow = "1"
+thiserror = "2"
+tracing = "0.1"
+
+bytes = "1.11"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+
+futures-channel = "0.3.31"
+futures-util = "0.3.31"
+pin-project = "1"
+tokio = { version = "1", features = ["rt", "macros", "sync", "time"] }
+tokio-stream = "0.1.17"
+tokio-util = "0.7.15"
+
+cpal = "0.17"
+dasp = { version = "0.11.0", features = ["interpolate", "interpolate-linear"] }
+rodio = "0.22"
+
+ringbuf = "0.4.8"
+
+[target.'cfg(target_os = "macos")'.dependencies]
+cidre = { version = "0.15", features = ["av"] }
+
+[target.'cfg(target_os = "windows")'.dependencies]
+wasapi = "0.23.0"
+
+[dev-dependencies]
+approx = "0.5.1"
+hound = "3.5.1"
+serial_test = "3"
+tokio = { version = "1", features = ["full"] }

@@ -1,0 +1,25 @@
+[package]
+name = "looper-aec"
+version = "0.1.0"
+edition = "2024"
+publish = false
+license = "MIT"
+
+[features]
+default = ["onnx", "128"]
+onnx = ["dep:looper-onnx"]
+128 = []
+256 = []
+512 = []
+
+[dependencies]
+looper-onnx = { path = "../onnx", optional = true }
+realfft = "3.5.0"
+serde = { version = "1", features = ["derive"] }
+thiserror = "2"
+
+[dev-dependencies]
+approx = "0.5.1"
+dasp = { version = "0.11.0", features = ["interpolate", "interpolate-linear"] }
+hound = "3.5.1"
+rodio = "0.22"
