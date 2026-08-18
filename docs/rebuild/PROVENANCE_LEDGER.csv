@@ -180,6 +180,8 @@ apps/desktop/src/data/updates.ts,owned,desktop-update-native-gateway,no-corpus-m
 apps/desktop/src/data/shell-gateways.test.ts,owned,desktop-shell-gateway-tests,authored-cli-navigation-update-and-crash-tests,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
 apps/desktop/src/data/meeting-awareness.ts,owned,desktop-meeting-awareness-gateway,no-material-corpus-match,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
 apps/desktop/src/data/meeting-awareness.test.ts,owned,desktop-meeting-awareness-tests,authored-calendar-command-and-event-tests,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/data/corrections.ts,owned,desktop-correction-learning-gateway,no-material-corpus-match,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/data/corrections.test.ts,owned,desktop-correction-learning-tests,authored-command-contract-tests,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
 apps/desktop/src-tauri/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/desktop/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/mobile/**,unreviewed,mobile,,pending,-,pending,uncommitted
