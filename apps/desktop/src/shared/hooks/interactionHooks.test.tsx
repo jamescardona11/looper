@@ -7,15 +7,19 @@ import type { RefObject } from "react";
 const focusSource = vi.hoisted(() => ({
   callback: null as (() => void) | null,
   unlisten: vi.fn(),
+  shouldThrow: false,
 }));
 
 vi.mock("@tauri-apps/api/window", () => ({
-  getCurrentWindow: () => ({
-    onFocusChanged: vi.fn(async (callback: () => void) => {
-      focusSource.callback = callback;
-      return focusSource.unlisten;
-    }),
-  }),
+  getCurrentWindow: () => {
+    if (focusSource.shouldThrow) throw new Error("Tauri is unavailable");
+    return {
+      onFocusChanged: vi.fn(async (callback: () => void) => {
+        focusSource.callback = callback;
+        return focusSource.unlisten;
+      }),
+    };
+  },
 }));
 
 import { useClickOutside } from "./useClickOutside";
@@ -27,6 +31,7 @@ describe("shared interaction hooks", () => {
   beforeEach(() => {
     focusSource.callback = null;
     focusSource.unlisten.mockReset();
+    focusSource.shouldThrow = false;
   });
 
   afterEach(() => {
@@ -116,5 +121,19 @@ describe("shared interaction hooks", () => {
 
     unmount();
     expect(focusSource.unlisten).toHaveBeenCalledOnce();
+  });
+
+  test("tracks Shift when the native window bridge is unavailable", () => {
+    focusSource.shouldThrow = true;
+    const { result, unmount } = renderHook(() => useShiftHeld());
+
+    act(() => {
+      document.dispatchEvent(
+        new KeyboardEvent("keydown", { bubbles: true, shiftKey: true }),
+      );
+    });
+    expect(result.current).toBe(true);
+
+    unmount();
   });
 });

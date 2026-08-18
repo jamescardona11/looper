@@ -16,19 +16,24 @@ function attachShiftSources(): () => void {
   let disposed = false;
   let detachFocus: UnlistenFn | null = null;
   const reset = () => updateShiftHeld(false);
-  const readKeyboard = (event: KeyboardEvent) => updateShiftHeld(event.shiftKey);
+  const readKeyboard = (event: KeyboardEvent) =>
+    updateShiftHeld(event.shiftKey);
   const readPointer = (event: PointerEvent) => updateShiftHeld(event.shiftKey);
   const readVisibility = () => {
     if (document.visibilityState !== "visible") reset();
   };
 
-  void getCurrentWindow()
-    .onFocusChanged(reset)
-    .then((unlisten) => {
-      if (disposed) unlisten();
-      else detachFocus = unlisten;
-    })
-    .catch(() => {});
+  try {
+    void getCurrentWindow()
+      .onFocusChanged(reset)
+      .then((unlisten) => {
+        if (disposed) unlisten();
+        else detachFocus = unlisten;
+      })
+      .catch(() => {});
+  } catch {
+    // Browser and test runtimes do not expose Tauri window metadata.
+  }
 
   document.addEventListener("keydown", readKeyboard);
   document.addEventListener("keyup", readKeyboard);
@@ -66,6 +71,10 @@ const getShiftSnapshot = () => shiftHeld;
 const getServerSnapshot = () => false;
 
 export function useShiftHeld(enabled = true): boolean {
-  const held = useSyncExternalStore(subscribe, getShiftSnapshot, getServerSnapshot);
+  const held = useSyncExternalStore(
+    subscribe,
+    getShiftSnapshot,
+    getServerSnapshot,
+  );
   return enabled && held;
 }

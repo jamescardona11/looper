@@ -137,6 +137,11 @@ apps/desktop/src/shared/hooks/useShortcutCapture.ts,replaced,desktop-shortcut-ca
 apps/desktop/src/shared/hooks/useShortcutCapture.test.tsx,owned,desktop-shortcut-capture-tests,authored-preview-completion-and-cancel-tests,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
 apps/desktop/src/types/models.ts,replaced,desktop-model-contracts,reconstructed-from-native-model-serializers,project-license-pending,-,targeted-tests-and-typecheck-2026-08-16,pending
 apps/desktop/src/types/models.test.ts,owned,desktop-model-contract-tests,authored-state-and-download-tests,project-license-pending,-,targeted-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/shared/ui/ModelPickerModal.tsx,replaced,desktop-model-picker,authored-panel-and-modal-orchestration,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/shared/ui/ModelPickerRow.tsx,replaced,desktop-model-picker-row,authored-row-state-and-action-components,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/shared/ui/modelPickerLogic.ts,replaced,desktop-model-picker-logic,authored-family-grouping-and-filtering,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/shared/ui/modelPickerLogic.test.ts,owned,desktop-model-picker-logic-tests,authored-grouping-and-filter-tests,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/shared/ui/ModelPickerModal.test.tsx,owned,desktop-model-picker-tests,authored-selection-search-and-modal-tests,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
 apps/desktop/src-tauri/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/desktop/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/mobile/**,unreviewed,mobile,,pending,-,pending,uncommitted
