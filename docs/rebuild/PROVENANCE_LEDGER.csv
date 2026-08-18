@@ -571,6 +571,7 @@ apps/desktop/src-tauri/src/import/detect.rs,replaced,desktop-native-settings-imp
 apps/desktop/src-tauri/src/import/commands.rs,replaced,desktop-native-settings-import,authored-preview-model-resolution-command-boundary-and-camel-case-wire-projection,project-license-pending,-,corpus-containment-24.3-import-35-tests-cargo-all-targets-rustfmt-2026-08-16,pending
 apps/desktop/src-tauri/src/import/shared.rs,replaced,desktop-native-settings-import,authored-path-accelerator-model-family-timestamp-language-sqlite-snapshot-and-dedup-policies,project-license-pending,-,corpus-containment-20.7-import-35-tests-cargo-all-targets-rustfmt-2026-08-16,pending
 apps/desktop/src-tauri/src/import/apply.rs,replaced,desktop-native-settings-import,authored-settings-merger-launch-transition-rollback-persistence-events-and-history-application,project-license-pending,-,corpus-containment-22.8-import-35-tests-cargo-all-targets-rustfmt-2026-08-16,pending
+apps/desktop/src-tauri/src/speech/mod.rs,replaced,desktop-native-speech-routing,authored-cloud-remote-local-router-cancellation-checkpoints-remote-outcome-resolution-and-local-warm-request,project-license-pending,-,corpus-containment-17.7-speech-10-tests-cargo-all-targets-native-suite-rustfmt-2026-08-16,pending
 apps/desktop/src-tauri/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/desktop/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/mobile/**,unreviewed,mobile,,pending,-,pending,uncommitted
