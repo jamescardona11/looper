@@ -870,6 +870,10 @@ apps/desktop/src-tauri/src/core/settings_runtime.rs,replaced,desktop-core-settin
 apps/desktop/src-tauri/src/cli_install.rs,replaced,desktop-native-cli-install,authored-cli-install-resolution-status-and-platform-backends,project-license-pending,-,corpus-containment-16.5-cli-install-6-tests-627-rust-tests-cargo-all-targets-rustfmt-2026-08-17,pending
 apps/desktop/src-tauri/src/assistive.rs,replaced,desktop-native-assistive,authored-accessibility-element-ownership-focused-write-selection-fallback-and-insertion-assessment,project-license-pending,-,corpus-containment-29.5-assistive-19-tests-cargo-all-targets-rustfmt-2026-08-17,pending
 apps/desktop/src-tauri/src/streaming_transcription.rs,replaced,desktop-native-streaming-transcription,authored-local-worker-live-audio-preview-and-resampler-lifecycle,project-license-pending,-,corpus-containment-7.4-streaming-transcription-7-tests-647-rust-tests-cargo-all-targets-rustfmt-2026-08-17,pending
+apps/desktop/src-tauri/src/toast.rs,replaced,desktop-native-toast,authored-toast-orchestration-and-public-api,project-license-pending,-,corpus-containment-29.3-toast-18-tests-cargo-all-targets-rustfmt-2026-08-17,pending
+apps/desktop/src-tauri/src/toast/payload.rs,replaced,desktop-native-toast-payload,authored-toast-payload-builders-and-serde-contract,project-license-pending,-,corpus-containment-27.2-toast-18-tests-cargo-all-targets-rustfmt-2026-08-17,pending
+apps/desktop/src-tauri/src/toast/placement.rs,replaced,desktop-native-toast-placement,authored-toast-monitor-and-geometry-policy,project-license-pending,-,corpus-containment-4.3-toast-18-tests-cargo-all-targets-rustfmt-2026-08-17,pending
+apps/desktop/src-tauri/src/toast/permission_watch.rs,replaced,desktop-native-toast-permission-watch,authored-toast-permission-poll-and-generation-lifecycle,project-license-pending,-,corpus-containment-3.8-toast-18-tests-cargo-all-targets-rustfmt-2026-08-17,pending
 apps/desktop/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/mobile/**,unreviewed,mobile,,pending,-,pending,uncommitted
 apps/web/**,unreviewed,web,,pending,-,pending,uncommitted
