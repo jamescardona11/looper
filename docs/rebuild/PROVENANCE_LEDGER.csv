@@ -118,7 +118,7 @@ apps/desktop/src/shared/lib/transcriptionLanguages.ts,replaced,desktop-transcrip
 apps/desktop/src/shared/lib/transcriptionLanguages.test.ts,owned,desktop-transcription-language-tests,manual-review-low-similarity-and-expanded-tests,project-license-pending,-,targeted-tests-and-typecheck-2026-08-16,pending
 apps/desktop/src/shared/types/license.ts,replaced,desktop-edition-state-contract,reconstructed-from-native-rust-serializer,project-license-pending,-,targeted-tests-and-typecheck-2026-08-16,pending
 apps/desktop/src/shared/lib/licenseEdition.ts,replaced,desktop-edition-metadata,authored-unified-edition-catalog,project-license-pending,-,targeted-tests-and-typecheck-2026-08-16,pending
-apps/desktop/src/shared/lib/purchaseConfig.ts,replaced,desktop-purchase-tier-metadata,authored-tier-catalog,project-license-pending,-,targeted-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/shared/lib/purchaseConfig.ts,replaced,desktop-purchase-tier-metadata,authored-derived-tier-and-source-contracts-tuple-specifications-copy-fragments-and-public-materializer,project-license-pending,-,corpus-containment-3.8-and-full-desktop-suite-build-2026-08-16,pending
 apps/desktop/src/shared/lib/editionAndPurchase.test.ts,owned,desktop-edition-purchase-tests,authored-state-copy-and-price-tests,project-license-pending,-,targeted-tests-and-typecheck-2026-08-16,pending
 apps/desktop/supported-app-locales.json,owned,desktop-locale-catalog,looper-shipped-locale-list,project-license-pending,-,targeted-tests-and-typecheck-2026-08-16,pending
 apps/desktop/src/shared/lib/appLocales.ts,replaced,desktop-app-locales,authored-catalog-validation-and-resolution,project-license-pending,-,targeted-tests-and-typecheck-2026-08-16,pending
@@ -407,6 +407,8 @@ apps/desktop/src/features/personalization/components/personalization-identity.ts
 apps/desktop/src/features/personalization/components/personalization-instructions.ts,replaced,desktop-personalization-instructions,authored-unicode-character-budget-text-clamp-and-editor-height-range-policy,project-license-pending,-,corpus-containment-5.3-permissive-and-full-desktop-suite-build-2026-08-16,pending
 apps/desktop/src/features/personalization/components/personalization-websites.ts,replaced,desktop-personalization-websites,authored-origin-normalization-dns-validation-preview-fallback-and-icon-index-policy,project-license-pending,-,corpus-no-relevant-match-and-full-desktop-suite-build-2026-08-16,pending
 apps/desktop/src/features/personalization/components/personalization-utils.test.ts,owned,desktop-personalization-policy-tests,authored-binding-upgrade-unicode-budget-height-domain-icon-initial-and-uuid-contracts,project-license-pending,-,corpus-containment-15.6-and-full-desktop-suite-2026-08-16,pending
+apps/desktop/src/features/license/purchaseConfig.ts,replaced,desktop-purchase-destinations,authored-destination-env-resolution-campaign-matrix-tracking-builder-and-stable-shared-tier-facade,project-license-pending,-,corpus-containment-20.9-and-full-desktop-suite-build-2026-08-16,pending
+apps/desktop/src/features/license/purchaseConfig.test.ts,owned,desktop-purchase-destination-tests,authored-env-trimming-existing-query-campaign-portal-missing-and-invalid-url-contracts,project-license-pending,-,corpus-containment-3.0-permissive-and-full-desktop-suite-2026-08-16,pending
 apps/desktop/src-tauri/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/desktop/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/mobile/**,unreviewed,mobile,,pending,-,pending,uncommitted
