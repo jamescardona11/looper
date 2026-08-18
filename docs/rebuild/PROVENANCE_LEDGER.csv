@@ -565,6 +565,7 @@ apps/desktop/src/features/library/components/library-youtube-source.tsx,replaced
 apps/desktop/src/features/library/components/library-import-modals.test.tsx,replaced,desktop-library-import-ui,authored-distinctive-translation-dom-capability-probe-and-submission-contract-tests,project-license-pending,-,corpus-containment-1.8-mit-library-import-7-tests-eslint-prettier-typecheck-2026-08-16,pending
 apps/desktop/src-tauri/src/recent_transcriptions.rs,replaced,desktop-native-recent-transcriptions,authored-menu-option-clipboard-decision-toast-wire-refresh-and-unicode-preview-policies,project-license-pending,-,corpus-containment-16.8-cargo-all-targets-12-focused-tests-native-suite-sqlite-2026-08-16,pending
 apps/desktop/src-tauri/src/core/transcriptions.rs,replaced,desktop-native-transcription-commands,authored-retry-cleanup-preflight-async-plan-undo-and-event-payload-policies,project-license-pending,-,corpus-containment-16.7-cargo-all-targets-12-focused-tests-native-suite-sqlite-2026-08-16,pending
+apps/desktop/src-tauri/src/model_language_table.rs,replaced,desktop-native-language-catalog,authored-ordered-language-row-manifest-provider-sequences-parser-name-resolution-and-wire-projection,project-license-pending,-,corpus-containment-6.7-cargo-all-targets-language-catalog-tests-2026-08-16,pending
 apps/desktop/src-tauri/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/desktop/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/mobile/**,unreviewed,mobile,,pending,-,pending,uncommitted
