@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import { fileURLToPath } from "node:url";
-import { mkdirSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
 const root = process.cwd();
@@ -161,6 +161,35 @@ function envAllowed(name, allowed) {
   return allowed.includes(process.env[name]);
 }
 
+function releaseEvidenceFiles(patterns) {
+  return patterns.flatMap((pattern) => {
+    const slash = pattern.lastIndexOf("/");
+    const directory = join(root, pattern.slice(0, slash));
+    const filenamePattern = pattern.slice(slash + 1);
+    if (!existsSync(directory) || !filenamePattern.endsWith("*")) return [];
+    const prefix = filenamePattern.slice(0, -1);
+    return readdirSync(directory)
+      .filter((name) => name.startsWith(prefix) && name.endsWith(".json"))
+      .map((name) => join(directory, name));
+  });
+}
+
+function releaseEvidenceStatus(patterns) {
+  const files = releaseEvidenceFiles(patterns);
+  const parsed = files.flatMap((path) => {
+    try {
+      return [{ path, payload: JSON.parse(readFileSync(path, "utf8")) }];
+    } catch {
+      return [];
+    }
+  });
+  const passed = parsed.find(({ payload }) => payload?.ok === true);
+  if (passed) return { status: "passed", path: passed.path };
+  const failed = parsed.find(({ payload }) => payload?.ok === false);
+  if (failed) return { status: "failed", path: failed.path };
+  return { status: "not-proven", path: null };
+}
+
 export { gates };
 
 function readinessResults() {
@@ -193,11 +222,14 @@ function readinessResults() {
       ...disallowedEnv,
       ...mockModeBlocks,
     ];
+    const release = releaseEvidenceStatus(gate.releaseEvidence);
 
     return {
       id: gate.id,
       label: gate.label,
       status: missing.length === 0 ? "ready-for-live-proof" : "blocked/ext",
+      releaseStatus: release.status,
+      releaseEvidencePath: release.path,
       missing,
       proof: gate.proof,
       script: gate.script,
@@ -222,7 +254,11 @@ function main() {
 
   for (const result of results) {
     lines.push(`## ${result.label}`);
-    lines.push(`Status: ${result.status}`);
+    lines.push(`Environment status: ${result.status}`);
+    lines.push(`Release evidence status: ${result.releaseStatus}`);
+    if (result.releaseEvidencePath) {
+      lines.push(`Release evidence found: ${result.releaseEvidencePath}`);
+    }
     lines.push(`Missing: ${result.missing.length > 0 ? result.missing.join(", ") : "none"}`);
     lines.push(`Required proof: ${result.proof}`);
     lines.push(`Runner: pnpm run ${result.script}`);
@@ -237,8 +273,9 @@ function main() {
   );
 
   const blockedCount = results.filter((result) => result.status === "blocked/ext").length;
+  const passedEvidenceCount = results.filter((result) => result.releaseStatus === "passed").length;
   console.log(
-    `External readiness audit wrote ${textEvidencePath} (${blockedCount} blocked/ext gates).`,
+    `External readiness audit wrote ${textEvidencePath} (${blockedCount} environment-blocked gates; ${passedEvidenceCount} release-evidence passes).`,
   );
 }
 
