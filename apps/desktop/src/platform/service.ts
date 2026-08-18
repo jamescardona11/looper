@@ -1,13 +1,21 @@
-import type {
-  AppPlatformId,
-  PlatformCapabilities,
-} from "../shared/lib/platform";
-
 type NavigatorWithPlatformData = Navigator & {
   userAgentData?: { platform?: string };
 };
 
-const CAPABILITIES: Record<AppPlatformId, Omit<PlatformCapabilities, "id">> = {
+const APP_PLATFORM_IDS = ["macos", "windows", "unsupported"] as const;
+export type AppPlatformId = (typeof APP_PLATFORM_IDS)[number];
+
+type PlatformPolicy = Readonly<{
+  requiresNativeMicrophonePermission: boolean;
+  requiresAccessibilityPermission: boolean;
+  requiresInputMonitoringPermission: boolean;
+  supportsAutoPauseMedia: boolean;
+  usesCustomWindowControls: boolean;
+}>;
+
+export type PlatformCapabilities = PlatformPolicy & { id: AppPlatformId };
+
+const CAPABILITIES: Record<AppPlatformId, PlatformPolicy> = {
   macos: {
     requiresNativeMicrophonePermission: true,
     requiresAccessibilityPermission: true,
