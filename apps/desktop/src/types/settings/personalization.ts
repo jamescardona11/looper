@@ -1,23 +1,22 @@
-export type Replacement = {
-  from: string;
-  to: string;
+type StringFields<Names extends PropertyKey> = {
+  [Field in Names]: string;
 };
 
-export type UserSnippet = {
-  trigger: string;
-  expansion: string;
-};
+export type Replacement = StringFields<"from" | "to">;
+export type UserSnippet = StringFields<"trigger" | "expansion">;
 
-export type AppBinding = {
-  name: string;
+export type AppBinding = StringFields<"name"> & {
   identifier?: string | null;
 };
 
-export type Personality = {
-  id: string;
-  name: string;
-  enabled: boolean;
-  apps: AppBinding[];
-  websites: string[];
-  instructions: string[];
+type PersonalityCollections = {
+  apps: AppBinding;
+  websites: string;
+  instructions: string;
+};
+
+export type Personality = StringFields<"id" | "name"> & { enabled: boolean } & {
+  [
+    Collection in keyof PersonalityCollections
+  ]: PersonalityCollections[Collection][];
 };

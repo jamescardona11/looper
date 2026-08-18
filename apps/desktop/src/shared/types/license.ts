@@ -1,46 +1,47 @@
-export const LICENSE_STATUSES = [
-  "trial",
-  "active",
-  "expired",
-  "invalid",
-] as const;
+const licenseValueCatalog = {
+  status: ["trial", "active", "expired", "invalid"],
+  edition: ["personal", "commercial", "founder", "contributor"],
+} as const;
 
-export type LicenseStatus = (typeof LICENSE_STATUSES)[number];
+export const LICENSE_STATUSES = [...licenseValueCatalog.status] as const;
+export const LICENSE_EDITIONS = [...licenseValueCatalog.edition] as const;
 
-export const LICENSE_EDITIONS = [
-  "personal",
-  "commercial",
-  "founder",
-  "contributor",
-] as const;
+export type LicenseStatus = (typeof licenseValueCatalog.status)[number];
+export type LicenseEdition = (typeof licenseValueCatalog.edition)[number];
 
-export type LicenseEdition = (typeof LICENSE_EDITIONS)[number];
-
-type LicenseIdentity = {
-  edition?: LicenseEdition | null;
-  displayKey?: string | null;
-  customerEmail?: string | null;
-  customerName?: string | null;
+type OptionalNullable<T> = {
+  [Field in keyof T]?: T[Field] | null;
 };
 
-type LicenseAudit = {
-  lastValidatedAt?: string | null;
-  activatedAt?: string | null;
-  purchasedAt?: string | null;
-  expiresAt?: string | null;
-  validations?: number | null;
-  usage?: number | null;
-  limitUsage?: number | null;
-  activationsCount?: number | null;
+type RequiredFields<Names extends PropertyKey, Value> = {
+  [Field in Names]: Value;
 };
+
+type LicenseIdentity = OptionalNullable<{
+  edition: LicenseEdition;
+  displayKey: string;
+  customerEmail: string;
+  customerName: string;
+}>;
+
+type LicenseAudit = OptionalNullable<
+  RequiredFields<
+    "lastValidatedAt" | "activatedAt" | "purchasedAt" | "expiresAt",
+    string
+  > &
+    RequiredFields<
+      "validations" | "usage" | "limitUsage" | "activationsCount",
+      number
+    >
+>;
+
+type LicenseEntitlements = RequiredFields<
+  "licenseGateActive" | "trialActive",
+  boolean
+> &
+  RequiredFields<"trialStartedAt" | "trialEndsAt", string> &
+  RequiredFields<"trialDaysRemaining" | "activationsLimit", number>;
 
 export type LicenseState = LicenseIdentity &
-  LicenseAudit & {
-    status: LicenseStatus;
-    licenseGateActive: boolean;
-    trialActive: boolean;
-    trialStartedAt: string;
-    trialEndsAt: string;
-    trialDaysRemaining: number;
-    activationsLimit: number;
-  };
+  LicenseAudit &
+  LicenseEntitlements & { status: LicenseStatus };
