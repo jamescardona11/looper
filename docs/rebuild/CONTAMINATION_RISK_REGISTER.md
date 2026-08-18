@@ -38,10 +38,10 @@ los casos que requieren revisión sustantiva por su referencia principal:
 | Archivo actual | Señal actual | Referencia principal | Riesgo que permanece |
 | --- | ---: | --- | --- |
 | `apps/mobile/targets/keyboard/KeyboardViewController.swift` | 27.7% | Voquill (AGPLv3) | Revisión sustantiva aplicada: waveform, estados de dictado, selección de formato/style, refresh de sesión y servicios están separados por políticas/helpers; falta validar extensión, permisos, captura e inserción en un dispositivo real. |
-| `apps/mobile/targets/_shared/DarwinNotificationManager.swift` | 23.7% | Voquill (AGPLv3) | Notificaciones Darwin y coordinación entre procesos requieren validar el contrato nativo. |
-| `apps/mobile/targets/widgets/MeetingLiveActivity.swift` | 23.1% | Voquill (AGPLv3) | Estado y lifecycle de Live Activity requieren validación en dispositivo. |
-| `apps/mobile/targets/keyboard/Repos/MemberRepo.swift` | 22.9% | Voquill (AGPLv3) | Persistencia de identidad/trial y wire de Convex requieren revisar paridad y atribución. |
-| `apps/mobile/targets/keyboard/Types/SharedWorkflow.swift` | 11.8% | typewhisper-mac (GPL) | El contrato de workflows debe conservar el aviso y la licencia aplicable. |
+| `apps/mobile/targets/_shared/DarwinNotificationManager.swift` | 23.7% | Voquill (AGPLv3) | Revisión de lifecycle completada: observer token, cola main, reemplazo por nombre y remove-all están encapsulados; falta prueba en dos procesos/extensión real. |
+| `apps/mobile/targets/widgets/MeetingLiveActivity.swift` | 23.1% | Voquill (AGPLv3) | Revisión de presentación completada: fases, timer, deep link y regiones Dynamic Island son propias; falta compilación del widget y validación en dispositivo. |
+| `apps/mobile/targets/keyboard/Repos/MemberRepo.swift` | 22.9% | Voquill (AGPLv3) | Revisión de wire completada: snapshot de suscripción, defaults y transporte inyectable están separados; falta query Convex real y sandbox de extensión. |
+| `apps/mobile/targets/keyboard/Types/SharedWorkflow.swift` | 11.8% | typewhisper-mac (GPL) | Revisión de codec completada: el modelo local filtra/normaliza defaults y limita output; se conserva el aviso/licencia del contrato externo y falta validar datos históricos reales. |
 
 ## Regla de remediación
 
@@ -161,3 +161,22 @@ el harness Swift con `swiftc -warnings-as-errors`; el linker solo advierte una
 ruta global ausente. No hay proyecto Xcode generado con schemes utilizables,
 por lo que no se afirma prueba de extensión, teclado host, permiso, micrófono,
 inserción ni proveedor real en dispositivo.
+
+Los cuatro casos móviles restantes también se revisaron por contrato.
+`DarwinNotificationManager` encapsula el centro Darwin, token, tabla de
+callbacks y forwarding a la cola principal; el harness nativo cubre registro,
+post, reemplazo, remove y remove-all. `MemberRepo` separa
+`SubscriptionSnapshot` y permite un query inyectable; el harness cubre tier,
+trial, fecha y defaults free, mientras que el typecheck/Vitest móvil permanece
+verde.
+
+`MeetingLiveActivity` no comparte el layout de la referencia: modela fases de
+meeting, timer, marked moments, deep link y cada región de Dynamic Island con
+presentadores propios. La evidencia disponible es estática y de typecheck
+móvil; el proyecto Xcode generado no tiene schemes, así que el widget no se
+ha compilado ni observado en un dispositivo. `SharedWorkflow` es un codec
+local de `UserDefaults`: normaliza campos, aplica defaults y restringe output
+a `insert|replace|copy`; el contrato de workflows se mantiene con la licencia
+documentada en `NOTICE.md`, sin declarar autoría independiente sobre datos
+externos. No se eliminaron tests para reducir señales en ninguno de los cuatro
+casos.
