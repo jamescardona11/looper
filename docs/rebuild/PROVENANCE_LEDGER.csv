@@ -29,6 +29,8 @@ apps/desktop/src/platform/service.ts,replaced,platform-detection,authored-platfo
 apps/desktop/src/platform/service.test.ts,owned,platform-detection-tests,authored-platform-detection-tests,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
 apps/desktop/src/shared/lib/modelCapabilities.ts,replaced,model-capabilities,authored-capability-contract,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
 apps/desktop/src/shared/lib/modelCapabilities.test.ts,owned,model-capabilities-tests,authored-capability-tests,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/shared/lib/textSize.ts,replaced,text-scaling,authored-platform-scale-table,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/shared/lib/textSize.test.ts,owned,text-scaling-tests,authored-text-scale-tests,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
 apps/desktop/src-tauri/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/desktop/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/mobile/**,unreviewed,mobile,,pending,-,pending,uncommitted
