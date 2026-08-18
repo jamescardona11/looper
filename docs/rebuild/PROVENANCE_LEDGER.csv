@@ -230,6 +230,11 @@ apps/desktop/src/data/history-sync.ts,owned,desktop-opt-in-history-sync,no-mater
 apps/desktop/src/data/sync-settings-history.test.ts,owned,desktop-settings-and-history-sync-tests,authored-version-opt-in-backlog-event-and-cleanup-tests,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
 apps/desktop/src/data/sync-engine.ts,owned,desktop-authenticated-sync-orchestrator,no-material-corpus-match-with-session-generation-guard,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
 apps/desktop/src/data/sync-engine.test.ts,owned,desktop-sync-orchestrator-tests,authored-auth-gating-domain-dispatch-cleanup-and-stale-activation-tests,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/features/sync/useSyncSession.ts,replaced,desktop-sync-session-hook,authored-use-sync-external-store-adapter,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/features/sync/sync-session-store.ts,replaced,desktop-sync-session-store,authored-lazy-client-lifecycle-and-auth-actions,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/features/sync/sync-session-store.test.ts,owned,desktop-sync-session-store-tests,authored-lifecycle-error-history-and-availability-tests,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/features/sync/components/SyncTab.tsx,owned,desktop-sync-settings-ui,no-corpus-match,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/features/sync/components/SyncTab.test.tsx,owned,desktop-sync-settings-ui-tests,authored-email-account-and-history-opt-in-tests,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
 apps/desktop/src-tauri/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/desktop/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/mobile/**,unreviewed,mobile,,pending,-,pending,uncommitted
