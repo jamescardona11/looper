@@ -888,6 +888,7 @@ apps/desktop/src-tauri/src/library/commands/items.rs,replaced,desktop-library-co
 apps/desktop/src-tauri/src/library/commands/recovery.rs,replaced,desktop-library-command-recovery,authored-library-recovery-state-and-resume-policy,project-license-pending,-,corpus-containment-14.2-library-commands-4-focal-tests-79-library-tests-cargo-all-targets-rustfmt-2026-08-17,pending
 apps/desktop/src-tauri/src/library/commands/files.rs,replaced,desktop-library-command-files,authored-library-managed-path-and-export-boundary,project-license-pending,-,corpus-containment-9.7-library-commands-4-focal-tests-79-library-tests-cargo-all-targets-rustfmt-2026-08-17,pending
 apps/desktop/src-tauri/src/library/commands/translations.rs,replaced,desktop-library-command-translations,authored-library-translation-command-policy,project-license-pending,-,corpus-containment-5.5-library-commands-4-focal-tests-79-library-tests-cargo-all-targets-rustfmt-2026-08-17,pending
+apps/desktop/src-tauri/src/speech/remote.rs,replaced,desktop-speech-remote,authored-remote-provider-configuration-request-retry-response-and-fallback-policy,project-license-pending,-,corpus-containment-14.7-speech-remote-21-tests-737-rust-tests-cargo-all-targets-rustfmt-2026-08-17,pending
 apps/desktop/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/mobile/**,unreviewed,mobile,,pending,-,pending,uncommitted
 apps/web/**,unreviewed,web,,pending,-,pending,uncommitted
