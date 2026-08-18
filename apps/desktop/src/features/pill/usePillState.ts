@@ -11,6 +11,7 @@ import {
 } from "../../data/overlay";
 import { subscribeTransformStream } from "../../data/transcription";
 import { useMountEffect } from "../../shared/hooks/useMountEffect";
+import { safeUnlisten } from "../../shared/lib/safeUnlisten";
 import type { PillStatus, PillTone } from "../../types";
 
 const insertedVisibilityMs = 4_000;
@@ -124,7 +125,7 @@ function trackSubscription<TPayload>(
   })
     .then((release) => {
       if (scope.open) scope.releases.push(release);
-      else release();
+      else safeUnlisten(release);
     })
     .catch((error) => {
       console.error(`Failed to listen for ${channel}`, error);
@@ -277,7 +278,8 @@ export function usePillState() {
     return () => {
       scope.open = false;
       clearErrorTimer();
-      scope.releases.forEach((release) => release());
+      scope.releases.forEach(safeUnlisten);
+      scope.releases = [];
     };
   });
 
