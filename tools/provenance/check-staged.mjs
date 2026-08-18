@@ -23,12 +23,33 @@ if (pathIndex < 0 || statusIndex < 0 || noticeIndex < 0) {
   throw new Error("El ledger necesita path, status y notice_path");
 }
 
-const ledger = new Map(
-  lines.map((line) => {
-    const fields = csvFields(line);
-    return [fields[pathIndex], { status: fields[statusIndex], notice: fields[noticeIndex] }];
-  }),
-);
+const ledger = lines.map((line) => {
+  const fields = csvFields(line);
+  return {
+    path: fields[pathIndex],
+    status: fields[statusIndex],
+    notice: fields[noticeIndex],
+  };
+});
+
+function globToRegExp(pattern) {
+  const escaped = pattern.replace(/[.+^${}()|[\]\\]/g, "\\$&");
+  return new RegExp(
+    `^${escaped.replace(/\*\*/g, "\u0000").replace(/\*/g, "[^/]*").replace(/\u0000/g, ".*")}$`,
+  );
+}
+
+function specificity(pattern) {
+  return pattern.replace(/\*/g, "").length;
+}
+
+function findEntry(file) {
+  const matches = ledger.filter((entry) => {
+    if (entry.path === file) return true;
+    return entry.path.includes("*") && globToRegExp(entry.path).test(file);
+  });
+  return matches.sort((a, b) => specificity(b.path) - specificity(a.path))[0];
+}
 
 const staged = execFileSync("git", ["diff", "--cached", "--name-only", "--diff-filter=ACMRT"], {
   cwd: root,
@@ -37,7 +58,7 @@ const staged = execFileSync("git", ["diff", "--cached", "--name-only", "--diff-f
 
 const failures = [];
 for (const file of staged) {
-  const entry = ledger.get(file);
+  const entry = findEntry(file);
   if (!entry) failures.push(`${file}: no tiene fila explícita en el ledger`);
   else if (!allowed.has(entry.status)) failures.push(`${file}: estado no cerrado (${entry.status})`);
   else if (entry.status === "permissive" && !entry.notice) {

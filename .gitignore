@@ -2,6 +2,7 @@
 
 # Dependencies
 node_modules
+**/__pycache__/
 .pnp
 .pnp.js
 .pnpm-store
@@ -74,6 +75,9 @@ pnpm-debug.log*
 /corpus-inventory.csv
 /corpus-summary.json
 /docs/
+!/docs/
+!/docs/rebuild/
+!/docs/rebuild/**
 
 # Product artwork/assets stay local and are never part of reconstruction commits.
 apps/desktop/assets/
