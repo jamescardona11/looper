@@ -78,6 +78,9 @@ apps/desktop/src/shared/ui/DotMatrix.tsx,replaced,desktop-dot-matrix,authored-ce
 apps/desktop/src/shared/ui/ActivityDots.tsx,replaced,desktop-activity-indicator,authored-external-store-clock,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
 apps/desktop/src/shared/ui/IntelligencePixel.tsx,replaced,desktop-intelligence-indicator,authored-state-and-size-mapping,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
 apps/desktop/src/shared/ui/StatusPixels.test.tsx,owned,desktop-status-indicator-tests,authored-visual-contract-tests,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/shared/ui/SectionLabel.tsx,replaced,desktop-section-heading,authored-accessory-composition,project-license-pending,-,targeted-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/shared/ui/ScreenHeader.tsx,replaced,desktop-screen-heading,authored-grid-header-composition,project-license-pending,-,targeted-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/shared/ui/SharedHeadings.test.tsx,owned,desktop-heading-tests,authored-heading-contract-tests,project-license-pending,-,targeted-tests-and-typecheck-2026-08-16,pending
 apps/desktop/src-tauri/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/desktop/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/mobile/**,unreviewed,mobile,,pending,-,pending,uncommitted
