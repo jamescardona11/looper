@@ -1,0 +1,74 @@
+{
+  "name": "@looper/root",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Looper voice productivity workspace",
+  "packageManager": "pnpm@10.0.0",
+  "engines": {
+    "node": ">=20.11.0",
+    "pnpm": ">=10.0.0"
+  },
+  "pnpm": {
+    "patchedDependencies": {
+      "expo-modules-jsi@57.0.4": "patches/expo-modules-jsi@57.0.4.patch",
+      "react-native-sherpa-onnx@0.4.3": "patches/react-native-sherpa-onnx@0.4.3.patch"
+    },
+    "overrides": {
+      "@babel/core@>=7.0.0 <=7.29.0": "7.29.7",
+      "@opentelemetry/core@>=2.0.0 <2.8.0": "2.8.0",
+      "@xmldom/xmldom@>=0.7.0 <0.8.13": "0.8.13",
+      "convex": "^1.38.0",
+      "dompurify@>=3.0.0 <=3.4.10": "3.4.11",
+      "js-yaml@>=4.0.0 <=4.1.1": "4.2.0",
+      "protobufjs@>=7.0.0 <=7.6.2": "7.6.4",
+      "react": "19.2.0",
+      "react-dom": "19.2.0",
+      "ws@>=8.0.0 <8.21.0": "8.21.0"
+    }
+  },
+  "scripts": {
+    "build": "turbo run build",
+    "dev": "turbo run dev",
+    "lint": "biome lint --error-on-warnings .",
+    "test": "turbo run test",
+    "typecheck": "turbo run typecheck",
+    "verify": "pnpm run format-check && pnpm run lint && pnpm run typecheck && pnpm run test",
+    "web:e2e": "node tools/e2e/run-local-e2e.mjs",
+    "qa:external-resend-real": "node tools/qa/real-gates/verify-resend-email-otp.mjs",
+    "qa:external-oauth-real": "node tools/qa/real-gates/verify-oauth-code-exchange.mjs",
+    "qa:external-stt-real": "node tools/qa/real-gates/verify-real-stt.mjs",
+    "qa:external-assembly-stream-real": "node tools/qa/real-gates/verify-real-assembly-stream.mjs",
+    "qa:external-llm-real": "node tools/qa/real-gates/verify-real-llm.mjs",
+    "qa:external-revenuecat": "node tools/qa/real-gates/verify-revenuecat.mjs",
+    "qa:external-store-play-purchase": "node tools/qa/real-gates/verify-store-play-purchase-evidence.mjs",
+    "qa:external-desktop-host": "node tools/qa/real-gates/verify-desktop-host-insertion.mjs",
+    "qa:external-desktop-hotkey-pill": "node tools/qa/real-gates/verify-desktop-hotkey-pill-evidence.mjs",
+    "qa:external-desktop-remote-dictation": "node tools/qa/real-gates/verify-desktop-remote-dictation-evidence.mjs",
+    "qa:external-mobile-local-stt": "node tools/qa/real-gates/verify-mobile-local-stt-evidence.mjs",
+    "qa:desktop-native": "node tools/qa/run-desktop-native-local.mjs",
+    "qa:meeting-audio": "node tools/qa/run-meeting-audio-local.mjs",
+    "qa:external-readiness": "node tools/qa/check-external-readiness.mjs",
+    "qa:convex-full": "node tools/qa/run-convex-full-http-smoke.mjs",
+    "qa:project-convex-readiness": "node tools/qa/check-project-convex-provider-readiness.mjs",
+    "qa:local-full": "pnpm run qa:mobile && pnpm run qa:web-e2e && pnpm run qa:remote-dictation-local && pnpm run qa:desktop-native && pnpm run qa:project-convex-readiness && pnpm run qa:convex-full && pnpm run qa:external-readiness && pnpm run verify",
+    "qa:mobile": "pnpm --filter @looper/mobile typecheck && pnpm --filter @looper/mobile test",
+    "qa:mobile-maestro": "pnpm --filter @looper/mobile test",
+    "qa:remote-dictation-local": "node tools/qa/run-remote-dictation-local.mjs",
+    "qa:web-e2e": "node tools/qa/run-web-e2e-local.mjs",
+    "format": "biome format --write .",
+    "format-check": "biome format .",
+    "check": "biome check --write .",
+    "convex:push:check": "pnpm --filter @looper/backend run push:check",
+    "convex:verify": "pnpm --filter @looper/backend run verify:published",
+    "clean": "turbo run clean",
+    "prepare": "node -e \"try{require('child_process').execSync('git rev-parse --git-dir',{stdio:'ignore'});require('child_process').execSync('husky',{stdio:'inherit'})}catch{console.log('skip husky (no .git)')}\""
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.4.15",
+    "@types/node": "^20.19.0",
+    "husky": "^9.1.0",
+    "lint-staged": "^15.5.0",
+    "turbo": "^2.9.0",
+    "typescript": "^5.9.3"
+  }
+}
