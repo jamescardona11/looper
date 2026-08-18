@@ -16,22 +16,25 @@ import { detectAppPlatform } from "./platform/service";
 import { TEXT_SIZE_MODE_STORAGE_KEY } from "./shared/lib/textSize";
 
 const signalPreview = import.meta.env.VITE_SIGNAL_PREVIEW === "1";
-const currentWindow = getCurrentWindow();
 
 if (signalPreview && window.location.search.includes("surface=pill")) {
   installPillPreviewBridge();
 }
 
+const currentWindowLabel = signalPreview
+  ? "settings"
+  : getCurrentWindow().label;
+
 const reportCrash = createFrontendCrashReporter({
   disabled: signalPreview,
-  getWindowLabel: () => currentWindow.label,
+  getWindowLabel: () => currentWindowLabel,
   send: reportFrontendCrashEvent,
 });
 monitorGlobalCrashes(window, reportCrash);
 
 const textScale = initialTextScale({
   disabled: signalPreview,
-  windowLabel: currentWindow.label,
+  windowLabel: currentWindowLabel,
   storedMode: localStorage.getItem(TEXT_SIZE_MODE_STORAGE_KEY),
   platform: detectAppPlatform(),
 });
