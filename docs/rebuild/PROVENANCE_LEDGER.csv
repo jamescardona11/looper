@@ -518,6 +518,7 @@ apps/desktop/src/features/library/components/library-transcript-stream.tsx,repla
 apps/desktop/src/features/library/components/LibraryTranscriptPanel.test.tsx,owned,desktop-library-transcript-tests,authored-error-ffmpeg-segment-virtuoso-keyboard-stream-progress-editor-document-dom-and-class-contracts,project-license-pending,-,corpus-containment-1.3-permissive-transcript-tests-2026-08-16,pending
 apps/desktop/src/types/settings/shortcuts.ts,replaced,desktop-shortcut-contracts,authored-shortcut-behavior-and-mode-indexed-binding-schema-preserving-required-writable-public-shape,project-license-pending,-,corpus-no-relevant-match-shortcut-tests-typecheck-2026-08-16,pending
 apps/desktop/src/types/toast.ts,replaced,desktop-toast-contracts,authored-toast-kind-message-lifetime-action-and-optional-value-schema-composition-preserving-public-payload-shape,project-license-pending,-,corpus-containment-11.8-toast-tests-typecheck-2026-08-16,pending
+apps/desktop/src/types/app.ts,replaced,desktop-app-info-contracts,authored-storage-category-map-app-identity-and-size-schema-composition-preserving-tauri-payload-shape,project-license-pending,-,corpus-containment-23.1-about-settings-tests-typecheck-2026-08-16,pending
 apps/desktop/src-tauri/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/desktop/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/mobile/**,unreviewed,mobile,,pending,-,pending,uncommitted

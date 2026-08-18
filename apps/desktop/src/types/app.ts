@@ -1,14 +1,18 @@
-export interface StorageBreakdown {
-  total_bytes: number;
-  recordings_bytes: number;
-  library_bytes: number;
-  databases_bytes: number;
-  models_bytes: number;
-}
+type StorageCategory =
+  | "total_bytes"
+  | "recordings_bytes"
+  | "library_bytes"
+  | "databases_bytes"
+  | "models_bytes";
 
-export interface AppInfo {
+export type StorageBreakdown = Record<StorageCategory, number>;
+
+type AppIdentity = {
   version: string;
   data_dir_path: string;
-  data_dir_size_bytes: number;
-  storage_breakdown: StorageBreakdown;
-}
+};
+
+export type AppInfo = AppIdentity &
+  Record<"data_dir_size_bytes", number> & {
+    storage_breakdown: StorageBreakdown;
+  };
