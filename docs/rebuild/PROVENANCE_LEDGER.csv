@@ -35,6 +35,8 @@ apps/desktop/src/features/library/components/format-timestamp.ts,replaced,librar
 apps/desktop/src/features/library/components/format-timestamp.test.ts,owned,library-timestamp-tests,authored-elapsed-time-tests,project-license-pending,-,targeted-tests-and-typecheck-2026-08-16,pending
 apps/desktop/src/features/library/components/meeting-note-markers.ts,owned,meeting-note-transcript,manual-review-low-similarity,project-license-pending,-,targeted-tests-and-typecheck-2026-08-16,pending
 apps/desktop/src/features/library/components/meeting-note-markers.test.ts,owned,meeting-note-transcript-tests,manual-review-low-similarity,project-license-pending,-,targeted-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/shared/lib/groupByDay.ts,owned,day-grouping,manual-review-low-similarity,project-license-pending,-,targeted-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/shared/lib/groupByDay.test.ts,owned,day-grouping-tests,manual-review-low-similarity,project-license-pending,-,targeted-tests-and-typecheck-2026-08-16,pending
 apps/desktop/src-tauri/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/desktop/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/mobile/**,unreviewed,mobile,,pending,-,pending,uncommitted
