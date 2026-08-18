@@ -12,7 +12,8 @@ ni una raíz sin GNU AGPLv3 y COPYRIGHT de James Cardona.
 También informa, sin incorporarlos al resultado activo, los refs locales de
 respaldo `codex/rebuild/agpl-history-root-*` y si alguno conserva esas rutas.
 Los respaldos se mantienen para recuperación; no deben usarse como la rama de
-distribución. Además reporta snapshots internos bajo `refs/codex/` como
+distribución. Los refs de ramas no activas también se revisan por la identidad
+de licencia/copyright de la raíz. Además reporta snapshots internos bajo `refs/codex/` como
 `tool_ref_findings`: son residuos del agente local, no ramas de distribución,
 pero deben purgarse cuando ningún proceso los necesite.
 También resume los commits inalcanzables bajo `unreachable_objects`. Ese

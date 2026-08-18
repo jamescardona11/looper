@@ -50,6 +50,23 @@ def ledger_history_hits(root: Path) -> list[str]:
     return hits
 
 
+def ref_root_identity(root: Path, ref: str) -> tuple[bool, bool]:
+    """Return whether a ref carries the required license and copyright root."""
+
+    try:
+        license_text = git(root, "show", f"{ref}:LICENSE")
+    except subprocess.CalledProcessError:
+        license_text = ""
+    try:
+        copyright_text = git(root, "show", f"{ref}:COPYRIGHT")
+    except subprocess.CalledProcessError:
+        copyright_text = ""
+    return (
+        "GNU AFFERO GENERAL PUBLIC LICENSE" in license_text,
+        "James Cardona" in copyright_text,
+    )
+
+
 def backup_refs(root: Path) -> list[dict[str, object]]:
     """Describe retained history backups without treating them as active code."""
 
@@ -114,13 +131,17 @@ def non_active_ref_findings(root: Path) -> list[dict[str, object]]:
             commits = git(root, "log", ref, "--format=%H", f"-S{needle}", "--", ledger)
             ledger_hits.extend(f"{hit}:{needle}" for hit in commits.splitlines())
 
-        if forbidden or ledger_hits:
+        root_has_agplv3, root_names_james_cardona = ref_root_identity(root, ref)
+
+        if forbidden or ledger_hits or not root_has_agplv3 or not root_names_james_cardona:
             reports.append(
                 {
                     "ref": ref,
                     "commit": commit,
                     "forbidden_paths": forbidden,
                     "ledger_history_hits": sorted(ledger_hits),
+                    "root_has_agplv3": root_has_agplv3,
+                    "root_names_james_cardona": root_names_james_cardona,
                 }
             )
     return reports
