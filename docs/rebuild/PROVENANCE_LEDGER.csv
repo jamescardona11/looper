@@ -235,6 +235,9 @@ apps/desktop/src/features/sync/sync-session-store.ts,replaced,desktop-sync-sessi
 apps/desktop/src/features/sync/sync-session-store.test.ts,owned,desktop-sync-session-store-tests,authored-lifecycle-error-history-and-availability-tests,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
 apps/desktop/src/features/sync/components/SyncTab.tsx,owned,desktop-sync-settings-ui,no-corpus-match,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
 apps/desktop/src/features/sync/components/SyncTab.test.tsx,owned,desktop-sync-settings-ui-tests,authored-email-account-and-history-opt-in-tests,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/features/settings/components/MeetingIntelligencePanel.tsx,replaced,desktop-meeting-intelligence-settings-ui,authored-external-store-render-and-model-actions,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/features/settings/meeting-model-store.ts,replaced,desktop-meeting-model-controller,authored-catalog-selection-download-events-actions-and-cleanup,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/features/settings/meeting-model-store.test.ts,owned,desktop-meeting-model-controller-tests,authored-catalog-progress-actions-error-and-late-cleanup-tests,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
 apps/desktop/src-tauri/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/desktop/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/mobile/**,unreviewed,mobile,,pending,-,pending,uncommitted
