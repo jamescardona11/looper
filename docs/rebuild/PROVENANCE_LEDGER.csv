@@ -720,6 +720,7 @@ apps/desktop/src/features/settings/components/account-settings-view.tsx,replaced
 apps/desktop/src/features/settings/components/account-view-contract.test.tsx,owned,desktop-account-settings-tests,authored-account-dom-class-callback-and-timer-contract-tests,project-license-pending,-,corpus-containment-3.5-account-about-12-tests-full-suite-typecheck-eslint-prettier-2026-08-17,pending
 apps/desktop/src/features/settings/components/tabs/about-settings-view.tsx,replaced,desktop-about-settings-tab,authored-about-overview-storage-setup-cli-policy-and-action-composition,project-license-pending,-,corpus-containment-29.6-account-about-12-tests-full-suite-typecheck-eslint-prettier-2026-08-17,pending
 apps/desktop/src/features/settings/components/tabs/about-cli-contract.test.tsx,owned,desktop-about-settings-tests,authored-about-cli-dom-copy-state-and-action-contract-tests,project-license-pending,-,corpus-containment-4.3-account-about-12-tests-full-suite-typecheck-eslint-prettier-2026-08-17,pending
+apps/desktop/src-tauri/src/integrations/model.rs,replaced,desktop-native-model-cli,authored-invocation-decoder-requested-model-route-catalog-policy-wire-entry-and-output-composition,project-license-pending,-,corpus-containment-14.1-model-integration-7-tests-native-suite-cargo-all-targets-rustfmt-2026-08-17,pending
 apps/desktop/src-tauri/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/desktop/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/mobile/**,unreviewed,mobile,,pending,-,pending,uncommitted
