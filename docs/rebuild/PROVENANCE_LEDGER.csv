@@ -62,6 +62,8 @@ apps/desktop/src/types/transcription.ts,replaced,desktop-transcription-contract,
 apps/desktop/src/types/import.ts,replaced,desktop-import-contract,reconstructed-from-native-import-commands,project-license-pending,-,targeted-tests-and-typecheck-2026-08-16,pending
 apps/desktop/src/data/imports.ts,replaced,desktop-import-api,reconstructed-from-native-command-surface,project-license-pending,-,targeted-tests-and-typecheck-2026-08-16,pending
 apps/desktop/src/data/imports.test.ts,owned,desktop-import-api-tests,authored-import-command-tests,project-license-pending,-,targeted-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/shared/lib/macosPermissions.ts,replaced,macos-permission-gateway,authored-platform-gated-permission-api,project-license-pending,-,targeted-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/shared/lib/macosPermissions.test.ts,owned,macos-permission-gateway-tests,authored-permission-gateway-tests,project-license-pending,-,targeted-tests-and-typecheck-2026-08-16,pending
 apps/desktop/src-tauri/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/desktop/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/mobile/**,unreviewed,mobile,,pending,-,pending,uncommitted
