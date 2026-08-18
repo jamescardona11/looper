@@ -251,12 +251,29 @@ def main() -> int:
         "root_has_agplv3": "GNU AFFERO GENERAL PUBLIC LICENSE" in license_text,
         "root_names_james_cardona": "James Cardona" in copyright_text,
     }
-    report["ok"] = not (
+    active_ok = not (
         forbidden_paths
         or ledger_hits
         or not report["root_has_agplv3"]
         or not report["root_names_james_cardona"]
     )
+    backup_findings = [
+        entry
+        for entry in retained_backups
+        if entry["forbidden_paths"] or entry["ledger_history_hits"]
+    ]
+    cleanup_required = bool(
+        non_active_findings
+        or tool_findings
+        or backup_findings
+        or unreachable["forbidden_object_count"]
+    )
+    report["active_ok"] = active_ok
+    report["cleanup_required"] = cleanup_required
+    report["repository_clean"] = active_ok and not cleanup_required
+    # Keep `ok` as the release/distribution gate for compatibility. The
+    # explicit cleanup fields expose residue without hiding a clean active tree.
+    report["ok"] = active_ok
     print(json.dumps(report, indent=2, ensure_ascii=False))
     return 0 if report["ok"] else 1
 

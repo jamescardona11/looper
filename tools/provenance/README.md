@@ -20,6 +20,12 @@ También resume los commits inalcanzables bajo `unreachable_objects`. Ese
 resumen es de solo lectura: no ejecuta `git gc`, no poda objetos y no cambia
 la recuperabilidad local.
 
+El JSON distingue tres estados: `ok`/`active_ok` es la compuerta de la rama
+distribuible; `cleanup_required` indica que todavía hay refs, snapshots,
+backups u objetos locales que requieren limpieza; `repository_clean` solo es
+verdadero cuando ambas condiciones están resueltas. Así una rama activa limpia
+no se confunde con un repositorio local ya purgado.
+
 Uso desde la raíz del repositorio:
 
 ```sh
