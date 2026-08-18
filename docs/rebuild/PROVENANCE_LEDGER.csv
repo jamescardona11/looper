@@ -711,6 +711,7 @@ apps/desktop/src/features/settings/account-checkout-policy.ts,replaced,desktop-a
 apps/desktop/src/features/license/license-query-contracts.ts,replaced,desktop-entitlement-query-layer,authored-license-keys-read-options-identity-hydration-and-cache-publication-contracts,project-license-pending,-,corpus-containment-17.1-settings-gateways-15-tests-typecheck-eslint-prettier-2026-08-17,pending
 apps/desktop/src/features/license/license-read-queries.ts,replaced,desktop-entitlement-query-layer,authored-license-state-usage-gate-and-identity-read-hooks,project-license-pending,-,corpus-containment-23.5-settings-gateways-15-tests-typecheck-eslint-prettier-2026-08-17,pending
 apps/desktop/src/features/license/license-command-queries.ts,replaced,desktop-entitlement-query-layer,authored-license-activation-refresh-deactivation-and-cache-command-hooks,project-license-pending,-,corpus-containment-25.0-settings-gateways-15-tests-typecheck-eslint-prettier-2026-08-17,pending
+apps/desktop/src-tauri/src/platform/macos/menu.rs,replaced,desktop-native-macos-menu,authored-action-spec-microphone-row-planning-and-application-edit-view-menu-builders,project-license-pending,-,corpus-containment-12.2-macos-menu-5-tests-native-suite-cargo-all-targets-rustfmt-2026-08-17,pending
 apps/desktop/src-tauri/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/desktop/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/mobile/**,unreviewed,mobile,,pending,-,pending,uncommitted
