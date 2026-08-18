@@ -923,6 +923,7 @@ apps/mobile/targets/keyboard/Repos/ByokGenerateTextRepo.swift,replaced,mobile-by
 apps/mobile/targets/keyboard/Repos/ByokTranscribeAudioRepo.swift,replaced,mobile-byok-transcribe,authored-provider-plan-request-factory-decoder-and-transport-boundary,project-license-pending,-,mobile-corpus-containment-7.4-swift-contracts-10-groups-mobile-typecheck-tests-2026-08-17,pending
 apps/mobile/tests/native/ByokReposContractTests.swift,owned,mobile-byok-contract-tests,authored-provider-wire-error-and-retry-contract-coverage,project-license-pending,-,mobile-corpus-containment-0.9-swift-contracts-10-groups-mobile-typecheck-tests-2026-08-17,pending
 ai_docs/legal/corpus-audit.py,owned,mobile-provenance-audit,expanded-source-scope-to-mobile-native-targets-and-corrected-reference-metadata,project-license-pending,-,corpus-audit-mobile-scope-run-2026-08-17,pending
+apps/desktop/src-tauri/src/accessibility_context.rs,replaced,desktop-accessibility-context,authored-native-context-collection-and-fallback-policy,project-license-pending,-,corpus-containment-11.0-accessibility-context-8-tests-787-rust-tests-cargo-all-targets-native-qa-2026-08-17,pending
 apps/desktop/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/mobile/**,unreviewed,mobile,,pending,-,pending,uncommitted
 apps/web/**,unreviewed,web,,pending,-,pending,uncommitted
