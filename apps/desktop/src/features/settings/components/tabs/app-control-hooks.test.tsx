@@ -54,7 +54,7 @@ describe("app control hooks", () => {
 
     expect(calendarMocks.requestAccess).toHaveBeenCalledOnce();
     expect(onEnabledChange).toHaveBeenCalledWith(true);
-    expect(result.current.access).toBe("authorized");
+    await waitFor(() => expect(result.current.access).toBe("authorized"));
   });
 
   test("maps buttons and horizontal scrubbing across media-action stops", () => {
