@@ -248,6 +248,10 @@ apps/desktop/src/features/settings/model-card-presentation.ts,replaced,desktop-m
 apps/desktop/src/features/settings/model-card-presentation.test.tsx,owned,desktop-model-card-presentation-tests,authored-progress-signal-and-action-propagation-tests,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
 apps/desktop/src/features/settings/components/CloudModelCard.tsx,replaced,desktop-cloud-model-card,authored-provider-active-model-layout-and-navigation,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
 apps/desktop/src/features/settings/components/CloudModelCard.test.tsx,owned,desktop-cloud-model-card-tests,authored-provider-model-navigation-and-fallback-tests,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/features/settings/components/ProviderConfigurationPanel.tsx,replaced,desktop-provider-configuration-surface,authored-generic-provider-endpoint-key-model-layout,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/features/settings/components/LanguageModelPanel.tsx,replaced,desktop-writing-provider-adapter,authored-provider-catalog-preset-and-model-adapter,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/features/settings/components/SpeechModelPanel.tsx,replaced,desktop-speech-provider-adapter,authored-provider-catalog-auto-model-and-discovery-adapter,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/features/settings/components/ProviderPanels.test.tsx,owned,desktop-provider-configuration-tests,authored-toggle-preset-dedup-discovery-and-auto-model-tests,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
 apps/desktop/src-tauri/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/desktop/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/mobile/**,unreviewed,mobile,,pending,-,pending,uncommitted
