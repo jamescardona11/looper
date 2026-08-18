@@ -1,0 +1,15 @@
+# language<TAB>spoken input<TAB>expected output (newlines are escaped)
+en-US	Hello comma world period new paragraph How are you question mark	Hello, world.\n\nHow are you?
+es	Hola coma mundo nueva línea seguimos punto	Hola, mundo\nseguimos.
+pt-BR	Olá vírgula mundo nova linha seguimos ponto	Olá, mundo\nseguimos.
+es	Hola comma mundo	Hola comma mundo
+en	Shopping bullet point milk next item water next item coffee	Shopping\n- milk\n- water\n- coffee
+en	type literal mode comma new line period end literal mode period	type comma new line period.
+en	Meet me at five no wait six	Meet me at 6
+en	The title is final period add a subtitle scratch that publish it	The title is final. publish it
+en	Steps numbered item install next item test next item ship	Steps\n1. install\n2. test\n3. ship
+en	james at sign telepatia dot ai slash pricing	james@telepatia.ai/pricing
+en	Budget twenty five dollars on July nineteen two thousand twenty six at three thirty pm	Budget $25 on 2026-07-19 at 3:30 PM
+es	Presupuesto veinticinco dólares el diecinueve de julio de dos mil veintiséis a las tres treinta pm	Presupuesto $25 el 2026-07-19 a las 3:30 PM
+pt	Orçamento vinte e cinco reais em dezenove de julho de dois mil e vinte e seis às três e trinta pm	Orçamento R$25 em 2026-07-19 às 3:30 PM
+en	I need one hundred twenty three items	I need 123 items

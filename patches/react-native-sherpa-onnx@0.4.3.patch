@@ -1,0 +1,17 @@
+diff --git a/scripts/setup-ios-framework.sh b/scripts/setup-ios-framework.sh
+index 41fd3373494b604111d3b475be89f70bf58cb411..c6396fe0a9206361aa0528b91b45ca1f370fb734 100755
+--- a/scripts/setup-ios-framework.sh
++++ b/scripts/setup-ios-framework.sh
+@@ -231,6 +231,12 @@ fi
+ # Return desired version for a framework slug (from TAG, env, or override). No output = use TAG/env only.
+ get_desired_version() {
+   local slug="$1"
++  # v0.4.3 omitted ffmpeg_prebuilt/IOS_RELEASE_TAG from its npm tarball.
++  # Keep the matching stable release available until the package restores the pin.
++  if [ "$slug" = "ffmpeg" ] && [ ! -f "$PROJECT_ROOT/third_party/ffmpeg_prebuilt/IOS_RELEASE_TAG" ]; then
++    echo "8.0.1-2"
++    return
++  fi
+   if [ "$slug" = "sherpa-onnx" ] && [ -n "$SHERPA_DESIRED_OVERRIDE" ]; then
+     echo "$SHERPA_DESIRED_OVERRIDE"
+     return

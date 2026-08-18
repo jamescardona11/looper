@@ -1,0 +1,24 @@
+{
+  "capturedFrom": {
+    "engine": "looper-ts / parakeet-rs 0.3.6",
+    "model": "parakeet_tdt_int8"
+  },
+  "fixtures": {
+    "harvard.wav": {
+      "language": "en",
+      "normalizedText": "The stale smell of old beer lingers. It takes heat to bring out the odor. A cold dip restores health and zest. A salt pickle tastes fine with ham. Tacos al pastor are my favorite. A zestful food is the hot cross bun."
+    },
+    "es-voxforge.wav": {
+      "language": "es",
+      "normalizedText": "de unas parras artificiales cuyas hojas parecían retazos de terciopelo."
+    },
+    "pt-voxforge.wav": {
+      "language": "pt",
+      "normalizedText": "Na festa, todo mundo estava muito contente."
+    },
+    "silence": {
+      "language": "en",
+      "normalizedText": ""
+    }
+  }
+}
