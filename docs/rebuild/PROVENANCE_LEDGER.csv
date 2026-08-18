@@ -846,6 +846,7 @@ apps/desktop/src/features/personalization/components/personalization-view-persis
 apps/desktop/src/features/personalization/components/personalization-view-preview.tsx,replaced,desktop-personalization-preview,authored-personalization-style-preview,project-license-pending,-,corpus-containment-4.8-personalization-view-14-tests-typecheck-eslint-prettier-2026-08-17,pending
 apps/desktop/src/features/personalization/components/personalization-view-style-browser.tsx,replaced,desktop-personalization-style-browser,authored-personalization-style-browser-layout,project-license-pending,-,corpus-containment-18.6-personalization-view-14-tests-typecheck-eslint-prettier-2026-08-17,pending
 apps/desktop/src/features/personalization/components/personalization-view-workspace.tsx,replaced,desktop-personalization-workspace,authored-personalization-workspace-layout,project-license-pending,-,corpus-containment-27.2-personalization-view-14-tests-typecheck-eslint-prettier-2026-08-17,pending
+apps/desktop/src-tauri/src/update_checker.rs,replaced,desktop-native-update-checker,authored-update-schedule-state-supervisor-endpoint-transfer-and-toast-policy,project-license-pending,-,corpus-containment-23.6-update-checker-8-tests-616-rust-tests-cargo-all-targets-rustfmt-2026-08-17,pending
 apps/desktop/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/mobile/**,unreviewed,mobile,,pending,-,pending,uncommitted
 apps/web/**,unreviewed,web,,pending,-,pending,uncommitted
