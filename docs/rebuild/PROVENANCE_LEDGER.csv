@@ -85,6 +85,10 @@ apps/desktop/src/shared/ui/TranscriptText.tsx,replaced,desktop-transcript-markdo
 apps/desktop/src/shared/ui/TranscriptText.test.tsx,owned,desktop-transcript-markdown-tests,authored-format-and-html-safety-tests,project-license-pending,-,targeted-tests-and-typecheck-2026-08-16,pending
 apps/desktop/src/shared/ui/TypewriterText.tsx,replaced,desktop-typewriter-text,authored-external-store-reveal-clock,project-license-pending,-,targeted-tests-and-typecheck-2026-08-16,pending
 apps/desktop/src/shared/ui/TypewriterText.test.tsx,owned,desktop-typewriter-text-tests,authored-timing-and-motion-tests,project-license-pending,-,targeted-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/shared/ui/WindowControls.tsx,replaced,desktop-window-controls,authored-data-driven-titlebar-controls,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/shared/ui/WindowControls.test.tsx,owned,desktop-window-controls-tests,authored-titlebar-routing-tests,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/shared/lib/windowControls.ts,replaced,desktop-window-command-gateway,authored-tauri-window-action-gateway,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/shared/lib/windowControls.test.ts,owned,desktop-window-command-tests,authored-tauri-action-mapping-tests,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
 apps/desktop/src-tauri/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/desktop/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/mobile/**,unreviewed,mobile,,pending,-,pending,uncommitted
