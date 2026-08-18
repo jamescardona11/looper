@@ -1035,3 +1035,8 @@ apps/mobile/plugins/with-looper-keyboard/package.json,owned,mobile-keyboard-plug
 apps/mobile/plugins/with-looper-keyboard/index.js,owned,mobile-keyboard-plugin,authored-expo-keyboard-plugin,project-license-pending,-,mobile-typecheck-and-vitest-2026-08-17,pending
 apps/mobile/targets/keyboard/package.json,owned,mobile-keyboard-config,authored-keyboard-target-package,project-license-pending,-,mobile-typecheck-and-vitest-2026-08-17,pending
 apps/mobile/targets/widgets/package.json,owned,mobile-widget-config,authored-widget-target-package,project-license-pending,-,mobile-typecheck-and-vitest-2026-08-17,pending
+apps/mobile/src/features/agent/agent-logic.test.ts,owned,mobile-agent-tests,authored-agent-logic-contract-tests,project-license-pending,-,mobile-agent-tests-typecheck-and-vitest-2026-08-17,pending
+apps/mobile/src/features/agent/agent-logic.ts,owned,mobile-agent,authored-agent-state-policy,project-license-pending,-,mobile-agent-tests-typecheck-and-vitest-2026-08-17,pending
+apps/mobile/src/features/agent/agent-screen.tsx,owned,mobile-agent,authored-agent-screen,project-license-pending,-,mobile-agent-tests-typecheck-and-vitest-2026-08-17,pending
+apps/mobile/src/features/agent/index.ts,owned,mobile-agent,authored-agent-exports,project-license-pending,-,mobile-agent-tests-typecheck-and-vitest-2026-08-17,pending
+apps/mobile/src/features/agent/use-mobile-agent.ts,owned,mobile-agent,authored-agent-hook,project-license-pending,-,mobile-agent-tests-typecheck-and-vitest-2026-08-17,pending
