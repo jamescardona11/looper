@@ -120,6 +120,9 @@ apps/desktop/src/shared/types/license.ts,replaced,desktop-edition-state-contract
 apps/desktop/src/shared/lib/licenseEdition.ts,replaced,desktop-edition-metadata,authored-unified-edition-catalog,project-license-pending,-,targeted-tests-and-typecheck-2026-08-16,pending
 apps/desktop/src/shared/lib/purchaseConfig.ts,replaced,desktop-purchase-tier-metadata,authored-tier-catalog,project-license-pending,-,targeted-tests-and-typecheck-2026-08-16,pending
 apps/desktop/src/shared/lib/editionAndPurchase.test.ts,owned,desktop-edition-purchase-tests,authored-state-copy-and-price-tests,project-license-pending,-,targeted-tests-and-typecheck-2026-08-16,pending
+apps/desktop/supported-app-locales.json,owned,desktop-locale-catalog,looper-shipped-locale-list,project-license-pending,-,targeted-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/shared/lib/appLocales.ts,replaced,desktop-app-locales,authored-catalog-validation-and-resolution,project-license-pending,-,targeted-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/shared/lib/appLocales.test.ts,owned,desktop-app-locale-tests,authored-catalog-and-fallback-tests,project-license-pending,-,targeted-tests-and-typecheck-2026-08-16,pending
 apps/desktop/src-tauri/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/desktop/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/mobile/**,unreviewed,mobile,,pending,-,pending,uncommitted
