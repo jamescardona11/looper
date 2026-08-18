@@ -1065,3 +1065,4 @@ apps/mobile/src/features/library/library-logic.test.ts,owned,mobile-library-test
 apps/mobile/src/features/library/library-logic.ts,owned,mobile-library,authored-library-state-policy,project-license-pending,-,mobile-library-tests-typecheck-2026-08-17,pending
 apps/mobile/src/features/library/library-screen.tsx,owned,mobile-library,authored-library-screen,project-license-pending,-,mobile-library-tests-typecheck-2026-08-17,pending
 apps/mobile/src/features/library/local-content-sync.tsx,owned,mobile-library,authored-local-content-sync,project-license-pending,-,mobile-library-tests-typecheck-2026-08-17,pending
+.gitignore,owned,repository-hygiene,authored-ignore-boundaries-for-local-docs-and-audit-artifacts,project-license-pending,-,git-check-ignore-verification-2026-08-17,pending

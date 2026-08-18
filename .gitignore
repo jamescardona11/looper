@@ -1,0 +1,106 @@
+# Looper — generated project gitignore
+
+# Dependencies
+node_modules
+.pnp
+.pnp.js
+.pnpm-store
+
+# Build outputs
+dist
+build
+.turbo
+.next
+.nuxt
+.output
+
+# Local
+.env
+.env.local
+.env.*.local
+
+# Tauri
+# Rust build output, wherever a crate or workspace puts it.
+**/target/
+apps/desktop/src-tauri/gen
+
+# Flutter / Dart generated files
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+.pub/
+.pub-cache/
+**/doc/api/
+**/ios/Pods/
+**/ios/.symlinks/
+**/ios/DerivedData/
+**/ios/Flutter/.last_build_id
+**/ios/Flutter/ephemeral/
+**/android/.gradle/
+**/android/captures/
+**/android/.cxx/
+**/android/local.properties
+
+# Tests
+coverage
+playwright-report
+playwright/.cache
+test-results
+test-results-*/
+.playwright-cli/
+
+# Editor
+.vscode/!(extensions.json)
+.idea
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Agent metadata (subagent evidence/learnings)
+.tcompound/
+**/ai_docs/
+/corpus-inventory.csv
+/corpus-summary.json
+
+# Worktrunk worktree container — per-machine worktrees, never tracked.
+.claude/worktrees/
+
+# AI agent skills
+.agent
+.agents/*
+!.agents/
+!.agents/README.md
+!.agents/skills/
+!.agents/skills/**
+.agents/**/.DS_Store
+.augment
+.claude/skills/
+.claude/settings.local.json
+.cline
+.github/copilot*
+.kilocode
+.qoder
+.qwen
+.roo
+.trae
+.windsurf
+.vercel
+.env*.local
+
+# Agent tooling is local. The Tact design contract is versioned with the product.
+.agents/
+
+# Per-tool agent rules; the project copy lives in .claude/rules/.
+.codex/rules/
