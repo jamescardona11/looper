@@ -4,6 +4,21 @@
 projects that follow. The adaptations are internal to this crate; neither
 upstream crate is linked as a dependency.
 
+## Glimpse-Speech (MIT)
+
+- Project: <https://github.com/glimpse-hq/Glimpse-Speech>
+- Upstream package: `glimpse-speech`; its Cargo metadata declares `MIT`.
+- Reference/adaptation scope: local transcription engine boundaries and
+  speech-pipeline contracts documented in
+  `docs/rebuild/CONTAMINATION_RISK_REGISTER.md`.
+- This repository does not link `glimpse-speech` as a Cargo dependency. The
+  Looper crate is distributed under the root AGPL license, while this notice
+  preserves the upstream MIT attribution for the adapted portions.
+
+The upstream license declaration is available in the repository's
+`Cargo.toml` at <https://raw.githubusercontent.com/glimpse-hq/Glimpse-Speech/main/Cargo.toml>.
+No separate upstream copyright holder is declared in that metadata.
+
 ## Silero VAD (MIT)
 
 - Project: <https://github.com/snakers4/silero-vad>
