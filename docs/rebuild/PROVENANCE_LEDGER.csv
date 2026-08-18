@@ -983,3 +983,8 @@ packages/ts/i18n/src/react.tsx,owned,i18n-react,authored-looper-react-locale-pro
 apps/desktop/src/i18n.ts,replaced,desktop-i18n,authored-locale-controller-facade-and-catalog-policy,project-license-pending,-,i18n-rebuild-contracts-desktop-typecheck-2026-08-17,pending
 apps/desktop/src/i18n-locale-policy.ts,replaced,desktop-i18n,authored-injected-catalog-and-locale-resolution-policy,project-license-pending,-,i18n-rebuild-contracts-desktop-typecheck-2026-08-17,pending
 apps/desktop/src/i18n.rebuild.test.ts,owned,desktop-i18n-tests,authored-locale-controller-contract-tests,project-license-pending,-,i18n-rebuild-contracts-desktop-typecheck-2026-08-17,pending
+packages/ts/config/package.json,owned,shared-config,authored-looper-config-package-manifest,project-license-pending,-,config-typecheck-and-consumer-audit-2026-08-17,pending
+packages/ts/config/src/agent-config.ts,owned,shared-config,authored-agent-model-and-rate-policy,project-license-pending,-,config-typecheck-and-consumer-audit-2026-08-17,pending
+packages/ts/config/src/billing-config.ts,owned,shared-config,authored-billing-tier-and-provider-config,project-license-pending,-,config-typecheck-and-consumer-audit-2026-08-17,pending
+packages/ts/config/src/index.ts,owned,shared-config,authored-config-package-exports,project-license-pending,-,config-typecheck-and-consumer-audit-2026-08-17,pending
+packages/ts/config/src/stt-config.ts,owned,shared-config,authored-stt-model-config,project-license-pending,-,config-typecheck-and-consumer-audit-2026-08-17,pending
