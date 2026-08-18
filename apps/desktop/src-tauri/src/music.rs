@@ -47,18 +47,24 @@ mod lifecycle {
 
     pub(super) type CancelProbe<'a> = &'a dyn Fn() -> bool;
 
+    enum SessionPhase<T> {
+        Idle,
+        Active {
+            id: PauseSession,
+            saved_target: Option<T>,
+        },
+    }
+
     struct SessionLedger<T> {
         sequence: u64,
-        active: Option<PauseSession>,
-        paused: Option<T>,
+        phase: SessionPhase<T>,
     }
 
     impl<T> SessionLedger<T> {
         const fn empty() -> Self {
             Self {
                 sequence: 0,
-                active: None,
-                paused: None,
+                phase: SessionPhase::Idle,
             }
         }
 
@@ -68,48 +74,62 @@ mod lifecycle {
                 self.sequence = 1;
             }
             let session = PauseSession(self.sequence);
-            self.active = Some(session);
+            self.phase = SessionPhase::Active {
+                id: session,
+                saved_target: None,
+            };
             session
         }
 
-        fn pause_completed(&mut self, session: PauseSession, target: Option<T>) -> Option<T> {
-            match self.active {
-                Some(active) if active == session => {
+        fn completed(&mut self, session: PauseSession, target: Option<T>) -> Option<T> {
+            match &mut self.phase {
+                SessionPhase::Active {
+                    id,
+                    saved_target,
+                } if *id == session => {
                     if let Some(target) = target {
-                        self.paused = Some(target);
+                        *saved_target = Some(target);
                     }
                     None
                 }
-                Some(_) => {
-                    if self.paused.is_none() {
-                        self.paused = target;
+                SessionPhase::Active { saved_target, .. } => {
+                    if saved_target.is_none() {
+                        *saved_target = target;
                     }
                     None
                 }
-                None => target,
+                SessionPhase::Idle => target,
             }
         }
 
         fn release(&mut self, session: PauseSession) -> Option<T> {
-            if self.active != Some(session) {
+            let matches = matches!(
+                &self.phase,
+                SessionPhase::Active { id, .. } if *id == session
+            );
+            if !matches {
                 return None;
             }
-            self.active = None;
-            self.paused.take()
+            match std::mem::replace(&mut self.phase, SessionPhase::Idle) {
+                SessionPhase::Active { saved_target, .. } => saved_target,
+                SessionPhase::Idle => None,
+            }
         }
 
         fn park_if_active(&mut self, target: T) -> Result<(), T> {
-            if self.active.is_none() {
-                return Err(target);
+            match &mut self.phase {
+                SessionPhase::Idle => Err(target),
+                SessionPhase::Active { saved_target, .. } => {
+                    if saved_target.is_none() {
+                        *saved_target = Some(target);
+                    }
+                    Ok(())
+                }
             }
-            if self.paused.is_none() {
-                self.paused = Some(target);
-            }
-            Ok(())
         }
 
         fn has_active_session(&self) -> bool {
-            self.active.is_some()
+            matches!(&self.phase, SessionPhase::Active { .. })
         }
     }
 
@@ -150,7 +170,7 @@ mod lifecycle {
         }
 
         fn record_pause_result(&'static self, session: PauseSession, target: Option<T>) {
-            let resume_now = self.ledger.lock().pause_completed(session, target);
+            let resume_now = self.ledger.lock().completed(session, target);
             if let Some(target) = resume_now {
                 self.resume_or_park(target);
             }
@@ -186,7 +206,7 @@ mod lifecycle {
             let mut ledger = SessionLedger::empty();
             let first = ledger.begin();
             let second = ledger.begin();
-            assert_eq!(ledger.pause_completed(first, Some("player")), None);
+            assert_eq!(ledger.completed(first, Some("player")), None);
             assert_eq!(ledger.release(first), None);
             assert_eq!(ledger.release(second), Some("player"));
         }
@@ -197,7 +217,7 @@ mod lifecycle {
             let session = ledger.begin();
             assert_eq!(ledger.release(session), None);
             assert_eq!(
-                ledger.pause_completed(session, Some("player")),
+                ledger.completed(session, Some("player")),
                 Some("player")
             );
         }
@@ -207,8 +227,8 @@ mod lifecycle {
             let mut ledger = SessionLedger::empty();
             let first = ledger.begin();
             let second = ledger.begin();
-            assert_eq!(ledger.pause_completed(first, Some("first")), None);
-            assert_eq!(ledger.pause_completed(second, Some("second")), None);
+            assert_eq!(ledger.completed(first, Some("first")), None);
+            assert_eq!(ledger.completed(second, Some("second")), None);
             assert_eq!(ledger.release(second), Some("second"));
         }
 
@@ -236,140 +256,112 @@ mod imp {
     const MEDIA_REMOTE_PROGRAM: &str = r#"
 ObjC.import("Foundation");
 
-function safeText(candidate) {
-    if (candidate === null || candidate === undefined) return "";
+var COMMANDS = { pause: 1, resume: 0 };
+
+function textValue(value) {
+    if (value === null || value === undefined) return "";
     try {
-        const value = ObjC.unwrap(candidate);
-        return value === null || value === undefined ? "" : String(value);
-    } catch (_) {
-        return "";
-    }
+        var unwrapped = ObjC.unwrap(value);
+        return unwrapped === null || unwrapped === undefined ? "" : String(unwrapped);
+    } catch (_) { return ""; }
 }
 
-function numericRate(metadata) {
-    if (!metadata) return 0;
-    const property = metadata.valueForKey("kMRMediaRemoteNowPlayingInfoPlaybackRate");
-    if (!property) return 0;
+function loadFramework() {
+    var framework = $.NSBundle.bundleWithPath(
+        "/System/Library/PrivateFrameworks/MediaRemote.framework/"
+    );
+    if (!framework) return false;
     try {
-        const rate = Number(ObjC.unwrap(property));
-        return Number.isFinite(rate) ? rate : 0;
-    } catch (_) {
-        return 0;
-    }
-}
-
-function prepareRemoteControl() {
-    const bundle = $.NSBundle.bundleWithPath("/System/Library/PrivateFrameworks/MediaRemote.framework/");
-    if (!bundle) return false;
-    const loading = bundle.load;
-    if (typeof loading === "function") {
-        if (!loading.call(bundle)) return false;
-    } else if (!loading) {
-        return false;
-    }
+        if (typeof framework.load === "function" && !framework.load()) return false;
+    } catch (_) { return false; }
     ObjC.bindFunction("MRMediaRemoteSendCommand", ["bool", ["int", "id"]]);
     return true;
 }
 
-function currentPlayer() {
+function readPlayer() {
     try {
-        const request = $.NSClassFromString("MRNowPlayingRequest");
-        if (!request) return null;
-        const player = request.localNowPlayingPlayerPath;
-        if (!player || !player.client) return null;
-        const item = request.localNowPlayingItem;
-        const metadata = item ? item.nowPlayingInfo : null;
+        var request = $.NSClassFromString("MRNowPlayingRequest");
+        var path = request && request.localNowPlayingPlayerPath;
+        if (!path || !path.client) return null;
+        var item = request.localNowPlayingItem;
+        var info = item && item.nowPlayingInfo;
+        var rate = 0;
+        if (info) {
+            var rawRate = info.valueForKey("kMRMediaRemoteNowPlayingInfoPlaybackRate");
+            if (rawRate) {
+                var candidate = Number(ObjC.unwrap(rawRate));
+                rate = isFinite(candidate) ? candidate : 0;
+            }
+        }
         return {
-            bundleId: safeText(player.client.bundleIdentifier),
-            displayName: safeText(player.client.displayName),
-            rate: numericRate(metadata)
+            bundleId: textValue(path.client.bundleIdentifier),
+            displayName: textValue(path.client.displayName),
+            rate: rate
         };
-    } catch (_) {
-        return null;
-    }
+    } catch (_) { return null; }
 }
 
-function identifies(expectedBundle, expectedName, actual) {
-    if (expectedBundle && actual.bundleId) return expectedBundle === actual.bundleId;
-    return Boolean(expectedName && actual.displayName && expectedName === actual.displayName);
-}
-
-function requestPause(kind) {
-    const player = currentPlayer();
-    if (!player || (!player.bundleId && !player.displayName) || player.rate <= 0) return "";
-    if (kind === "playing") return "playing";
-    if (!$.MRMediaRemoteSendCommand(1, $.NSDictionary.alloc.init)) return "";
-    return JSON.stringify({ bundleId: player.bundleId, displayName: player.displayName });
-}
-
-function requestResume(args) {
-    const expectedBundle = args.length > 1 ? String(args[1]) : "";
-    const expectedName = args.length > 2 ? String(args[2]) : "";
-    const player = currentPlayer();
-    if (!player || !identifies(expectedBundle, expectedName, player)) return "skip";
-    $.MRMediaRemoteSendCommand(0, $.NSDictionary.alloc.init);
-    return "played";
+function samePlayer(player, expectedBundle, expectedName) {
+    return expectedBundle && player.bundleId
+        ? expectedBundle === player.bundleId
+        : Boolean(expectedName && player.displayName && expectedName === player.displayName);
 }
 
 function run(args) {
-    const operation = args.length ? String(args[0]) : "";
+    var operation = args && args.length ? String(args[0]) : "";
     if (operation !== "pause" && operation !== "playing" && operation !== "resume") return "";
     try {
-        if (!prepareRemoteControl()) return "";
-        return operation === "resume" ? requestResume(args) : requestPause(operation);
-    } catch (_) {
-        return "";
-    }
+        if (!loadFramework()) return "";
+        var player = readPlayer();
+        if (!player || (!player.bundleId && !player.displayName)) return "";
+        if (operation === "playing") return player.rate > 0 ? "playing" : "";
+        if (operation === "pause") {
+            if (player.rate <= 0 || !$.MRMediaRemoteSendCommand(COMMANDS.pause, $.NSDictionary.alloc.init)) return "";
+            return JSON.stringify({ bundleId: player.bundleId, displayName: player.displayName });
+        }
+        var expectedBundle = args.length > 1 ? String(args[1]) : "";
+        var expectedName = args.length > 2 ? String(args[2]) : "";
+        if (!samePlayer(player, expectedBundle, expectedName)) return "skip";
+        $.MRMediaRemoteSendCommand(COMMANDS.resume, $.NSDictionary.alloc.init);
+        return "played";
+    } catch (_) { return ""; }
 }
 "#;
 
     const SYSTEM_VOLUME_PROGRAM: &str = r#"
-function bounded(value) {
+function validVolume(value) {
     if (!isFinite(value) || value < 0) return 0;
-    return value > 100 ? 100 : value;
+    return Math.min(100, value);
 }
 
-function outputVolume(system) {
+function currentVolume(system) {
     try {
-        const value = Number(system.getVolumeSettings().outputVolume);
+        var value = Number(system.getVolumeSettings().outputVolume);
         return isFinite(value) ? value : -1;
-    } catch (_) {
-        return -1;
-    }
+    } catch (_) { return -1; }
 }
 
-function changeVolume(system, value) {
+function writeVolume(system, value) {
     try {
-        system.setVolume(null, { outputVolume: Math.round(bounded(value)) });
+        system.setVolume(null, { outputVolume: Math.round(validVolume(value)) });
         return true;
-    } catch (_) {
-        return false;
-    }
-}
-
-function lowerVolume(system, rawPercent) {
-    const percent = Number(rawPercent);
-    if (!isFinite(percent) || percent <= 0) return "";
-    const original = outputVolume(system);
-    if (original < 0) return "";
-    const requested = bounded(Math.round(percent));
-    if (requested >= original || !changeVolume(system, requested)) return "";
-    return JSON.stringify({ original: Math.round(original) });
-}
-
-function restoreVolume(system, rawOriginal) {
-    const original = Number(rawOriginal);
-    if (!isFinite(original) || original < 0) return "skip";
-    return changeVolume(system, original) ? "restored" : "";
+    } catch (_) { return false; }
 }
 
 function run(args) {
-    const system = Application.currentApplication();
+    var system = Application.currentApplication();
     system.includeStandardAdditions = true;
-    const operation = args.length ? String(args[0]) : "";
-    if (operation === "duck") return lowerVolume(system, args.length > 1 ? args[1] : 0);
-    if (operation === "restore") return restoreVolume(system, args.length > 1 ? args[1] : -1);
-    return "";
+    var operation = args && args.length ? String(args[0]) : "";
+    var argument = args && args.length > 1 ? Number(args[1]) : -1;
+    if (operation === "restore") {
+        if (!isFinite(argument) || argument < 0) return "skip";
+        return writeVolume(system, argument) ? "restored" : "";
+    }
+    if (operation !== "duck" || !isFinite(argument) || argument <= 0) return "";
+    var original = currentVolume(system);
+    var requested = validVolume(Math.round(argument));
+    if (original < 0 || requested >= original || !writeVolume(system, requested)) return "";
+    return JSON.stringify({ original: Math.round(original) });
 }
 "#;
 

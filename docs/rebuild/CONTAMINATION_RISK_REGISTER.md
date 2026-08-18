@@ -22,7 +22,7 @@ la revisión de los casos históricos de alto riesgo.
 | --- | ---: | ---: | --- |
 | `apps/desktop/src-tauri/src/core/keyboard/macos.rs` | 97.6% | 15.2% | Revisión sustantiva aplicada: la frontera nativa ahora traduce eventos a una sesión propia, el estado usa familias de modificadores y el catálogo está agrupado por función; falta validación en una ventana macOS real. |
 | `apps/desktop/src-tauri/src/core/keyboard/catalog.rs` | 100% | 4.6% | La tabla de teclas y alias conserva restricciones externas; verificar qué datos son inevitables y qué decisiones son propias. |
-| `apps/desktop/src-tauri/src/music.rs` | 95.7% | 16.4% | Los scripts JXA/MediaRemote y las transiciones pause/duck siguen siendo el área más sensible. |
+| `apps/desktop/src-tauri/src/music.rs` | 95.7% | 15.6% | La coordinación usa una máquina de fases propia y los programas JXA separan dispatch, identidad y volumen; falta observar pause/duck en reproductores reales. |
 | `apps/desktop/src-tauri/src/platform/macos/audio_devices.rs` | 98.5% | 21.0% | Listener CoreAudio, mailbox y orden de suscripciones deben justificarse por contrato de plataforma. |
 | `apps/desktop/src-tauri/src/core/keyboard/mod.rs` | 96.3% | 24.1% | Parsing de modificadores, mensajes de error y liberación de hotkeys aún requieren revisión manual. |
 | `apps/desktop/src/features/settings/components/SpeechModelPanel.tsx` | 98.6% | 24.8% | Copy/IDs Lingui y transiciones de proveedor deben conservar función sin reclamar autoría independiente automática. |
@@ -75,3 +75,13 @@ traducción de sesión y la recuperación de un tap deshabilitado. Verificación
 14 pruebas de teclado, `cargo check --all-targets`, suite Rust completa,
 `qa:desktop-native`, `pnpm verify` y auditoría de corpus; la última evidencia
 no prueba interacción nativa con una ventana macOS ni permisos del sistema.
+
+En la misma fecha se revisó `music.rs` contra el contrato de `PillController`:
+sesiones no nulas, pause/duck, carreras de sesiones superpuestas, reanudación
+solo del reproductor pausado por Looper, cancelación y restauración de volumen.
+La implementación actual usa `SessionPhase` para distinguir estado inactivo y
+activo, conserva el token público y reescribe los dispatchers JXA con rutas de
+comando explícitas. La sintaxis de ambos programas JXA se validó con
+`osascript`; los contratos Rust de lifecycle/wire pasaron y no se eliminaron
+tests para reducir la señal. No se ejecutó Spotify/Apple Music ni se cambió el
+volumen real del host.
