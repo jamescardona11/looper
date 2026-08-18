@@ -261,6 +261,14 @@ apps/desktop/src/features/license/queries.test.tsx,owned,desktop-entitlement-que
 apps/desktop/src/features/settings/components/tabs/AccountTab.tsx,replaced,desktop-account-settings-tab,authored-query-checkout-and-view-composition,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
 apps/desktop/src/features/settings/useAccountCheckout.ts,replaced,desktop-account-checkout-controller,authored-tier-resolution-external-open-and-error-state,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
 apps/desktop/src/features/settings/useAccountCheckout.test.tsx,owned,desktop-account-checkout-tests,authored-configured-open-and-missing-target-tests,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/features/settings/components/tabs/AboutTab.tsx,replaced,desktop-about-settings-tab,authored-overview-storage-setup-and-cli-composition,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/features/settings/components/tabs/AboutOverview.tsx,replaced,desktop-about-overview,authored-version-mode-update-and-log-layout,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/features/settings/components/tabs/AboutStorage.tsx,replaced,desktop-about-storage,authored-storage-metrics-path-and-export-layout,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/features/settings/components/tabs/AboutSetup.tsx,replaced,desktop-about-setup-actions,authored-onboarding-and-help-action-layout,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/features/settings/components/tabs/AboutCli.tsx,replaced,desktop-about-cli-control,authored-cli-ownership-state-copy-and-actions,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/features/settings/components/tabs/about-tab-model.ts,replaced,desktop-about-state-model,authored-storage-and-cli-state-derivation,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/features/settings/components/tabs/about-tab-model.test.ts,owned,desktop-about-state-tests,authored-cli-boundary-and-storage-total-tests,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/features/settings/components/tabs/AboutTab.test.tsx,owned,desktop-about-settings-tests,authored-support-storage-export-help-and-cli-action-tests,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
 apps/desktop/src-tauri/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/desktop/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/mobile/**,unreviewed,mobile,,pending,-,pending,uncommitted
