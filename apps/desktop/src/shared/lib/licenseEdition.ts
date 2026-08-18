@@ -12,44 +12,36 @@ type EditionDefinition = EditionInfo & {
   color: { fg: string; bg: string };
 };
 
-const EDITIONS: Record<LicenseEdition, EditionDefinition> = {
-  personal: {
-    id: "personal",
-    label: "Personal",
-    blurb: "For you. Up to 5 devices.",
-    color: {
-      fg: "var(--color-edition-personal)",
-      bg: "var(--surface-edition-personal)",
-    },
+type EditionRow = readonly [id: LicenseEdition, label: string, blurb: string];
+
+const EDITION_ROWS = [
+  ["personal", "Personal", "For you. Up to 5 devices."],
+  ["commercial", "Commercial", "For work. One person per seat, billed yearly."],
+  ["founder", "Founder", "Launch founder. Up to 5 devices."],
+  [
+    "contributor",
+    "Contributor",
+    "Thank you for contributing. Up to 5 devices.",
+  ],
+] as const satisfies readonly EditionRow[];
+
+const editionDefinition = ([
+  id,
+  label,
+  blurb,
+]: EditionRow): EditionDefinition => ({
+  id,
+  label,
+  blurb,
+  color: {
+    fg: `var(--color-edition-${id})`,
+    bg: `var(--surface-edition-${id})`,
   },
-  commercial: {
-    id: "commercial",
-    label: "Commercial",
-    blurb: "For work. One person per seat, billed yearly.",
-    color: {
-      fg: "var(--color-edition-commercial)",
-      bg: "var(--surface-edition-commercial)",
-    },
-  },
-  founder: {
-    id: "founder",
-    label: "Founder",
-    blurb: "Launch founder. Up to 5 devices.",
-    color: {
-      fg: "var(--color-edition-founder)",
-      bg: "var(--surface-edition-founder)",
-    },
-  },
-  contributor: {
-    id: "contributor",
-    label: "Contributor",
-    blurb: "Thank you for contributing. Up to 5 devices.",
-    color: {
-      fg: "var(--color-edition-contributor)",
-      bg: "var(--surface-edition-contributor)",
-    },
-  },
-};
+});
+
+const EDITIONS = Object.fromEntries(
+  EDITION_ROWS.map((row) => [row[0], editionDefinition(row)]),
+) as Record<LicenseEdition, EditionDefinition>;
 
 export const EDITION_COLORS = Object.fromEntries(
   Object.entries(EDITIONS).map(([id, definition]) => [id, definition.color]),
