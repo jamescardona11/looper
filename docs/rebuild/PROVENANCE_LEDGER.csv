@@ -57,6 +57,8 @@ apps/desktop/vitest.config.ts,replaced,desktop-test-config,authored-desktop-test
 apps/desktop/tailwind.config.js,replaced,desktop-design-tokens,authored-token-scale-configuration,project-license-pending,-,desktop-build-2026-08-16,pending
 apps/desktop/index.html,replaced,desktop-entry-document,authored-looper-entry-document,project-license-pending,-,desktop-build-2026-08-16,pending
 apps/desktop/src/types/app.ts,replaced,desktop-app-info-contract,reconstructed-from-native-app-info,project-license-pending,-,desktop-typecheck-2026-08-16,pending
+apps/desktop/src/types/toast.ts,replaced,desktop-toast-contract,reconstructed-from-native-toast-payload,project-license-pending,-,targeted-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/types/transcription.ts,replaced,desktop-transcription-contract,reconstructed-from-native-transcription-record,project-license-pending,-,targeted-tests-and-typecheck-2026-08-16,pending
 apps/desktop/src-tauri/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/desktop/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/mobile/**,unreviewed,mobile,,pending,-,pending,uncommitted
