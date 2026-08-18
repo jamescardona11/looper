@@ -24,6 +24,9 @@ apps/desktop/src/shared/lib/modelStats.ts,replaced,model-statistics,authored-mod
 apps/desktop/src/shared/lib/modelStats.test.ts,owned,model-statistics-tests,authored-model-statistics-tests,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
 apps/desktop/src/shared/lib/shortcuts.ts,replaced,shortcut-display,authored-shortcut-token-display,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
 apps/desktop/src/shared/lib/shortcuts.test.ts,owned,shortcut-display-tests,authored-shortcut-display-tests,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/shared/lib/platform.ts,replaced,platform-contracts,authored-platform-capabilities-contract,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/platform/service.ts,replaced,platform-detection,authored-platform-detection-and-capabilities,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/platform/service.test.ts,owned,platform-detection-tests,authored-platform-detection-tests,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
 apps/desktop/src-tauri/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/desktop/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/mobile/**,unreviewed,mobile,,pending,-,pending,uncommitted
