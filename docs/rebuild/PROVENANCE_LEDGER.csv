@@ -906,6 +906,7 @@ apps/desktop/src-tauri/src/storage/transcriptions.rs,replaced,desktop-storage-tr
 apps/desktop/src-tauri/src/storage/library_api.rs,replaced,desktop-storage-library-api,authored-library-storage-api-delegation,project-license-pending,-,corpus-containment-17.6-storage-13-tests-774-rust-tests-cargo-all-targets-rustfmt-2026-08-17,pending
 apps/desktop/src-tauri/src/storage/meeting_tests.rs,owned,desktop-storage-meeting-tests,authored-meeting-storage-contract-tests,project-license-pending,-,corpus-containment-7.3-storage-13-tests-774-rust-tests-cargo-all-targets-rustfmt-2026-08-17,pending
 apps/desktop/src-tauri/src/pill.rs,replaced,desktop-native-pill,authored-spectrum-analysis-and-hotkey-registration-policy,project-license-pending,-,corpus-containment-29.5-pill-20-tests-781-rust-tests-cargo-all-targets-rustfmt-2026-08-17,pending
+apps/desktop/src-tauri/src/transcribe.rs,replaced,desktop-native-transcribe,authored-transcription-plan-refinement-retry-completion-and-failure-policy,project-license-pending,-,corpus-containment-29.0-transcribe-14-tests-788-rust-tests-cargo-all-targets-rustfmt-2026-08-17,pending
 apps/desktop/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/mobile/**,unreviewed,mobile,,pending,-,pending,uncommitted
 apps/web/**,unreviewed,web,,pending,-,pending,uncommitted
