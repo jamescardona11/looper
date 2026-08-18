@@ -5,17 +5,121 @@ import {
 } from "../../data/shortcuts";
 import { formatShortcutForDisplay } from "../lib/shortcuts";
 
-type UseShortcutCaptureOptions = {
-  active: boolean;
+type RequiredCaptureCallbacks = {
   onCancel: () => void | Promise<void>;
   onPreviewChange: (preview: string) => void;
   onShortcutCaptured: (shortcut: string) => void;
-  onCaptureCancelled?: () => void;
-  onError?: (message: string) => void;
-  onCaptureInput?: () => void;
 };
+type OptionalCaptureCallback = "onCaptureCancelled" | "onCaptureInput";
+type UseShortcutCaptureOptions = RequiredCaptureCallbacks &
+  Partial<Record<OptionalCaptureCallback, () => void>> & {
+    active: boolean;
+    onError?: (message: string) => void;
+  };
+
+type CaptureOutcome =
+  { kind: "captured"; shortcut: string } | { kind: "cancelled" };
 
 const STATIC_SNAPSHOT = () => 0;
+
+function createCaptureSession(
+  readOptions: () => UseShortcutCaptureOptions,
+  resetPreview: () => void,
+) {
+  let disposed = false;
+  let detachNative: (() => void) | null = null;
+
+  const detach = () => {
+    detachNative?.();
+    detachNative = null;
+  };
+  const stopNative = async () => {
+    try {
+      await readOptions().onCancel();
+    } catch (error) {
+      readOptions().onError?.(String(error));
+    }
+  };
+  const settle = async (outcome: CaptureOutcome) => {
+    if (disposed) return;
+    disposed = true;
+    detach();
+    await stopNative();
+    if (outcome.kind === "captured") {
+      readOptions().onShortcutCaptured(outcome.shortcut);
+    } else {
+      readOptions().onCaptureCancelled?.();
+    }
+    resetPreview();
+  };
+  const receive = (payload: ShortcutCapturePayload) => {
+    if (disposed) return;
+    const options = readOptions();
+    if (payload.kind === "preview") {
+      options.onCaptureInput?.();
+      options.onPreviewChange(formatShortcutForDisplay(payload.shortcut));
+    } else if (payload.kind === "captured") {
+      options.onCaptureInput?.();
+      void settle({ kind: "captured", shortcut: payload.shortcut });
+    } else {
+      options.onError?.(payload.message);
+      void settle({ kind: "cancelled" });
+    }
+  };
+  const reportSubscriptionFailure = (error: unknown) => {
+    if (disposed) return;
+    readOptions().onError?.(String(error));
+    void settle({ kind: "cancelled" });
+  };
+
+  return {
+    receive,
+    cancel: () => settle({ kind: "cancelled" }),
+    attach(cleanup: () => void) {
+      if (disposed) cleanup();
+      else detachNative = cleanup;
+    },
+    reportSubscriptionFailure,
+    dispose() {
+      disposed = true;
+      detach();
+    },
+  };
+}
+
+function blockCaptureInput(cancel: () => void) {
+  const keyboard = (event: KeyboardEvent) => {
+    event.preventDefault();
+    event.stopPropagation();
+    const modified =
+      event.metaKey || event.ctrlKey || event.altKey || event.shiftKey;
+    if (event.type === "keydown" && event.key === "Escape" && !modified) {
+      cancel();
+    }
+  };
+  const auxiliaryMouse = (event: MouseEvent) => {
+    if (event.button === 0) return;
+    event.preventDefault();
+    event.stopPropagation();
+  };
+  const keyboardEvents = ["keydown", "keyup"] as const;
+  const mouseEvents = ["mousedown", "mouseup", "auxclick"] as const;
+  keyboardEvents.forEach((name) =>
+    window.addEventListener(name, keyboard, true),
+  );
+  mouseEvents.forEach((name) =>
+    window.addEventListener(name, auxiliaryMouse, true),
+  );
+
+  return () => {
+    keyboardEvents.forEach((name) =>
+      window.removeEventListener(name, keyboard, true),
+    );
+    mouseEvents.forEach((name) =>
+      window.removeEventListener(name, auxiliaryMouse, true),
+    );
+  };
+}
 
 export function useShortcutCapture(options: UseShortcutCaptureOptions) {
   const optionsRef = useRef(options);
@@ -27,91 +131,18 @@ export function useShortcutCapture(options: UseShortcutCaptureOptions) {
 
   const subscribe = useCallback(() => {
     if (!options.active) return () => undefined;
-
-    let disposed = false;
-    let unlisten: (() => void) | null = null;
-    const current = () => optionsRef.current;
-    const stopNativeCapture = async () => {
-      try {
-        await current().onCancel();
-      } catch (error) {
-        current().onError?.(String(error));
-      }
-    };
-    const finish = async (shortcut: string) => {
-      if (disposed) return;
-      disposed = true;
-      unlisten?.();
-      unlisten = null;
-      await stopNativeCapture();
-      current().onShortcutCaptured(shortcut);
-      resetCaptureState();
-    };
-    const cancel = async () => {
-      if (disposed) return;
-      disposed = true;
-      unlisten?.();
-      unlisten = null;
-      await stopNativeCapture();
-      current().onCaptureCancelled?.();
-      resetCaptureState();
-    };
-    const handlePayload = (payload: ShortcutCapturePayload) => {
-      if (disposed) return;
-      if (payload.kind === "preview") {
-        current().onCaptureInput?.();
-        current().onPreviewChange(formatShortcutForDisplay(payload.shortcut));
-        return;
-      }
-      if (payload.kind === "captured") {
-        current().onCaptureInput?.();
-        void finish(payload.shortcut);
-        return;
-      }
-      current().onError?.(payload.message);
-      void cancel();
-    };
-
-    void subscribeShortcutCapture(handlePayload)
-      .then((cleanup) => {
-        if (disposed) cleanup();
-        else unlisten = cleanup;
-      })
-      .catch((error: unknown) => {
-        if (disposed) return;
-        current().onError?.(String(error));
-        void cancel();
-      });
-
-    const blockKeyboard = (event: KeyboardEvent) => {
-      event.preventDefault();
-      event.stopPropagation();
-      const modified =
-        event.metaKey || event.ctrlKey || event.altKey || event.shiftKey;
-      if (event.type === "keydown" && event.key === "Escape" && !modified) {
-        void cancel();
-      }
-    };
-    const blockAuxiliaryMouse = (event: MouseEvent) => {
-      if (event.button === 0) return;
-      event.preventDefault();
-      event.stopPropagation();
-    };
-
-    window.addEventListener("keydown", blockKeyboard, true);
-    window.addEventListener("keyup", blockKeyboard, true);
-    window.addEventListener("mousedown", blockAuxiliaryMouse, true);
-    window.addEventListener("mouseup", blockAuxiliaryMouse, true);
-    window.addEventListener("auxclick", blockAuxiliaryMouse, true);
+    const session = createCaptureSession(
+      () => optionsRef.current,
+      resetCaptureState,
+    );
+    void subscribeShortcutCapture(session.receive)
+      .then(session.attach)
+      .catch(session.reportSubscriptionFailure);
+    const unblockInput = blockCaptureInput(() => void session.cancel());
 
     return () => {
-      disposed = true;
-      unlisten?.();
-      window.removeEventListener("keydown", blockKeyboard, true);
-      window.removeEventListener("keyup", blockKeyboard, true);
-      window.removeEventListener("mousedown", blockAuxiliaryMouse, true);
-      window.removeEventListener("mouseup", blockAuxiliaryMouse, true);
-      window.removeEventListener("auxclick", blockAuxiliaryMouse, true);
+      session.dispose();
+      unblockInput();
     };
   }, [options.active, resetCaptureState]);
 

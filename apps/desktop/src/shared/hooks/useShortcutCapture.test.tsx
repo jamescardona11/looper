@@ -87,4 +87,28 @@ describe("useShortcutCapture", () => {
     expect(onCancel).toHaveBeenCalledOnce();
     expect(onCaptureCancelled).toHaveBeenCalledOnce();
   });
+
+  test("reports native errors, cancels, resets, and detaches once", async () => {
+    const callbacks = {
+      onCancel: vi.fn(() => Promise.resolve()),
+      onPreviewChange: vi.fn(),
+      onShortcutCaptured: vi.fn(),
+      onCaptureCancelled: vi.fn(),
+      onError: vi.fn(),
+    };
+    renderHook(() => useShortcutCapture({ active: true, ...callbacks }));
+    await act(async () => Promise.resolve());
+
+    await act(async () => {
+      nativeCapture.handler?.({ kind: "error", message: "Native stopped" });
+      await Promise.resolve();
+    });
+
+    expect(callbacks.onError).toHaveBeenCalledWith("Native stopped");
+    expect(callbacks.onCancel).toHaveBeenCalledOnce();
+    expect(callbacks.onCaptureCancelled).toHaveBeenCalledOnce();
+    expect(callbacks.onShortcutCaptured).not.toHaveBeenCalled();
+    expect(callbacks.onPreviewChange).toHaveBeenLastCalledWith("");
+    expect(nativeCapture.unlisten).toHaveBeenCalledOnce();
+  });
 });

@@ -37,6 +37,7 @@ describe("shared interaction hooks", () => {
   afterEach(() => {
     vi.useRealTimers();
     vi.unstubAllGlobals();
+    vi.restoreAllMocks();
   });
 
   test("publishes a changed value after the debounce period", () => {
@@ -97,6 +98,36 @@ describe("shared interaction hooks", () => {
 
     act(() => vi.advanceTimersByTime(200));
     expect(result.current.copied).toBe(false);
+  });
+
+  test("reports clipboard failures and lets callers cancel confirmation", async () => {
+    vi.useFakeTimers();
+    const writeText = vi
+      .fn()
+      .mockResolvedValueOnce(undefined)
+      .mockRejectedValueOnce(new Error("denied"));
+    Object.defineProperty(navigator, "clipboard", {
+      configurable: true,
+      value: { writeText },
+    });
+    const consoleError = vi
+      .spyOn(console, "error")
+      .mockImplementation(() => undefined);
+    const { result } = renderHook(() => useCopyToClipboard(200));
+
+    await act(async () => void (await result.current.copy("first")));
+    act(() => result.current.reset());
+    expect(result.current.copied).toBe(false);
+    expect(vi.getTimerCount()).toBe(0);
+
+    await act(async () => {
+      await expect(result.current.copy("second")).resolves.toBe(false);
+    });
+    expect(result.current.copied).toBe(false);
+    expect(consoleError).toHaveBeenCalledWith(
+      "Failed to copy:",
+      expect.any(Error),
+    );
   });
 
   test("tracks Shift globally and resets it when focus changes", async () => {

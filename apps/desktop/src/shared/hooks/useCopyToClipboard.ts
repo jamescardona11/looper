@@ -2,7 +2,7 @@ import { useCallback, useRef, useState } from "react";
 import { useMountEffect } from "./useMountEffect";
 
 export function useCopyToClipboard(resetMs = 2_000) {
-  const [copied, setCopied] = useState(false);
+  const [status, setStatus] = useState<"idle" | "confirmed">("idle");
   const resetTimer = useRef<number | null>(null);
 
   const cancelScheduledReset = useCallback(() => {
@@ -13,7 +13,7 @@ export function useCopyToClipboard(resetMs = 2_000) {
 
   const reset = useCallback(() => {
     cancelScheduledReset();
-    setCopied(false);
+    setStatus("idle");
   }, [cancelScheduledReset]);
 
   const copy = useCallback(
@@ -21,15 +21,15 @@ export function useCopyToClipboard(resetMs = 2_000) {
       try {
         await navigator.clipboard.writeText(text);
         cancelScheduledReset();
-        setCopied(true);
+        setStatus("confirmed");
         resetTimer.current = window.setTimeout(() => {
           resetTimer.current = null;
-          setCopied(false);
+          setStatus("idle");
         }, resetMs);
         return true;
       } catch (error) {
         console.error("Failed to copy:", error);
-        setCopied(false);
+        setStatus("idle");
         return false;
       }
     },
@@ -38,5 +38,5 @@ export function useCopyToClipboard(resetMs = 2_000) {
 
   useMountEffect(() => cancelScheduledReset);
 
-  return { copied, copy, reset };
+  return { copied: status === "confirmed", copy, reset };
 }
