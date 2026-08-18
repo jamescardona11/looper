@@ -278,6 +278,8 @@ apps/desktop/src/features/settings/components/tabs/models-tab-model.test.ts,owne
 apps/desktop/src/features/settings/components/tabs/InstalledModelRow.tsx,replaced,desktop-installed-model-row,authored-capability-facts-active-action-and-delete-presentation,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
 apps/desktop/src/features/settings/components/tabs/ModelBrowser.tsx,replaced,desktop-model-browser,authored-model-picker-navigation-and-action-adapter,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
 apps/desktop/src/features/settings/components/tabs/ModelsOverview.tsx,replaced,desktop-models-overview,authored-cloud-local-summary-installed-list-and-settings-routing,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/features/settings/components/tabs/AppPermissionStatus.tsx,replaced,desktop-app-permission-status,authored-normalized-status-announcement-and-single-indicator-layout,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/features/settings/components/tabs/AppPermissionStatus.test.tsx,owned,desktop-app-permission-status-tests,authored-normalization-and-accessible-status-tests,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
 apps/desktop/src-tauri/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/desktop/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/mobile/**,unreviewed,mobile,,pending,-,pending,uncommitted
