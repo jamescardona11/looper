@@ -89,6 +89,10 @@ apps/desktop/src/shared/ui/WindowControls.tsx,replaced,desktop-window-controls,a
 apps/desktop/src/shared/ui/WindowControls.test.tsx,owned,desktop-window-controls-tests,authored-titlebar-routing-tests,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
 apps/desktop/src/shared/lib/windowControls.ts,replaced,desktop-window-command-gateway,authored-tauri-window-action-gateway,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
 apps/desktop/src/shared/lib/windowControls.test.ts,owned,desktop-window-command-tests,authored-tauri-action-mapping-tests,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/shared/ui/AnimatedCount.tsx,owned,desktop-animated-count,manual-review-low-similarity,project-license-pending,-,targeted-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/shared/ui/AnimatedCount.test.tsx,owned,desktop-animated-count-tests,manual-review-low-similarity,project-license-pending,-,targeted-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/shared/ui/LooperLogo.tsx,owned,desktop-product-mark,looper-product-design,project-license-pending,-,targeted-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/shared/ui/LooperLogo.test.tsx,owned,desktop-product-mark-tests,authored-logo-contract-tests,project-license-pending,-,targeted-tests-and-typecheck-2026-08-16,pending
 apps/desktop/src-tauri/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/desktop/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/mobile/**,unreviewed,mobile,,pending,-,pending,uncommitted
