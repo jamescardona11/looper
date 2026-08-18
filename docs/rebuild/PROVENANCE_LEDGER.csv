@@ -321,6 +321,8 @@ apps/desktop/src/features/settings/settings-shortcut-model.ts,replaced,desktop-s
 apps/desktop/src/features/settings/settings-shortcut-model.test.ts,owned,desktop-settings-shortcut-model-tests,authored-default-restoration-cleanup-recovery-and-indexing-tests,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
 apps/desktop/src/features/settings/useModelDiscoverySession.ts,replaced,desktop-provider-model-discovery-session,authored-request-sequencing-stale-response-rejection-and-reset-controller,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
 apps/desktop/src/features/settings/useModelDiscoverySession.test.tsx,owned,desktop-provider-model-discovery-session-tests,authored-refresh-stale-response-failure-and-reset-tests,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/features/settings/useSettingsPermissions.ts,replaced,desktop-settings-permissions,authored-query-backed-permission-snapshot-request-mutation-and-native-focus-adapter,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/features/settings/useSettingsPermissions.test.tsx,owned,desktop-settings-permission-tests,authored-inactive-query-permission-snapshot-release-and-denied-request-tests,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
 apps/desktop/src-tauri/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/desktop/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/mobile/**,unreviewed,mobile,,pending,-,pending,uncommitted
