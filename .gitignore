@@ -73,6 +73,7 @@ pnpm-debug.log*
 **/ai_docs/
 /corpus-inventory.csv
 /corpus-summary.json
+/docs/
 
 # Product artwork/assets stay local and are never part of reconstruction commits.
 apps/desktop/assets/
