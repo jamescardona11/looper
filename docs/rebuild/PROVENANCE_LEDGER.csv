@@ -928,6 +928,11 @@ apps/mobile/targets/keyboard/Utils/RetryUtils.swift,replaced,mobile-keyboard-ret
 apps/mobile/targets/keyboard/Repos/CounterRepo.swift,replaced,mobile-keyboard-counter,authored-typed-counter-storage-and-policy,project-license-pending,-,mobile-corpus-containment-25.9-swift-contracts-mobile-typecheck-tests-2026-08-17,pending
 apps/mobile/targets/keyboard/Repos/TranscriptionRepo.swift,replaced,mobile-keyboard-transcription-history,authored-history-services-record-factory-and-retention-policy,project-license-pending,-,mobile-corpus-containment-14.5-swift-contracts-mobile-typecheck-tests-2026-08-17,pending
 apps/mobile/tests/native/KeyboardReposContractTests.swift,owned,mobile-keyboard-repos-contract-tests,authored-retry-counter-and-history-contract-coverage,project-license-pending,-,mobile-corpus-containment-swift-contracts-mobile-typecheck-tests-2026-08-17,pending
+apps/mobile/targets/_shared/DarwinNotificationManager.swift,replaced,mobile-darwin-notifications,authored-darwin-notification-bridge-and-callback-registry,project-license-pending,-,mobile-corpus-containment-23.7-swift-contracts-mobile-typecheck-2026-08-17,pending
+apps/mobile/targets/_shared/DictationConstants.swift,replaced,mobile-dictation-constants,authored-typed-constant-and-notification-key-policy,project-license-pending,-,mobile-corpus-containment-12.9-swift-contracts-mobile-typecheck-2026-08-17,pending
+apps/mobile/targets/keyboard/Types/SharedTone.swift,replaced,mobile-shared-tones,authored-tone-catalog-and-default-storage-policy,project-license-pending,-,mobile-corpus-containment-9.1-swift-contracts-mobile-typecheck-2026-08-17,pending
+apps/mobile/targets/keyboard/Types/SharedTerm.swift,replaced,mobile-shared-terms,authored-term-catalog-and-default-storage-policy,project-license-pending,-,mobile-corpus-containment-10.0-swift-contracts-mobile-typecheck-2026-08-17,pending
+apps/mobile/tests/native/SharedKeyboardContractsTests.swift,owned,mobile-shared-keyboard-contract-tests,authored-darwin-constants-tone-and-term-contract-coverage,project-license-pending,-,mobile-corpus-containment-swift-contracts-mobile-typecheck-2026-08-17,pending
 apps/desktop/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/mobile/**,unreviewed,mobile,,pending,-,pending,uncommitted
 apps/web/**,unreviewed,web,,pending,-,pending,uncommitted
