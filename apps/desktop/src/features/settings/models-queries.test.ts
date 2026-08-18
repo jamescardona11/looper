@@ -5,6 +5,7 @@ import {
   normalizeModelKeys,
   resolveSpeechModelLabel,
 } from "./models-queries";
+import { summarizeModelStatuses } from "./model-query-contracts";
 
 const speechModel = (overrides: Partial<SpeechModel>): SpeechModel => ({
   id: "parakeet",
@@ -46,5 +47,29 @@ describe("settings model queries", () => {
       "status",
       "parakeet",
     ]);
+  });
+
+  test("projects status results by normalized model and aggregates activity", () => {
+    const installed = {
+      key: "parakeet",
+      installed: true,
+      ane_installed: false,
+      directory: "/models/parakeet",
+      bytes_on_disk: 700,
+      missing_files: [],
+    };
+    expect(
+      summarizeModelStatuses(
+        ["parakeet", "remote"],
+        [
+          { data: installed, isLoading: false, isFetching: false },
+          { isLoading: true, isFetching: true },
+        ],
+      ),
+    ).toEqual({
+      statusByModel: { parakeet: installed },
+      isLoading: true,
+      isFetching: true,
+    });
   });
 });

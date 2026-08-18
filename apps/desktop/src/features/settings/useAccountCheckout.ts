@@ -1,27 +1,23 @@
-import { useState } from "react";
+import { useReducer } from "react";
 import { openUrl } from "@tauri-apps/plugin-opener";
-import { checkoutUrlFor, type PurchaseTier } from "../license/purchaseConfig";
-
-const checkoutError = (tier: PurchaseTier): string =>
-  `${tier === "commercial" ? "Commercial" : "Personal"} checkout link is not configured for this build.`;
+import type { PurchaseTier } from "../license/purchaseConfig";
+import {
+  EMPTY_ACCOUNT_CHECKOUT_STATE,
+  openAccountCheckout,
+  reduceAccountCheckout,
+} from "./account-checkout-policy";
 
 export function useAccountCheckout() {
-  const [openingTarget, setOpeningTarget] = useState<PurchaseTier | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [state, dispatch] = useReducer(
+    reduceAccountCheckout,
+    EMPTY_ACCOUNT_CHECKOUT_STATE,
+  );
 
   const openCheckout = async (tier: PurchaseTier) => {
-    setError(null);
-    setOpeningTarget(tier);
-    try {
-      const checkoutUrl = checkoutUrlFor(tier, "settings_account");
-      if (!checkoutUrl) throw new Error(checkoutError(tier));
-      await openUrl(checkoutUrl);
-    } catch (reason) {
-      setError(reason instanceof Error ? reason.message : String(reason));
-    } finally {
-      setOpeningTarget(null);
-    }
+    dispatch({ type: "opening", tier });
+    const checkoutError = await openAccountCheckout(tier, openUrl);
+    dispatch({ type: "settled", error: checkoutError });
   };
 
-  return { openingTarget, error, openCheckout };
+  return { ...state, openCheckout };
 }

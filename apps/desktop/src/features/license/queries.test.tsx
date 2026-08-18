@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { renderHook, waitFor } from "@testing-library/react";
+import { act, renderHook, waitFor } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { describe, expect, test, vi } from "vitest";
 
@@ -18,6 +18,7 @@ vi.mock("../../data/license", () => licenseApi);
 import {
   licenseIdentityRefreshTarget,
   licenseKeys,
+  useActivateLicense,
   useHydrateLicenseIdentity,
 } from "./queries";
 import type { LicenseState } from "../../data/license";
@@ -64,5 +65,22 @@ describe("license queries", () => {
 
     rerender({ licenseState: state() });
     expect(licenseApi.refreshLicense).toHaveBeenCalledOnce();
+  });
+
+  test("publishes command results to the shared cache and refreshes settings", async () => {
+    const refreshed = state({ displayKey: "member-2" });
+    licenseApi.activateLicense.mockResolvedValue(refreshed);
+    const queryClient = new QueryClient();
+    const invalidate = vi.spyOn(queryClient, "invalidateQueries");
+    const wrapper = ({ children }: { children: ReactNode }) => (
+      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+    );
+    const { result } = renderHook(() => useActivateLicense(), { wrapper });
+
+    await act(() => result.current.mutateAsync("license-key"));
+
+    expect(licenseApi.activateLicense.mock.calls[0]?.[0]).toBe("license-key");
+    expect(queryClient.getQueryData(licenseKeys.state())).toEqual(refreshed);
+    expect(invalidate).toHaveBeenCalledWith({ queryKey: ["settings"] });
   });
 });

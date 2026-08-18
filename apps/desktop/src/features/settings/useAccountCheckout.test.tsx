@@ -41,4 +41,15 @@ describe("account checkout", () => {
       "Commercial checkout link is not configured",
     );
   });
+
+  test("surfaces an opener failure and always clears the pending tier", async () => {
+    checkoutUrlFor.mockReturnValue("https://checkout.example/personal");
+    openUrl.mockRejectedValue(new Error("browser unavailable"));
+    const { result } = renderHook(() => useAccountCheckout());
+
+    await act(() => result.current.openCheckout("personal"));
+
+    expect(result.current.openingTarget).toBeNull();
+    expect(result.current.error).toBe("browser unavailable");
+  });
 });
