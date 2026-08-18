@@ -1073,4 +1073,16 @@ apps/mobile/src/features/meetings/meeting-detail-screen.tsx,owned,mobile-meeting
 apps/mobile/src/features/meetings/native-live-activity-contract.test.ts,owned,mobile-meetings-tests,authored-live-activity-contract-tests,project-license-pending,-,mobile-meetings-tests-typecheck-2026-08-17,pending
 apps/mobile/src/features/meetings/native-live-activity.ts,owned,mobile-meetings,authored-live-activity-adapter,project-license-pending,-,mobile-meetings-tests-typecheck-2026-08-17,pending
 apps/mobile/src/features/meetings/use-meeting-capture.ts,owned,mobile-meetings,authored-meeting-capture-hook,project-license-pending,-,mobile-meetings-tests-typecheck-2026-08-17,pending
+apps/mobile/THIRD_PARTY_NOTICES.md,permissive,mobile-sherpa-notice,react-native-sherpa-onnx@0.4.3,MIT,apps/mobile/THIRD_PARTY_NOTICES.md,local-package-license-verified-2026-08-17,pending
+apps/mobile/src/features/dictation/dictation-screen.tsx,owned,mobile-dictation,authored-dictation-screen,project-license-pending,-,mobile-dictation-tests-typecheck-2026-08-17,pending
+apps/mobile/src/features/dictation/index.ts,owned,mobile-dictation,authored-dictation-exports,project-license-pending,-,mobile-dictation-tests-typecheck-2026-08-17,pending
+apps/mobile/src/features/dictation/local-stt-model.test.ts,owned,mobile-dictation-tests,authored-local-model-contract-tests,project-license-pending,-,mobile-dictation-tests-typecheck-2026-08-17,pending
+apps/mobile/src/features/dictation/local-stt-model.ts,owned,mobile-dictation,authored-local-model-policy,project-license-pending,-,mobile-dictation-tests-typecheck-2026-08-17,pending
+apps/mobile/src/features/dictation/local-stt-runtime.test.ts,owned,mobile-dictation-tests,authored-local-runtime-contract-tests,project-license-pending,-,mobile-dictation-tests-typecheck-2026-08-17,pending
+apps/mobile/src/features/dictation/local-stt-runtime.ts,owned,mobile-dictation,authored-local-runtime-adapter,project-license-pending,-,mobile-dictation-tests-typecheck-2026-08-17,pending
+apps/mobile/src/features/dictation/local-stt-smoke-screen.tsx,owned,mobile-dictation,authored-local-stt-smoke-screen,project-license-pending,-,mobile-dictation-tests-typecheck-2026-08-17,pending
+apps/mobile/src/features/dictation/local-stt-smoke.test.ts,owned,mobile-dictation-tests,authored-local-stt-smoke-contract-tests,project-license-pending,-,mobile-dictation-tests-typecheck-2026-08-17,pending
+apps/mobile/src/features/dictation/local-stt-smoke.ts,owned,mobile-dictation,authored-local-stt-smoke-policy,project-license-pending,-,mobile-dictation-tests-typecheck-2026-08-17,pending
+apps/mobile/src/features/dictation/use-audio-recorder.ts,owned,mobile-dictation,authored-mobile-audio-recorder-hook,project-license-pending,-,mobile-dictation-tests-typecheck-2026-08-17,pending
+apps/mobile/src/features/dictation/use-local-stt.ts,owned,mobile-dictation,authored-local-stt-hook,project-license-pending,-,mobile-dictation-tests-typecheck-2026-08-17,pending
 .gitignore,owned,repository-hygiene,authored-ignore-boundaries-for-local-docs-and-audit-artifacts,project-license-pending,-,git-check-ignore-verification-2026-08-17,pending
