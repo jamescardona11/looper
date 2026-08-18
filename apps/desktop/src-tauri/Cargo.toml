@@ -1,0 +1,104 @@
+[package]
+name = "Looper"
+version = "1.0.1"
+description = "Open-source voice-to-text productivity app built with Tauri"
+authors = ["Looper contributors"]
+edition = "2021"
+license = "AGPL-3.0"
+
+[features]
+default = []
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[lib]
+# The `_lib` suffix may seem redundant but it is necessary
+# to make the lib name unique and wouldn't conflict with the bin name.
+# This seems to be only an issue on Windows, see https://github.com/rust-lang/cargo/issues/8519
+name = "looper_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[profile.release]
+lto = "thin"
+codegen-units = 1
+strip = true
+
+[build-dependencies]
+tauri-build = { version = "2.6.3", features = [] }
+
+[dependencies]
+tauri = { version = "2.11.3", features = ["protocol-asset", "macos-private-api", "tray-icon", "image-png"] }
+tauri-plugin-opener = "2.5.4"
+tauri-plugin-dialog = "2.7.1"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+chrono = { version = "0.4", features = ["serde"] }
+cpal = "0.18"
+anyhow = "1"
+tracing = "0.1"
+tracing-subscriber = "0.3"
+tracing-appender = "0.2"
+symphonia = { version = "0.6.0", default-features = false, features = ["aac", "alac", "flac", "mp3", "ogg", "pcm", "vorbis", "wav", "isomp4"] }
+hound = "3.5.1"
+parking_lot = "0.12"
+crossbeam-channel = "0.5"
+webrtc-vad = "0.4"
+rustfft = "6"
+reqwest = { version = "0.13", default-features = false, features = ["json", "multipart", "stream", "rustls", "blocking"] }
+posthog-rs = "0.15"
+arboard = "3"
+looper-ts = { path = "../../../packages/rust/looper-ts" }
+uuid = { version = "1.23.4", features = ["v4"] }
+aes-gcm = "0.11"
+pbkdf2 = "0.13"
+sha2 = "0.11"
+encoding_rs = "0.8"
+base64 = "0.22"
+rand = "0.10"
+rusqlite = { version = "0.40", features = ["bundled"] }
+regex = "1"
+fs2 = "0.4"
+tauri-plugin-deep-link = "2.4.9"
+png = "0.18.1"
+rubato = "3.0.0"
+interprocess = "2"
+rmcp = { version = "2.2.0", features = ["server", "transport-io"] }
+zip = { version = "8.6.0", default-features = false, features = ["deflate-flate2-zlib-rs"] }
+
+[target.'cfg(any(target_os = "macos", target_os = "windows"))'.dependencies]
+looper-audio-capture = { path = "../../../packages/rust/audio/capture" }
+tauri-plugin-process = "2.3.1"
+tauri-plugin-updater = "2.10.1"
+tauri-plugin-single-instance = "2.4.2"
+tauri-plugin-autostart = "2.5.1"
+tokio = { version = "1", features = ["rt-multi-thread", "macros", "io-std", "io-util"] }
+tokio-util = "0.7"
+futures-util = "0.3"
+tokio-tungstenite = { version = "0.28", features = ["rustls-tls-webpki-roots"] }
+
+[target.'cfg(target_os = "windows")'.dependencies]
+llama-cpp-2 = { version = "=0.1.151", features = ["vulkan"] }
+looper-ts = { path = "../../../packages/rust/looper-ts", features = ["directml"] }
+windows = { version = "0.62.2", features = ["Foundation", "Media_Control", "Win32_Foundation", "Win32_Graphics_Gdi", "Win32_Media_Audio", "Win32_Media_Audio_Endpoints", "Win32_Storage_FileSystem", "Win32_System_Com", "Win32_System_Diagnostics_Debug", "Win32_System_Kernel", "Win32_System_LibraryLoader", "Win32_System_Memory", "Win32_System_Threading", "Win32_UI_Accessibility", "Win32_UI_Controls", "Win32_UI_Input_KeyboardAndMouse", "Win32_UI_Shell", "Win32_UI_Shell_Common", "Win32_UI_WindowsAndMessaging"] }
+
+[target.'cfg(target_os = "macos")'.dependencies]
+llama-cpp-2 = { version = "=0.1.151", features = ["metal"] }
+block2 = "0.6.2"
+objc2 = "0.6.4"
+objc2-event-kit = { version = "0.3.2", features = ["EKEventStore", "EKCalendarItem", "EKCalendar", "EKParticipant", "EKObject", "EKEvent", "EKTypes"] }
+objc2-foundation = { version = "0.3.2", features = ["NSDate", "NSError", "NSArray", "NSNotification", "NSURL"] }
+objc2-av-foundation = { version = "0.3.2", default-features = false, features = ["std", "AVCaptureDevice", "AVMediaFormat", "block2"] }
+plist = "1.10.0"
+tauri-nspanel = { git = "https://github.com/ahkohd/tauri-nspanel", rev = "a3122e8" }
+tauri-plugin-macos-permissions = "2.3.0"
+core-graphics = "0.25"
+core-foundation = "0.10"
+objc2-core-audio = "0.3.2"
+cidre = { version = "0.15.2", default-features = false, features = ["async", "sc", "vn", "macos_14_0"] }
+
+[target.'cfg(not(any(target_os = "macos", target_os = "windows")))'.dependencies]
+llama-cpp-2 = "=0.1.151"
+
+[dev-dependencies]
+rmcp = { version = "2.2.0", features = ["client"] }
+tempfile = "3"

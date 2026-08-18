@@ -1,0 +1,7 @@
+{
+  "productName": "Looper QA",
+  "identifier": "com.j11.looper.qa",
+  "bundle": {
+    "createUpdaterArtifacts": false
+  }
+}

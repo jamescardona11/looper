@@ -1,0 +1,11 @@
+{
+  "productName": "Looper Signal Preview",
+  "identifier": "com.j11.looper.signal-preview",
+  "build": {
+    "beforeDevCommand": "VITE_SIGNAL_PREVIEW=1 pnpm exec vite --port 8737",
+    "devUrl": "http://localhost:8737"
+  },
+  "bundle": {
+    "createUpdaterArtifacts": false
+  }
+}

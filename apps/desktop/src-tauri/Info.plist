@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>NSMicrophoneUsageDescription</key>
+    <string>Looper needs microphone access to transcribe your voice to text.</string>
+    <key>NSAudioCaptureUsageDescription</key>
+    <string>Looper needs system audio access while you explicitly record a meeting.</string>
+    <key>NSCalendarsFullAccessUsageDescription</key>
+    <string>Looper reads your calendar to show upcoming meetings and prepare the correct meeting note. It never edits calendar events.</string>
+    <key>NSAppleEventsUsageDescription</key>
+    <string>Looper uses Apple Events automation (via System Events) only to help check and guide required permissions (such as Accessibility) on macOS.</string>
+</dict>
+</plist>

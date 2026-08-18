@@ -1,0 +1,124 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "Looper",
+  "identifier": "com.j11.looper.desktop",
+  "build": {
+    "beforeDevCommand": "pnpm run dev",
+    "devUrl": "http://localhost:8735",
+    "beforeBuildCommand": "pnpm run build",
+    "frontendDist": "../dist"
+  },
+  "app": {
+    "windows": [
+      {
+        "label": "main",
+        "title": "Looper",
+        "width": 300,
+        "height": 190,
+        "x": -9999,
+        "y": -9999,
+        "resizable": false,
+        "decorations": false,
+        "alwaysOnTop": true,
+        "skipTaskbar": true,
+        "transparent": true,
+        "shadow": false,
+        "center": false,
+        "focus": false,
+        "visible": false
+      },
+      {
+        "label": "settings",
+        "title": "Looper",
+        "width": 900,
+        "height": 750,
+        "minWidth": 900,
+        "minHeight": 750,
+        "resizable": true,
+        "visible": false,
+        "hiddenTitle": true,
+        "titleBarStyle": "Overlay"
+      },
+      {
+        "label": "toast",
+        "title": "Looper Toast",
+        "width": 420,
+        "height": 460,
+        "x": 0,
+        "y": 0,
+        "resizable": false,
+        "decorations": false,
+        "alwaysOnTop": true,
+        "skipTaskbar": true,
+        "transparent": true,
+        "shadow": false,
+        "center": false,
+        "focus": false,
+        "visible": false
+      },
+      {
+        "label": "meeting-awareness",
+        "title": "Looper Meeting Notification",
+        "width": 420,
+        "height": 88,
+        "x": 0,
+        "y": 0,
+        "resizable": false,
+        "decorations": false,
+        "alwaysOnTop": true,
+        "skipTaskbar": true,
+        "transparent": true,
+        "shadow": false,
+        "center": false,
+        "focus": false,
+        "visible": false
+      }
+    ],
+    "security": {
+      "csp": "default-src 'self' asset: http://asset.localhost customprotocol:; base-uri 'self'; form-action 'self'; object-src 'none'; frame-ancestors 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' asset: http://asset.localhost data: blob: https:; connect-src 'self' ipc: http://ipc.localhost https://api.github.com https://adventurous-barracuda-553.convex.cloud wss://adventurous-barracuda-553.convex.cloud http://localhost:* http://127.0.0.1:* ws://localhost:* ws://127.0.0.1:*",
+      "assetProtocol": {
+        "enable": true,
+        "scope": [
+          "$APPDATA/library/**",
+          "$APPDATA/local/cache/appicons/**",
+          "$APPDATA/local/cache/siteicons/**"
+        ]
+      }
+    },
+    "macOSPrivateApi": true
+  },
+  "bundle": {
+    "active": true,
+    "targets": ["app", "dmg", "msi", "nsis"],
+    "createUpdaterArtifacts": true,
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ],
+    "macOS": {
+      "hardenedRuntime": true,
+      "minimumSystemVersion": "14.0",
+      "entitlements": "Entitlements.plist",
+      "dmg": {
+        "windowSize": {
+          "width": 720,
+          "height": 450
+        }
+      }
+    }
+  },
+  "plugins": {
+    "deep-link": {
+      "desktop": {
+        "schemes": ["looper"]
+      }
+    },
+    "updater": {
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDIwRjZFNTY4MTZGNjc3RkQKUldUOWQvWVdhT1gySUtvN0IwSUQxTW8rWitVeHRlMC9FcjZ0TWp6RlVld0ltUnA5QVc2S0N0TVUK",
+      "endpoints": []
+    }
+  }
+}
