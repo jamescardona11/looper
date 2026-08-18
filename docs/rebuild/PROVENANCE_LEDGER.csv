@@ -271,6 +271,13 @@ apps/desktop/src/features/settings/components/tabs/about-tab-model.test.ts,owned
 apps/desktop/src/features/settings/components/tabs/AboutTab.test.tsx,owned,desktop-about-settings-tests,authored-support-storage-export-help-and-cli-action-tests,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
 apps/desktop/src/features/settings/components/tabs/ProvidersTab.tsx,replaced,desktop-provider-settings-tab,authored-grouped-meeting-speech-and-writing-contracts,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
 apps/desktop/src/features/settings/components/tabs/ProvidersTab.test.tsx,owned,desktop-provider-settings-tab-tests,authored-group-routing-and-section-tests,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/features/settings/components/tabs/ModelsTab.tsx,replaced,desktop-models-settings-tab,authored-overview-and-browser-view-controller,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/features/settings/components/tabs/ModelsTab.test.tsx,owned,desktop-models-settings-tab-tests,authored-overview-browser-and-return-navigation-test,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/features/settings/components/tabs/models-tab-model.ts,replaced,desktop-models-settings-state,authored-local-fallback-installed-catalog-and-cloud-routing-model,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/features/settings/components/tabs/models-tab-model.test.ts,owned,desktop-models-settings-state-tests,authored-selection-order-installed-filter-and-cloud-routing-tests,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/features/settings/components/tabs/InstalledModelRow.tsx,replaced,desktop-installed-model-row,authored-capability-facts-active-action-and-delete-presentation,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/features/settings/components/tabs/ModelBrowser.tsx,replaced,desktop-model-browser,authored-model-picker-navigation-and-action-adapter,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/features/settings/components/tabs/ModelsOverview.tsx,replaced,desktop-models-overview,authored-cloud-local-summary-installed-list-and-settings-routing,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
 apps/desktop/src-tauri/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/desktop/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/mobile/**,unreviewed,mobile,,pending,-,pending,uncommitted
