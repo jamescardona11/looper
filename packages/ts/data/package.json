@@ -1,0 +1,30 @@
+{
+  "name": "@looper/data",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./agent": "./src/agent/index.ts",
+    "./provider": "./src/port/provider.tsx"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run --passWithNoTests"
+  },
+  "dependencies": {
+    "@looper/backend": "workspace:*",
+    "@looper/config": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/react": "^19.0.0",
+    "vitest": "^3.2.4"
+  },
+  "peerDependencies": {
+    "@convex-dev/auth": "*",
+    "convex": "*",
+    "react": "*"
+  }
+}
