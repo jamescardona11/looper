@@ -415,6 +415,9 @@ apps/desktop/src/features/import/queries.test.tsx,owned,desktop-import-query-tes
 apps/desktop/src/features/updates/queries.ts,replaced,desktop-update-query-boundary,authored-stable-update-status-hook-facade,project-license-pending,-,corpus-no-relevant-match-and-full-desktop-suite-build-2026-08-16,pending
 apps/desktop/src/features/updates/update-query-policy.ts,replaced,desktop-update-query-policy,authored-shared-update-cache-branch-and-status-gateway-options,project-license-pending,-,corpus-no-relevant-match-and-full-desktop-suite-build-2026-08-16,pending
 apps/desktop/src/features/updates/queries.test.tsx,owned,desktop-update-query-tests,authored-event-invalidation-key-and-data-gateway-load-contracts,project-license-pending,-,corpus-containment-13.6-permissive-and-full-desktop-suite-2026-08-16,pending
+apps/desktop/src/features/personalization/queries.ts,replaced,desktop-personalization-query-boundary,authored-stable-hooks-and-explicit-cache-writers-over-query-policy,project-license-pending,-,corpus-containment-20.8-and-full-desktop-suite-build-2026-08-16,pending
+apps/desktop/src/features/personalization/personalization-query-policy.ts,replaced,desktop-personalization-query-policy,authored-cache-key-tree-gateway-options-enable-gates-icon-map-selection-and-catalog-staleness,project-license-pending,-,corpus-containment-28.6-and-full-desktop-suite-build-2026-08-16,pending
+apps/desktop/src/features/personalization/queries.test.tsx,owned,desktop-personalization-query-tests,authored-cache-branch-cache-write-and-icon-normalization-contracts,project-license-pending,-,corpus-containment-5.7-permissive-and-full-desktop-suite-2026-08-16,pending
 apps/desktop/src-tauri/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/desktop/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/mobile/**,unreviewed,mobile,,pending,-,pending,uncommitted
