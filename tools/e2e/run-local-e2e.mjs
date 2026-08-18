@@ -197,7 +197,7 @@ function generateLocalAuthKeys() {
   };
 }
 
-function ensureLocalAuthKeys() {
+export function ensureLocalAuthKeys() {
   const state = localAuthEnvState();
   if (state.hasPrivateKey && state.hasJwks) return false;
   if (state.hasPrivateKey || state.hasJwks) {
@@ -221,7 +221,7 @@ function ensureLocalAuthKeys() {
   return true;
 }
 
-function removeLocalAuthKeys(created) {
+export function removeLocalAuthKeys(created) {
   if (!created) return;
   try {
     runConvexEnv("remove", "JWT_PRIVATE_KEY");

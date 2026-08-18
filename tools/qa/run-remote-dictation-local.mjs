@@ -5,7 +5,9 @@ import { join } from "node:path";
 import {
   assertLocalBackendUrl,
   backendReady,
+  ensureLocalAuthKeys,
   readBackendUrl,
+  removeLocalAuthKeys,
   startConvex,
   stopProcess,
   waitForBackend,
@@ -33,6 +35,7 @@ const sections = [
 
 let convexProcess = null;
 let convexUrl = null;
+let ephemeralAuthKeys = false;
 let failed = false;
 
 function appendResult(label, result) {
@@ -68,11 +71,12 @@ try {
     "- A backend spawned by this wrapper receives MOCK_MODE=true and MOCK_EMAIL_OTP_CODE.",
     "- The default anonymous pairing path does not require Resend or mock OTP.",
     "- If REMOTE_PAIRING_AUTH=email-otp reuses an already-running Convex backend, that backend must already have matching mock OTP env.",
-    "- This wrapper does not mutate Convex deployment env; project selection can be user-specific.",
+    "- For a local backend, this wrapper provisions ephemeral JWT_PRIVATE_KEY/JWKS and removes them after the smoke; it never mutates a remote deployment.",
     "",
   );
 
   if (!failed) {
+    ephemeralAuthKeys = ensureLocalAuthKeys();
     const pairingResult = spawnSync(
       "node",
       ["test-support/scripts/remote-dictation-pairing-smoke.mjs"],
@@ -93,6 +97,7 @@ try {
   failed = true;
   sections.push("Error:", "```text", error instanceof Error ? error.message : String(error), "```", "");
 } finally {
+  removeLocalAuthKeys(ephemeralAuthKeys);
   await stopProcess(convexProcess);
 }
 
