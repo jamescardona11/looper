@@ -222,6 +222,9 @@ apps/desktop/src/data/remote-dictation.ts,owned,desktop-remote-dictation-consume
 apps/desktop/src/data/remote-dictation.test.ts,owned,desktop-remote-dictation-tests,authored-fail-closed-register-insert-ack-cleanup-and-concurrency-tests,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
 apps/desktop/src/data/meeting-output-delivery.ts,owned,desktop-confirmed-meeting-output-delivery,no-material-corpus-match,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
 apps/desktop/src/data/meeting-output-delivery.test.ts,owned,desktop-confirmed-meeting-output-tests,authored-claim-write-confirm-failure-and-cleanup-tests,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/data/dictionary-sync.ts,owned,desktop-dictionary-and-replacement-sync,no-material-corpus-match,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/data/snippets-sync.ts,owned,desktop-snippet-sync,no-material-corpus-match,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/data/sync-reconciliation.test.ts,owned,desktop-sync-reconciliation-tests,authored-union-diff-ordering-id-cache-and-update-tests,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
 apps/desktop/src-tauri/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/desktop/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/mobile/**,unreviewed,mobile,,pending,-,pending,uncommitted
