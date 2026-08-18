@@ -14,7 +14,7 @@ const bridge = vi.hoisted(() => ({
     | undefined,
 }));
 
-vi.mock("../lib/modelDownloadEvents", () => ({
+vi.mock("../../data/model-downloads", () => ({
   subscribeModelDownloadEvents: bridge.subscribe,
 }));
 

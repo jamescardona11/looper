@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, test, vi } from "vitest";
-import { subscribeModelDownloadEvents } from "./modelDownloadEvents";
+import { subscribeModelDownloadEvents } from "./model-downloads";
 
 const tauri = vi.hoisted(() => ({ listen: vi.fn() }));
 

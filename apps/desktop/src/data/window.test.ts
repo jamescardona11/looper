@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, test, vi } from "vitest";
-import { performWindowAction } from "./windowControls";
+import { performWindowAction } from "./window";
 
 const nativeWindow = vi.hoisted(() => ({
   minimize: vi.fn(() => Promise.resolve()),

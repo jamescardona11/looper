@@ -2,7 +2,6 @@
 
 import { setupI18n } from "@lingui/core";
 import { I18nProvider } from "@lingui/react";
-import { invoke } from "@tauri-apps/api/core";
 import {
   act,
   cleanup,
@@ -27,6 +26,7 @@ const mocks = vi.hoisted(() => ({
     null | ((event: { payload: { chars: number; can_undo: boolean } }) => void),
   shortcutOptions: null as ShortcutOptions | null,
   disposeInsertionListener: vi.fn(),
+  setShortcutCaptureActive: vi.fn((_active: boolean) => Promise.resolve()),
 }));
 
 vi.mock("../../../data/overlay", () => ({
@@ -38,8 +38,9 @@ vi.mock("../../../data/overlay", () => ({
   ),
 }));
 
-vi.mock("@tauri-apps/api/core", () => ({
-  invoke: vi.fn(() => Promise.resolve()),
+vi.mock("../../../data/settings", () => ({
+  setShortcutCaptureActive: (active: boolean) =>
+    mocks.setShortcutCaptureActive(active),
 }));
 vi.mock("../../../shared/hooks/useShortcutCapture", () => ({
   useShortcutCapture: vi.fn((options: ShortcutOptions) => {
@@ -122,9 +123,7 @@ describe("ReadyStep", () => {
     renderReady();
     fireEvent.click(screen.getByRole("button", { name: /Space/ }));
 
-    expect(invoke).toHaveBeenCalledWith("set_shortcut_capture_active", {
-      active: true,
-    });
+    expect(mocks.setShortcutCaptureActive).toHaveBeenCalledWith(true);
     expect(mocks.shortcutOptions?.active).toBe(true);
     act(() => mocks.shortcutOptions?.onPreviewChange("Command K"));
     expect(screen.getByText("Command K")).toBeTruthy();
@@ -132,9 +131,7 @@ describe("ReadyStep", () => {
     await act(async () => {
       await mocks.shortcutOptions?.onCancel();
     });
-    expect(invoke).toHaveBeenCalledWith("set_shortcut_capture_active", {
-      active: false,
-    });
+    expect(mocks.setShortcutCaptureActive).toHaveBeenCalledWith(false);
     expect(mocks.shortcutOptions?.active).toBe(false);
   });
 

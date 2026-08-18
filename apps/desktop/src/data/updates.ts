@@ -1,5 +1,15 @@
+import { getVersion } from "@tauri-apps/api/app";
 import { invoke } from "@tauri-apps/api/core";
 import { emit, listen, type UnlistenFn } from "@tauri-apps/api/event";
+import { relaunch } from "@tauri-apps/plugin-process";
+
+export type { UnlistenFn };
+
+/** Version string of the running bundle, for comparing against a release. */
+export const getInstalledVersion = () => getVersion();
+
+/** Restarts the bundle so a downloaded update takes effect. */
+export const restartForUpdate = () => relaunch();
 
 export type UpdateStatus = {
   configured: boolean;

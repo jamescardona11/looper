@@ -1,8 +1,5 @@
-const PURCHASE_TIER_IDS = ["personal", "commercial"] as const;
-const PURCHASE_SOURCE_IDS = ["onboarding", "settings_account"] as const;
-
-export type PurchaseTier = (typeof PURCHASE_TIER_IDS)[number];
-export type PurchaseSource = (typeof PURCHASE_SOURCE_IDS)[number];
+export type PurchaseTier = "personal" | "commercial";
+export type PurchaseSource = "onboarding" | "settings_account";
 
 type TierSpecification = readonly [
   label: string,

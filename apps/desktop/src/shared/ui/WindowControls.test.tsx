@@ -15,7 +15,7 @@ vi.mock("../../platform/service", () => ({
   }),
 }));
 
-vi.mock("../lib/windowControls", () => ({
+vi.mock("../../data/window", () => ({
   performWindowAction: mocks.perform,
 }));
 

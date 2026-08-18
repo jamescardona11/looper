@@ -2,8 +2,7 @@ type NavigatorWithPlatformData = Navigator & {
   userAgentData?: { platform?: string };
 };
 
-const APP_PLATFORM_IDS = ["macos", "windows", "unsupported"] as const;
-export type AppPlatformId = (typeof APP_PLATFORM_IDS)[number];
+export type AppPlatformId = "macos" | "windows" | "unsupported";
 
 type PlatformPolicy = Readonly<{
   requiresNativeMicrophonePermission: boolean;

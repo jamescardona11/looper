@@ -1,17 +1,14 @@
 import { getPlatformCapabilities } from "../../platform/service";
 import type { PlatformCapabilities } from "../../shared/lib/platform";
 
-const ONBOARDING_FLOW = [
-  "welcome",
-  "mode",
-  "model",
-  "import",
-  "intelligence",
-  "permissions",
-  "done",
-] as const;
-
-export type OnboardingStep = (typeof ONBOARDING_FLOW)[number];
+export type OnboardingStep =
+  | "welcome"
+  | "mode"
+  | "model"
+  | "import"
+  | "intelligence"
+  | "permissions"
+  | "done";
 
 function onboardingPermissions({
   id,
