@@ -1097,3 +1097,5 @@ pnpm-lock.yaml,owned,repository-infrastructure,generated-workspace-lockfile,proj
 .github/PULL_REQUEST_TEMPLATE.md,owned,repository-governance,authored-pull-request-template,project-license-pending,-,root-infrastructure-review-2026-08-17,pending
 .github/ISSUE_TEMPLATE/feature_request.yml,owned,repository-governance,authored-feature-request-template,project-license-pending,-,root-infrastructure-review-2026-08-17,pending
 .github/ISSUE_TEMPLATE/bug_report.yml,owned,repository-governance,authored-bug-report-template,project-license-pending,-,root-infrastructure-review-2026-08-17,pending
+apps/mobile/src/features/studio/index.ts,owned,mobile-studio,authored-studio-exports,project-license-pending,-,mobile-studio-typecheck-and-tests-2026-08-17,pending
+apps/mobile/src/features/studio/studio-screen.tsx,replaced,mobile-studio,authored-studio-screen-recomposition,AGPL-3.0,-,mobile-corpus-containment-1.3-typecheck-tests-2026-08-17,pending
