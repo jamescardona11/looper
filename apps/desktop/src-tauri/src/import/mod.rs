@@ -1,7 +1,10 @@
-mod aqua;
-mod handy;
-mod superwhisper;
-mod wispr;
+macro_rules! register_sources {
+    ($($source:ident),+ $(,)?) => {
+        $(mod $source;)+
+    };
+}
+
+register_sources!(aqua, handy, superwhisper, wispr);
 
 pub(crate) mod apply;
 pub(crate) mod commands;
