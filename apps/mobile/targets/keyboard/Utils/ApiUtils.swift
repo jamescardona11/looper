@@ -181,17 +181,3 @@ func uploadFile(
   return try ApiResponse.storageIdentifier(from: successfulData)
 }
 
-func invokeHandlerFireAndForget(
-  config: RepoConfig,
-  kind: ConvexFunctionKind,
-  name: String,
-  args: [String: Any]
-) {
-  Task {
-    do {
-      _ = try await invokeHandler(config: config, kind: kind, name: name, args: args)
-    } catch {
-      NSLog("[LooperKB] %@ failed: %@", name, error.localizedDescription)
-    }
-  }
-}
