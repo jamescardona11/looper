@@ -776,6 +776,7 @@ apps/desktop/src/features/library/library-item-query-hooks.ts,replaced,desktop-l
 apps/desktop/src/features/library/meeting-query-cache.ts,replaced,desktop-meeting-query-cache,authored-final-transcript-idempotent-append-policy,project-license-pending,-,corpus-containment-7.1-permissive-library-queries-6-tests-typecheck-eslint-prettier-2026-08-17,pending
 apps/desktop/src/features/library/meeting-query-hooks.ts,replaced,desktop-meeting-query-hooks,authored-capture-phase-subscription-detail-event-sync-and-meeting-command-adapters,project-license-pending,-,corpus-containment-5.2-library-queries-6-tests-typecheck-eslint-prettier-2026-08-17,pending
 apps/desktop/src/features/library/queries.library-events.test.tsx,owned,desktop-library-query-event-tests,authored-streaming-cache-projection-and-listener-cleanup-test,project-license-pending,-,corpus-containment-4.8-permissive-library-queries-6-tests-typecheck-eslint-prettier-2026-08-17,pending
+apps/desktop/src-tauri/src/main.rs,replaced,desktop-native-entrypoint,authored-entrypoint-classifier-host-family-routing-sidecar-precedence-and-error-termination,project-license-pending,-,corpus-containment-5.9-native-entrypoint-4-tests-cargo-all-targets-rustfmt-2026-08-17,pending
 apps/desktop/src-tauri/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/desktop/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/mobile/**,unreviewed,mobile,,pending,-,pending,uncommitted
