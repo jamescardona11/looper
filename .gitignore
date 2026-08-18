@@ -81,7 +81,10 @@ pnpm-debug.log*
 
 # Product artwork/assets stay local and are never part of reconstruction commits.
 apps/desktop/assets/
-apps/desktop/public/fonts/
+apps/desktop/public/fonts/*
+!apps/desktop/public/fonts/
+!apps/desktop/public/fonts/NOTICE.md
+!apps/desktop/public/fonts/*.woff2
 apps/desktop/src-tauri/icons/
 apps/desktop/src-tauri/macos/*.png
 apps/mobile/assets/
