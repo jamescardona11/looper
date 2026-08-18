@@ -22,7 +22,7 @@ import {
 type DuckScrubEvent =
   React.MouseEvent<HTMLSpanElement> | React.TouchEvent<HTMLSpanElement>;
 
-type AppTabControls = {
+export type AppTabControls = {
   appLanguageOptions: SelectOption<AppLocaleSetting>[];
   applyAudioBudgetChange: (nextBudgetMb: number) => Promise<void>;
   applyAutoDeleteChange: (
