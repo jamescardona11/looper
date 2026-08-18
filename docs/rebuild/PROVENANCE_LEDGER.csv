@@ -201,6 +201,9 @@ apps/desktop/src/data/transcription/events.ts,replaced,desktop-transcription-eve
 apps/desktop/src/data/transcription/transcription.test.ts,owned,desktop-transcription-gateway-tests,authored-command-normalization-and-event-tests,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
 apps/desktop/src/features/settings/models-queries.ts,replaced,desktop-model-query-boundary,authored-key-normalization-status-collection-and-mutations,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
 apps/desktop/src/features/settings/models-queries.test.ts,owned,desktop-model-query-tests,authored-key-label-and-normalization-tests,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/features/settings/modelDownloadActivity.tsx,owned,desktop-model-download-activity,no-material-corpus-match,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/features/settings/components/ModelDownloadActivityBar.tsx,owned,desktop-model-download-activity-ui,no-material-corpus-match,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/features/settings/modelDownloadActivity.test.tsx,owned,desktop-model-download-activity-tests,authored-navigation-progress-cancel-retry-and-complete-tests,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
 apps/desktop/src-tauri/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/desktop/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/mobile/**,unreviewed,mobile,,pending,-,pending,uncommitted
