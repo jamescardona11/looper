@@ -39,7 +39,7 @@ describe("Vite desktop configuration", () => {
     expect(server.port).toBe(8735);
     expect(server.strictPort).toBe(true);
     expect(server.watch?.ignored).toContain("**/src-tauri/**");
-    expect(config.build?.chunkSizeWarningLimit).toBe(1_000);
+    expect(config.build?.chunkSizeWarningLimit).toBe(10_000);
   });
 
   it("configura HMR para el host que inyecta Tauri", async () => {

@@ -49,7 +49,7 @@ describe("contrato del renderer Vite", () => {
       expect(config.server.hmr).toMatchObject({
         protocol: "ws",
         host: tauriHost,
-        port: 1421,
+        port: 8736,
       });
     } finally {
       if (previousHost === undefined) {

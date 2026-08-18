@@ -92,7 +92,7 @@ describe("SpeechModelPanel", () => {
     });
 
     fireEvent.click(screen.getByRole("button", { name: "Toggle options" }));
-    fireEvent.click(screen.getByRole("option", { name: "OpenAI" }));
+    fireEvent.click(screen.getByRole("option", { name: /^OpenAI\b/ }));
 
     expect(calls).toEqual([
       "provider:openai",
@@ -116,7 +116,7 @@ describe("SpeechModelPanel", () => {
     fireEvent.click(screen.getByRole("button", { name: "OpenAI" }));
     fireEvent.click(screen.getByRole("option", { name: /^Custom/ }));
 
-    expect(calls).toEqual(["provider:custom"]);
+    expect(calls).toEqual(["provider:custom", "endpoint:", "model:auto"]);
   });
 
   test("keeps the selected missing model visible and normalizes discovered models", () => {
@@ -138,9 +138,9 @@ describe("SpeechModelPanel", () => {
       screen.getAllByRole("option").map((option) => option.textContent),
     ).toEqual([
       expect.stringMatching(/^Automatic \(/),
-      "model-no-longer-discovered",
       "whisper-1",
       "gpt-4o-transcribe",
+      "model-no-longer-discovered",
     ]);
   });
 
@@ -169,7 +169,7 @@ describe("SpeechModelPanel", () => {
     expect(apiKeyInput.value).toBe("persisted-api-key");
 
     fireEvent.click(screen.getByRole("button", { name: "OpenAI" }));
-    fireEvent.click(screen.getByRole("option", { name: "Groq" }));
+    fireEvent.click(screen.getByRole("option", { name: /^Groq\b/ }));
 
     fireEvent.click(screen.getByRole("button", { name: /^Automatic \(/ }));
     fireEvent.click(screen.getByRole("option", { name: "whisper-1" }));
