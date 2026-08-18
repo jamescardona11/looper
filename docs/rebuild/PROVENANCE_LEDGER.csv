@@ -333,6 +333,9 @@ apps/desktop/src/features/settings/settings-update-model.ts,replaced,desktop-set
 apps/desktop/src/features/settings/settings-update-model.test.ts,owned,desktop-settings-update-model-tests,authored-local-state-exclusion-capability-invalid-shortcut-and-language-tests,project-license-pending,-,corpus-containment-3.3-and-desktop-tests-typecheck-2026-08-16,pending
 apps/desktop/src/features/settings/useSettingsPersistence.ts,replaced,desktop-settings-persistence,authored-serialized-save-queue-hydration-debounce-close-flush-and-error-boundary,project-license-pending,-,corpus-containment-5.4-and-desktop-tests-typecheck-2026-08-16,pending
 apps/desktop/src/features/settings/useSettingsPersistence.test.tsx,owned,desktop-settings-persistence-tests,authored-initial-hydration-delayed-autosave-and-serialized-write-tests,project-license-pending,-,corpus-containment-4.3-permissive-and-desktop-tests-typecheck-2026-08-16,pending
+apps/desktop/src/features/settings/useShortcutEditor.ts,replaced,desktop-shortcut-editor,authored-unified-editor-state-capture-bridge-validation-recovery-and-persistence-port,project-license-pending,-,corpus-containment-11.0-and-full-desktop-suite-typecheck-2026-08-16,pending
+apps/desktop/src/features/settings/useShortcutEditor.test.tsx,owned,desktop-shortcut-editor-tests,authored-hydration-update-rejection-recovery-and-capture-start-tests,project-license-pending,-,corpus-containment-4.2-and-full-desktop-suite-typecheck-2026-08-16,pending
+apps/desktop/src/file-size-contract.test.ts,owned,desktop-source-size-contract,authored-source-budget-and-shrinking-legacy-allowlist,project-license-pending,-,corpus-containment-1.7-permissive-and-full-desktop-suite-2026-08-16,pending
 apps/desktop/src-tauri/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/desktop/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/mobile/**,unreviewed,mobile,,pending,-,pending,uncommitted
