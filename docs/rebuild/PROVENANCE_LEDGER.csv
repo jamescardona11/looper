@@ -64,6 +64,12 @@ apps/desktop/src/data/imports.ts,replaced,desktop-import-api,reconstructed-from-
 apps/desktop/src/data/imports.test.ts,owned,desktop-import-api-tests,authored-import-command-tests,project-license-pending,-,targeted-tests-and-typecheck-2026-08-16,pending
 apps/desktop/src/shared/lib/macosPermissions.ts,replaced,macos-permission-gateway,authored-platform-gated-permission-api,project-license-pending,-,targeted-tests-and-typecheck-2026-08-16,pending
 apps/desktop/src/shared/lib/macosPermissions.test.ts,owned,macos-permission-gateway-tests,authored-permission-gateway-tests,project-license-pending,-,targeted-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/shared/hooks/useMountEffect.ts,owned,react-mount-boundary,authored-mount-effect-wrapper,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/shared/hooks/useDebouncedValue.ts,replaced,react-debounced-value,authored-external-store-debounce,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/shared/hooks/useClickOutside.ts,replaced,react-outside-click,authored-stable-document-listener,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/shared/hooks/useCopyToClipboard.ts,replaced,react-clipboard,authored-clipboard-state-boundary,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/shared/hooks/useShiftHeld.ts,replaced,react-shift-state,authored-external-key-state-store,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/shared/hooks/interactionHooks.test.tsx,owned,react-interaction-hook-tests,authored-shared-hook-tests,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
 apps/desktop/src-tauri/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/desktop/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/mobile/**,unreviewed,mobile,,pending,-,pending,uncommitted
