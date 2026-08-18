@@ -1,0 +1,270 @@
+/*
+ * Tailwind 4 + design tokens.
+ * Shared color tokens (background, primary, card, destructive, …) live in the
+ * committed ./tokens.generated.css file.
+ * This file owns only WEB-ONLY tokens: the hero gradient, fonts, radius,
+ * animations, and syntax highlighting. `--hero-end` resolves to the active
+ * background so the hero gradient fades cleanly in either mode.
+ */
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "@fontsource-variable/jetbrains-mono";
+@import "@fontsource-variable/bricolage-grotesque";
+@import "./tokens.generated.css";
+
+@source "../../src/**/*.{ts,tsx}";
+
+@custom-variant dark (&:is(.dark *));
+
+:root,
+.dark {
+  /* Colors come from ./tokens.generated.css. This block keeps only WEB-ONLY tokens. */
+
+  /* Periwinkle signal wash, fading into the graphite workspace. */
+  --hero-start: oklch(0.56 0.12 280);
+  --hero-mid: oklch(0.27 0.04 280);
+  --hero-end: var(--background);
+
+  --radius: 0.625rem;
+  --tracking-tight: -0.02em;
+}
+
+.light {
+  /* Colors come from ./tokens.generated.css. Web-only tokens below. */
+  --hero-start: oklch(0.86 0.07 280);
+  --hero-mid: oklch(0.93 0.025 145);
+  --hero-end: var(--background);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-success-subtle: var(--success-subtle);
+  --color-success-foreground: var(--success-foreground);
+  --color-warning-subtle: var(--warning-subtle);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-hero-start: var(--hero-start);
+  --color-hero-mid: var(--hero-mid);
+  --color-hero-end: var(--hero-end);
+
+  /* UI uses the native/system sans; display remains a deliberate, limited role. */
+  --font-sans: Inter, "SF Pro Display", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Bricolage Grotesque Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono Variable", ui-monospace, "SFMono-Regular", monospace;
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
+  --radius-3xl: calc(var(--radius) + 12px);
+
+  --tracking-tighter: -0.05em;
+  --tracking-tight: -0.025em;
+
+  /* Entrance for marketing surfaces — strong ease-out (Emil), short, both-fill. */
+  --animate-fade-up: fade-up 0.6s cubic-bezier(0.23, 1, 0.32, 1) both;
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  html {
+    color-scheme: dark;
+  }
+  html.light {
+    color-scheme: light;
+  }
+  html,
+  body {
+    @apply bg-background text-foreground antialiased;
+    /* Brand UI face — driven by the --font-sans token so a font swap (CLI
+       typography step) only touches the token + @import above, not this rule. */
+    font-family: var(--font-sans);
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11", "ss01";
+    letter-spacing: var(--tracking-tight);
+  }
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
+}
+
+
+@media (prefers-reduced-motion: no-preference) {
+  ::view-transition-old(root) {
+    animation: none;
+    opacity: 0;
+  }
+
+  ::view-transition-new(root) {
+    animation: none;
+  }
+
+  ::view-transition-group(desktop-workspace) {
+    animation-duration: 160ms;
+    animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  ::view-transition-old(desktop-workspace) {
+    animation: desktop-workspace-out 110ms ease-in both;
+  }
+
+  ::view-transition-new(desktop-workspace) {
+    animation: desktop-workspace-in 160ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+}
+
+@keyframes desktop-workspace-out {
+  to {
+    opacity: 0;
+    transform: translateY(-3px);
+  }
+}
+
+@keyframes desktop-workspace-in {
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+}
+
+/* Keep compact icon controls visually dense while preserving a 44px touch area. */
+.touch-target::after {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: max(100%, 44px);
+  height: max(100%, 44px);
+  transform: translate(-50%, -50%);
+  content: "";
+}
+
+/* Signature hero gradient — radial wash from top-left, fading to background */
+.hero-gradient {
+  background: radial-gradient(
+    ellipse 80% 60% at 20% 0%,
+    var(--hero-start) 0%,
+    var(--hero-mid) 35%,
+    var(--hero-end) 75%
+  );
+}
+
+/* Entrance fade-up (translate only — GPU-friendly). Used on the landing hero. */
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Respect reduced-motion across app chrome, loaders and marketing surfaces. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-delay: 0ms !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  .animate-fade-up {
+    animation: none !important;
+  }
+}
+
+/* Syntax highlighting (highlight.js token classes, via rehype-highlight in the
+   docs). Mid-lightness OKLCH tokens read on both the light and dark code-block
+   surface (bg-muted). Comments/meta use the muted-foreground token so they
+   adapt with the theme. */
+.hljs-comment,
+.hljs-quote {
+  color: var(--muted-foreground);
+  font-style: italic;
+}
+.hljs-keyword,
+.hljs-selector-tag,
+.hljs-built_in,
+.hljs-section {
+  color: oklch(0.5 0.2 290);
+}
+.hljs-string,
+.hljs-attr,
+.hljs-template-variable,
+.hljs-addition {
+  color: oklch(0.48 0.13 162);
+}
+.hljs-number,
+.hljs-literal,
+.hljs-variable,
+.hljs-type {
+  color: oklch(0.52 0.16 55);
+}
+.hljs-title,
+.hljs-name,
+.hljs-selector-id,
+.hljs-selector-class {
+  color: oklch(0.5 0.18 250);
+}
+.hljs-meta,
+.hljs-symbol,
+.hljs-bullet {
+  color: var(--muted-foreground);
+}
+.hljs-emphasis {
+  font-style: italic;
+}
+.hljs-strong {
+  font-weight: 600;
+}
+
+/* Dark theme: lift token lightness so colors meet AA on the near-black code
+   surface (a single fixed color can't satisfy both light and dark backgrounds). */
+.dark .hljs-keyword,
+.dark .hljs-selector-tag,
+.dark .hljs-built_in,
+.dark .hljs-section {
+  color: oklch(0.74 0.15 290);
+}
+.dark .hljs-string,
+.dark .hljs-attr,
+.dark .hljs-template-variable,
+.dark .hljs-addition {
+  color: oklch(0.74 0.13 162);
+}
+.dark .hljs-number,
+.dark .hljs-literal,
+.dark .hljs-variable,
+.dark .hljs-type {
+  color: oklch(0.8 0.13 70);
+}
+.dark .hljs-title,
+.dark .hljs-name,
+.dark .hljs-selector-id,
+.dark .hljs-selector-class {
+  color: oklch(0.74 0.15 250);
+}

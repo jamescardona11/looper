@@ -1,0 +1,60 @@
+/*
+ * Looper web color tokens. tokens.css imports this file and owns web-only
+ * tokens.
+ */
+:root,
+.dark {
+  --brand: oklch(0.72 0.13 280);
+  --brand-foreground: oklch(0.16 0.012 145);
+  --background: oklch(0.16 0.012 145);
+  --foreground: oklch(0.96 0.01 145);
+  --card: oklch(0.2 0.012 145);
+  --card-foreground: oklch(0.96 0.01 145);
+  --popover: oklch(0.2 0.012 145);
+  --popover-foreground: oklch(0.96 0.01 145);
+  --secondary: oklch(0.25 0.012 145);
+  --secondary-foreground: oklch(0.96 0.01 145);
+  --muted: oklch(0.22 0.012 145);
+  --muted-foreground: oklch(0.7 0.016 145);
+  --destructive: oklch(0.621 0.2102 22.2);
+  --destructive-foreground: oklch(1 0 0);
+  --border: oklch(0.32 0.012 145);
+  --input: oklch(0.35 0.012 145);
+  --success-subtle: oklch(0.3292 0.0572 158.52);
+  --success-foreground: oklch(0.8549 0.0696 160.16);
+  --warning-subtle: oklch(0.4215 0.0976 26.25);
+  --warning-foreground: oklch(0.8837 0.0559 50.96);
+  --primary: var(--brand);
+  --primary-foreground: var(--brand-foreground);
+  --accent: var(--brand);
+  --accent-foreground: var(--brand-foreground);
+  --ring: var(--brand);
+}
+
+.light {
+  --brand: oklch(0.5 0.15 280);
+  --brand-foreground: oklch(0.99 0.005 145);
+  --background: oklch(0.96 0.01 145);
+  --foreground: oklch(0.2 0.012 145);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.2 0.012 145);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.2 0.012 145);
+  --secondary: oklch(0.98 0.008 145);
+  --secondary-foreground: oklch(0.2 0.012 145);
+  --muted: oklch(0.98 0.008 145);
+  --muted-foreground: oklch(0.5 0.016 145);
+  --destructive: oklch(0.5494 0.1998 21.81);
+  --destructive-foreground: oklch(1 0 0);
+  --border: oklch(0.9 0.012 145);
+  --input: oklch(0.9 0.012 145);
+  --success-subtle: oklch(0.9201 0.043 160.21);
+  --success-foreground: oklch(0.4311 0.0789 157.86);
+  --warning-subtle: oklch(0.9429 0.0348 57.61);
+  --warning-foreground: oklch(0.5138 0.116 26.61);
+  --primary: var(--brand);
+  --primary-foreground: var(--brand-foreground);
+  --accent: var(--brand);
+  --accent-foreground: var(--brand-foreground);
+  --ring: var(--brand);
+}

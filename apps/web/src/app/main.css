@@ -1,0 +1,10 @@
+/*
+ * Web app entry CSS.
+ *
+ * Imports the Tailwind 4 setup + design tokens (local `./tokens.css`).
+ * Shadcn primitives live in src/shared/components/ui/.
+ *
+ * App-only utilities can be added here with `@utility`; reusable color and
+ * typography values belong in the local token files.
+ */
+@import "./tokens.css";
