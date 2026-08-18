@@ -109,8 +109,8 @@ export function GeneralFeatureSection(props: GeneralFeatureProps) {
       </SectionLabel>
       <div className="space-y-3">
         <EditModeFeature {...props} />
-        {toggles.map((toggle) => (
-          <FeatureToggle {...toggle} />
+        {toggles.map(({ key, ...toggle }) => (
+          <FeatureToggle key={key} {...toggle} />
         ))}
       </div>
     </section>

@@ -52,6 +52,16 @@ Ejecución Tauri de la rama AGPL actual (18 de agosto de 2026):
 - Captura: `.tcompound/evidence/runtime/looper-tauri-startup.png`
 - SHA-256: `c32362517a2d8c6a24e53f150b82e38b356447f2292570c3e4ef90dc8a777538`
 - Resolución: `3024x1964` (1,489,161 bytes).
+- Smoke visible adicional: desde el menú nativo `Looper > Settings…` se abrió la
+  ventana de Settings con la sección `Processing & Models` visible:
+  `.tcompound/evidence/runtime/looper-settings-startup.png`
+- SHA-256 de esa captura: `a7107fb7ef38604e4689651f08d60599798d5beeed46629e3a026c3147516f42`
+- Repetición después de corregir la propagación de `key` en General Settings:
+  `.tcompound/evidence/runtime/looper-settings-after-key-fix.png`
+- SHA-256: `b5f247d479e8f0836386fefc3a5f68ff85f324fa64b2abe571259287702dfd43`
+- En esa repetición no reaparecieron los errores React de `key`; sí permanecen
+  las advertencias de entorno de Convex sin URL y de la clave cifrada de otro
+  hardware descritas arriba.
 
 Durante esa ejecución el entorno informó que la clave cifrada pertenecía a
 otro hardware y que `VITE_CONVEX_URL` no estaba configurado; Looper conservó
