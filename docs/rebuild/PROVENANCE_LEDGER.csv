@@ -4,6 +4,12 @@ docs/rebuild/FEATURE_PARITY.md,owned,governance,authored_for_rebuild,AGPL-3.0-on
 docs/rebuild/PROVENANCE_LEDGER.csv,owned,governance,authored_for_rebuild,AGPL-3.0-only,-,initial,uncommitted
 tools/provenance/README.md,owned,governance,authored_for_rebuild,AGPL-3.0-only,-,initial,uncommitted
 tools/provenance/check-staged.mjs,owned,governance,authored_for_rebuild,AGPL-3.0-only,-,initial,uncommitted
+packages/rust/looper-ts/THIRD_PARTY_NOTICES.md,permissive,attribution,parakeet-rs@7deba612fc9a30c4a7182f4eaa53554cb2fa42c8,MIT,packages/rust/looper-ts/THIRD_PARTY_NOTICES.md,upstream-license-verified-2026-08-16,pending
+packages/rust/looper-ts/src/parakeet/features.rs,permissive,parakeet,parakeet-rs@7deba612fc9a30c4a7182f4eaa53554cb2fa42c8,MIT,packages/rust/looper-ts/THIRD_PARTY_NOTICES.md,upstream-license-verified-2026-08-16,pending
+packages/rust/looper-ts/src/parakeet/mod.rs,permissive,parakeet,parakeet-rs@7deba612fc9a30c4a7182f4eaa53554cb2fa42c8,MIT,packages/rust/looper-ts/THIRD_PARTY_NOTICES.md,upstream-license-verified-2026-08-16,pending
+packages/rust/looper-ts/src/parakeet/model.rs,permissive,parakeet,parakeet-rs@7deba612fc9a30c4a7182f4eaa53554cb2fa42c8,MIT,packages/rust/looper-ts/THIRD_PARTY_NOTICES.md,upstream-license-verified-2026-08-16,pending
+packages/rust/looper-ts/src/parakeet/timestamps.rs,permissive,parakeet,parakeet-rs@7deba612fc9a30c4a7182f4eaa53554cb2fa42c8,MIT,packages/rust/looper-ts/THIRD_PARTY_NOTICES.md,upstream-license-verified-2026-08-16,pending
+packages/rust/looper-ts/src/parakeet/vocab.rs,permissive,parakeet,parakeet-rs@7deba612fc9a30c4a7182f4eaa53554cb2fa42c8,MIT,packages/rust/looper-ts/THIRD_PARTY_NOTICES.md,upstream-license-verified-2026-08-16,pending
 apps/desktop/src-tauri/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/desktop/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/mobile/**,unreviewed,mobile,,pending,-,pending,uncommitted
