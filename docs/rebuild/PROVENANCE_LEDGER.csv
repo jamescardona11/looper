@@ -397,6 +397,8 @@ apps/desktop/src/features/transcriptions/searchQuery.ts,replaced,desktop-transcr
 apps/desktop/src/features/transcriptions/transcription-search-query.ts,replaced,desktop-transcription-search-parser,authored-filter-token-reducer-sort-policy-text-preservation-and-query-token-replacement,project-license-pending,-,corpus-containment-15.7-and-full-desktop-suite-build-2026-08-16,pending
 apps/desktop/src/features/transcriptions/transcription-search-time.ts,replaced,desktop-transcription-search-calendar,authored-local-date-codec-range-semantics-preset-token-and-current-preset-policy,project-license-pending,-,corpus-containment-17.6-and-full-desktop-suite-build-2026-08-16,pending
 apps/desktop/src/features/transcriptions/searchQuery.test.ts,owned,desktop-transcription-search-tests,authored-free-text-sort-invalid-date-local-preset-and-range-boundary-contract-tests,project-license-pending,-,corpus-containment-9.3-and-full-desktop-suite-2026-08-16,pending
+apps/desktop/src/features/license/licenseFingerprint.ts,replaced,desktop-member-card-fingerprint,authored-key-tail-hash-pure-random-transition-and-deterministic-dot-field-builder,project-license-pending,-,corpus-containment-7.7-and-full-desktop-suite-build-2026-08-16,pending
+apps/desktop/src/features/license/licenseFingerprint.test.ts,owned,desktop-member-card-fingerprint-tests,authored-seed-random-sequence-visible-dot-pattern-and-density-boundary-contracts,project-license-pending,-,corpus-containment-9.5-and-full-desktop-suite-2026-08-16,pending
 apps/desktop/src-tauri/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/desktop/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/mobile/**,unreviewed,mobile,,pending,-,pending,uncommitted
