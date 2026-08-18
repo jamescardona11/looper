@@ -1089,7 +1089,6 @@ apps/mobile/src/features/dictation/use-local-stt.ts,owned,mobile-dictation,autho
 .editorconfig,owned,repository-infrastructure,authored-editor-format-contract,project-license-pending,-,root-infrastructure-review-2026-08-17,pending
 .lintstagedrc.json,owned,repository-infrastructure,authored-staged-tooling-contract,project-license-pending,-,root-infrastructure-review-2026-08-17,pending
 Makefile,owned,repository-infrastructure,authored-workspace-command-contract,project-license-pending,-,root-infrastructure-review-2026-08-17,pending
-README.md,owned,repository-documentation,authored-product-and-development-overview,project-license-pending,-,root-infrastructure-review-2026-08-17,pending
 renovate.json,owned,repository-infrastructure,authored-dependency-update-policy,project-license-pending,-,root-infrastructure-review-2026-08-17,pending
 pnpm-lock.yaml,owned,repository-infrastructure,generated-workspace-lockfile,project-license-pending,-,root-infrastructure-review-2026-08-17,pending
 .github/workflows/deploy.yml,owned,repository-ci,authored-convex-deploy-workflow,project-license-pending,-,root-infrastructure-review-2026-08-17,pending
