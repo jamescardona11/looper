@@ -893,6 +893,8 @@ apps/desktop/src-tauri/src/settings.rs,replaced,desktop-settings,authored-stable
 apps/desktop/src-tauri/src/settings_model.rs,replaced,desktop-settings-model,authored-settings-model-and-serde-contracts,project-license-pending,-,corpus-containment-26.1-settings-47-tests-cargo-all-targets-rustfmt-2026-08-17,pending
 apps/desktop/src-tauri/src/settings_policy.rs,replaced,desktop-settings-policy,authored-settings-defaults-migration-locale-shortcut-and-personality-policy,project-license-pending,-,corpus-containment-27.7-settings-47-tests-cargo-all-targets-rustfmt-2026-08-17,pending
 apps/desktop/src-tauri/src/settings_store.rs,replaced,desktop-settings-store,authored-settings-sqlite-typed-key-and-secret-storage,project-license-pending,-,corpus-containment-15.9-settings-47-tests-cargo-all-targets-rustfmt-2026-08-17,pending
+apps/desktop/src-tauri/src/library/repo.rs,replaced,desktop-library-repo,authored-library-watch-translation-meeting-storage-and-item-contract-facade,project-license-pending,-,corpus-containment-6.5-library-repo-3-focal-tests-80-library-tests-cargo-all-targets-rustfmt-2026-08-17,pending
+apps/desktop/src-tauri/src/library/repo/items.rs,replaced,desktop-library-repo-items,authored-library-item-sql-codec-filter-and-patch-policy,project-license-pending,-,corpus-containment-8.2-library-repo-3-focal-tests-80-library-tests-cargo-all-targets-rustfmt-2026-08-17,pending
 apps/desktop/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/mobile/**,unreviewed,mobile,,pending,-,pending,uncommitted
 apps/web/**,unreviewed,web,,pending,-,pending,uncommitted
