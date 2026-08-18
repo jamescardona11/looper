@@ -135,6 +135,8 @@ apps/desktop/src/data/shortcuts.ts,owned,desktop-shortcut-native-bridge,no-mater
 apps/desktop/src/data/shortcuts.test.ts,owned,desktop-shortcut-native-bridge-tests,authored-command-and-event-tests,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
 apps/desktop/src/shared/hooks/useShortcutCapture.ts,replaced,desktop-shortcut-capture,authored-external-subscription-state-machine,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
 apps/desktop/src/shared/hooks/useShortcutCapture.test.tsx,owned,desktop-shortcut-capture-tests,authored-preview-completion-and-cancel-tests,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/types/models.ts,replaced,desktop-model-contracts,reconstructed-from-native-model-serializers,project-license-pending,-,targeted-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/types/models.test.ts,owned,desktop-model-contract-tests,authored-state-and-download-tests,project-license-pending,-,targeted-tests-and-typecheck-2026-08-16,pending
 apps/desktop/src-tauri/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/desktop/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/mobile/**,unreviewed,mobile,,pending,-,pending,uncommitted
