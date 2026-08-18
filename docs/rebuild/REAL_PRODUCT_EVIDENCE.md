@@ -114,6 +114,20 @@ Smoke host-level del hotkey y Capture Pill:
 - Esto prueba el hotkey y la transición visual del pill; no prueba todavía
   audio hablado, STT ni la inserción de texto generada por voz.
 
+Intento adicional de voz en host:
+
+- TextEdit se enfocó con el texto marcador `VOICE_SMOKE_BEGIN`.
+- Se mantuvo `Fn` mientras `say -v Samantha "hello from Looper voice smoke"`
+  reprodujo la frase por el altavoz del Mac; luego se soltó `Fn` y se leyó de
+  nuevo el documento por AppleScript.
+- El proceso Tauri sí registró captura local y el motor (`mode=Local`, audio de
+  `0.51s`, `long-form transcribe`), pero TextEdit conservó exactamente
+  `VOICE_SMOKE_BEGIN`; no se obtuvo texto insertado.
+- Captura: `.tcompound/evidence/runtime/looper-real-voice-smoke-after.png`.
+- Resultado: evidencia de que el shortcut inicia captura/pipeline, pero el
+  altavoz no constituye una fuente válida de voz para cerrar el gate de STT;
+  micrófono físico o fixture de audio inyectado siguen pendientes.
+
 Durante esa ejecución el entorno informó que la clave cifrada pertenecía a
 otro hardware y que `VITE_CONVEX_URL` no estaba configurado; Looper conservó
 la clave cifrada y desactivó las rutas remotas/sync, pero la ventana local
