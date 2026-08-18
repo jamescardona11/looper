@@ -25,6 +25,16 @@ use std::sync::{
 use std::time::Duration;
 use tauri::{AppHandle, Emitter, LogicalSize, Manager, Rect, WebviewWindow};
 
+#[path = "pill_controller_state.rs"]
+mod pill_controller_state;
+#[path = "pill_layout.rs"]
+mod pill_layout;
+
+use pill_layout::{
+    canonical_from_dictation_origin, canonical_meeting_overlay_origin,
+    dictation_origin_from_canonical, meeting_overlay_geometry,
+};
+
 const MIN_RECORDING_DURATION_MS: i64 = 300;
 const OVERLAY_HIDE_AFTER_IDLE_MS: u64 = 180;
 const CANCELLED_FEEDBACK_MS: u64 = 1_200;
@@ -509,148 +519,14 @@ pub struct PillController {
 }
 
 impl PillController {
-    pub fn new(recorder: Arc<RecorderManager>) -> Self {
-        Self {
-            status: Mutex::new(PillStatus::Idle),
-            recording_mode: Mutex::new(None),
-            shortcut_origin: Mutex::new(None),
-            recording_options: Mutex::new(hotkeys::ShortcutOptions::default()),
-            recording_settings: Mutex::new(None),
-            recording_personality: Mutex::new(None),
-            smart_press_time: Mutex::new(None),
-            hold_key_down: Mutex::new(false),
-            paused_media_session: Mutex::new(None),
-            recorder,
-            audio_spectrum_emitter: Mutex::new(None),
-            hover_emitter: Mutex::new(None),
-            hovering: AtomicBool::new(false),
-            recording_generation: AtomicU64::new(0),
-            is_expanded: Mutex::new(false),
-            mode_state: Mutex::new(PillModeState::default()),
-            overlay_position: Mutex::new(None),
-            meeting_overlay_presentation: Mutex::new(MeetingOverlayPresentation::default()),
-            preflight_tray_anchor: Mutex::new(None),
-            preflight_language_menu_open: Mutex::new(false),
-        }
-    }
-
-    pub fn status(&self) -> PillStatus {
-        *self.status.lock()
-    }
-
-    fn freeze_recording_personality(&self, personality: Option<Personality>) {
-        *self.recording_personality.lock() = personality;
-    }
-
-    fn processing_personality(&self) -> Option<Personality> {
-        self.recording_personality.lock().clone()
-    }
-
-    pub fn set_expanded(&self, expanded: bool) {
-        *self.is_expanded.lock() = expanded;
-    }
-
-    fn set_mode_state(&self, expanded: bool, text: &str, tone: &str, used_screen_context: bool) {
-        self.set_expanded(expanded);
-        *self.mode_state.lock() = PillModeState {
-            expanded,
-            text: text.to_string(),
-            tone: tone.to_string(),
-            used_screen_context,
-        };
-    }
-
-    fn emit_mode_state(&self, app: &AppHandle<AppRuntime>) {
-        let mode = self.mode_state.lock().clone();
-        emit_event(
-            app,
-            EVENT_PILL_MODE,
-            serde_json::json!({
-                "expanded": mode.expanded,
-                "text": mode.text,
-                "tone": mode.tone,
-                "usedScreenContext": mode.used_screen_context,
-            }),
-        );
-    }
-
-    pub fn is_expanded(&self) -> bool {
-        *self.is_expanded.lock()
-    }
-
-    fn is_hovering(&self) -> bool {
-        self.hovering.load(Ordering::Relaxed)
-    }
-
-    fn set_hovering(&self, hovering: bool) {
-        self.hovering.store(hovering, Ordering::Relaxed);
-    }
-
-    fn overlay_position(&self) -> Option<(i32, i32)> {
-        *self.overlay_position.lock()
-    }
-
-    /// Ocultar la píldora la manda fuera de la pantalla, y varias rutas leen
-    /// esa posición y la guardan como si fuera donde el usuario la dejó. Una
-    /// sola muestra así la envenena para siempre: el `clamp` siguiente la pega
-    /// a una esquina y el resultado, ya plausible, se reescribe solo. Se filtra
-    /// aquí porque es por donde pasan todos los escritores.
-    fn set_overlay_position(&self, position: (i32, i32)) {
-        if position.0 <= OVERLAY_OFFSCREEN_LIMIT || position.1 <= OVERLAY_OFFSCREEN_LIMIT {
-            return;
-        }
-        *self.overlay_position.lock() = Some(position);
-    }
-
-    fn meeting_overlay_presentation(&self) -> MeetingOverlayPresentation {
-        *self.meeting_overlay_presentation.lock()
-    }
-
-    fn set_meeting_overlay_presentation(&self, presentation: MeetingOverlayPresentation) {
-        *self.meeting_overlay_presentation.lock() = presentation;
-    }
-
-    pub fn recorder(&self) -> &RecorderManager {
-        &self.recorder
-    }
-
-    pub fn recorder_handle(&self) -> Arc<RecorderManager> {
-        Arc::clone(&self.recorder)
-    }
-
-    fn start_audio_spectrum_emitter(&self, app: &AppHandle<AppRuntime>) {
-        let mut emitter = self.audio_spectrum_emitter.lock();
-        if emitter.is_some() {
-            return;
-        }
-        *emitter = Some(AudioSpectrumEmitter::start(
-            app.clone(),
-            Arc::clone(&self.recorder),
-        ));
-    }
-
-    fn stop_audio_spectrum_emitter(&self) {
-        if let Some(emitter) = self.audio_spectrum_emitter.lock().take() {
-            emitter.stop();
-        }
-    }
-
-    fn start_hover_emitter(&self, app: &AppHandle<AppRuntime>) {
-        let mut emitter = self.hover_emitter.lock();
-        if emitter.is_some() {
-            return;
-        }
-        *emitter = Some(PillHoverEmitter::start(app.clone()));
-    }
-
     fn start_streaming_session_if_supported(
         &self,
         app: &AppHandle<AppRuntime>,
         settings: &UserSettings,
     ) {
+        let state = app.state::<AppState>();
         if settings.transcription_mode == TranscriptionMode::Cloud {
-            app.state::<AppState>()
-                .start_cloud_streaming_session(app, settings.language.clone());
+            state.start_cloud_streaming_session(app, settings.language.clone());
             return;
         }
 
@@ -662,31 +538,8 @@ impl PillController {
         }
 
         if let Ok(ready) = model_manager::ensure_model_ready(app, &selected_model) {
-            app.state::<AppState>().start_streaming_session(app, &ready);
+            state.start_streaming_session(app, &ready);
         }
-    }
-
-    fn emit_state(&self, app: &AppHandle<AppRuntime>) {
-        let status = *self.status.lock();
-
-        if let Err(err) = app.emit(EVENT_PILL_STATE, PillStatePayload { status }) {
-            tracing::error!("Failed to emit pill state: {err}");
-        }
-    }
-
-    pub fn transition_to(&self, app: &AppHandle<AppRuntime>, new_status: PillStatus) {
-        let previous = {
-            let mut status = self.status.lock();
-            if *status == new_status {
-                return;
-            }
-            let previous = *status;
-            *status = new_status;
-            previous
-        };
-
-        self.update_overlay_visibility(app, previous, new_status);
-        self.emit_state(app);
     }
 
     /// Muestra el dock de captura junto al icono de la bandeja. Su posición
@@ -2041,224 +1894,6 @@ fn preferred_capture_monitor(window: &WebviewWindow<AppRuntime>) -> Option<tauri
         .ok()
         .flatten()
         .or_else(|| window.available_monitors().ok()?.into_iter().next())
-}
-
-/// Dónde va la ventana de dictado para que su píldora caiga en la posición
-/// canónica (la esquina de la píldora visible, que es la que el usuario mueve).
-fn dictation_origin_from_canonical(canonical: (i32, i32), scale: f64) -> (i32, i32) {
-    (
-        canonical.0 - logical_pixels(DICTATION_PILL_INSET_X, scale),
-        canonical.1 - logical_pixels(DICTATION_PILL_INSET_Y, scale),
-    )
-}
-
-/// La inversa: de dónde está la ventana de dictado a dónde se ve su píldora.
-fn canonical_from_dictation_origin(origin: (i32, i32), scale: f64) -> (i32, i32) {
-    (
-        origin.0 + logical_pixels(DICTATION_PILL_INSET_X, scale),
-        origin.1 + logical_pixels(DICTATION_PILL_INSET_Y, scale),
-    )
-}
-
-fn canonical_meeting_overlay_origin(
-    current_origin: (i32, i32),
-    scale: f64,
-    presentation: MeetingOverlayPresentation,
-) -> (i32, i32) {
-    if !presentation.transcript_visible {
-        return if presentation.compact {
-            (
-                current_origin.0 + logical_pixels(MEETING_PILL_GUTTER, scale)
-                    - logical_pixels(
-                        (MEETING_PILL_SLOT_WIDTH - MEETING_COMPACT_PILL_SIZE) / 2.0,
-                        scale,
-                    ),
-                current_origin.1 + logical_pixels(MEETING_PILL_GUTTER, scale),
-            )
-        } else {
-            (
-                current_origin.0 + logical_pixels(MEETING_PILL_GUTTER, scale),
-                current_origin.1 + logical_pixels(MEETING_PILL_GUTTER, scale),
-            )
-        };
-    }
-
-    match presentation.placement {
-        MeetingTranscriptPlacement::Above => (
-            current_origin.0 + logical_pixels(MEETING_PILL_GUTTER, scale),
-            current_origin.1
-                + logical_pixels(
-                    MEETING_PILL_GUTTER + MEETING_TRANSCRIPT_HEIGHT + MEETING_OVERLAY_GAP,
-                    scale,
-                ),
-        ),
-        MeetingTranscriptPlacement::Left => (
-            current_origin.0
-                + logical_pixels(
-                    MEETING_PILL_GUTTER + MEETING_TRANSCRIPT_WIDTH + MEETING_OVERLAY_GAP,
-                    scale,
-                ),
-            canonical_side_overlay_y(current_origin.1, scale, presentation.side_alignment),
-        ),
-        MeetingTranscriptPlacement::Right => (
-            current_origin.0 + logical_pixels(MEETING_PILL_GUTTER, scale),
-            canonical_side_overlay_y(current_origin.1, scale, presentation.side_alignment),
-        ),
-    }
-}
-
-fn canonical_side_overlay_y(
-    current_y: i32,
-    scale: f64,
-    alignment: MeetingTranscriptSideAlignment,
-) -> i32 {
-    match alignment {
-        MeetingTranscriptSideAlignment::Top => {
-            current_y + logical_pixels(MEETING_PILL_GUTTER, scale)
-        }
-        MeetingTranscriptSideAlignment::Bottom => {
-            current_y
-                + logical_pixels(
-                    MEETING_TRANSCRIPT_SIDE_HEIGHT - MEETING_PILL_GUTTER - MEETING_PILL_HEIGHT,
-                    scale,
-                )
-        }
-    }
-}
-
-fn meeting_overlay_geometry(
-    canonical_origin: (i32, i32),
-    scale: f64,
-    compact: bool,
-    transcript_visible: bool,
-    monitor_position: (i32, i32),
-    monitor_size: (u32, u32),
-) -> MeetingOverlayGeometry {
-    if !transcript_visible {
-        let logical_size = if compact {
-            (
-                (MEETING_COMPACT_PILL_SIZE + MEETING_PILL_GUTTER * 2.0) as i32,
-                (MEETING_COMPACT_PILL_SIZE + MEETING_PILL_GUTTER * 2.0) as i32,
-            )
-        } else {
-            (MEETING_OVERLAY_WIDTH as i32, MEETING_OVERLAY_HEIGHT as i32)
-        };
-        let raw_origin = if compact {
-            (
-                canonical_origin.0
-                    + logical_pixels(
-                        (MEETING_PILL_SLOT_WIDTH - MEETING_COMPACT_PILL_SIZE) / 2.0,
-                        scale,
-                    )
-                    - logical_pixels(MEETING_PILL_GUTTER, scale),
-                canonical_origin.1 - logical_pixels(MEETING_PILL_GUTTER, scale),
-            )
-        } else {
-            (
-                canonical_origin.0 - logical_pixels(MEETING_PILL_GUTTER, scale),
-                canonical_origin.1 - logical_pixels(MEETING_PILL_GUTTER, scale),
-            )
-        };
-        return MeetingOverlayGeometry {
-            placement: MeetingTranscriptPlacement::Above,
-            side_alignment: MeetingTranscriptSideAlignment::Bottom,
-            logical_size,
-            origin: clamp_overlay_coordinates(
-                raw_origin.0,
-                raw_origin.1,
-                (
-                    logical_pixels(f64::from(logical_size.0), scale) as u32,
-                    logical_pixels(f64::from(logical_size.1), scale) as u32,
-                ),
-                monitor_position,
-                monitor_size,
-            ),
-        };
-    }
-
-    let anchor_x = canonical_origin.0 + logical_pixels(MEETING_PILL_SLOT_WIDTH / 2.0, scale);
-    let anchor_bottom = canonical_origin.1 + logical_pixels(MEETING_PILL_HEIGHT, scale);
-    let above_origin = (
-        canonical_origin.0 - logical_pixels(MEETING_PILL_GUTTER, scale),
-        canonical_origin.1
-            - logical_pixels(
-                MEETING_PILL_GUTTER + MEETING_TRANSCRIPT_HEIGHT + MEETING_OVERLAY_GAP,
-                scale,
-            ),
-    );
-    if above_origin.1 >= monitor_position.1 {
-        return MeetingOverlayGeometry {
-            placement: MeetingTranscriptPlacement::Above,
-            side_alignment: MeetingTranscriptSideAlignment::Bottom,
-            logical_size: (
-                MEETING_OVERLAY_WIDTH as i32,
-                MEETING_TRANSCRIPT_ABOVE_HEIGHT as i32,
-            ),
-            origin: above_origin,
-        };
-    }
-
-    let monitor_right = i64::from(monitor_position.0) + i64::from(monitor_size.0);
-    let left_space = i64::from(anchor_x) - i64::from(monitor_position.0);
-    let right_space = monitor_right - i64::from(anchor_x);
-    let placement = if left_space >= right_space {
-        MeetingTranscriptPlacement::Left
-    } else {
-        MeetingTranscriptPlacement::Right
-    };
-    let raw_x = match placement {
-        MeetingTranscriptPlacement::Left => {
-            canonical_origin.0
-                - logical_pixels(
-                    MEETING_PILL_GUTTER + MEETING_TRANSCRIPT_WIDTH + MEETING_OVERLAY_GAP,
-                    scale,
-                )
-        }
-        MeetingTranscriptPlacement::Right => {
-            canonical_origin.0 - logical_pixels(MEETING_PILL_GUTTER, scale)
-        }
-        MeetingTranscriptPlacement::Above => unreachable!(),
-    };
-    let bottom_origin_y = anchor_bottom + logical_pixels(MEETING_PILL_GUTTER, scale)
-        - logical_pixels(MEETING_TRANSCRIPT_SIDE_HEIGHT, scale);
-    let top_origin_y = canonical_origin.1 - logical_pixels(MEETING_PILL_GUTTER, scale);
-    let physical_height = logical_pixels(MEETING_TRANSCRIPT_SIDE_HEIGHT, scale);
-    let monitor_bottom = i64::from(monitor_position.1) + i64::from(monitor_size.1);
-    let side_alignment = if bottom_origin_y >= monitor_position.1 {
-        MeetingTranscriptSideAlignment::Bottom
-    } else if i64::from(top_origin_y) + i64::from(physical_height) <= monitor_bottom {
-        MeetingTranscriptSideAlignment::Top
-    } else if i64::from(anchor_bottom) - i64::from(monitor_position.1)
-        >= monitor_bottom - i64::from(anchor_bottom)
-    {
-        MeetingTranscriptSideAlignment::Bottom
-    } else {
-        MeetingTranscriptSideAlignment::Top
-    };
-    let raw_y = match side_alignment {
-        MeetingTranscriptSideAlignment::Top => top_origin_y,
-        MeetingTranscriptSideAlignment::Bottom => bottom_origin_y,
-    };
-    let physical_size = (
-        logical_pixels(MEETING_TRANSCRIPT_SIDE_WIDTH, scale) as u32,
-        logical_pixels(MEETING_TRANSCRIPT_SIDE_HEIGHT, scale) as u32,
-    );
-
-    MeetingOverlayGeometry {
-        placement,
-        side_alignment,
-        logical_size: (
-            MEETING_TRANSCRIPT_SIDE_WIDTH as i32,
-            MEETING_TRANSCRIPT_SIDE_HEIGHT as i32,
-        ),
-        origin: clamp_overlay_coordinates(
-            raw_x,
-            raw_y,
-            physical_size,
-            monitor_position,
-            monitor_size,
-        ),
-    }
 }
 
 #[tauri::command]

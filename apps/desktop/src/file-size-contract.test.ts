@@ -18,15 +18,11 @@ const LEGACY_BUDGET = 3000;
 const LEGACY = new Set([
   "src-tauri/src/assistive.rs",
   "src-tauri/src/library/meeting_capture.rs",
-  "src-tauri/src/library/processing.rs",
   "src-tauri/src/license.rs",
-  "src-tauri/src/lib.rs",
   "src-tauri/src/llm_cleanup.rs",
   "src-tauri/src/pill.rs",
   "src-tauri/src/recorder.rs",
   "src-tauri/src/remote_api.rs",
-  "src-tauri/src/settings.rs",
-  "src-tauri/src/storage.rs",
   "src-tauri/src/transcribe.rs",
 ]);
 
