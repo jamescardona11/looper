@@ -269,6 +269,8 @@ apps/desktop/src/features/settings/components/tabs/AboutCli.tsx,replaced,desktop
 apps/desktop/src/features/settings/components/tabs/about-tab-model.ts,replaced,desktop-about-state-model,authored-storage-and-cli-state-derivation,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
 apps/desktop/src/features/settings/components/tabs/about-tab-model.test.ts,owned,desktop-about-state-tests,authored-cli-boundary-and-storage-total-tests,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
 apps/desktop/src/features/settings/components/tabs/AboutTab.test.tsx,owned,desktop-about-settings-tests,authored-support-storage-export-help-and-cli-action-tests,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/features/settings/components/tabs/ProvidersTab.tsx,replaced,desktop-provider-settings-tab,authored-grouped-meeting-speech-and-writing-contracts,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/features/settings/components/tabs/ProvidersTab.test.tsx,owned,desktop-provider-settings-tab-tests,authored-group-routing-and-section-tests,project-license-pending,-,desktop-tests-and-typecheck-2026-08-16,pending
 apps/desktop/src-tauri/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/desktop/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/mobile/**,unreviewed,mobile,,pending,-,pending,uncommitted
