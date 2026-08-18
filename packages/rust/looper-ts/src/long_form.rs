@@ -1,8 +1,4 @@
-use std::ops::Range;
-
-use crate::{
-    AudioInput, Engine, Error, TimedSegment, Transcript, TranscribeOptions, VadMode,
-};
+use crate::{AudioInput, Engine, Error, TimedSegment, TranscribeOptions, Transcript, VadMode};
 
 const MIN_OVERLAP_TOKENS: usize = 3;
 const MAX_OVERLAP_TOKENS: usize = 30;
@@ -127,7 +123,7 @@ impl LongFormChunker {
         let ready = self.buffer.len() >= self.chunk_samples;
         let has_unemitted_audio =
             self.buffer_start.saturating_add(self.buffer.len()) > self.last_emitted_end;
-        if !ready && !(self.finished && has_unemitted_audio) {
+        if !(ready || self.finished && has_unemitted_audio) {
             return None;
         }
 
@@ -235,43 +231,47 @@ impl Engine {
             });
         }
 
-        let mut chunker = LongFormChunker::new(sample_rate, options.chunking)?;
-        let mut session = self.long_form_session(sample_rate, options.clone())?;
-        let mut cursor = 0usize;
+        drive_long_form(
+            self,
+            &samples,
+            sample_rate,
+            options,
+            &mut on_progress,
+            &is_cancelled,
+        )
+    }
+}
 
-        loop {
-            if is_cancelled() {
-                return Err(Error::Cancelled("long-form transcription".to_string()));
-            }
-            if cursor < samples.len() {
-                let take = chunker
-                    .preferred_input_samples()
-                    .min(samples.len() - cursor);
-                chunker.push(&samples[cursor..cursor + take])?;
-                cursor += take;
-            }
-            if cursor == samples.len() {
-                chunker.finish();
-            }
+fn drive_long_form<T, F, C>(
+    engine: &mut T,
+    samples: &[i16],
+    sample_rate: u32,
+    options: &LongFormOptions,
+    on_progress: &mut F,
+    is_cancelled: &C,
+) -> crate::Result<Transcript>
+where
+    T: ChunkTranscriber + ?Sized,
+    F: FnMut(LongFormProgress),
+    C: Fn() -> bool,
+{
+    let mut pipeline = LongFormPipeline::new(engine, samples, sample_rate, options.clone())?;
+    while !pipeline.is_complete() {
+        ensure_long_form_active(is_cancelled)?;
+        let Some(progress) = pipeline.advance()? else {
+            continue;
+        };
+        on_progress(progress);
+        ensure_long_form_active(is_cancelled)?;
+    }
+    Ok(pipeline.finish())
+}
 
-            while let Some(chunk) = chunker.next_chunk() {
-                if is_cancelled() {
-                    return Err(Error::Cancelled("long-form transcription".to_string()));
-                }
-                let mut progress = session.process_chunk(&chunk)?;
-                progress.processed_samples = progress.processed_samples.min(samples.len());
-                on_progress(progress);
-                if is_cancelled() {
-                    return Err(Error::Cancelled("long-form transcription".to_string()));
-                }
-            }
-
-            if cursor == samples.len() && chunker.next_chunk().is_none() {
-                break;
-            }
-        }
-
-        Ok(session.finish())
+fn ensure_long_form_active(is_cancelled: &impl Fn() -> bool) -> crate::Result<()> {
+    if is_cancelled() {
+        Err(Error::Cancelled("long-form transcription".to_string()))
+    } else {
+        Ok(())
     }
 }
 
@@ -315,11 +315,7 @@ pub struct LongFormSession<'a, T: ChunkTranscriber + ?Sized = Engine> {
 }
 
 impl<'a, T: ChunkTranscriber + ?Sized> LongFormSession<'a, T> {
-    fn new(
-        engine: &'a mut T,
-        sample_rate: u32,
-        options: LongFormOptions,
-    ) -> crate::Result<Self> {
+    fn new(engine: &'a mut T, sample_rate: u32, options: LongFormOptions) -> crate::Result<Self> {
         if sample_rate == 0 {
             return Err(Error::Validation(
                 "long-form sample rate must be greater than zero".to_string(),
@@ -350,16 +346,10 @@ impl<'a, T: ChunkTranscriber + ?Sized> LongFormSession<'a, T> {
             self.options.minimum_chunk_speech_ratio
         };
         let mut update = MergeUpdate::default();
-        self.merger.observe_audio(
-            chunk.start_sample,
-            chunk.samples.len(),
-            self.sample_rate,
-        );
-        if crate::vad::speech_ratio(
-            &chunk.samples,
-            self.sample_rate,
-            VadMode::VeryAggressive,
-        )? >= threshold
+        self.merger
+            .observe_audio(chunk.start_sample, chunk.samples.len(), self.sample_rate);
+        if crate::vad::speech_ratio(&chunk.samples, self.sample_rate, VadMode::VeryAggressive)?
+            >= threshold
         {
             let mut transcript = self.engine.transcribe_chunk(
                 &chunk.samples,
@@ -393,6 +383,73 @@ impl<'a, T: ChunkTranscriber + ?Sized> LongFormSession<'a, T> {
 
     pub fn finish(&mut self) -> Transcript {
         std::mem::take(&mut self.merger).into_transcript()
+    }
+}
+
+struct LongFormPipeline<'engine, 'audio, T: ChunkTranscriber + ?Sized> {
+    audio: &'audio [i16],
+    cursor: usize,
+    chunker: LongFormChunker,
+    session: LongFormSession<'engine, T>,
+    drained: bool,
+}
+
+impl<'engine, 'audio, T: ChunkTranscriber + ?Sized> LongFormPipeline<'engine, 'audio, T> {
+    fn new(
+        engine: &'engine mut T,
+        audio: &'audio [i16],
+        sample_rate: u32,
+        options: LongFormOptions,
+    ) -> crate::Result<Self> {
+        let chunker = LongFormChunker::new(sample_rate, options.chunking)?;
+        let session = LongFormSession::new(engine, sample_rate, options)?;
+        Ok(Self {
+            audio,
+            cursor: 0,
+            chunker,
+            session,
+            drained: false,
+        })
+    }
+
+    fn advance(&mut self) -> crate::Result<Option<LongFormProgress>> {
+        if let Some(chunk) = self.chunker.next_chunk() {
+            return self.process(chunk).map(Some);
+        }
+
+        if self.cursor < self.audio.len() {
+            let remaining = &self.audio[self.cursor..];
+            let accepted = remaining.len().min(self.chunker.preferred_input_samples());
+            self.chunker.push(&remaining[..accepted])?;
+            self.cursor += accepted;
+            if self.cursor == self.audio.len() {
+                self.chunker.finish();
+            }
+            return Ok(None);
+        }
+
+        self.chunker.finish();
+        match self.chunker.next_chunk() {
+            Some(chunk) => self.process(chunk).map(Some),
+            None => {
+                self.drained = true;
+                Ok(None)
+            }
+        }
+    }
+
+    fn process(&mut self, chunk: AudioChunk) -> crate::Result<LongFormProgress> {
+        let mut progress = self.session.process_chunk(&chunk)?;
+        progress.processed_samples = progress.processed_samples.min(self.audio.len());
+        Ok(progress)
+    }
+
+    fn is_complete(&self) -> bool {
+        self.drained
+    }
+
+    fn finish(mut self) -> Transcript {
+        self.session.finish()
     }
 }
 
@@ -528,9 +585,7 @@ fn into_pcm_i16(input: AudioInput) -> crate::Result<(Vec<i16>, u32)> {
             Ok((
                 samples
                     .into_iter()
-                    .map(|sample| {
-                        (sample.clamp(-1.0, 1.0) * i16::MAX as f32).round() as i16
-                    })
+                    .map(|sample| (sample.clamp(-1.0, 1.0) * i16::MAX as f32).round() as i16)
                     .collect(),
                 sample_rate,
             ))
@@ -583,14 +638,16 @@ pub fn dedupe_overlap_text(existing: &str, next: &str) -> String {
         return next_trim.to_string();
     }
 
-    if let Some(drop_index) = find_overlap_drop_index(existing_trim, next) {
-        if drop_index >= next.len() {
-            return String::new();
-        }
-        return next[drop_index..].trim_start().to_string();
+    if let Some(remainder_start) = OverlapAlignment::between(existing_trim, next).remainder_start()
+    {
+        return next
+            .get(remainder_start..)
+            .unwrap_or_default()
+            .trim_start()
+            .to_string();
     }
 
-    let existing_tail = last_chars(existing_trim, 120);
+    let existing_tail = character_suffix(existing_trim, 120);
     if !existing_tail.is_empty() && next_trim.starts_with(&existing_tail) {
         return next_trim[existing_tail.len()..].trim_start().to_string();
     }
@@ -672,72 +729,109 @@ fn lowercase_first_alpha(text: &mut String) {
 }
 
 #[derive(Debug, Clone)]
-struct TokenOffset {
-    normalized: String,
-    range: Range<usize>,
+struct OverlapLexeme {
+    canonical: String,
+    begins_at: usize,
 }
 
-fn find_overlap_drop_index(existing: &str, next: &str) -> Option<usize> {
-    let existing_tokens = tokenize_with_offsets(existing);
-    let next_tokens = tokenize_with_offsets(next);
-    let max_overlap = existing_tokens
-        .len()
-        .min(next_tokens.len())
-        .min(MAX_OVERLAP_TOKENS);
-    if max_overlap < MIN_OVERLAP_TOKENS {
-        return None;
-    }
+struct OverlapAlignment {
+    incoming: Vec<OverlapLexeme>,
+    matched: usize,
+    incoming_len: usize,
+}
 
-    for overlap in (MIN_OVERLAP_TOKENS..=max_overlap).rev() {
-        let existing_start = existing_tokens.len() - overlap;
-        let matches = existing_tokens[existing_start..]
-            .iter()
-            .zip(&next_tokens[..overlap])
-            .all(|(left, right)| left.normalized == right.normalized);
-        if matches {
-            return Some(
-                next_tokens
-                    .get(overlap)
-                    .map(|token| token.range.start)
-                    .unwrap_or(next.len()),
-            );
+impl OverlapAlignment {
+    fn between(existing: &str, incoming: &str) -> Self {
+        let existing = lexemes(existing);
+        let incoming_lexemes = lexemes(incoming);
+        let window = existing
+            .len()
+            .min(incoming_lexemes.len())
+            .min(MAX_OVERLAP_TOKENS);
+        let matched = if window < MIN_OVERLAP_TOKENS {
+            0
+        } else {
+            suffix_prefix_match(
+                &incoming_lexemes[..window],
+                &existing[existing.len() - window..],
+            )
+        };
+        Self {
+            incoming: incoming_lexemes,
+            matched,
+            incoming_len: incoming.len(),
         }
     }
-    None
+
+    fn remainder_start(&self) -> Option<usize> {
+        (self.matched >= MIN_OVERLAP_TOKENS).then(|| {
+            self.incoming
+                .get(self.matched)
+                .map(|lexeme| lexeme.begins_at)
+                .unwrap_or(self.incoming_len)
+        })
+    }
 }
 
-fn tokenize_with_offsets(text: &str) -> Vec<TokenOffset> {
-    let mut tokens = Vec::new();
-    let mut normalized = String::new();
-    let mut start = 0usize;
-    let mut in_token = false;
+#[derive(Clone, Copy, PartialEq, Eq)]
+enum AlignmentSymbol<'a> {
+    Lexeme(&'a str),
+    Divider,
+}
+
+fn suffix_prefix_match(incoming: &[OverlapLexeme], existing_tail: &[OverlapLexeme]) -> usize {
+    let mut sequence = Vec::with_capacity(incoming.len() + existing_tail.len() + 1);
+    sequence.extend(
+        incoming
+            .iter()
+            .map(|lexeme| AlignmentSymbol::Lexeme(&lexeme.canonical)),
+    );
+    sequence.push(AlignmentSymbol::Divider);
+    sequence.extend(
+        existing_tail
+            .iter()
+            .map(|lexeme| AlignmentSymbol::Lexeme(&lexeme.canonical)),
+    );
+
+    let mut prefix_lengths = vec![0usize; sequence.len()];
+    for index in 1..sequence.len() {
+        let mut candidate = prefix_lengths[index - 1];
+        while candidate > 0 && sequence[index] != sequence[candidate] {
+            candidate = prefix_lengths[candidate - 1];
+        }
+        if sequence[index] == sequence[candidate] {
+            candidate += 1;
+        }
+        prefix_lengths[index] = candidate;
+    }
+    prefix_lengths.last().copied().unwrap_or_default()
+}
+
+fn lexemes(text: &str) -> Vec<OverlapLexeme> {
+    let mut completed = Vec::new();
+    let mut current: Option<(usize, String)> = None;
 
     for (index, character) in text.char_indices() {
         if character.is_alphanumeric() {
-            if !in_token {
-                in_token = true;
-                start = index;
-                normalized.clear();
-            }
-            normalized.extend(character.to_lowercase());
-        } else if in_token {
-            tokens.push(TokenOffset {
-                normalized: normalized.clone(),
-                range: start..index,
+            let (_, canonical) = current.get_or_insert_with(|| (index, String::new()));
+            canonical.extend(character.to_lowercase());
+        } else if let Some((begins_at, canonical)) = current.take() {
+            completed.push(OverlapLexeme {
+                canonical,
+                begins_at,
             });
-            in_token = false;
         }
     }
-    if in_token {
-        tokens.push(TokenOffset {
-            normalized,
-            range: start..text.len(),
+    if let Some((begins_at, canonical)) = current {
+        completed.push(OverlapLexeme {
+            canonical,
+            begins_at,
         });
     }
-    tokens
+    completed
 }
 
-fn last_chars(value: &str, count: usize) -> String {
+fn character_suffix(value: &str, count: usize) -> String {
     let mut characters: Vec<char> = value.chars().collect();
     if characters.len() <= count {
         return value.to_string();
@@ -748,6 +842,8 @@ fn last_chars(value: &str, count: usize) -> String {
 
 #[cfg(test)]
 mod session_tests {
+    use std::cell::Cell;
+
     use super::*;
 
     /// A model that returns canned text, so a test can drive the chunking,
@@ -825,7 +921,9 @@ mod session_tests {
         let mut model = ScriptedModel::new(vec!["hello there"]);
         let mut session = LongFormSession::new(&mut model, RATE, options(0.0)).unwrap();
 
-        let progress = session.process_chunk(&loud_chunk(0, RATE as usize, true)).unwrap();
+        let progress = session
+            .process_chunk(&loud_chunk(0, RATE as usize, true))
+            .unwrap();
 
         assert_eq!(progress.completed_chunks, 1);
         assert!(progress.transcript.text.contains("hello there"));
@@ -837,7 +935,9 @@ mod session_tests {
         let mut model = ScriptedModel::new(vec!["should not appear"]);
         let mut session = LongFormSession::new(&mut model, RATE, options(0.9)).unwrap();
 
-        let progress = session.process_chunk(&silent_chunk(0, RATE as usize, true)).unwrap();
+        let progress = session
+            .process_chunk(&silent_chunk(0, RATE as usize, true))
+            .unwrap();
 
         assert!(model.seen.is_empty(), "silence must not be transcribed");
         assert!(progress.transcript.text.is_empty());
@@ -852,7 +952,9 @@ mod session_tests {
         let mut model = ScriptedModel::new(vec!["first part", "second part"]);
         let mut session = LongFormSession::new(&mut model, RATE, options(0.0)).unwrap();
 
-        session.process_chunk(&loud_chunk(0, RATE as usize, false)).unwrap();
+        session
+            .process_chunk(&loud_chunk(0, RATE as usize, false))
+            .unwrap();
         session
             .process_chunk(&loud_chunk(RATE as usize, RATE as usize, true))
             .unwrap();
@@ -872,7 +974,9 @@ mod session_tests {
         let mut session = LongFormSession::new(&mut model, RATE, options(0.0)).unwrap();
 
         let first = session.process_chunk(&loud_chunk(0, 8_000, false)).unwrap();
-        let second = session.process_chunk(&loud_chunk(8_000, 8_000, true)).unwrap();
+        let second = session
+            .process_chunk(&loud_chunk(8_000, 8_000, true))
+            .unwrap();
 
         assert_eq!(first.processed_samples, 8_000);
         assert_eq!(second.processed_samples, 16_000);
@@ -883,6 +987,57 @@ mod session_tests {
     fn a_zero_sample_rate_is_refused() {
         let mut model = ScriptedModel::new(vec![]);
         assert!(LongFormSession::new(&mut model, 0, options(0.0)).is_err());
+    }
+
+    #[test]
+    fn pipeline_emits_ordered_snapshots_and_merges_the_overlap_once() {
+        let mut model = ScriptedModel::new(vec!["one two three four", "two three four five"]);
+        let mut run_options = options(0.0);
+        run_options.chunking.minimum_new_audio_ratio = 1.0;
+        let samples = vec![0; 30_400];
+        let mut snapshots = Vec::new();
+
+        let transcript = drive_long_form(
+            &mut model,
+            &samples,
+            RATE,
+            &run_options,
+            &mut |progress| snapshots.push((progress.processed_samples, progress.transcript.text)),
+            &|| false,
+        )
+        .unwrap();
+
+        assert_eq!(model.seen, [16_000, 16_000]);
+        assert_eq!(
+            snapshots,
+            [
+                (16_000, "one two three four".to_string()),
+                (30_400, "one two three four five".to_string()),
+            ]
+        );
+        assert_eq!(transcript.text, "one two three four five");
+    }
+
+    #[test]
+    fn cancellation_after_progress_stops_before_the_next_model_call() {
+        let mut model = ScriptedModel::new(vec!["first", "second"]);
+        let mut run_options = options(0.0);
+        run_options.chunking.minimum_new_audio_ratio = 1.0;
+        let samples = vec![0; 30_400];
+        let cancelled = Cell::new(false);
+
+        let error = drive_long_form(
+            &mut model,
+            &samples,
+            RATE,
+            &run_options,
+            &mut |_| cancelled.set(true),
+            &|| cancelled.get(),
+        )
+        .unwrap_err();
+
+        assert!(matches!(error, Error::Cancelled(context) if context == "long-form transcription"));
+        assert_eq!(model.seen, [16_000]);
     }
 }
 
@@ -934,6 +1089,29 @@ mod tests {
             ),
             "seis siete"
         );
+    }
+
+    #[test]
+    fn overlap_alignment_retains_short_repetitions() {
+        assert_eq!(
+            dedupe_overlap_text("alpha beta", "alpha beta gamma"),
+            "gamma",
+            "the exact-tail fallback still handles short literal overlaps"
+        );
+        assert_eq!(
+            dedupe_overlap_text("prefix alpha beta", "alpha beta gamma"),
+            "alpha beta gamma",
+            "two fuzzy tokens are insufficient to discard speech"
+        );
+    }
+
+    #[test]
+    fn overlap_alignment_handles_unicode_words_and_complete_duplicates() {
+        assert_eq!(
+            dedupe_overlap_text("Inicio NIÑO come pan", "niño, COME pan; ahora"),
+            "ahora"
+        );
+        assert_eq!(dedupe_overlap_text("one two three", "ONE, TWO THREE!"), "");
     }
 
     #[test]
