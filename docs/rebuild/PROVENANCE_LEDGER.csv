@@ -81,6 +81,8 @@ apps/desktop/src/shared/ui/StatusPixels.test.tsx,owned,desktop-status-indicator-
 apps/desktop/src/shared/ui/SectionLabel.tsx,replaced,desktop-section-heading,authored-accessory-composition,project-license-pending,-,targeted-tests-and-typecheck-2026-08-16,pending
 apps/desktop/src/shared/ui/ScreenHeader.tsx,replaced,desktop-screen-heading,authored-grid-header-composition,project-license-pending,-,targeted-tests-and-typecheck-2026-08-16,pending
 apps/desktop/src/shared/ui/SharedHeadings.test.tsx,owned,desktop-heading-tests,authored-heading-contract-tests,project-license-pending,-,targeted-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/shared/ui/TranscriptText.tsx,replaced,desktop-transcript-markdown,authored-safe-markdown-rendering-boundary,project-license-pending,-,targeted-tests-and-typecheck-2026-08-16,pending
+apps/desktop/src/shared/ui/TranscriptText.test.tsx,owned,desktop-transcript-markdown-tests,authored-format-and-html-safety-tests,project-license-pending,-,targeted-tests-and-typecheck-2026-08-16,pending
 apps/desktop/src-tauri/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/desktop/src/**,unreviewed,desktop,,pending,-,pending,uncommitted
 apps/mobile/**,unreviewed,mobile,,pending,-,pending,uncommitted
