@@ -73,6 +73,19 @@ Ejecución Tauri de la rama AGPL actual (18 de agosto de 2026):
   asociado a una recarga mientras había una operación asíncrona; no reapareció
   `Unhandled rejection` ni `unregisterListener` durante el ciclo de reunión.
 
+Gate local de audio/reuniones ejecutado después del smoke Tauri:
+
+- Comando: `pnpm run qa:meeting-audio`
+- Resultado: `PASS` en macOS.
+- Evidencia: `.tcompound/evidence/qa/meeting-audio-automated.txt`.
+- El gate incluye la suite Desktop (266 archivos/915 pruebas), build del
+  webview, contratos nativos Rust y la prueba acotada de captura de dos horas
+  bajo presupuesto de memoria (`115.200.000` muestras, WAV de 219 MB, 0 MB de
+  crecimiento RSS observado).
+- Este gate sigue siendo local/automatizado: no sustituye una captura con un
+  micrófono físico, permisos de macOS, dispositivo de salida ni un modelo STT
+  real en ejecución.
+
 Smoke de inserción en host macOS ejecutado el mismo día:
 
 - Comando: `LOOPER_HOST_INSERTION_SMOKE=1 pnpm run qa:external-desktop-host`
