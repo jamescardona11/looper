@@ -1,5 +1,5 @@
 import { getPlatformCapabilities } from "../../platform/service";
-import type { PlatformCapabilities } from "../../shared/lib/platform";
+import type { PlatformCapabilities } from "../../platform/service";
 
 export type OnboardingStep =
   | "welcome"

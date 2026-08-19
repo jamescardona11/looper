@@ -64,6 +64,25 @@ describe("sync reconciliation", () => {
     });
   });
 
+  test("appends remote-only rows and reports a no-op diff when nothing changed", () => {
+    expect(unionMergeDictionary(["local-only"], [])).toEqual(["local-only"]);
+    expect(diffDictionary(["a", "b"], ["a", "b"])).toEqual({
+      added: [],
+      removed: [],
+    });
+
+    const local = [{ from: "teh", to: "the" }];
+    const remote = [
+      { from: "teh", to: "the" },
+      { from: "adn", to: "and" },
+    ];
+    expect(unionMergeReplacements(local, remote)).toEqual(remote);
+    expect(diffReplacements(local, remote)).toEqual({
+      added: [{ from: "adn", to: "and" }],
+      removed: [],
+    });
+  });
+
   test("treats an edited replacement as removing the old row and adding the new row", () => {
     const previous = [{ from: "teh", to: "the" }];
     const next = [{ from: " TEH ", to: "The" }];
@@ -101,6 +120,25 @@ describe("sync reconciliation", () => {
     expect(
       JSON.parse(localStorage.getItem("looper.sync.replacementIds") ?? "{}"),
     ).toEqual({ teh: "replacement-new" });
+  });
+
+  test("appends remote-only snippets and never drops a local-only one", () => {
+    const local = [{ trigger: "sig", expansion: "Best regards" }];
+    const remote = [
+      { trigger: "sig", expansion: "Best regards" },
+      { trigger: "addr", expansion: "123 Main St" },
+    ];
+    expect(unionMergeSnippets(local, remote)).toEqual(remote);
+    expect(unionMergeSnippets(local, [])).toEqual(local);
+    expect(diffSnippets(local, remote)).toEqual({
+      added: [{ trigger: "addr", expansion: "123 Main St" }],
+      removed: [],
+    });
+    expect(diffSnippets(local, local)).toEqual({ added: [], removed: [] });
+    expect(diffSnippets(remote, [remote[1]!])).toEqual({
+      added: [],
+      removed: [{ trigger: "sig", expansion: "Best regards" }],
+    });
   });
 
   test("reconciles snippets by normalized trigger and replaces edited expansions", async () => {

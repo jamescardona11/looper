@@ -1,9 +1,9 @@
 import { describe, expect, test } from "vitest";
-import type { ModelInfo } from "../../src/types";
+import type { ModelInfo } from "../../types";
 import {
   pickOnboardingModels,
   resolveOnboardingLanguage,
-} from "../../src/features/onboarding/modelSelection";
+} from "./modelSelection";
 
 const model = (
   key: string,
@@ -19,6 +19,10 @@ const model = (
   variant: "Int8",
   category: "standard",
   downloadable,
+  // Was absent while this file lived in tests/frontend/, which tsconfig never
+  // typechecked ("include": ["src"]). undefined and "auto_detect" behave the
+  // same against the only branch that reads it (=== "user_select").
+  language_selection_mode: "auto_detect" as const,
   tags: key === "parakeet_tdt_int8" ? ["Recommended"] : [],
   capabilities: [],
   supported_languages: [

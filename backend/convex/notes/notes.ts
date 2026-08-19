@@ -1,6 +1,7 @@
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { v } from "convex/values";
 import { mutation, query } from "../_generated/server";
+import { assertOwned } from "../lib/ownership";
 
 const MAX_TITLE_LENGTH = 500;
 const MAX_BODY_LENGTH = 100_000;
@@ -90,8 +91,7 @@ export const update = mutation({
   handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx);
     if (!userId) throw new Error("Must be signed in");
-    const note = await ctx.db.get(args.id);
-    if (!note || note.userId !== userId) throw new Error("Note not found");
+    await assertOwned(ctx, "notes", args.id, userId, "Note not found");
     await ctx.db.patch(args.id, {
       title: titleFor(args.title),
       body: bodyFor(args.body),
@@ -105,8 +105,7 @@ export const remove = mutation({
   handler: async (ctx, { id }) => {
     const userId = await getAuthUserId(ctx);
     if (!userId) throw new Error("Must be signed in");
-    const note = await ctx.db.get(id);
-    if (!note || note.userId !== userId) throw new Error("Note not found");
+    await assertOwned(ctx, "notes", id, userId, "Note not found");
     await ctx.db.delete(id);
   },
 });

@@ -7,7 +7,10 @@ import {
 
 import { languageSupportedByModel } from "../../shared/lib/transcriptionLanguages";
 import type { AppLocaleSetting, ModelInfo, ModelStatus } from "../../types";
-import { resolveModelDeletionUpdate } from "./model-deletion-policy";
+import {
+  resolveExplicitLanguage,
+  resolveModelDeletionUpdate,
+} from "./model-deletion-policy";
 import type { SettingsSaveOverrides } from "./settings-update-model";
 import { useModelTransfers } from "./useModelTransfers";
 
@@ -51,15 +54,11 @@ export function useSettingsLocalModels({
     (modelKey: string) => {
       cancelScheduledSave();
       const model = catalog.find(({ key }) => key === modelKey);
-      const locale = (appLocale === "system" ? navigator.language : appLocale)
-        .split("-")[0]
-        .toLowerCase();
-      const explicitLanguage =
-        model?.language_selection_mode === "user_select" && !language
-          ? languageSupportedByModel(model, locale)
-            ? locale
-            : "en"
-          : language;
+      const explicitLanguage = resolveExplicitLanguage(
+        model,
+        language,
+        appLocale === "system" ? navigator.language : appLocale,
+      );
       const nextLanguage =
         remoteSpeechActive || languageSupportedByModel(model, explicitLanguage)
           ? explicitLanguage

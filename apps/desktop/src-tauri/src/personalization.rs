@@ -1,6 +1,6 @@
 pub(crate) mod icons;
 
-use std::collections::HashSet;
+use std::{collections::HashSet, sync::OnceLock};
 
 use tauri::{AppHandle, Emitter};
 use uuid::Uuid;
@@ -16,7 +16,38 @@ const MAX_WEBSITES_PER_PERSONALITY: usize = 64;
 const MAX_NAME_CHARS: usize = 60;
 const MAX_APP_IDENTIFIER_CHARS: usize = 255;
 const MAX_WEBSITE_CHARS: usize = 120;
-const MAX_INSTRUCTION_CHARS: usize = 3_000;
+
+// Shared with the frontend through personalization-limits.json so the character
+// budget the backend enforces and the counter the UI renders cannot drift apart.
+//
+// The value is parsed at runtime, but a bad file must NEVER reach a user: the
+// `personalization_limits_wire_is_valid` test below fails the build if the JSON
+// stops parsing or goes non-positive. Runtime therefore degrades to the frozen
+// default instead of panicking — a settings screen that enforces a stale limit
+// is recoverable, a process that aborts on startup is not.
+const PERSONALIZATION_LIMITS_WIRE: &str = include_str!("../../personalization-limits.json");
+const DEFAULT_MAX_INSTRUCTION_CHARS: usize = 3_000;
+static MAX_INSTRUCTION_CHARS: OnceLock<usize> = OnceLock::new();
+
+#[derive(serde::Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct PersonalizationLimits {
+    max_instruction_chars: usize,
+}
+
+// `None` when the wire file is unusable, so both the runtime fallback and the
+// build-time test read the same parse.
+fn parse_instruction_limit(wire: &str) -> Option<usize> {
+    let limits: PersonalizationLimits = serde_json::from_str(wire).ok()?;
+    (limits.max_instruction_chars > 0).then_some(limits.max_instruction_chars)
+}
+
+fn max_instruction_chars() -> usize {
+    *MAX_INSTRUCTION_CHARS.get_or_init(|| {
+        parse_instruction_limit(PERSONALIZATION_LIMITS_WIRE)
+            .unwrap_or(DEFAULT_MAX_INSTRUCTION_CHARS)
+    })
+}
 
 struct UniqueIds {
     claimed: HashSet<String>,
@@ -49,7 +80,7 @@ struct InstructionBudget {
 impl InstructionBudget {
     fn new() -> Self {
         Self {
-            remaining: MAX_INSTRUCTION_CHARS,
+            remaining: max_instruction_chars(),
             has_previous: false,
         }
     }
@@ -310,6 +341,29 @@ mod tests {
 
     use super::*;
 
+    // The build-time guard that lets `max_instruction_chars()` fall back instead
+    // of panicking: a malformed or non-positive wire file fails here, in CI,
+    // rather than aborting the app in front of a user.
+    #[test]
+    fn personalization_limits_wire_is_valid() {
+        assert_eq!(
+            parse_instruction_limit(PERSONALIZATION_LIMITS_WIRE),
+            Some(max_instruction_chars()),
+            "personalization-limits.json must parse to a positive maxInstructionChars"
+        );
+    }
+
+    #[test]
+    fn instruction_limit_rejects_unusable_wire_files() {
+        assert_eq!(parse_instruction_limit("not json"), None);
+        assert_eq!(parse_instruction_limit(r#"{"maxInstructionChars":0}"#), None);
+        assert_eq!(parse_instruction_limit("{}"), None);
+        assert_eq!(
+            parse_instruction_limit(r#"{"maxInstructionChars":1234}"#),
+            Some(1234)
+        );
+    }
+
     fn personality(id: &str, name: &str) -> Personality {
         Personality {
             id: id.to_owned(),
@@ -372,7 +426,7 @@ mod tests {
     #[test]
     fn instruction_budget_counts_newline_separators_without_trimming_rows() {
         let mut mode = personality("notes", "Notes");
-        mode.instructions = vec![" a ".to_owned(), "b".repeat(MAX_INSTRUCTION_CHARS)];
+        mode.instructions = vec![" a ".to_owned(), "b".repeat(max_instruction_chars())];
 
         let cleaned = sanitize_personalities(&[mode]);
 

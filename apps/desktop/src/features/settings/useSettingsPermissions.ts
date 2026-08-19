@@ -12,7 +12,7 @@ import {
   openMicrophoneSettings,
   requestMicrophonePermission,
 } from "../../data/settings";
-import type { PlatformCapabilities } from "../../shared/lib/platform";
+import type { PlatformCapabilities } from "../../platform/service";
 
 type PermissionValue = boolean | null;
 

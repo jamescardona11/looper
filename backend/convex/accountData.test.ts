@@ -72,6 +72,30 @@ async function seedMeetingData(
   });
 }
 
+async function mintUpgradeNonce(
+  t: ReturnType<typeof convexTest>,
+  anonymousUserId: Id<"users">,
+): Promise<string> {
+  const { nonce } = await t
+    .withIdentity({ subject: anonymousUserId })
+    .mutation(api.upgrade.prepareAnonymousUpgrade, {});
+  return nonce;
+}
+
+async function expectMeetingDataStillOwnedBy(
+  t: ReturnType<typeof convexTest>,
+  userId: Id<"users">,
+): Promise<void> {
+  await t.run(async (ctx) => {
+    expect(await ctx.db.get(userId)).not.toBeNull();
+    for (const table of meetingTableNames) {
+      const rows = await ctx.db.query(table).collect();
+      expect(rows).toHaveLength(1);
+      expect(rows[0]?.userId).toBe(userId);
+    }
+  });
+}
+
 describe("account data lifecycle", () => {
   it("classifies every schema table into exactly one account-data lifecycle", () => {
     const schemaTables = Object.keys(
@@ -183,17 +207,95 @@ describe("account data lifecycle", () => {
     const targetUserId = await t.run(async (ctx) => await ctx.db.insert("users", {}));
     await seedMeetingData(t, anonymousUserId, "upgrade");
 
+    // Minted while the session IS the anonymous user — the only way to get a
+    // spendable nonce.
+    const nonce = await mintUpgradeNonce(t, anonymousUserId);
+
     await t
       .withIdentity({ subject: targetUserId })
-      .mutation(api.upgrade.claimAnonymousData, { anonymousUserId });
+      .mutation(api.upgrade.claimAnonymousData, { anonymousUserId, nonce });
 
     await t.run(async (ctx) => {
       expect(await ctx.db.get(anonymousUserId)).toBeNull();
+      expect(await ctx.db.query("anonymousUpgradeIntents").collect()).toEqual([]);
       for (const table of meetingTableNames) {
         const rows = await ctx.db.query(table).collect();
         expect(rows).toHaveLength(1);
         expect(rows[0]?.userId).toBe(targetUserId);
       }
     });
+  });
+
+  it("refuses to absorb an unrelated anonymous account with no minted intent", async () => {
+    const t = convexTest(schema, modules);
+    const anonymousUserId = await t.run(async (ctx) =>
+      ctx.db.insert("users", { isAnonymous: true }),
+    );
+    const attackerUserId = await t.run(async (ctx) => await ctx.db.insert("users", {}));
+    await seedMeetingData(t, anonymousUserId, "attack");
+
+    await expect(
+      t.withIdentity({ subject: attackerUserId }).mutation(api.upgrade.claimAnonymousData, {
+        anonymousUserId,
+        nonce: "guessed-nonce",
+      }),
+    ).rejects.toThrow("Upgrade intent not found");
+
+    await expectMeetingDataStillOwnedBy(t, anonymousUserId);
+  });
+
+  it("refuses a nonce minted for a different anonymous account", async () => {
+    const t = convexTest(schema, modules);
+    const victimUserId = await t.run(async (ctx) => ctx.db.insert("users", { isAnonymous: true }));
+    const ownAnonymousUserId = await t.run(async (ctx) =>
+      ctx.db.insert("users", { isAnonymous: true }),
+    );
+    const attackerUserId = await t.run(async (ctx) => await ctx.db.insert("users", {}));
+    await seedMeetingData(t, victimUserId, "mismatch");
+
+    const nonce = await mintUpgradeNonce(t, ownAnonymousUserId);
+
+    await expect(
+      t.withIdentity({ subject: attackerUserId }).mutation(api.upgrade.claimAnonymousData, {
+        anonymousUserId: victimUserId,
+        nonce,
+      }),
+    ).rejects.toThrow("Upgrade intent not found");
+
+    await expectMeetingDataStillOwnedBy(t, victimUserId);
+  });
+
+  it("refuses an expired upgrade intent", async () => {
+    const t = convexTest(schema, modules);
+    const anonymousUserId = await t.run(async (ctx) =>
+      ctx.db.insert("users", { isAnonymous: true }),
+    );
+    const targetUserId = await t.run(async (ctx) => await ctx.db.insert("users", {}));
+    await seedMeetingData(t, anonymousUserId, "expired");
+
+    const nonce = await mintUpgradeNonce(t, anonymousUserId);
+    await t.run(async (ctx) => {
+      const intent = await ctx.db.query("anonymousUpgradeIntents").unique();
+      if (!intent) throw new Error("expected a minted intent");
+      await ctx.db.patch(intent._id, { expiresAt: Date.now() - 1 });
+    });
+
+    await expect(
+      t.withIdentity({ subject: targetUserId }).mutation(api.upgrade.claimAnonymousData, {
+        anonymousUserId,
+        nonce,
+      }),
+    ).rejects.toThrow("Upgrade intent expired");
+
+    await expectMeetingDataStillOwnedBy(t, anonymousUserId);
+  });
+
+  it("refuses to mint an upgrade intent from a non-anonymous session", async () => {
+    const t = convexTest(schema, modules);
+    const userId = await t.run(async (ctx) => await ctx.db.insert("users", {}));
+
+    await expect(
+      t.withIdentity({ subject: userId }).mutation(api.upgrade.prepareAnonymousUpgrade, {}),
+    ).rejects.toThrow("Only an anonymous session can prepare an upgrade");
   });
 });

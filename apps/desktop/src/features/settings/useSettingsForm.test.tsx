@@ -152,10 +152,16 @@ describe("useSettingsForm", () => {
       { wrapper },
     );
 
-    await waitFor(() =>
-      expect(result.current.tabs.providers.writing.model).toBe(
-        "openai/gpt-5.4-mini",
-      ),
+    // Testing Library's implicit waitFor budget is 1_000ms, which the full
+    // monorepo run exceeds whenever typecheck and test compete for CPU: this
+    // waits on the initial settings query resolving through React Query, not on
+    // anything time-sensitive, so the budget was measuring the machine.
+    await waitFor(
+      () =>
+        expect(result.current.tabs.providers.writing.model).toBe(
+          "openai/gpt-5.4-mini",
+        ),
+      { timeout: 5_000 },
     );
     mocks.invoke.mockClear();
 
@@ -174,7 +180,12 @@ describe("useSettingsForm", () => {
             llmModel: "openai/gpt-5.4-mini",
           }),
         }),
-      { timeout: 1_500 },
+      // Autosave debounces for 500ms (useSettingsPersistence). The old 1_500ms
+      // budget left only a second of headroom, which the full monorepo run ate
+      // whenever typecheck and test competed for CPU — the assertion was timing
+      // the machine, not the behaviour. The happy path still resolves in ~500ms,
+      // so the wider budget costs nothing and only removes the flake.
+      { timeout: 5_000 },
     );
   });
 });

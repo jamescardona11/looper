@@ -63,10 +63,12 @@ export function useCurrentUser(): { user: CurrentUser | null; isLoading: boolean
 }
 
 // Anonymous → real account upgrade. STRING-REF functions ("upgrade:viewer" /
-// "upgrade:claimAnonymousData" as never) — deliberately NOT the typed api object
-// so the file stays portable before codegen wires upgrade.ts. Orchestration ORDER
-// is load-bearing: snapshot the anonymous userId BEFORE signIn (which rotates the
-// session onto the real user), then claim AFTER signIn, guarded on isAnonymous.
+// "upgrade:prepareAnonymousUpgrade" / "upgrade:claimAnonymousData" as never) —
+// deliberately NOT the typed api object so the file stays portable before codegen
+// wires upgrade.ts. Orchestration ORDER is load-bearing: snapshot the anonymous
+// userId AND mint the upgrade nonce BEFORE signIn (which rotates the session onto
+// the real user — the nonce can only be minted while we still ARE the anonymous
+// user), then claim AFTER signIn with that nonce, guarded on isAnonymous.
 export function useUpgradeFromAnonymous(): {
   isAnonymous: boolean;
   isReady: boolean;
@@ -82,16 +84,48 @@ export function useUpgradeFromAnonymous(): {
       }
     | null
     | undefined;
+  const prepare = useMutation("upgrade:prepareAnonymousUpgrade" as never);
   const claim = useMutation("upgrade:claimAnonymousData" as never);
 
   const upgrade = useCallback(
     async (formData: FormData) => {
       const sourceId = viewer?.isAnonymous ? viewer.userId : null;
-      await signIn("resend-otp", formData);
+      // Minting must not gate the sign-in itself: a backend that predates
+      // `prepareAnonymousUpgrade` (or a transient failure) would otherwise leave
+      // the anonymous user unable to verify their code at all. Failing to mint
+      // degrades to the same outcome as a failed claim — signed in, transfer
+      // reported as failed — which is the contract this hook already had.
+      let nonce: string | null = null;
+      let mintFailure: unknown = null;
       if (sourceId) {
         try {
-          await (claim as unknown as (args: { anonymousUserId: string }) => Promise<unknown>)({
+          nonce = (
+            await (
+              prepare as unknown as (args: Record<string, never>) => Promise<{ nonce: string }>
+            )({})
+          ).nonce;
+        } catch (cause) {
+          mintFailure = cause;
+        }
+      }
+      await signIn("resend-otp", formData);
+      if (sourceId && !nonce) {
+        throw new Error(
+          `Signed in but data transfer failed: ${
+            mintFailure instanceof Error ? mintFailure.message : "could not prepare the upgrade"
+          }`,
+        );
+      }
+      if (sourceId && nonce) {
+        try {
+          await (
+            claim as unknown as (args: {
+              anonymousUserId: string;
+              nonce: string;
+            }) => Promise<unknown>
+          )({
             anonymousUserId: sourceId,
+            nonce,
           });
         } catch (cause) {
           // Convex Auth can upgrade the anonymous account in place. In that
@@ -111,7 +145,7 @@ export function useUpgradeFromAnonymous(): {
         }
       }
     },
-    [viewer, signIn, claim],
+    [viewer, signIn, prepare, claim],
   );
 
   return {

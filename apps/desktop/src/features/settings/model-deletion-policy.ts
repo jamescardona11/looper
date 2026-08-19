@@ -66,12 +66,12 @@ function findReplacementModel(
   return installed.find((model) => model.downloadable) ?? installed[0];
 }
 
-function resolveExplicitLanguage(
-  model: ModelInfo,
+export function resolveExplicitLanguage(
+  model: ModelInfo | undefined,
   language: string,
   preferredLocale: string,
 ) {
-  if (language || model.language_selection_mode !== "user_select") {
+  if (language || model?.language_selection_mode !== "user_select") {
     return language;
   }
 

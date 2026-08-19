@@ -1,4 +1,4 @@
-import type { AppPlatformId } from "../shared/lib/platform";
+import type { AppPlatformId } from "../platform/service";
 import { parseTextSizeMode, resolveTextScale } from "../shared/lib/textSize";
 
 type InitialTextScaleOptions = {

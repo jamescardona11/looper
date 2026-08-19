@@ -7,7 +7,9 @@ four native windows (not a routed SPA).
 - Extend the existing owner. Do not add routers, stores, service layers, design
   systems, or query wrappers alongside what is here.
 - If a file is large but cohesive, keep it cohesive. Split only on real
-  responsibility boundaries.
+  responsibility boundaries. `src/file-size-contract.test.ts` is a ceiling, not
+  a design rule: it only stops unbounded growth. This bullet decides where the
+  cut goes.
 - If this document and the code disagree, follow the code and fix this document.
 
 ## What matters
@@ -119,3 +121,15 @@ Labels and behavior must stay aligned across `tauri.conf.json`,
   → insert, with responsive UI and actionable errors.
 - Targeted tests for parser/validation/migration/hotkey logic. No broad test
   scaffolding.
+- Frontend tests live co-located with the module they cover
+  (`src/**/<module>.test.ts`). `tests/frontend/` is reserved for cross-cutting
+  contracts that belong to no single module (build config, packaging, brand).
+  Do not test a `src/` module from both places.
+- `tests/frontend/` is NOT typechecked: `tsconfig.json` sets `"include": ["src"]`,
+  and widening it to `["src", "tests"]` fails with 4 errors because those files
+  import `scripts/*.mjs` (no declarations) and `vite.config.ts` (owned by
+  `tsconfig.node.json`). Vitest runs them, `tsc` never sees them. That is the
+  second reason to keep the directory small: anything that lives there loses
+  type coverage, and a fixture can drift from its type silently — which is
+  exactly what happened to `onboarding-model-selection.test.ts` before it moved
+  into `src/`.

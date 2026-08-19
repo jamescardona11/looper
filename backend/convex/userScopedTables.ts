@@ -279,6 +279,8 @@ export const ACCOUNT_DATA_TABLE_EXCLUSIONS = {
   users: "Account root deleted synchronously before the background cascade.",
   authRateLimits: "Provider abuse-prevention state keyed by identifier, not account ownership.",
   waitlist: "Pre-account lead data governed by the waitlist retention policy.",
+  anonymousUpgradeIntents:
+    "Short-lived upgrade nonces keyed by the anonymous session, consumed on claim and expired by timestamp.",
 } as const;
 
 // A {table,index} pair for the userId-prefix-scan consumers (purge).

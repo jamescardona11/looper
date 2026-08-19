@@ -2,6 +2,7 @@ import { getAuthUserId } from "@convex-dev/auth/server";
 import { v } from "convex/values";
 import type { Doc, Id } from "../_generated/dataModel";
 import { mutation, query, type QueryCtx } from "../_generated/server";
+import { assertOwned } from "../lib/ownership";
 
 const MAX_TEXT_LENGTH = 20_000;
 const MAX_CONTEXT_LENGTH = 100_000;
@@ -466,10 +467,13 @@ export const completeMarkdownOutputDelivery = mutation({
   handler: async (ctx, { outputId, claimId: rawClaimId, delivered }) => {
     const userId = await getAuthUserId(ctx);
     if (!userId) throw new Error("Must be signed in");
-    const output = await ctx.db.get(outputId);
-    if (!output || output.userId !== userId) {
-      throw new Error("Markdown output request not found");
-    }
+    const output = await assertOwned(
+      ctx,
+      "meetingOutputRequests",
+      outputId,
+      userId,
+      "Markdown output request not found",
+    );
     const claimId = requiredText(rawClaimId, "Claim id", 200);
     if (output.deliveryStatus !== "claimed" || output.deliveryClaimId !== claimId) {
       throw new Error("Markdown output is not claimed by this delivery");
@@ -488,8 +492,13 @@ export const confirmMarkdownOutput = mutation({
   handler: async (ctx, { outputId, approved }) => {
     const userId = await getAuthUserId(ctx);
     if (!userId) throw new Error("Must be signed in");
-    const output = await ctx.db.get(outputId);
-    if (!output || output.userId !== userId) throw new Error("Output request not found");
+    const output = await assertOwned(
+      ctx,
+      "meetingOutputRequests",
+      outputId,
+      userId,
+      "Output request not found",
+    );
     if (output.status !== "pending") return { status: output.status };
     const status = approved ? "confirmed" : "cancelled";
     await ctx.db.patch(output._id, { status, ...(approved ? { confirmedAt: Date.now() } : {}) });

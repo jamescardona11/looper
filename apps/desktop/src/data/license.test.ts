@@ -41,6 +41,15 @@ describe("entitlement native gateway", () => {
     ]);
   });
 
+  test("returns the native payload for state and usage reads unchanged", async () => {
+    const state = { licenseGateActive: false, license: null, trial: null };
+    const stats = { totalWords: 12, totalDurationMs: 3400, totalDictations: 2 };
+    tauri.invoke.mockResolvedValueOnce(state).mockResolvedValueOnce(stats);
+
+    await expect(getLicenseState()).resolves.toBe(state);
+    await expect(getDictationStats()).resolves.toBe(stats);
+  });
+
   test("subscribes to checkout return notifications", async () => {
     const handler = vi.fn();
     tauri.listen.mockResolvedValue(vi.fn());

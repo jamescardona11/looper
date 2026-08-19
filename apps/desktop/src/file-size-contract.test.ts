@@ -8,21 +8,21 @@ import { describe, expect, it } from "vitest";
 const SRC = dirname(fileURLToPath(import.meta.url));
 const TAURI_SRC = resolve(SRC, "..", "src-tauri", "src");
 
-// Un archivo nuevo no debería superar esto: obliga a descomponer módulos y
-// componentes antes de que se vuelvan inmanejables.
-const MAX_LINES = 1000;
+// Tope anti-monstruo, no criterio de diseño. apps/desktop/AGENTS.md manda
+// sobre dónde se corta un fichero ("if a file is large but cohesive, keep it
+// cohesive; split only on real responsibility boundaries"); este presupuesto
+// sólo existe para que nadie deje crecer un fichero sin límite. Está puesto
+// muy por encima de cualquier fichero sano a propósito: si te obliga a partir
+// algo, córtalo por responsabilidades, no por líneas.
+const MAX_LINES = 2000;
 
 // Deuda de tamaño congelada: archivos legados con presupuesto ampliado.
 // Pueden reducirse (y salir de la lista), no seguir creciendo sin tope.
 const LEGACY_BUDGET = 3000;
 const LEGACY = new Set([
-  "src-tauri/src/assistive.rs",
   "src-tauri/src/library/meeting_capture.rs",
-  "src-tauri/src/license.rs",
   "src-tauri/src/llm_cleanup.rs",
   "src-tauri/src/pill.rs",
-  "src-tauri/src/recorder.rs",
-  "src-tauri/src/remote_api.rs",
   "src-tauri/src/transcribe.rs",
 ]);
 

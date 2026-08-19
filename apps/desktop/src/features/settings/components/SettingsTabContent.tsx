@@ -4,7 +4,7 @@ import SyncTab from "../../sync/components/SyncTab";
 import type { useSettingsForm } from "../useSettingsForm";
 import type { SettingsSection } from "../settings-navigation";
 import AboutTab from "./tabs/AboutTab";
-import AccountTab from "./tabs/AccountTab";
+import { AccountTab } from "./AccountView";
 import AppTab from "./tabs/AppTab";
 import GeneralTab from "./tabs/GeneralTab";
 import ModelsTab from "./tabs/ModelsTab";

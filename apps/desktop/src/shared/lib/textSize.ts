@@ -1,4 +1,4 @@
-import type { AppPlatformId } from "./platform";
+import type { AppPlatformId } from "../../platform/service";
 
 type TextSizeMode = "small" | "default" | "large";
 

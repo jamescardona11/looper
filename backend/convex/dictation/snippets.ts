@@ -3,6 +3,7 @@
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { v } from "convex/values";
 import { mutation, query } from "../_generated/server";
+import { assertOwned } from "../lib/ownership";
 
 export const list = query({
   args: {},
@@ -41,8 +42,7 @@ export const remove = mutation({
   handler: async (ctx, { id }) => {
     const userId = await getAuthUserId(ctx);
     if (!userId) throw new Error("Must be signed in");
-    const entry = await ctx.db.get(id);
-    if (!entry || entry.userId !== userId) throw new Error("Not found");
+    await assertOwned(ctx, "snippets", id, userId);
     await ctx.db.delete(id);
   },
 });

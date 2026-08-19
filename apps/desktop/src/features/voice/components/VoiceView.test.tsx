@@ -101,6 +101,22 @@ describe("VoiceView", () => {
     );
   });
 
+  // El indicador es puramente visual (aria-hidden), así que no lo cubre ninguna
+  // asercion de rol: se comprueba que vive dentro del tab seleccionado.
+  test("moves the active tab indicator into the selected tab", () => {
+    renderVoice();
+    const indicatorIn = (label: string) =>
+      step(label).querySelector('[aria-hidden="true"]');
+
+    expect(indicatorIn("Vocabulary")).not.toBeNull();
+    expect(indicatorIn("Rules")).toBeNull();
+
+    fireEvent.click(step("Rules"));
+
+    expect(indicatorIn("Rules")).not.toBeNull();
+    expect(indicatorIn("Vocabulary")).toBeNull();
+  });
+
   test("moves and activates tabs with left and right arrows", () => {
     renderVoice();
     const vocabulary = step("Vocabulary");

@@ -152,6 +152,29 @@ export type DataModel = {
     searchIndexes: {};
     vectorIndexes: {};
   };
+  anonymousUpgradeIntents: {
+    document: {
+      anonymousUserId: Id<"users">;
+      expiresAt: number;
+      nonce: string;
+      _id: Id<"anonymousUpgradeIntents">;
+      _creationTime: number;
+    };
+    fieldPaths:
+      | "_creationTime"
+      | "_id"
+      | "anonymousUserId"
+      | "expiresAt"
+      | "nonce";
+    indexes: {
+      by_id: ["_id"];
+      by_creation_time: ["_creationTime"];
+      by_anonymous_user: ["anonymousUserId", "_creationTime"];
+      by_nonce: ["nonce", "_creationTime"];
+    };
+    searchIndexes: {};
+    vectorIndexes: {};
+  };
   authAccounts: {
     document: {
       emailVerified?: string;
