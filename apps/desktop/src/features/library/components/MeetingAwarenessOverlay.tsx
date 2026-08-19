@@ -92,7 +92,7 @@ export default function MeetingAwarenessOverlay({
   const SignalIcon = detected ? VideoCamera : CalendarDots;
 
   return (
-    <div className="flex h-full w-full select-none items-start justify-end p-2">
+    <div className="fixed inset-0 flex select-none items-start justify-end p-2">
       <section
         aria-label={ariaLabel}
         className="ui-overlay-notification relative flex h-[72px] w-[404px] items-center gap-3 overflow-hidden rounded-[18px] px-3 text-white"

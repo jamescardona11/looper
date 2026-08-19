@@ -27,7 +27,7 @@ four native windows (not a routed SPA).
 - Supported on macOS and Windows. Keep platform-specific code behind
   `platform/{macos,windows}/` and `#[cfg]` boundaries; do not let one platform
   regress the other.
-- Tooling is intentionally simple: Bun + Vite, Cargo + Tauri. Do not add build
+- Tooling is intentionally simple: pnpm + Vite, Cargo + Tauri. Do not add build
   layers.
 
 ## Windows

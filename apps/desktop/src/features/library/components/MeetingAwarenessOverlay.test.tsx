@@ -85,6 +85,7 @@ describe("MeetingAwarenessOverlay", () => {
     const notification = screen.getByRole("region", {
       name: "Meeting: Weekly planning",
     });
+    expect(notification.parentElement?.className).toContain("fixed inset-0");
     expect(notification.parentElement?.className).toContain("p-2");
     expect(notification.className).toContain("h-[72px]");
     expect(notification.className).toContain("w-[404px]");

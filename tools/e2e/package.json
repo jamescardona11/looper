@@ -2,6 +2,7 @@
   "name": "@looper/web-e2e",
   "version": "0.0.0",
   "private": true,
+  "license": "AGPL-3.0-or-later",
   "type": "module",
   "description": "Base local web E2E orchestrator (starts Convex, runs the web Playwright suite).",
   "scripts": {

@@ -43,4 +43,16 @@ describe("SettingsPage", () => {
     expect(screen.getByRole("button", { name: /English/ })).toHaveAttribute("aria-pressed", "true");
     expect(screen.getByRole("button", { name: /Español/ })).toBeVisible();
   });
+
+  it("hides subscription from settings while the app is free", () => {
+    render(
+      <I18nProvider defaultLocale="en">
+        <SettingsPage activeTab="language" onTabChange={vi.fn()} />
+      </I18nProvider>,
+    );
+
+    const navigation = screen.getByRole("navigation", { name: "Settings section" });
+    expect(within(navigation).queryByRole("button", { name: "Subscription" })).toBeNull();
+    expect(screen.queryByText("Manage your plan and billing.")).toBeNull();
+  });
 });

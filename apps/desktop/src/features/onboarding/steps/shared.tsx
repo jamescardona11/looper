@@ -5,7 +5,7 @@ import {
   type Variants as MotionVariants,
 } from "framer-motion";
 
-export { LooperLogo } from "../../../shared/ui/LooperLogo";
+export { LooperLogo, LooperWordmark } from "../../../shared/ui/LooperLogo";
 
 export type StepMotionProps = {
   custom: 1 | -1;
@@ -53,7 +53,10 @@ export function OnboardingStep(props: StepFrameProps) {
       key={stepKey}
       {...motionProps}
       initial={initial}
-      className={stepFrameClassName(widthClass, align)}
+      className={`onboarding-step onboarding-step-${stepKey} ${stepFrameClassName(
+        widthClass,
+        align,
+      )}`}
     >
       {children}
       {footer ? <div className={FOOTER_CLASS_NAME}>{footer}</div> : null}
@@ -64,11 +67,11 @@ export function OnboardingStep(props: StepFrameProps) {
 type HeaderProps = { title: StepContent; subtitle?: StepContent };
 
 const HEADER_CLASS_NAME =
-  "mb-8 flex max-w-md flex-col items-center text-center";
+  "onboarding-header mb-8 flex max-w-md flex-col items-center text-center";
 const HEADER_TITLE_CLASS_NAME =
-  "ui-text-title-lg font-semibold text-content-primary text-balance";
+  "onboarding-header-title ui-text-title-lg font-semibold text-content-primary text-balance";
 const HEADER_SUBTITLE_CLASS_NAME =
-  "mt-2 ui-text-body-lg text-content-muted text-pretty";
+  "onboarding-header-subtitle mt-2 ui-text-body-lg text-content-muted text-pretty";
 
 export function OnboardingHeader(props: HeaderProps) {
   return (
@@ -158,7 +161,7 @@ export function KeyboardHero({ keyLabel }: { keyLabel: string }) {
 }
 
 export const PRIMARY_BUTTON_CLASS = [
-  "flex min-w-[160px] items-center justify-center gap-2 rounded-lg",
+  "onboarding-primary-action flex min-w-[160px] items-center justify-center gap-2 rounded-lg",
   "bg-content-primary px-6 py-2.5 ui-text-body-lg font-semibold",
   "text-surface-secondary transition-opacity hover:opacity-90",
   "disabled:cursor-not-allowed disabled:opacity-50",

@@ -4,3 +4,308 @@
 @import "./styles/foundation.css";
 @import "./styles/utilities.css";
 @import "./styles/surfaces.css";
+
+.onboarding-shell {
+  isolation: isolate;
+  background:
+    radial-gradient(
+      circle at 50% -18%,
+      var(--color-accent-20),
+      transparent 34rem
+    ),
+    radial-gradient(circle at 8% 88%, var(--color-local-10), transparent 28rem),
+    var(--color-bg-secondary);
+}
+
+.onboarding-shell::before {
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  content: "";
+  opacity: 0.42;
+  background-image:
+    linear-gradient(var(--color-border-primary) 1px, transparent 1px),
+    linear-gradient(90deg, var(--color-border-primary) 1px, transparent 1px);
+  background-size: 44px 44px;
+  mask-image: linear-gradient(to bottom, black, transparent 72%);
+}
+
+.onboarding-atmosphere {
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.onboarding-atmosphere-orb {
+  position: absolute;
+  width: 20rem;
+  height: 20rem;
+  border-radius: 999px;
+  filter: blur(34px);
+  opacity: 0.3;
+  animation: onboarding-drift 12s ease-in-out infinite alternate;
+}
+
+.onboarding-atmosphere-orb-primary {
+  top: 12%;
+  left: -10rem;
+  background: var(--color-local);
+}
+
+.onboarding-atmosphere-orb-secondary {
+  right: -12rem;
+  bottom: -7rem;
+  background: var(--color-cloud);
+  animation-delay: -6s;
+}
+
+.onboarding-atmosphere-scanline {
+  position: absolute;
+  top: 18%;
+  right: 13%;
+  width: min(17rem, 34vw);
+  height: min(17rem, 34vw);
+  border: 1px solid var(--color-accent-30);
+  border-radius: 999px;
+  box-shadow:
+    0 0 0 1.1rem var(--color-accent-5),
+    0 0 0 2.4rem var(--color-accent-5);
+  opacity: 0.72;
+  animation: onboarding-breathe 5.2s ease-in-out infinite;
+}
+
+.onboarding-content {
+  scrollbar-gutter: stable;
+}
+
+.onboarding-step {
+  position: relative;
+  isolation: isolate;
+  padding-bottom: 1.5rem;
+}
+
+.onboarding-step-welcome::before {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  z-index: -1;
+  width: 25rem;
+  height: 25rem;
+  border: 1px solid var(--color-local-20);
+  border-radius: 999px;
+  content: "";
+  transform: translate(-50%, -57%);
+  box-shadow:
+    0 0 0 1.75rem var(--color-local-5),
+    0 0 0 4rem var(--color-local-5);
+}
+
+.onboarding-welcome-mark {
+  position: relative;
+  box-shadow: 0 18px 50px
+    color-mix(in srgb, var(--color-local) 20%, transparent);
+}
+
+.onboarding-welcome-mark::after {
+  position: absolute;
+  inset: -0.5rem;
+  border: 1px solid var(--color-local-30);
+  border-radius: inherit;
+  content: "";
+  opacity: 0.65;
+  animation: onboarding-breathe 3.8s ease-in-out infinite;
+}
+
+.onboarding-welcome-wordmark {
+  text-shadow: 0 0 2.5rem var(--color-accent-20);
+}
+
+.onboarding-header::before {
+  display: block;
+  width: 2.5rem;
+  height: 1px;
+  margin-bottom: 1.25rem;
+  content: "";
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--color-accent),
+    transparent
+  );
+}
+
+.onboarding-header-title {
+  font-family: var(--font-display);
+  letter-spacing: -0.018em;
+}
+
+.onboarding-primary-action {
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 8px 24px
+    color-mix(in srgb, var(--color-accent) 18%, transparent);
+  transition:
+    transform 160ms ease-out,
+    opacity 160ms ease-out,
+    box-shadow 160ms ease-out;
+}
+
+.onboarding-primary-action::before {
+  position: absolute;
+  inset: 1px;
+  border: 1px solid
+    color-mix(in srgb, var(--color-bg-secondary) 18%, transparent);
+  border-radius: calc(var(--radius-sm) - 1px);
+  content: "";
+  pointer-events: none;
+}
+
+.onboarding-primary-action:hover:not(:disabled) {
+  box-shadow: 0 12px 30px
+    color-mix(in srgb, var(--color-accent) 28%, transparent);
+  transform: translateY(-1px);
+}
+
+.onboarding-primary-action:active:not(:disabled) {
+  transform: translateY(1px) scale(0.985);
+}
+
+.onboarding-mode-option {
+  position: relative;
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  transition:
+    transform 180ms ease-out,
+    border-color 180ms ease-out,
+    background-color 180ms ease-out,
+    box-shadow 180ms ease-out;
+}
+
+.onboarding-mode-option::after {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  width: 0.45rem;
+  height: 0.45rem;
+  border-radius: 999px;
+  content: "";
+  background: currentColor;
+  opacity: 0;
+  transform: scale(0.5);
+  transition:
+    opacity 160ms ease-out,
+    transform 160ms ease-out;
+}
+
+.onboarding-mode-option:hover:not(:disabled) {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+}
+
+.onboarding-mode-option[data-active="true"] {
+  box-shadow: var(--shadow-action-card-local-selected);
+}
+
+.onboarding-mode-option[data-active="true"][data-tone="cloud"] {
+  box-shadow: var(--shadow-action-card-cloud-selected);
+}
+
+.onboarding-mode-option[data-active="true"]::after {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.onboarding-permission-list,
+.onboarding-recap {
+  border-color: color-mix(
+    in srgb,
+    var(--color-border-secondary) 78%,
+    transparent
+  );
+  background: color-mix(in srgb, var(--color-bg-surface) 52%, transparent);
+  box-shadow: var(--shadow-sm);
+}
+
+.onboarding-permission-list {
+  overflow: hidden;
+  border: 1px solid
+    color-mix(in srgb, var(--color-border-secondary) 78%, transparent);
+  border-radius: var(--radius-lg);
+}
+
+.onboarding-permission-list > div {
+  padding-right: 1rem;
+  padding-left: 1rem;
+}
+
+.onboarding-intelligence-card,
+.onboarding-verification-card {
+  border-color: color-mix(
+    in srgb,
+    var(--color-border-secondary) 82%,
+    transparent
+  );
+  box-shadow: var(--shadow-md);
+}
+
+.onboarding-intelligence-card {
+  background:
+    linear-gradient(135deg, var(--color-cloud-10), transparent 42%),
+    var(--color-bg-elevated);
+}
+
+.onboarding-verification-card {
+  background:
+    linear-gradient(135deg, var(--color-local-10), transparent 42%),
+    var(--color-bg-secondary);
+}
+
+.onboarding-recap {
+  padding: 0 1rem;
+  border-radius: var(--radius-lg);
+}
+
+.onboarding-back-button {
+  padding: 0.35rem 0.55rem;
+  border-radius: var(--radius-sm);
+}
+
+.onboarding-back-button:hover {
+  background: var(--surface-interactive);
+}
+
+@keyframes onboarding-drift {
+  from {
+    transform: translate3d(0, 0, 0) scale(0.92);
+  }
+  to {
+    transform: translate3d(2rem, -1.5rem, 0) scale(1.08);
+  }
+}
+
+@keyframes onboarding-breathe {
+  0%,
+  100% {
+    opacity: 0.48;
+    transform: scale(0.96);
+  }
+  50% {
+    opacity: 0.84;
+    transform: scale(1.04);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .onboarding-atmosphere-orb,
+  .onboarding-atmosphere-scanline,
+  .onboarding-welcome-mark::after {
+    animation: none;
+  }
+
+  .onboarding-primary-action,
+  .onboarding-mode-option {
+    transition: none;
+  }
+}

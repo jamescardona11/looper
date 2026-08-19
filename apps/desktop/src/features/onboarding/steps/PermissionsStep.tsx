@@ -216,7 +216,7 @@ export function PermissionsStep(props: PermissionsStepProps) {
       footer={footer}
     >
       <StepHeading title={copy.title} subtitle={copy.subtitle} />
-      <div className="w-full divide-y divide-border-secondary">
+      <div className="onboarding-permission-list w-full divide-y divide-border-secondary">
         {rows.map(({ key, ...row }) => (
           <PermissionRow key={key} {...row} />
         ))}

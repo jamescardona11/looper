@@ -7,7 +7,7 @@ import { Eyebrow } from "@/shared/components/eyebrow";
 import { ProductPageHeader } from "@/shared/components/product-page-header";
 import { ProductPageLayout } from "@/shared/components/product-page-layout";
 import { Select } from "@/shared/components/ui";
-import type { SettingsTab } from "./settings-tabs";
+import { SHOW_SUBSCRIPTION_SETTINGS, type SettingsTab } from "./settings-tabs";
 import { AppearanceTab } from "./tabs/appearance-tab";
 import { ApiKeysTab } from "./tabs/api-keys-tab";
 import { LanguageTab } from "./tabs/language-tab";
@@ -29,13 +29,18 @@ export function SettingsPage({
 }) {
   const { t } = useTranslation();
   const authGate = useRequireAuth();
+  const currentTab = visibleActiveTab(activeTab);
   const navigationItems: SettingsNavigationItem[] = [
     { key: "profile", label: t("settings.profile"), icon: <IconUser className="size-4" /> },
-    {
-      key: "subscription",
-      label: t("settings.subscription"),
-      icon: <IconCreditCard className="size-4" />,
-    },
+    ...(SHOW_SUBSCRIPTION_SETTINGS
+      ? [
+          {
+            key: "subscription" as const,
+            label: t("settings.subscription"),
+            icon: <IconCreditCard className="size-4" />,
+          },
+        ]
+      : []),
     { key: "keys", label: t("settings.apiKeys"), icon: <IconKey className="size-4" /> },
     {
       key: "language",
@@ -73,7 +78,7 @@ export function SettingsPage({
         <aside className="min-w-0 md:sticky md:top-6 md:self-start md:border-border md:border-r md:pr-6">
           <Select
             aria-label={t("settings.section")}
-            value={activeTab}
+            value={currentTab}
             onValueChange={(nextTab) => onTabChange(nextTab as SettingsTab)}
             items={navigationItems.map((item) => ({
               value: item.key,
@@ -90,11 +95,11 @@ export function SettingsPage({
                     <button
                       key={item.key}
                       type="button"
-                      aria-current={activeTab === item.key ? "page" : undefined}
+                      aria-current={currentTab === item.key ? "page" : undefined}
                       onClick={() => onTabChange(item.key)}
                       className={cn(
                         "flex shrink-0 items-center gap-2.5 whitespace-nowrap rounded-lg px-3 py-2.5 text-left text-sm transition-colors",
-                        activeTab === item.key
+                        currentTab === item.key
                           ? "bg-secondary text-foreground"
                           : "text-muted-foreground hover:bg-secondary/60 hover:text-foreground",
                       )}
@@ -102,13 +107,13 @@ export function SettingsPage({
                       <span
                         className={cn(
                           "text-muted-foreground",
-                          activeTab === item.key && "text-primary",
+                          currentTab === item.key && "text-primary",
                         )}
                       >
                         {item.icon}
                       </span>
                       <span className="min-w-0 flex-1">{item.label}</span>
-                      {activeTab === item.key ? (
+                      {currentTab === item.key ? (
                         <span className="size-1.5 rounded-full bg-primary" aria-hidden />
                       ) : null}
                     </button>
@@ -120,11 +125,15 @@ export function SettingsPage({
         </aside>
 
         <div className="min-w-0">
-          <ActiveSettingsTab activeTab={activeTab} />
+          <ActiveSettingsTab activeTab={currentTab} />
         </div>
       </div>
     </ProductPageLayout>
   );
+}
+
+function visibleActiveTab(activeTab: SettingsTab): SettingsTab {
+  return !SHOW_SUBSCRIPTION_SETTINGS && activeTab === "subscription" ? "profile" : activeTab;
 }
 
 function ActiveSettingsTab({ activeTab }: { activeTab: SettingsTab }) {

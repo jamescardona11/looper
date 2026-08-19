@@ -1,0 +1,13 @@
+2026-08-18 desktop real smoke (branch main, HEAD 467f400)
+
+status --json
+{"active_model":"parakeet_tdt_int8","app_running":true,"capture_pill":{"dock_position":"bottom_center","presentation":"floating"},"ok":true,"pill":"idle","remote_enabled":false}
+
+meeting start --mic-only --json
+{"meeting":{"capture_health":{"audio_lag_ms":0,"status":"healthy"},"capture_intent":"meeting","elapsed_seconds":0,"id":"0fc6cd50-7323-43f7-8e73-b20ebff233d5","live_transcript":"","phase":"recording","started_at":"2026-08-18T21:30:15.758796+00:00","system_audio_enabled":false},"ok":true}
+
+meeting status --json (after 3 seconds)
+{"meeting":{"capture_health":{"audio_lag_ms":0,"last_audio_at":"2026-08-18T21:30:21.890242+00:00","status":"healthy"},"capture_intent":"meeting","elapsed_seconds":6,"id":"0fc6cd50-7323-43f7-8e73-b20ebff233d5","live_transcript":"","phase":"recording","started_at":"2026-08-18T21:30:15.758796+00:00","system_audio_enabled":false},"ok":true}
+
+meeting stop --json
+{"meeting":{"capture_health":{"audio_lag_ms":0,"status":"healthy"},"capture_intent":"meeting","elapsed_seconds":0,"live_transcript":"","phase":"idle","system_audio_enabled":false},"ok":true}

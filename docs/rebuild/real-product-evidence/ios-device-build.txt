@@ -1,0 +1,21 @@
+Fecha: 2026-08-18
+Checkout: /Users/zoro/j11/looper
+Workspace: apps/mobile/ios/Looper.xcworkspace
+Scheme: Looper
+Comando: xcodebuildmcp device build --workspace-path apps/mobile/ios/Looper.xcworkspace --scheme Looper --configuration Debug --allowProvisioningUpdates
+
+Resultado: FAIL antes de instalar o ejecutar en el iPhone físico.
+
+Causa exacta de XcodeBuildMCP/Xcode:
+- No Account for Team "9Y84AJHU4X".
+- No provisioning profile para com.j11.looper.mobile.
+- No provisioning profile para com.j11.looper.mobile.keyboard.
+- No provisioning profile para com.j11.looper.mobile.widgets.
+
+El comando alcanzó el proyecto y el scheme reales. No se modificaron certificados,
+perfiles ni configuración de firma.
+
+Intento adicional de lanzamiento del bundle existente en el iPhone disponible:
+- `xcodebuildmcp device launch --device-id F1AB6404-2AAF-58D5-B01D-F9387A4FAC18 --bundle-id com.j11.looper.mobile`
+- Resultado: bloqueado antes del launch porque el dispositivo está bloqueado y
+  Xcode no puede montar el Developer Disk Image (`kAMDMobileImageMounterDeviceLocked`).

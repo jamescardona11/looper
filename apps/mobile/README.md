@@ -1,6 +1,9 @@
 # Looper Mobile
 
-Aplicación móvil React Native con Expo, Convex y dictado local Parakeet.
+Aplicación móvil React Native con Expo y Convex. La disponibilidad del dictado
+depende de la plataforma: Android puede usar el modelo local cuando está
+instalado; la extensión de teclado iOS utiliza el proveedor remoto porque no
+puede leer el modelo privado de la aplicación host.
 
 ## Desarrollo
 

@@ -6,7 +6,7 @@ const readNativeFile = (relativePath: string) =>
   readFileSync(fileURLToPath(new URL(relativePath, import.meta.url)), "utf8");
 
 describe("native keyboard output formats", () => {
-  it("keeps the Voquill-inspired format contract aligned across iOS and Android", () => {
+  it("keeps the native format contract aligned across iOS and Android", () => {
     const iosPrompts = readNativeFile("../../../targets/keyboard/Utils/PromptUtils.swift");
     const iosKeyboard = readNativeFile("../../../targets/keyboard/KeyboardViewController.swift");
     const androidKeyboard = readNativeFile(
@@ -29,7 +29,7 @@ describe("native keyboard output formats", () => {
     expect(androidKeyboard).toContain("Start each task with '- [ ] '");
 
     // A tone defines wording while a format defines structure; both can run
-    // together, which is the behavior adopted from Voquill.
+    // together as one product-level transformation contract.
     expect(iosPrompts).toContain("<style-instructions>");
     expect(iosPrompts).toContain("<format-instructions>");
     expect(androidKeyboard).toContain("<style-instructions>");
@@ -74,8 +74,17 @@ describe("native keyboard output formats", () => {
     expect(iosKeyboard).toContain(
       "pillButton.centerXAnchor.constraint(equalTo: dictationRail.centerXAnchor)",
     );
-    expect(iosKeyboard).toContain("preferredContentSize = CGSize(width: 0, height: 240)");
-    expect(iosKeyboard).toContain("view.heightAnchor.constraint(equalToConstant: 240)");
+    expect(iosKeyboard).toContain("private enum Layout");
+    expect(iosKeyboard).toContain("static let contentHeight: CGFloat = 240");
+    expect(iosKeyboard).toContain("private final class LooperLogoView");
+    expect(iosKeyboard).toContain('button.accessibilityLabel = "Looper"');
+    expect(iosKeyboard).toContain("inputView?.allowsSelfSizing = true");
+    expect(iosKeyboard).toContain(
+      "preferredContentSize = CGSize(width: 0, height: Layout.contentHeight)",
+    );
+    expect(iosKeyboard).toContain(
+      "view.heightAnchor.constraint(equalToConstant: Layout.contentHeight)",
+    );
     expect(iosKeyboard).not.toContain("heightAnchor.constraint(equalToConstant: 286)");
     expect(iosKeyboard).toContain(
       "transformSelectorButton.topAnchor.constraint(equalTo: view.topAnchor, constant: 8)",

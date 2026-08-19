@@ -16,6 +16,7 @@ describe("desktop window routing", () => {
     expect(resolveDesktopWindowRoute("main", true)).toBe("settings");
     expect(resolvePreviewRoute("?surface=pill")).toBe("pill");
     expect(resolvePreviewRoute("?surface=motion")).toBe("motion");
+    expect(resolvePreviewRoute("?surface=onboarding")).toBe("onboarding");
     expect(resolvePreviewRoute("?surface=unknown")).toBe("dashboard");
   });
 });

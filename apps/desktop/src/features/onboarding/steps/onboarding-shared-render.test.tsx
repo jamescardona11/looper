@@ -37,7 +37,7 @@ describe("shared onboarding presentation", () => {
 
     const content = screen.getByText("Content");
     expect(content.parentElement?.className).toBe(
-      "flex min-h-full w-full max-w-lg flex-col items-center text-center justify-center",
+      "onboarding-step onboarding-step-sample flex min-h-full w-full max-w-lg flex-col items-center text-center justify-center",
     );
     expect(
       screen.getByRole("button", { name: "Footer" }).parentElement?.className,
@@ -68,7 +68,7 @@ describe("shared onboarding presentation", () => {
 
   test("preserves the primary action class contract", () => {
     expect(PRIMARY_BUTTON_CLASS).toBe(
-      "flex min-w-[160px] items-center justify-center gap-2 rounded-lg bg-content-primary px-6 py-2.5 ui-text-body-lg font-semibold text-surface-secondary transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50",
+      "onboarding-primary-action flex min-w-[160px] items-center justify-center gap-2 rounded-lg bg-content-primary px-6 py-2.5 ui-text-body-lg font-semibold text-surface-secondary transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50",
     );
   });
 });

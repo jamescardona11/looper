@@ -1,3 +1,6 @@
+import looperMarkUrl from "../../../../../assets/brand/looper-mark.svg?url";
+import looperLogoUrl from "../../../../../assets/brand/looper-logo.svg?url";
+
 type LooperLogoSize = "sm" | "md" | "lg" | "xl";
 
 const LOOPER_LOGO_SIZES: Record<LooperLogoSize, number> = {
@@ -11,19 +14,49 @@ export const LooperLogo = ({ size = "md" }: { size?: LooperLogoSize }) => {
   const dimension = LOOPER_LOGO_SIZES[size];
 
   return (
-    <svg
+    <span
       aria-label="Looper"
       role="img"
-      width={dimension}
-      height={dimension}
-      viewBox="0 0 80 80"
-      className="shrink-0 text-current"
-    >
-      <path
-        fill="currentColor"
-        d="M10 27c0-9.389 7.611-17 17-17h19v22h22v21c0 9.389-7.611 17-17 17H27c-9.389 0-17-7.611-17-17V27Z"
-      />
-      <rect width="20" height="20" x="52" y="4" rx="3" fill="currentColor" />
-    </svg>
+      className="block shrink-0 bg-current"
+      style={{
+        backgroundColor: "currentColor",
+        height: dimension,
+        maskImage: `url("${looperMarkUrl}")`,
+        maskPosition: "center",
+        maskRepeat: "no-repeat",
+        maskSize: "contain",
+        WebkitMaskImage: `url("${looperMarkUrl}")`,
+        WebkitMaskPosition: "center",
+        WebkitMaskRepeat: "no-repeat",
+        WebkitMaskSize: "contain",
+        width: dimension,
+      }}
+    />
   );
 };
+
+export const LooperWordmark = ({
+  className = "",
+  decorative = false,
+}: {
+  className?: string;
+  decorative?: boolean;
+}) => (
+  <span
+    {...(decorative
+      ? { "aria-hidden": true }
+      : { "aria-label": "Looper", role: "img" })}
+    className={`block shrink-0 bg-current ${className}`}
+    style={{
+      backgroundColor: "currentColor",
+      maskImage: `url("${looperLogoUrl}")`,
+      maskPosition: "center",
+      maskRepeat: "no-repeat",
+      maskSize: "contain",
+      WebkitMaskImage: `url("${looperLogoUrl}")`,
+      WebkitMaskPosition: "center",
+      WebkitMaskRepeat: "no-repeat",
+      WebkitMaskSize: "contain",
+    }}
+  />
+);

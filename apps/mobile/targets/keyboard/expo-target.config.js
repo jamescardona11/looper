@@ -6,6 +6,9 @@ module.exports = (config) => ({
   bundleIdentifier: ".keyboard",
   frameworks: ["UIKit", "AVFoundation"],
   deploymentTarget: "16.0",
+  images: {
+    LooperLogo: "./assets/LooperLogo.png",
+  },
   entitlements: {
     "com.apple.security.application-groups":
       config.ios?.entitlements?.["com.apple.security.application-groups"] ?? [],
