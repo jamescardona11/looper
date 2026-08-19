@@ -84,20 +84,30 @@ describe("home state transitions", () => {
     expect(restricted.memoryPrefill).toBe("quarterly plan");
   });
 
-  test("native history navigation closes overlays and returns home", () => {
+  test("native history navigation clears transient imports and returns home", () => {
     const state = {
       ...createHomeState(true),
       activeView: "feature-lab" as const,
       dragActive: true,
       pendingImportPaths: ["recording.wav"],
-      settingsModalOpen: true,
     };
 
     expect(reduceHomeState(state, { type: "return-home" })).toMatchObject({
       activeView: "home",
       dragActive: false,
       pendingImportPaths: null,
-      settingsModalOpen: false,
+    });
+  });
+
+  test("routes every settings entry into the primary workspace view", () => {
+    const next = reduceHomeState(createHomeState(true), {
+      type: "open-settings",
+      tab: "about",
+    });
+
+    expect(next).toMatchObject({
+      activeView: "settings",
+      settingsTab: "about",
     });
   });
 });

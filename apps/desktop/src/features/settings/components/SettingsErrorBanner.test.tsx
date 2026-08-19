@@ -4,7 +4,7 @@ import { setupI18n } from "@lingui/core";
 import { I18nProvider } from "@lingui/react";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, test, vi } from "vitest";
-import { SettingsErrorBanner } from "./SettingsModal";
+import { SettingsErrorBanner } from "./SettingsErrorBanner";
 
 vi.mock("../../../shared/hooks/useCopyToClipboard", () => ({
   useCopyToClipboard: () => ({ copied: false, copy: vi.fn() }),

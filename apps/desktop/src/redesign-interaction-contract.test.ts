@@ -10,7 +10,7 @@ const REDESIGNED_INTERACTION_FILES = [
   "features/library/components/LibraryView.tsx",
   "features/library/components/LibraryCard.tsx",
   "features/library/components/LibraryPlayerFooter.tsx",
-  "features/settings/components/SettingsModal.tsx",
+  "features/settings/components/SettingsRoute.tsx",
   "features/settings/components/tabs/GeneralTab.tsx",
   "features/transcriptions/components/HomeAskBar.tsx",
   "features/transcriptions/components/TranscriptionList.tsx",
@@ -56,11 +56,22 @@ describe("desktop redesign interaction contract", () => {
     expect(library).toContain('data-notification-position="library-header"');
   });
 
+  test("keeps Settings as a route surface instead of a modal shell", () => {
+    const settingsRoute = read(
+      "features/settings/components/SettingsRoute.tsx",
+    );
+
+    expect(settingsRoute).toContain("data-settings-route");
+    expect(settingsRoute).toContain("overflow-x-hidden");
+    expect(settingsRoute).not.toContain("aria-modal");
+    expect(settingsRoute).not.toContain('role: "dialog"');
+    expect(settingsRoute).not.toContain("fixed inset-0");
+  });
+
   test("guards every redesigned moving surface with reduced-motion", () => {
     const movingSurfaces = [
       "Home.tsx",
       "features/library/components/LibraryPlayerFooter.tsx",
-      "features/settings/components/SettingsModal.tsx",
       "features/transcriptions/components/TranscriptionList.tsx",
     ];
 
