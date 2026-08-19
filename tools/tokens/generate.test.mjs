@@ -7,6 +7,7 @@ import assert from "node:assert/strict";
 
 import { generate } from "./generate.mjs";
 import {
+  BRAND_MARK,
   PALETTE,
   neutralChroma,
   oklchToHex,
@@ -232,4 +233,61 @@ describe("the iOS keyboard extension mirrors the palette", () => {
       );
     });
   }
+});
+
+describe("the web boot splash mirrors the palette", () => {
+  // index.html paints before the stylesheet exists, so it cannot read tokens
+  // and has to inline its colors. It used to carry an entirely separate warm
+  // palette (#f8f5f2 page, #b14b25 accent) that predated the brand.
+  const html = () => readFileSync(join(ROOT, "apps/web/index.html"), "utf8");
+
+  const roles = [
+    ["light page", () => PALETTE.light.neutrals.bgPrimary],
+    ["light ink", () => PALETTE.light.neutrals.textPrimary],
+    ["light muted", () => PALETTE.light.neutrals.textMuted],
+    ["light border", () => PALETTE.light.neutrals.borderPrimary],
+    ["light skeleton", () => PALETTE.light.neutrals.bgElevated],
+    ["light accent", () => PALETTE.light.accent.ink],
+    ["dark page", () => PALETTE.dark.neutrals.bgPrimary],
+    ["dark panel", () => PALETTE.dark.neutrals.bgSecondary],
+    ["dark skeleton", () => PALETTE.dark.neutrals.bgSurface],
+    ["dark border", () => PALETTE.dark.neutrals.borderSecondary],
+    ["dark ink", () => PALETTE.dark.neutrals.textPrimary],
+    ["dark muted", () => PALETTE.dark.neutrals.textMuted],
+  ];
+
+  for (const [label, resolve] of roles) {
+    test(`${label} uses the current palette`, () => {
+      const value = oklchToHex(resolve());
+      assert.ok(
+        html().toLowerCase().includes(value),
+        `index.html should reference ${value} for ${label}`,
+      );
+    });
+  }
+
+  test("no color from the old warm splash survives", () => {
+    const retired = ["#f8f5f2", "#241b18", "#ded7d2", "#b14b25", "#0e0806", "#160d0a"];
+    const contents = html().toLowerCase();
+    for (const color of retired) {
+      assert.ok(!contents.includes(color), `${color} should be gone`);
+    }
+  });
+});
+
+describe("the Expo shell mirrors the brand mark", () => {
+  // Without these, expo prebuild falls back to its own defaults — a white
+  // splash and #023c69 as colorPrimary — which is how the Android icon ended
+  // up on a background nobody chose.
+  test("app.config.ts uses the brand paper for splash and adaptive icon", () => {
+    const config = readFileSync(
+      join(ROOT, "apps/mobile/app.config.ts"),
+      "utf8",
+    ).toLowerCase();
+    const occurrences = config.split(BRAND_MARK.paper.toLowerCase()).length - 1;
+    assert.ok(
+      occurrences >= 2,
+      `app.config.ts should use ${BRAND_MARK.paper} for both the splash and the adaptive icon`,
+    );
+  });
 });

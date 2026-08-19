@@ -22,9 +22,16 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       NSSupportsLiveActivities: true,
     },
   },
+  // El papel del logo, para que el icono adaptativo no recorte sobre blanco de
+  // Expo. Ver packages/ts/config/src/palette.ts (BRAND_MARK).
+  backgroundColor: "#f7f5f2",
   android: {
     package: "com.j11.looper.mobile",
     permissions: ["android.permission.RECORD_AUDIO", "android.permission.POST_NOTIFICATIONS"],
+    adaptiveIcon: {
+      foregroundImage: "./assets/app-icon.png",
+      backgroundColor: "#f7f5f2",
+    },
   },
   plugins: [
     "expo-router",
