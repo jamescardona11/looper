@@ -1,0 +1,59 @@
+{
+  "schemaVersion": 1,
+  "name": "Looper",
+  "description": "Tact Design workspace for Looper product and marketing surfaces",
+  "screens": [
+    {
+      "id": "looper-landing",
+      "title": "Looper Landing",
+      "platform": "web",
+      "group": "Marketing",
+      "status": "Draft",
+      "lifecycle": "active",
+      "enabled": true,
+      "href": "./screens/looper-landing.html",
+      "source": "tact-design",
+      "component": "LooperLanding",
+      "tags": ["landing", "voice", "dictation", "meetings", "memory"]
+    },
+    {
+      "id": "looper-landing-calm",
+      "title": "Looper Landing Calm",
+      "platform": "web",
+      "group": "Marketing",
+      "status": "Draft",
+      "lifecycle": "active",
+      "enabled": true,
+      "href": "./screens/looper-landing-calm.html",
+      "source": "tact-design",
+      "component": "LooperLandingCalm",
+      "tags": ["landing", "voice", "dictation", "product-demo", "privacy"]
+    },
+    {
+      "id": "looper-landing-source-first",
+      "title": "Looper Landing Source First",
+      "platform": "web",
+      "group": "Marketing",
+      "status": "Draft",
+      "lifecycle": "active",
+      "enabled": true,
+      "href": "./screens/looper-landing-source-first.html",
+      "source": "tact-design",
+      "component": "LooperLandingSourceFirst",
+      "tags": ["landing", "voice", "dictation", "meetings", "source", "product-demo"]
+    },
+    {
+      "id": "looper-settings-route",
+      "title": "Looper Settings Route",
+      "platform": "desktop",
+      "group": "Product",
+      "status": "Draft",
+      "lifecycle": "active",
+      "enabled": true,
+      "href": "./screens/settings-route.html",
+      "source": "tact-design",
+      "component": "SettingsRoute",
+      "tags": ["settings", "desktop", "route", "dictation", "preferences"]
+    }
+  ]
+}

@@ -18,7 +18,6 @@ export type HomeState = {
   libraryFocus: LibraryFocus | null;
   memoryPrefill: string | null;
   pendingImportPaths: string[] | null;
-  settingsModalOpen: boolean;
   settingsTab: HomeSettingsTab;
   signalStage: SignalStage;
   supportMenuOpen: boolean;
@@ -29,7 +28,6 @@ export type HomeAction =
   | { type: "ask-memory"; query: string | null }
   | { type: "clear-memory-prefill" }
   | { type: "close-faq" }
-  | { type: "close-settings" }
   | { type: "dismiss-drag" }
   | { type: "license-changed"; licensed: boolean }
   | { type: "open-faq" }
@@ -55,7 +53,6 @@ export function createHomeState(licensed: boolean): HomeState {
     libraryFocus: null,
     memoryPrefill: null,
     pendingImportPaths: null,
-    settingsModalOpen: false,
     settingsTab: "general",
     signalStage: "ready",
     supportMenuOpen: false,
@@ -70,7 +67,6 @@ function leaveTransientRouteState(state: HomeState): HomeState {
     activeView: "home",
     dragActive: false,
     pendingImportPaths: null,
-    settingsModalOpen: false,
   };
 }
 
@@ -93,12 +89,6 @@ export function reduceHomeState(
       return { ...state, memoryPrefill: null };
     case "close-faq":
       return { ...state, faqOpen: false };
-    case "close-settings":
-      return {
-        ...state,
-        settingsModalOpen: false,
-        settingsTab: "general",
-      };
     case "dismiss-drag":
       return { ...state, dragActive: false };
     case "license-changed": {
@@ -151,7 +141,7 @@ export function reduceHomeState(
     case "open-settings":
       return {
         ...state,
-        settingsModalOpen: true,
+        activeView: "settings",
         settingsTab: action.tab,
       };
     case "return-home":
@@ -162,7 +152,6 @@ export function reduceHomeState(
         activeView: "feature-lab",
         dragActive: false,
         pendingImportPaths: null,
-        settingsModalOpen: false,
       };
     case "set-drag-active":
       return action.active && !state.licensed

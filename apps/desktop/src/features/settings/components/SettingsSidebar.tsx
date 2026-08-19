@@ -14,8 +14,6 @@ import {
   User,
   type Icon as PhosphorIcon,
 } from "@phosphor-icons/react";
-import { motion } from "framer-motion";
-
 import type { SettingsSection } from "../settings-navigation";
 
 type SettingsSidebarProps = {
@@ -158,13 +156,19 @@ export function SettingsSidebar({
   const { t } = useLingui();
 
   return (
-    <aside className="flex w-[200px] shrink-0 flex-col border-r border-border-primary bg-surface-surface">
+    <aside className="flex min-h-0 w-[200px] shrink-0 flex-col border-r border-border-primary bg-surface-surface">
       <div className="px-4 pt-5 pb-4">
         <h2 className="ui-text-title-strong ui-color-primary">
           {t({ id: "settings.modal.title", message: "Settings" })}
         </h2>
       </div>
-      <nav className="flex-1 space-y-4 overflow-y-auto px-2 pb-2">
+      <nav
+        aria-label={t({
+          id: "settings.route.navigation",
+          message: "Settings navigation",
+        })}
+        className="flex-1 space-y-4 overflow-y-auto px-2 pb-2"
+      >
         {navigationGroups.map((group) => (
           <div className="space-y-1" key={group.heading.id}>
             <p className="px-2.5 pb-1.5 ui-text-uppercase-meta ui-color-disabled font-semibold">
@@ -189,7 +193,7 @@ export function SettingsSidebar({
 }
 
 function SidebarItem({
-  icon: _Icon,
+  icon: Icon,
   label,
   selected,
   onSelect,
@@ -204,13 +208,13 @@ function SidebarItem({
     : "ui-color-muted hover:bg-surface-elevated hover:text-content-secondary";
 
   return (
-    <motion.button
+    <button
       type="button"
       onClick={onSelect}
-      className={`group flex w-full items-center rounded-lg px-2.5 py-2 text-left ui-text-body-sm-strong transition-colors ${stateClass}`}
-      whileTap={{ scale: 0.98 }}
+      className={`group flex w-full items-center rounded-lg px-2.5 py-2 text-left ui-text-body-sm-strong transition-[background-color,color,transform] active:scale-[0.98] motion-reduce:transition-none motion-reduce:active:scale-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent-30)] ${stateClass}`}
     >
+      <Icon aria-hidden="true" className="mr-2 shrink-0" size={15} />
       {label}
-    </motion.button>
+    </button>
   );
 }

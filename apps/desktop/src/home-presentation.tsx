@@ -15,7 +15,7 @@ import {
 import { AnimatePresence, motion } from "framer-motion";
 import { lazy, Suspense, useRef, type Dispatch, type RefObject } from "react";
 
-import SettingsModal from "./features/settings/components/SettingsModal";
+import SettingsRoute from "./features/settings/components/SettingsRoute";
 import type { FeatureDiagnostic } from "./features/feature-lab/types";
 import { HomeMeetingActivity } from "./features/library/components/HomeMeetingActivity";
 import LibraryView from "./features/library/components/LibraryView";
@@ -407,18 +407,58 @@ function HomeWorkspace({
         className="flex h-12 w-full shrink-0 items-center justify-between border-b border-border-primary px-5"
         data-tauri-drag-region
       >
-        <span className="font-satoshi ui-text-nav-brand ui-color-primary">
-          Looper
-        </span>
-        <button
-          className="flex h-8 items-center gap-2 rounded-lg border border-border-primary bg-surface-surface px-3 ui-text-body-sm ui-color-secondary transition-[background-color,border-color,color] hover:border-border-hover hover:bg-surface-elevated hover:text-content-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent-30)] disabled:pointer-events-none disabled:opacity-45"
-          disabled={!licenseGateActive}
-          onClick={() => dispatch({ type: "ask-memory", query: null })}
-          type="button"
-        >
-          {t({ id: "home.ask_memory", message: "Ask Memory" })}
-          <kbd className="ui-text-micro ui-color-muted">⌘K</kbd>
-        </button>
+        {state.activeView === "settings" ? (
+          <div className="flex items-center gap-2 ui-text-body-sm">
+            <button
+              aria-label={t({
+                id: "settings.route.return_home",
+                message: "Return to Home",
+              })}
+              className="flex h-8 items-center gap-2 rounded-lg px-2 ui-color-muted transition-[background-color,color] hover:bg-surface-elevated hover:ui-color-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent-30)]"
+              onClick={() => dispatch({ type: "return-home" })}
+              type="button"
+            >
+              <House aria-hidden="true" size={15} />
+              {t({ id: "home.sidebar.home", message: "Home" })}
+            </button>
+            <span aria-hidden="true" className="ui-color-disabled">
+              /
+            </span>
+            <span className="ui-color-primary">
+              {t({ id: "settings.route.title", message: "Settings" })}
+            </span>
+          </div>
+        ) : (
+          <span className="font-satoshi ui-text-nav-brand ui-color-primary">
+            Looper
+          </span>
+        )}
+        {state.activeView === "settings" ? (
+          <span
+            aria-live="polite"
+            className="flex items-center gap-2 ui-text-micro ui-color-muted"
+            role="status"
+          >
+            <span
+              aria-hidden="true"
+              className="h-1.5 w-1.5 rounded-full bg-[var(--color-success)]"
+            />
+            {t({
+              id: "settings.route.saved_automatically",
+              message: "Saved automatically",
+            })}
+          </span>
+        ) : (
+          <button
+            className="flex h-8 items-center gap-2 rounded-lg border border-border-primary bg-surface-surface px-3 ui-text-body-sm ui-color-secondary transition-[background-color,border-color,color] hover:border-border-hover hover:bg-surface-elevated hover:text-content-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent-30)] disabled:pointer-events-none disabled:opacity-45"
+            disabled={!licenseGateActive}
+            onClick={() => dispatch({ type: "ask-memory", query: null })}
+            type="button"
+          >
+            {t({ id: "home.ask_memory", message: "Ask Memory" })}
+            <kbd className="ui-text-micro ui-color-muted">⌘K</kbd>
+          </button>
+        )}
       </header>
 
       <div
@@ -493,13 +533,13 @@ function HomeWorkspace({
             prefillQuery={state.memoryPrefill}
           />
         </WorkspaceRoute>
-        <WorkspaceRoute active={state.activeView === "settings"}>
-          <SettingsModal
+        <WorkspaceRoute active={state.activeView === "settings"} width="full">
+          <SettingsRoute
+            key={`${state.activeView}:${state.settingsTab}`}
             initialTab={state.settingsTab}
             isOpen={state.activeView === "settings"}
             onClose={() => dispatch({ type: "activate-view", view: "home" })}
             transcriptionMode={transcriptionMode}
-            variant="page"
           />
         </WorkspaceRoute>
         {DevelopmentFeatureLab ? (
@@ -629,12 +669,6 @@ export function HomePresentation({
       <DragImportOverlay
         active={state.dragActive}
         reduceMotion={reduceMotion}
-      />
-      <SettingsModal
-        initialTab={state.settingsTab}
-        isOpen={state.settingsModalOpen}
-        onClose={() => dispatch({ type: "close-settings" })}
-        transcriptionMode={transcriptionMode}
       />
       <FAQModal
         isOpen={state.faqOpen}

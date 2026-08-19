@@ -9,7 +9,7 @@ import { HomePresentation } from "./home-presentation";
 import { createHomeState, type HomeState } from "./home-state";
 import { EMPTY_TODAY_DICTATION_STATS } from "./features/transcriptions/todayStats";
 
-vi.mock("./features/settings/components/SettingsModal", () => ({
+vi.mock("./features/settings/components/SettingsRoute", () => ({
   default: ({
     isOpen,
     initialTab,
@@ -21,7 +21,9 @@ vi.mock("./features/settings/components/SettingsModal", () => ({
       data-open={String(isOpen)}
       data-tab={initialTab}
       data-testid="settings"
-    />
+    >
+      {isOpen ? <div role="status">Saved automatically</div> : null}
+    </div>
   ),
 }));
 vi.mock("./features/feature-lab/components/FeatureLabView", () => ({
@@ -125,7 +127,21 @@ describe("Home presentation contract", () => {
       sidebar?.querySelector("nav"),
     );
     expect(screen.getByTestId("today-header").isConnected).toBe(true);
-    expect(screen.getAllByTestId("settings")).toHaveLength(2);
+    expect(screen.getByTestId("settings").getAttribute("data-open")).toBe(
+      "false",
+    );
+  });
+
+  test("renders Settings as the active workspace route without a dialog", () => {
+    renderHomePresentation({ activeView: "settings" });
+
+    expect(screen.getByTestId("settings").getAttribute("data-open")).toBe(
+      "true",
+    );
+    expect(
+      screen.getAllByRole("status").map((node) => node.textContent),
+    ).toContain("Saved automatically");
+    expect(screen.queryByRole("dialog")).toBeNull();
   });
 
   test("dispatches navigation, Memory, meeting and support actions", () => {

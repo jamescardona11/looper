@@ -157,7 +157,7 @@ describe("Home native event bridge", () => {
 
     act(checkoutReturned);
     expect(currentState()).toMatchObject({
-      settingsModalOpen: true,
+      activeView: "settings",
       settingsTab: "account",
     });
   });
@@ -171,7 +171,7 @@ describe("Home native event bridge", () => {
     await finishRegistrations();
     expect(bridge.state.updateChecks).toBe(1);
     expect(currentState()).toMatchObject({
-      settingsModalOpen: true,
+      activeView: "settings",
       settingsTab: "about",
     });
 
