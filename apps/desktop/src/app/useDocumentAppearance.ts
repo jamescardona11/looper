@@ -23,10 +23,12 @@ type DocumentAppearanceOptions = {
   storedTheme: string | null | undefined;
 };
 
-const SETTINGS_WINDOW_BACKGROUND = {
-  dark: "#191a20",
-  light: "#f5f5f7",
-} as const;
+/**
+ * Tauri necesita un color ya resuelto para el fondo nativo de la ventana: no
+ * puede leer una variable CSS. Se toma del token que el documento acaba de
+ * aplicar, de forma que sigue a la paleta en vez de duplicar sus valores.
+ */
+const SETTINGS_WINDOW_BACKGROUND_TOKEN = "--color-bg-secondary";
 
 export function useDocumentAppearance({
   windowLabel,
@@ -96,15 +98,19 @@ function useTheme({
   useEffect(() => {
     const root = document.documentElement;
     const nativeWindow = windowLabel === "settings" ? getCurrentWindow() : null;
-    const applyNativeBackground = (theme: "light" | "dark") => {
+    const applyNativeBackground = () => {
       if (!nativeWindow) return;
-      void nativeWindow
-        .setBackgroundColor(SETTINGS_WINDOW_BACKGROUND[theme])
-        .catch(() => undefined);
+      // Se llama siempre después de fijar root.dataset.theme, así que el valor
+      // computado ya corresponde al modo activo.
+      const background = getComputedStyle(root)
+        .getPropertyValue(SETTINGS_WINDOW_BACKGROUND_TOKEN)
+        .trim();
+      if (!background) return;
+      void nativeWindow.setBackgroundColor(background).catch(() => undefined);
     };
     if (previewMode) {
       root.dataset.theme = previewTheme;
-      applyNativeBackground(previewTheme);
+      applyNativeBackground();
       return;
     }
     if (windowLabel !== "settings" || settingsLoading) {
@@ -120,7 +126,7 @@ function useTheme({
       selected = mode;
       const theme = themeForDocument(mode, mediaQuery.matches);
       root.dataset.theme = theme;
-      applyNativeBackground(theme);
+      applyNativeBackground();
     };
     const followSystem = () => {
       if (selected === "system") apply("system");
