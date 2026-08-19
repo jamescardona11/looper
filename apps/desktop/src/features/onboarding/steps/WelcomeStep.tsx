@@ -5,6 +5,7 @@ import {
 } from "framer-motion";
 import {
   LooperLogo as ProductMark,
+  LooperWordmark,
   OnboardingStep as StepFrame,
   PRIMARY_BUTTON_CLASS as primaryActionClassName,
   type StepMotionProps as MotionContract,
@@ -23,12 +24,12 @@ const LOGO_SURFACE_PROPS = {
   animate: { opacity: 1, scale: 1 },
   transition: { duration: 0.45, ease: "easeOut" as const },
   className:
-    "mb-7 flex h-[100px] w-[100px] items-center justify-center rounded-[28px] bg-[var(--surface-onboarding-logo)] shadow-xl ring-1 ring-[var(--color-onboarding-logo-ring)]",
+    "onboarding-welcome-mark mb-7 flex h-[100px] w-[100px] items-center justify-center rounded-[28px] bg-[var(--surface-onboarding-logo)] shadow-xl ring-1 ring-[var(--color-onboarding-logo-ring)]",
 };
 
 const TITLE_PROPS = {
   className:
-    "text-[3.5rem] font-bold leading-none tracking-[-0.03em] text-content-primary",
+    "onboarding-welcome-wordmark text-[3.5rem] font-bold leading-none tracking-[-0.03em] text-content-primary",
   style: { fontFamily: "var(--font-display)" },
 };
 
@@ -75,7 +76,10 @@ function WelcomeWordmark({ reduceMotion }: { reduceMotion: boolean }) {
     : { pathLength: 0, opacity: 0 };
   return (
     <span className="relative inline-block">
-      <h1 {...TITLE_PROPS}>Looper</h1>
+      <h1 {...TITLE_PROPS}>
+        <span className="sr-only">Looper</span>
+        <LooperWordmark className="h-[3.5rem] w-[15.75rem]" decorative />
+      </h1>
       <Motion.svg {...UNDERLINE_SVG_PROPS}>
         <Motion.path {...UNDERLINE_PATH_PROPS} initial={underlineEntrance} />
       </Motion.svg>

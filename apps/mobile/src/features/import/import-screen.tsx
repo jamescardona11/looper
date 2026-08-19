@@ -120,7 +120,11 @@ export function ImportScreen() {
             <Text style={styles.body}>
               El contenido ya está disponible en Library, Studio y Ask.
             </Text>
-            <Pressable onPress={() => router.replace("/")} style={styles.primary}>
+            <Pressable
+              accessibilityRole="button"
+              onPress={() => router.replace("/")}
+              style={styles.primary}
+            >
               <Text style={styles.primaryText}>Abrir Library</Text>
             </Pressable>
           </View>
@@ -160,6 +164,7 @@ export function ImportScreen() {
               Solo se importa texto. Looper no copia audio ni accede a la base privada de otra app.
             </Text>
             <Pressable
+              accessibilityRole="button"
               disabled={phase === "importing"}
               onPress={() => void apply()}
               style={styles.primary}
@@ -170,7 +175,11 @@ export function ImportScreen() {
                 <Text style={styles.primaryText}>Importar selección</Text>
               )}
             </Pressable>
-            <Pressable onPress={() => setBundle(null)} style={styles.secondary}>
+            <Pressable
+              accessibilityRole="button"
+              onPress={() => setBundle(null)}
+              style={styles.secondary}
+            >
               <Text style={styles.secondaryText}>Elegir otro archivo</Text>
             </Pressable>
           </View>
@@ -188,6 +197,7 @@ export function ImportScreen() {
               </Text>
             </View>
             <Pressable
+              accessibilityRole="button"
               disabled={phase === "reading"}
               onPress={() => void pick()}
               style={styles.primary}

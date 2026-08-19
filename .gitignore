@@ -71,6 +71,7 @@ pnpm-debug.log*
 
 # Agent metadata (subagent evidence/learnings)
 .tcompound/
+.argent/
 **/ai_docs/
 /corpus-inventory.csv
 /corpus-summary.json
@@ -88,7 +89,6 @@ apps/desktop/public/fonts/*
 !apps/desktop/public/fonts/NOTICE.md
 !apps/desktop/public/fonts/*.woff2
 apps/desktop/src-tauri/macos/*.png
-assets/brand/
 /tact-design/
 
 # Local audio model/test artifacts; source and manifests remain auditable.

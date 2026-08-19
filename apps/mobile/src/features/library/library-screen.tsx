@@ -3,6 +3,7 @@ import { type Href, useRouter } from "expo-router";
 import { useCallback, useMemo, useState } from "react";
 import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { LooperBrand } from "@/shared/components/looper-brand";
 import { colors } from "@/shared/theme/colors";
 import { buildLibraryItems, type LibraryFilter, type LibraryItem } from "./library-logic";
 
@@ -47,9 +48,12 @@ export function LibraryScreen() {
         ListHeaderComponent={
           <View style={styles.headerContent}>
             <View style={styles.titleRow}>
-              <View style={styles.titleCopy}>
-                <Text style={styles.title}>Library</Text>
-                <Text style={styles.subtitle}>Notas, dictados y reuniones en un lugar.</Text>
+              <View style={styles.titleGroup}>
+                <LooperBrand size={30} />
+                <View style={styles.titleCopy}>
+                  <Text style={styles.title}>Library</Text>
+                  <Text style={styles.subtitle}>Notas, dictados y reuniones en un lugar.</Text>
+                </View>
               </View>
               <Pressable
                 accessibilityLabel="Importar contenido"
@@ -176,6 +180,7 @@ const styles = StyleSheet.create({
   content: { paddingHorizontal: 18 },
   headerContent: { gap: 18, paddingTop: 14 },
   titleRow: { alignItems: "center", flexDirection: "row", gap: 12 },
+  titleGroup: { alignItems: "center", flex: 1, flexDirection: "row", gap: 10, minWidth: 0 },
   titleCopy: { flex: 1, gap: 4 },
   title: { color: colors.text, fontSize: 28, fontWeight: "700", letterSpacing: -0.8 },
   subtitle: { color: colors.muted, fontSize: 13, lineHeight: 18 },

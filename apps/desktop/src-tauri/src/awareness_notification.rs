@@ -45,6 +45,16 @@ fn show_window(app: &AppHandle<AppRuntime>) {
     crate::toast::position_notification_window(app, &window, (WIDTH, HEIGHT));
     crate::platform::toast::set_interactive(app, &window, true);
     crate::platform::toast::show(app, &window);
+
+    // macOS panels can restore their frame while being ordered to the front.
+    // Apply the target position once more on the main thread after reveal so
+    // the notification remains anchored to the top-right work-area corner.
+    let handle = app.clone();
+    let _ = app.run_on_main_thread(move || {
+        if let Some(window) = handle.get_webview_window(WINDOW_LABEL) {
+            crate::toast::position_notification_window(&handle, &window, (WIDTH, HEIGHT));
+        }
+    });
 }
 
 fn toast_is_visible(app: &AppHandle<AppRuntime>) -> bool {

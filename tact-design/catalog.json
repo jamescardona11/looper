@@ -43,6 +43,19 @@
       "tags": ["landing", "voice", "dictation", "meetings", "source", "product-demo"]
     },
     {
+      "id": "looper-landing-source-first-v2",
+      "title": "Looper Landing Source First V2",
+      "platform": "web",
+      "group": "Marketing",
+      "status": "Draft",
+      "lifecycle": "active",
+      "enabled": true,
+      "href": "./screens/looper-landing-source-first-v2.html",
+      "source": "tact-design",
+      "component": "LooperLandingSourceFirstV2",
+      "tags": ["landing", "voice", "dictation", "meetings", "source", "product-demo", "comparison"]
+    },
+    {
       "id": "looper-settings-route",
       "title": "Looper Settings Route",
       "platform": "desktop",

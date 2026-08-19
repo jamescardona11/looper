@@ -43,7 +43,7 @@ describe("WelcomeStep", () => {
     const title = screen.getByRole("heading", { name: "Looper" });
     expect(title.style.fontFamily).toBe("var(--font-display)");
     expect(title.className).toBe(
-      "text-[3.5rem] font-bold leading-none tracking-[-0.03em] text-content-primary",
+      "onboarding-welcome-wordmark text-[3.5rem] font-bold leading-none tracking-[-0.03em] text-content-primary",
     );
     expect(screen.getByText("Free dictation anywhere")).toBeTruthy();
     const underline = document.querySelector('path[d="M 4 11 Q 150 5, 296 6"]');

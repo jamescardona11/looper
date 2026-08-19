@@ -31,9 +31,11 @@ export function ModeStepOption({
       type="button"
       role="radio"
       aria-checked={active}
+      data-active={active}
+      data-tone={tone}
       disabled={disabled}
       onClick={onClick}
-      className={`min-h-48 rounded-lg border p-4 text-left transition-colors ${
+      className={`onboarding-mode-option min-h-48 rounded-lg border p-4 text-left transition-colors ${
         active
           ? activeClasses
           : "border-border-primary bg-surface-surface text-content-muted hover:bg-surface-elevated disabled:cursor-not-allowed disabled:opacity-50"

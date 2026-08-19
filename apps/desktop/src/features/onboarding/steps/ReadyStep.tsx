@@ -45,11 +45,11 @@ type ReadyStepProps = {
 };
 
 const VERIFICATION_CARD_CLASS_NAME =
-  "mb-7 w-full rounded-xl border border-border-primary bg-surface-secondary p-4 text-left";
+  "onboarding-verification-card mb-7 w-full rounded-xl border border-border-primary bg-surface-secondary p-4 text-left";
 const INSERTION_FIELD_CLASS_NAME =
   "mt-3 min-h-20 w-full resize-none rounded-lg border border-border-secondary bg-surface-surface px-3 py-2 ui-text-body-sm text-content-primary outline-none focus:border-border-hover focus:ring-2 focus:ring-border-primary";
 const RECAP_CLASS_NAME =
-  "w-full divide-y divide-border-secondary border-y border-border-secondary text-left";
+  "onboarding-recap w-full divide-y divide-border-secondary border-y border-border-secondary text-left";
 const SHORTCUT_BUTTON_CLASS_NAME =
   "group flex items-center gap-1.5 rounded-md bg-surface-elevated px-2 py-1 transition-colors hover:bg-surface-overlay";
 const LICENSE_ACTION_CLASS_NAME =

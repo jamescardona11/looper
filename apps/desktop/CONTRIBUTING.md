@@ -24,9 +24,9 @@ Translations run on [Lokalise](https://lokalise.com/), by invite. Open a transla
 
 Applications are reviewed by hand, and not every language gets approved, depending on demand and capacity. If you're in, you'll get a Lokalise invite by email.
 
-Active translators get a **Personal** license (full access on up to 5 devices) as thanks.
-
-> <a href="https://lokalise.com/"><img src="./assets/readme/lokalise.png" width="18" alt="Lokalise" align="center" /></a>&ensp;Translations supported by [Lokalise](https://lokalise.com/)
+Translation access and any contributor benefits are governed by the current
+project terms. This guide does not promise a product license or other
+compensation.
 
 ---
 
@@ -54,18 +54,21 @@ Looper is local-first by design. Features that send audio or transcripts to a se
 
 ## Code contributions
 
-1. Create a branch from `main` in your fork or local clone.
+1. Create a branch from the repository's configured default branch in your fork
+   or local clone.
 2. Set up a local build ([Building locally](#building-locally)).
 3. Make your changes and test them on the platform(s) you touched.
-4. Open a change request **targeting `main`** with a clear description of what changed and why.
+4. Open a change request targeting the configured default branch with a clear
+   description of what changed and why.
 
-All change requests target `main`, regardless of the current release version.
+The target branch is determined by the repository host and may change between
+release cycles.
 
 **What we're looking for in contributions:**
 
 - Changes that extend existing code rather than adding parallel systems
 - Platform parity when touching macOS- or Windows-specific behavior
-- `pnpm run build` and `cargo check --manifest-path src-tauri/Cargo.toml` passing
+- `pnpm run build` and `cargo check --manifest-path apps/desktop/src-tauri/Cargo.toml` passing
 
 Run the repository's formatting, lint, build, and test checks before submitting a change. Native changes must also be checked on every platform they affect.
 
@@ -81,15 +84,15 @@ Tell a friend, mention Looper in a post, or share the project through its curren
 
 ### macOS
 
-**Prerequisites:** macOS 14+, [Rust](https://rustup.rs/) 1.74+, [pnpm](https://pnpm.io/) 10+ (with Node.js 20+), Xcode Command Line Tools
+**Prerequisites:** macOS 14+, [Rust](https://rustup.rs/) 1.88+, [pnpm](https://pnpm.io/) 10+ (with Node.js 20+), Xcode Command Line Tools
 
 ```bash
 xcode-select --install
 git clone <repository-url>
 cd Looper
 pnpm install
-pnpm tauri dev    # Development with hot reload
-pnpm tauri build  # Production build
+pnpm --dir apps/desktop tauri dev    # Development with hot reload
+pnpm --dir apps/desktop tauri build  # Production build
 ```
 
 ### Windows
@@ -102,17 +105,17 @@ rustup target add x86_64-pc-windows-msvc
 git clone <repository-url>
 cd Looper
 pnpm install
-pnpm tauri dev    # Development with hot reload
-pnpm tauri build  # Production build
+pnpm --dir apps/desktop tauri dev    # Development with hot reload
+pnpm --dir apps/desktop tauri build  # Production build
 ```
 
-On Windows, `pnpm tauri ...` stores Cargo build artifacts in `C:\.looper-cargo-target` to avoid long native build paths. Override with `CARGO_TARGET_DIR` or `LOOPER_CARGO_TARGET_DIR` if needed.
+On Windows, `pnpm --dir apps/desktop tauri ...` stores Cargo build artifacts in `C:\.looper-cargo-target` to avoid long native build paths. Override with `CARGO_TARGET_DIR` or `LOOPER_CARGO_TARGET_DIR` if needed.
 
 If you run Cargo directly on Windows, set a short target directory first:
 
 ```powershell
 $env:CARGO_TARGET_DIR = "C:\.looper-cargo-target"
-cargo check --manifest-path src-tauri/Cargo.toml
+cargo check --manifest-path apps/desktop/src-tauri/Cargo.toml
 ```
 
 > [!TIP]

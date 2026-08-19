@@ -10,7 +10,7 @@ export function IntelligenceStepCard({
   percent,
 }: IntelligenceStepCardProps) {
   return (
-    <div className="w-full rounded-xl border border-border-secondary bg-surface-elevated p-5 text-left">
+    <div className="onboarding-intelligence-card w-full rounded-xl border border-border-secondary bg-surface-elevated p-5 text-left">
       <div className="flex items-start gap-3">
         <div className="rounded-lg bg-cloud/10 p-2 text-cloud">
           <Brain size={22} weight="duotone" />

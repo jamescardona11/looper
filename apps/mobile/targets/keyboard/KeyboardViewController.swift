@@ -267,6 +267,74 @@ class IndeterminateProgressView: UIView {
   }
 }
 
+private final class LooperLogoView: UIView {
+  private let color: UIColor
+
+  init(color: UIColor) {
+    self.color = color
+    super.init(frame: .zero)
+    backgroundColor = .clear
+    isOpaque = false
+    isUserInteractionEnabled = false
+  }
+
+  required init?(coder: NSCoder) {
+    color = .white
+    super.init(coder: coder)
+    backgroundColor = .clear
+    isOpaque = false
+    isUserInteractionEnabled = false
+  }
+
+  override func draw(_ rect: CGRect) {
+    let scale = min(rect.width, rect.height) / 80
+    let origin = CGPoint(
+      x: (rect.width - 80 * scale) / 2,
+      y: (rect.height - 80 * scale) / 2
+    )
+    let point: (CGFloat, CGFloat) -> CGPoint = { x, y in
+      CGPoint(x: origin.x + x * scale, y: origin.y + y * scale)
+    }
+
+    let path = UIBezierPath()
+    path.move(to: point(10, 27))
+    path.addCurve(
+      to: point(27, 10),
+      controlPoint1: point(10, 17.61),
+      controlPoint2: point(17.61, 10)
+    )
+    path.addLine(to: point(46, 10))
+    path.addLine(to: point(46, 32))
+    path.addLine(to: point(68, 32))
+    path.addLine(to: point(68, 53))
+    path.addCurve(
+      to: point(51, 70),
+      controlPoint1: point(68, 62.39),
+      controlPoint2: point(60.39, 70)
+    )
+    path.addLine(to: point(27, 70))
+    path.addCurve(
+      to: point(10, 53),
+      controlPoint1: point(10, 62.39),
+      controlPoint2: point(17.61, 70)
+    )
+    path.close()
+    path.append(
+      UIBezierPath(
+        roundedRect: CGRect(
+          x: origin.x + 52 * scale,
+          y: origin.y + 4 * scale,
+          width: 20 * scale,
+          height: 20 * scale
+        ),
+        cornerRadius: 3 * scale
+      )
+    )
+    color.setFill()
+    path.fill()
+  }
+}
+
 // MARK: - Keyboard Controller
 
 class KeyboardViewController: UIInputViewController {
@@ -282,6 +350,10 @@ class KeyboardViewController: UIInputViewController {
     static let muted = UIColor(red: 0.510, green: 0.522, blue: 0.561, alpha: 1)
     static let accent = UIColor(red: 0.561, green: 0.612, blue: 1, alpha: 1)
     static let onAccent = background
+  }
+
+  private enum Layout {
+    static let contentHeight: CGFloat = 240
   }
 
   private enum PillVisual {
@@ -347,7 +419,8 @@ class KeyboardViewController: UIInputViewController {
 
   override func viewDidLoad() {
     super.viewDidLoad()
-    preferredContentSize = CGSize(width: 0, height: 240)
+    inputView?.allowsSelfSizing = true
+    preferredContentSize = CGSize(width: 0, height: Layout.contentHeight)
     buildUI()
     startKeyboardCounterPoller()
   }
@@ -449,7 +522,7 @@ class KeyboardViewController: UIInputViewController {
     view.backgroundColor = Palette.backgroundSecondary
     overrideUserInterfaceStyle = .dark
 
-    let hc = view.heightAnchor.constraint(equalToConstant: 240)
+    let hc = view.heightAnchor.constraint(equalToConstant: Layout.contentHeight)
     hc.priority = .defaultHigh
     hc.isActive = true
 
@@ -458,19 +531,16 @@ class KeyboardViewController: UIInputViewController {
       button.backgroundColor = Palette.surface
       button.layer.cornerRadius = 12
       button.clipsToBounds = true
+      button.accessibilityLabel = "Looper"
+      button.accessibilityTraits = .button
       button.addTarget(self, action: #selector(onLogoButtonTap), for: .touchUpInside)
     }
     addButtonFeedback(logoButton)
     view.addSubview(logoButton)
 
-    let logoImageView = configured(
-      UIImageView(image: UIImage(named: "LooperLogo")?.withRenderingMode(.alwaysTemplate))
-    ) { image in
-      image.translatesAutoresizingMaskIntoConstraints = false
-      image.contentMode = .scaleAspectFit
-      image.tintColor = Palette.text
-      image.isUserInteractionEnabled = false
-    }
+    let logoImageView = LooperLogoView(color: Palette.text)
+    logoImageView.translatesAutoresizingMaskIntoConstraints = false
+    logoImageView.accessibilityIdentifier = "LooperLogoImageView"
     logoButton.addSubview(logoImageView)
     NSLayoutConstraint.activate([
       logoImageView.centerXAnchor.constraint(equalTo: logoButton.centerXAnchor),
@@ -478,6 +548,7 @@ class KeyboardViewController: UIInputViewController {
       logoImageView.widthAnchor.constraint(equalToConstant: 28),
       logoImageView.heightAnchor.constraint(equalToConstant: 28),
     ])
+    logoButton.isAccessibilityElement = true
 
     languageChip = configured(UIButton(type: .system)) { button in
       button.translatesAutoresizingMaskIntoConstraints = false

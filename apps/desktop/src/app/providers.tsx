@@ -25,7 +25,7 @@ const client = new QueryClient({
 const previewMode = import.meta.env.VITE_SIGNAL_PREVIEW === "1";
 
 export function AppProviders({ children }: { children: ReactNode }) {
-  const windowLabel = currentTauriWindow().label;
+  const windowLabel = previewMode ? "settings" : currentTauriWindow().label;
 
   return (
     <LanguageProvider i18n={i18n}>

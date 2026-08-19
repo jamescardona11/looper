@@ -1,7 +1,8 @@
 export type DesktopWindowRoute =
   "settings" | "meeting-awareness" | "toast" | "main-overlay";
 
-export type PreviewRoute = "dashboard" | "floating" | "motion" | "pill";
+export type PreviewRoute =
+  "dashboard" | "floating" | "motion" | "pill" | "onboarding";
 
 export function resolveDesktopWindowRoute(
   nativeWindowLabel: string,
@@ -15,7 +16,12 @@ export function resolveDesktopWindowRoute(
 
 export function resolvePreviewRoute(search: string): PreviewRoute {
   const surface = new URLSearchParams(search).get("surface");
-  if (surface === "floating" || surface === "motion" || surface === "pill") {
+  if (
+    surface === "floating" ||
+    surface === "motion" ||
+    surface === "pill" ||
+    surface === "onboarding"
+  ) {
     return surface;
   }
   return "dashboard";

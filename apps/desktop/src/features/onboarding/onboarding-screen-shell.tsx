@@ -10,11 +10,11 @@ import WindowControls from "../../shared/ui/WindowControls";
 import { StepIndicator } from "./steps/shared";
 
 const SCREEN_CLASS_NAME =
-  "flex h-screen w-screen flex-col overflow-hidden bg-surface-secondary ui-color-on-solid select-none relative";
+  "onboarding-shell relative flex h-screen w-screen flex-col overflow-hidden bg-surface-secondary ui-color-on-solid select-none";
 const CONTENT_CLASS_NAME =
-  "flex-1 flex flex-col items-center overflow-y-auto px-10 pb-6";
+  "onboarding-content relative z-10 flex flex-1 flex-col items-center overflow-y-auto px-10 pb-6";
 const BACK_BUTTON_CLASS_NAME =
-  "absolute left-6 bottom-6 flex items-center gap-1 ui-text-body-sm text-content-muted hover:text-content-primary transition-colors";
+  "onboarding-back-button absolute bottom-6 left-6 z-20 flex items-center gap-1 ui-text-body-sm text-content-muted transition-colors hover:text-content-primary";
 
 type OnboardingScreenShellProps = {
   currentStep: string;
@@ -39,10 +39,18 @@ export function OnboardingScreenShell(props: OnboardingScreenShellProps) {
     <MotionPreferences reducedMotion="user">
       <div className={SCREEN_CLASS_NAME}>
         {props.bridges}
+        <div aria-hidden="true" className="onboarding-atmosphere">
+          <span className="onboarding-atmosphere-orb onboarding-atmosphere-orb-primary" />
+          <span className="onboarding-atmosphere-orb onboarding-atmosphere-orb-secondary" />
+          <span className="onboarding-atmosphere-scanline" />
+        </div>
         <WindowControls />
-        <div data-tauri-drag-region className="h-7 w-full shrink-0" />
+        <div
+          data-tauri-drag-region
+          className="relative z-10 h-7 w-full shrink-0"
+        />
 
-        <div className="flex justify-center pt-6">
+        <div className="relative z-10 flex justify-center pt-6">
           <div className="flex h-1.5 items-center">
             {progressVisible ? (
               <StepIndicator

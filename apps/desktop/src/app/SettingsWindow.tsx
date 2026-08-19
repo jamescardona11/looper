@@ -19,6 +19,10 @@ const PreviewMotion = lazy(
   () => import("../features/preview/SignalPreviewMotionLab"),
 );
 const PreviewPill = lazy(() => import("../features/preview/SignalPreviewPill"));
+const PreviewOnboarding = lazy(
+  () => import("../features/preview/SignalPreviewOnboarding"),
+);
+const previewMode = import.meta.env.VITE_SIGNAL_PREVIEW === "1";
 
 type SettingsWindowProps = {
   loading: boolean;
@@ -36,14 +40,20 @@ export function SettingsWindow({
 }: SettingsWindowProps) {
   if (loading) return loadingFrame;
 
+  const content = (
+    <Suspense fallback={loadingFrame}>
+      <div className={frameClass}>
+        {settingsContent(previewRoute, onboardingVisible)}
+        {previewMode ? null : <AneCompileOverlay />}
+      </div>
+    </Suspense>
+  );
+
+  if (previewMode) return content;
+
   return (
     <ModelDownloadActivityProvider>
-      <Suspense fallback={loadingFrame}>
-        <div className={frameClass}>
-          {settingsContent(previewRoute, onboardingVisible)}
-          <AneCompileOverlay />
-        </div>
-      </Suspense>
+      {content}
       <ModelDownloadActivityBar />
     </ModelDownloadActivityProvider>
   );
@@ -69,5 +79,7 @@ function settingsContent(
       return <PreviewPill />;
     case "dashboard":
       return <PreviewDashboard />;
+    case "onboarding":
+      return <PreviewOnboarding />;
   }
 }

@@ -41,7 +41,7 @@ los casos que requieren revisión sustantiva por su referencia principal:
 | `apps/mobile/targets/_shared/DarwinNotificationManager.swift` | 23.7% | Voquill (AGPLv3) | Revisión de lifecycle completada: observer token, cola main, reemplazo por nombre y remove-all están encapsulados; falta prueba en dos procesos/extensión real. |
 | `apps/mobile/targets/widgets/MeetingLiveActivity.swift` | 23.1% | Voquill (AGPLv3) | Revisión de presentación completada: fases, timer, deep link y regiones Dynamic Island son propias; falta compilación del widget y validación en dispositivo. |
 | `apps/mobile/targets/keyboard/Repos/MemberRepo.swift` | 22.9% | Voquill (AGPLv3) | Revisión de wire completada: snapshot de suscripción, defaults y transporte inyectable están separados; falta query Convex real y sandbox de extensión. |
-| `apps/mobile/targets/keyboard/Types/SharedWorkflow.swift` | 11.8% | typewhisper-mac (GPL) | Revisión de codec completada: el modelo local filtra/normaliza defaults y limita output; se conserva el aviso/licencia del contrato externo y falta validar datos históricos reales. |
+| `apps/mobile/targets/keyboard/Types/SharedWorkflow.swift` | 11.8% | Referencia histórica no verificada | El codec local filtra/normaliza defaults y limita output. No existe un aviso verificable en el árbol actual para esta referencia; el archivo requiere revisión de licencia antes de redistribuirse como código independiente. |
 
 ## Regla de remediación
 

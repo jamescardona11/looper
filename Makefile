@@ -143,8 +143,8 @@ update-deps: ## Update dependencies interactively
 	@pnpm update --interactive --recursive
 
 licenses-audit: ## Audit dependency licenses
-	@echo "==== pnpm licenses ===="
-	@pnpm licenses list || true
+	@pnpm licenses list
+	@cargo metadata --format-version 1 --locked --manifest-path $(DESKTOP_DIR)/src-tauri/Cargo.toml >/dev/null
 
 ##@ Cleanup
 
