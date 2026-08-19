@@ -10,6 +10,7 @@ import {
 } from "./data/library";
 import { subscribeLicenseCheckoutReturned } from "./data/license";
 import {
+  subscribeNavigateCalendar,
   subscribeNavigateAbout,
   subscribeNavigateFeatureLab,
   subscribeNavigateHistory,
@@ -70,6 +71,12 @@ function installSettingsNavigation(
   dispatch: Dispatch<HomeAction>,
 ): void {
   const registrations = [
+    retainSubscription(
+      scope,
+      subscribeNavigateCalendar(() =>
+        dispatch({ type: "open-settings", tab: "app" }),
+      ),
+    ),
     retainSubscription(
       scope,
       subscribeNavigateSettings(() =>

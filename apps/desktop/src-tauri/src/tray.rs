@@ -45,6 +45,7 @@ pub(crate) const EVENT_SETTINGS_RENDERER_READY: &str = "settings:renderer_ready"
 
 const EVENT_NAVIGATE_ABOUT: &str = "navigate:about";
 const EVENT_NAVIGATE_SETTINGS: &str = "navigate:settings";
+const EVENT_NAVIGATE_CALENDAR: &str = "navigate:calendar";
 const EVENT_NAVIGATE_HISTORY: &str = "navigate:history";
 const EVENT_NAVIGATE_MODELS: &str = "navigate:models";
 const EVENT_NAVIGATE_FEATURE_LAB: &str = "navigate:feature-lab";
@@ -52,6 +53,7 @@ const EVENT_NAVIGATE_FEATURE_LAB: &str = "navigate:feature-lab";
 #[derive(Clone, Copy)]
 enum SettingsNavigationTarget {
     General,
+    Calendar,
     About,
     History,
     Models,
@@ -62,6 +64,7 @@ impl SettingsNavigationTarget {
     fn event_name(self) -> &'static str {
         match self {
             Self::General => EVENT_NAVIGATE_SETTINGS,
+            Self::Calendar => EVENT_NAVIGATE_CALENDAR,
             Self::About => EVENT_NAVIGATE_ABOUT,
             Self::History => EVENT_NAVIGATE_HISTORY,
             Self::Models => EVENT_NAVIGATE_MODELS,
@@ -273,6 +276,10 @@ pub(crate) fn open_settings_about(app: &AppHandle<AppRuntime>) -> tauri::Result<
 
 pub(crate) fn open_settings_general(app: &AppHandle<AppRuntime>) -> tauri::Result<()> {
     open_settings_navigation(app, SettingsNavigationTarget::General)
+}
+
+pub(crate) fn open_settings_calendar(app: &AppHandle<AppRuntime>) -> tauri::Result<()> {
+    open_settings_navigation(app, SettingsNavigationTarget::Calendar)
 }
 
 pub(crate) fn open_settings_history(app: &AppHandle<AppRuntime>) -> tauri::Result<()> {

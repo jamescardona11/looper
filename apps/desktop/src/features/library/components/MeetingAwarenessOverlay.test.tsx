@@ -15,11 +15,13 @@ import MeetingAwarenessOverlay from "./MeetingAwarenessOverlay";
 
 const meetingActions = vi.hoisted(() => ({
   dismiss: vi.fn(),
+  openSettings: vi.fn(),
   startCapture: vi.fn(),
   openUrl: vi.fn(),
 }));
 vi.mock("../../../data/meeting-awareness", () => ({
   dismissMeetingAwareness: meetingActions.dismiss,
+  openMeetingNotificationSettings: meetingActions.openSettings,
   startPromptedMeetingCapture: meetingActions.startCapture,
 }));
 
@@ -61,6 +63,13 @@ i18n.loadAndActivate({
     "meeting.awareness.meeting_label": "Meeting: {0}",
     "meeting.awareness.dismiss_reminder": "Dismiss meeting reminder",
     "meeting.awareness.dismiss": "Dismiss",
+    "meeting.awareness.disable_notifications.title":
+      "Disable meeting notifications?",
+    "meeting.awareness.disable_notifications.body":
+      "You've closed the last few meeting notifications. You can change when we notify you about meetings.",
+    "meeting.awareness.disable_notifications.keep": "Keep as is",
+    "meeting.awareness.disable_notifications.manage": "Manage notifications",
+    "meeting.awareness.disable_notifications.close": "Close",
   },
 });
 
@@ -74,6 +83,7 @@ const renderAwareness = (state: MeetingAwarenessState) =>
 afterEach(() => {
   cleanup();
   meetingActions.dismiss.mockReset();
+  meetingActions.openSettings.mockReset();
   meetingActions.startCapture.mockReset();
   meetingActions.openUrl.mockReset();
 });
@@ -212,15 +222,131 @@ describe("MeetingAwarenessOverlay", () => {
     );
   });
 
-  test("dismisses the current reminder", () => {
+  test("dismisses only the current reminder on the first X", async () => {
     meetingActions.dismiss.mockResolvedValue(undefined);
     renderAwareness(awarenessState);
 
+    const dismissButton = screen.getByRole("button", {
+      name: "Dismiss meeting reminder",
+    });
+    expect(dismissButton.getAttribute("title")).toBeNull();
+    expect(screen.getByText("Dismiss")).toBeTruthy();
+    fireEvent.click(dismissButton);
+
+    await waitFor(() => {
+      expect(meetingActions.dismiss).toHaveBeenCalledTimes(1);
+    });
+    expect(
+      screen.queryByRole("dialog", {
+        name: "Disable meeting notifications?",
+      }),
+    ).toBeNull();
+    expect(meetingActions.openSettings).not.toHaveBeenCalled();
+  });
+
+  test("shows the settings prompt after three dismissed reminders", async () => {
+    meetingActions.dismiss.mockResolvedValue(undefined);
+    renderAwareness(awarenessState);
+
+    const dismiss = () =>
+      fireEvent.click(
+        screen.getByRole("button", { name: "Dismiss meeting reminder" }),
+      );
+
+    dismiss();
+    await waitFor(() =>
+      expect(meetingActions.dismiss).toHaveBeenCalledTimes(1),
+    );
+    dismiss();
+    await waitFor(() =>
+      expect(meetingActions.dismiss).toHaveBeenCalledTimes(2),
+    );
+    dismiss();
+
+    expect(
+      await screen.findByRole("dialog", {
+        name: "Disable meeting notifications?",
+      }),
+    ).toBeTruthy();
+
+    await waitFor(() => {
+      expect(meetingActions.dismiss).toHaveBeenCalledTimes(3);
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: "Keep as is" }));
+    expect(
+      screen.queryByRole("dialog", {
+        name: "Disable meeting notifications?",
+      }),
+    ).toBeNull();
+    expect(meetingActions.dismiss).toHaveBeenCalledTimes(3);
+  });
+
+  test("opens Calendar & Meetings from the notification prompt", async () => {
+    meetingActions.openSettings.mockResolvedValue(undefined);
+    meetingActions.dismiss.mockResolvedValue(undefined);
+    renderAwareness(awarenessState);
+
+    const dismiss = () =>
+      fireEvent.click(
+        screen.getByRole("button", { name: "Dismiss meeting reminder" }),
+      );
+    dismiss();
+    await waitFor(() =>
+      expect(meetingActions.dismiss).toHaveBeenCalledTimes(1),
+    );
+    dismiss();
+    await waitFor(() =>
+      expect(meetingActions.dismiss).toHaveBeenCalledTimes(2),
+    );
+    dismiss();
+    expect(
+      await screen.findByRole("dialog", {
+        name: "Disable meeting notifications?",
+      }),
+    ).toBeTruthy();
     fireEvent.click(
-      screen.getByRole("button", { name: "Dismiss meeting reminder" }),
+      screen.getByRole("button", { name: "Manage notifications" }),
     );
 
-    expect(meetingActions.dismiss).toHaveBeenCalledTimes(1);
+    await waitFor(() => {
+      expect(meetingActions.openSettings).toHaveBeenCalledTimes(1);
+    });
+    expect(meetingActions.dismiss).toHaveBeenCalledTimes(3);
+  });
+
+  test("the prompt X keeps meeting notifications enabled", async () => {
+    meetingActions.dismiss.mockResolvedValue(undefined);
+    renderAwareness(awarenessState);
+
+    const dismiss = () =>
+      fireEvent.click(
+        screen.getByRole("button", { name: "Dismiss meeting reminder" }),
+      );
+    dismiss();
+    await waitFor(() =>
+      expect(meetingActions.dismiss).toHaveBeenCalledTimes(1),
+    );
+    dismiss();
+    await waitFor(() =>
+      expect(meetingActions.dismiss).toHaveBeenCalledTimes(2),
+    );
+    dismiss();
+    expect(
+      await screen.findByRole("dialog", {
+        name: "Disable meeting notifications?",
+      }),
+    ).toBeTruthy();
+
+    fireEvent.click(screen.getByRole("button", { name: "Close" }));
+
+    expect(
+      screen.queryByRole("dialog", {
+        name: "Disable meeting notifications?",
+      }),
+    ).toBeNull();
+    expect(meetingActions.dismiss).toHaveBeenCalledTimes(3);
+    expect(meetingActions.openSettings).not.toHaveBeenCalled();
   });
 
   test("renders a dedicated notification card instead of a movable pill", () => {

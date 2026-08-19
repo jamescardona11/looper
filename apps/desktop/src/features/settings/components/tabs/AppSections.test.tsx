@@ -33,6 +33,7 @@ vi.mock("../../../library/components/WatchFoldersSetting", () => ({
 }));
 
 import { AppAutomationSection } from "./AppAutomationSection";
+import { AppCalendarSection } from "./AppCalendarSection";
 import { AppConfirmationDialogs } from "./AppConfirmationDialogs";
 import { AppPrivacySection } from "./AppPrivacySection";
 import { AppStorageSection } from "./AppStorageSection";
@@ -100,6 +101,29 @@ afterEach(() => {
 });
 
 describe("app settings sections", () => {
+  test("exposes the meeting notification toggle", () => {
+    const toggleMeetingAwareness = vi.fn();
+    render(
+      <I18nProvider i18n={i18n}>
+        <AppCalendarSection
+          controls={controlSet({
+            toggleCalendarAwareness: toggleMeetingAwareness,
+          })}
+          calendarMeetingAwarenessEnabled
+          onCalendarMeetingAwarenessEnabledChange={vi.fn()}
+          platformCapabilities={capabilities}
+        />
+      </I18nProvider>,
+    );
+
+    expect(screen.getByText("Meeting notifications")).toBeTruthy();
+    fireEvent.click(
+      screen.getByRole("switch", { name: "Toggle meeting notifications" }),
+    );
+
+    expect(toggleMeetingAwareness).toHaveBeenCalledOnce();
+  });
+
   test("connects native permission and privacy actions", async () => {
     platformMocks.requestAccessibility.mockResolvedValue(true);
     platformMocks.checkInputMonitoring.mockResolvedValue(true);

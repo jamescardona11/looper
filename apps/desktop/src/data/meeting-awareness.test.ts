@@ -12,6 +12,7 @@ import {
   dismissMeetingAwareness,
   getCalendarAccessStatus,
   getMeetingAwarenessState,
+  openMeetingNotificationSettings,
   requestCalendarAccess,
   startPromptedMeetingCapture,
   subscribeMeetingAwareness,
@@ -28,6 +29,7 @@ describe("meeting awareness native gateway", () => {
 
     await getMeetingAwarenessState();
     await dismissMeetingAwareness();
+    await openMeetingNotificationSettings();
     await getCalendarAccessStatus();
     await requestCalendarAccess();
     await startPromptedMeetingCapture();
@@ -35,6 +37,7 @@ describe("meeting awareness native gateway", () => {
     expect(tauri.invoke.mock.calls.map(([command]) => command)).toEqual([
       "get_meeting_awareness_state",
       "dismiss_meeting_awareness",
+      "open_meeting_notification_settings",
       "get_calendar_access_status",
       "request_calendar_access",
       "start_prompted_meeting_capture",

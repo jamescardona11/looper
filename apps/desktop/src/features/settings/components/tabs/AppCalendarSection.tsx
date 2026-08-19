@@ -27,7 +27,7 @@ export function AppCalendarSection({
               <span className="block ui-text-label-strong ui-color-primary">
                 {t({
                   id: "settings.app.meeting_awareness.label",
-                  message: "Show upcoming meetings in the Signal Rail",
+                  message: "Meeting notifications",
                 })}
               </span>
               <span className="mt-0.5 block ui-text-micro ui-color-disabled">
@@ -40,7 +40,7 @@ export function AppCalendarSection({
                   : t({
                       id: "settings.app.meeting_awareness.body",
                       message:
-                        "Looper reads local Calendar events with Meet, Zoom, Teams or Webex links. Recording still requires your click.",
+                        "Looper notifies you when a calendar meeting starts or another app is using your microphone. Recording still requires your click.",
                     })}
               </span>
             </div>
@@ -50,7 +50,7 @@ export function AppCalendarSection({
               onToggle={() => void controls.toggleCalendarAwareness()}
               ariaLabel={t({
                 id: "settings.app.meeting_awareness.toggle_aria",
-                message: "Toggle calendar meeting reminders",
+                message: "Toggle meeting notifications",
               })}
             />
           </div>
@@ -59,7 +59,7 @@ export function AppCalendarSection({
             {t({
               id: "settings.app.meeting_awareness.unsupported",
               message:
-                "Calendar meeting awareness is currently available on macOS.",
+                "Meeting notifications are currently available on macOS.",
             })}
           </p>
         )}

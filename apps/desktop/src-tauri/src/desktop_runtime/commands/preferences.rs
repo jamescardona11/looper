@@ -3,7 +3,7 @@ use tauri::{AppHandle, Manager};
 use super::super::contracts::AppRuntime;
 use super::super::state::AppState;
 use crate::settings::UserSettings;
-use crate::{core, license, markdown_mirror, meeting_awareness, pill};
+use crate::{core, license, markdown_mirror, meeting_awareness, pill, tray};
 
 #[derive(serde::Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -57,6 +57,13 @@ pub(crate) fn get_meeting_awareness_state(
 #[tauri::command]
 pub(crate) fn dismiss_meeting_awareness(app: AppHandle<AppRuntime>, state: tauri::State<AppState>) {
     state.meeting_awareness().dismiss(&app);
+}
+
+#[tauri::command]
+pub(crate) fn open_meeting_notification_settings(
+    app: AppHandle<AppRuntime>,
+) -> Result<(), String> {
+    tray::open_settings_calendar(&app).map_err(|failure| failure.to_string())
 }
 
 #[tauri::command]

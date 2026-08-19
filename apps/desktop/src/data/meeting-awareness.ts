@@ -37,6 +37,9 @@ export const subscribeMeetingAwareness = (
 export const dismissMeetingAwareness = () =>
   invoke<void>("dismiss_meeting_awareness");
 
+export const openMeetingNotificationSettings = () =>
+  invoke<void>("open_meeting_notification_settings");
+
 export const getCalendarAccessStatus = () =>
   invoke<CalendarAccessStatus>("get_calendar_access_status");
 

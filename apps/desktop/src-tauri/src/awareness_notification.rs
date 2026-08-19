@@ -5,7 +5,7 @@ use crate::{meeting_awareness::MeetingAwarenessPhase, pill::PillStatus, AppRunti
 pub const WINDOW_LABEL: &str = "meeting-awareness";
 const SHADOW_GUTTER: f64 = 8.0;
 const SURFACE_WIDTH: f64 = 404.0;
-const SURFACE_HEIGHT: f64 = 72.0;
+const SURFACE_HEIGHT: f64 = 112.0;
 const WIDTH: f64 = SURFACE_WIDTH + SHADOW_GUTTER * 2.0;
 const HEIGHT: f64 = SURFACE_HEIGHT + SHADOW_GUTTER * 2.0;
 
@@ -19,9 +19,11 @@ pub fn show(app: &AppHandle<AppRuntime>) {
         return;
     }
     if toast_visible {
-        // Ocultar el aviso de permisos también restaura este aviso desde
-        // `toast::hide`; se retorna para no mostrar dos veces la ventana.
-        crate::toast::hide(app);
+        // Este aviso puede reemplazar el toast de permisos. Ocultar el toast
+        // normalmente restaura awareness de forma diferida, pero aquí la
+        // presentación debe ser explícita para no perder la primera alerta.
+        crate::toast::hide_surface(app);
+        show_window(app);
         return;
     }
     show_window(app);
@@ -43,18 +45,18 @@ fn show_window(app: &AppHandle<AppRuntime>) {
         tracing::error!("Failed to resize meeting notification: {error}");
     }
     crate::toast::position_notification_window(app, &window, (WIDTH, HEIGHT));
-    crate::platform::toast::set_interactive(app, &window, true);
-    crate::platform::toast::show(app, &window);
 
-    // macOS panels can restore their frame while being ordered to the front.
-    // Apply the target position once more on the main thread after reveal so
-    // the notification remains anchored to the top-right work-area corner.
+    // Position and reveal must be queued in this order. If the panel is
+    // revealed first, macOS briefly paints its old frame before the final
+    // position lands, which makes the notification visibly jump.
     let handle = app.clone();
     let _ = app.run_on_main_thread(move || {
         if let Some(window) = handle.get_webview_window(WINDOW_LABEL) {
             crate::toast::position_notification_window(&handle, &window, (WIDTH, HEIGHT));
         }
     });
+    crate::platform::toast::set_interactive(app, &window, true);
+    crate::platform::toast::show(app, &window);
 }
 
 fn toast_is_visible(app: &AppHandle<AppRuntime>) -> bool {
