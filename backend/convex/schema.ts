@@ -30,6 +30,18 @@ export default defineSchema({
   // can be promoted/demoted without redeploying environment variables.
   adminUsers: defineTable({ userId: v.id("users") }).index("by_user", ["userId"]),
 
+  // Short-lived proof that the caller controls an anonymous session. Minted by
+  // upgrade.prepareAnonymousUpgrade while still authenticated AS the anonymous
+  // user, and spent by upgrade.claimAnonymousData. Without it, knowing an
+  // anonymous Id<"users"> would be enough to absorb that session's data.
+  anonymousUpgradeIntents: defineTable({
+    anonymousUserId: v.id("users"),
+    nonce: v.string(),
+    expiresAt: v.number(),
+  })
+    .index("by_nonce", ["nonce"])
+    .index("by_anonymous_user", ["anonymousUserId"]),
+
   // Per-user mock-mode opt-in (Settings → Developer). A row means this user gets
   // canned AI/STT responses with no real API keys — for trying the
   // product keyless. The global MOCK_MODE env still forces it for everyone

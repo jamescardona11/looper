@@ -4,6 +4,7 @@ import {
   createOnboardingMachine,
   defaultSmartShortcutForPlatform,
   getSteps,
+  onboardingMachine,
 } from "./machine";
 import type { OnboardingPlatform } from "./platform";
 
@@ -171,5 +172,37 @@ describe("onboardingMachine context events", () => {
     expect(
       move(actor, [{ type: "COMPLETE_SUCCESS" }]).context.isCompleting,
     ).toBe(false);
+  });
+});
+
+// Merged from the former tests/frontend/onboarding-machine.test.ts: that tree is
+// reserved for cross-cutting contracts, and these exercise one module.
+describe("onboarding transcription mode", () => {
+  const macos = platform("macos", {
+    requiresMicrophonePermission: true,
+    requiresAccessibilityPermission: true,
+  });
+
+  test("local mode includes the model download step", () => {
+    expect(getSteps(macos, false, "local")).toEqual([
+      "mode",
+      "model",
+      "permissions",
+    ]);
+  });
+
+  test("cloud mode skips model download and still requests permissions", () => {
+    expect(getSteps(macos, false, "cloud")).toEqual(["mode", "permissions"]);
+  });
+
+  test("keeps an explicit local model selection", () => {
+    const actor = createActor(onboardingMachine).start();
+
+    actor.send({ type: "SELECT_MODEL", key: "cohere_transcribe_int4" });
+
+    expect(actor.getSnapshot().context.localModelChoice).toBe(
+      "cohere_transcribe_int4",
+    );
+    actor.stop();
   });
 });

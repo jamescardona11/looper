@@ -4,6 +4,7 @@
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { v } from "convex/values";
 import { mutation, query } from "../_generated/server";
+import { assertOwned } from "../lib/ownership";
 
 export const createThread = mutation({
   args: { title: v.optional(v.string()) },
@@ -82,8 +83,7 @@ export const renameThread = mutation({
   handler: async (ctx, { threadId, title }) => {
     const userId = await getAuthUserId(ctx);
     if (!userId) throw new Error("Must be signed in");
-    const thread = await ctx.db.get(threadId);
-    if (!thread || thread.userId !== userId) throw new Error("Not found");
+    await assertOwned(ctx, "agentThreads", threadId, userId);
     await ctx.db.patch(threadId, { title });
   },
 });
@@ -93,8 +93,7 @@ export const archiveThread = mutation({
   handler: async (ctx, { threadId }) => {
     const userId = await getAuthUserId(ctx);
     if (!userId) throw new Error("Must be signed in");
-    const thread = await ctx.db.get(threadId);
-    if (!thread || thread.userId !== userId) throw new Error("Not found");
+    await assertOwned(ctx, "agentThreads", threadId, userId);
     await ctx.db.patch(threadId, { archived: true });
   },
 });
@@ -104,8 +103,7 @@ export const deleteThread = mutation({
   handler: async (ctx, { threadId }) => {
     const userId = await getAuthUserId(ctx);
     if (!userId) throw new Error("Must be signed in");
-    const thread = await ctx.db.get(threadId);
-    if (!thread || thread.userId !== userId) throw new Error("Not found");
+    await assertOwned(ctx, "agentThreads", threadId, userId);
     const messages = await ctx.db
       .query("agentMessages")
       .withIndex("by_thread", (q) => q.eq("threadId", threadId))

@@ -1,4 +1,6 @@
-export const MAX_INSTRUCTIONS_CHARS = 3_000;
+import personalizationLimits from "../../../../personalization-limits.json";
+
+export const MAX_INSTRUCTIONS_CHARS = personalizationLimits.maxInstructionChars;
 export const DEFAULT_INSTRUCTIONS_HEIGHT = 128;
 
 const INSTRUCTION_HEIGHT_RANGE = {

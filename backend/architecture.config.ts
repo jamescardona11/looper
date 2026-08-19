@@ -11,6 +11,9 @@ const workspaceRoot = join(import.meta.dirname, "..");
 // Feature domains under backend/convex that must stay isolated from each
 // other. They may only share code through lib/, _generated, or the root-level
 // orchestration files (schema.ts, env.ts, retrier.ts, users.ts, …).
+// Every folder under backend/convex that exposes public functions belongs here,
+// or it silently escapes BOTH rules below. Verified against the tree: these nine
+// plus `notes` are the folders declaring `query(`/`mutation(`/`action(`.
 const domains = [
   "payments",
   "agent",
@@ -21,6 +24,7 @@ const domains = [
   "onboarding",
   "waitlist",
   "meetings",
+  "notes",
 ] as const;
 
 // Measured cross-domain imports that exist today. Each entry grandfathers one
@@ -116,10 +120,72 @@ function checkNoAppImport(context: RuleContext): Violation[] {
 }
 
 // Public (non-internal) mutations/queries in user-facing domains must carry an
-// auth guard. File-level heuristic: any domain file defining `mutation(` or
-// `query(` must reference getAuthUserId or requireAdmin somewhere.
-const publicFunctionPattern = /=\s*(mutation|query)\(/;
+// auth guard. The check reasons per function, not per file: a file with five
+// mutations where only one calls getAuthUserId used to pass wholesale.
+//
+// Segmentation is textual, not an AST walk. A block runs from the
+// `export const name = mutation(` line to the first line starting with `})`,
+// which is where Biome closes a top-level call expression. Convex functions in
+// this repo are all written that shape; a hand-formatted file that closes the
+// call some other way would make the block run long and could mask a missing
+// guard (a false negative, never a false positive).
+const publicFunctionPattern = /^export\s+const\s+([A-Za-z0-9_$]+)\s*=\s*(?:mutation|query)\(/gm;
+const topLevelDefinitionPattern =
+  /^(?:export\s+)?(?:async\s+)?function\s+([A-Za-z0-9_$]+)|^(?:export\s+)?const\s+([A-Za-z0-9_$]+)\s*=\s*(?:async\s*)?\(/gm;
+const blockEndPattern = /^\}\)/m;
+// A top-level HELPER never closes on `})` — a `function` body closes on `}` and
+// an arrow const on `};`. Terminating a helper's block with the Convex pattern
+// ran it on into the following mutation, so a pure helper (a string validator,
+// say) inherited that mutation's `getAuthUserId` and was classified as a guard.
+// Any public function calling it then passed the rule with no guard at all.
+const helperBlockEndPattern =
+  /^\}|^(?:export\s+)?(?:async\s+)?(?:const|function|type|interface)\s/m;
 const authGuardPattern = /getAuthUserId|requireAdmin/;
+
+function blockAt(source: string, index: number): string {
+  const rest = source.slice(index);
+  const end = rest.search(blockEndPattern);
+  return end === -1 ? rest : rest.slice(0, end);
+}
+
+// Same idea for a helper, but bounded by its own closing brace or the next
+// top-level declaration, whichever comes first (skipping its own first line).
+function helperBlockAt(source: string, index: number): string {
+  const rest = source.slice(index);
+  const bodyStart = rest.indexOf("\n") + 1;
+  if (bodyStart <= 0) return rest;
+  const end = rest.slice(bodyStart).search(helperBlockEndPattern);
+  return end === -1 ? rest : rest.slice(0, bodyStart + end);
+}
+
+// A handler may delegate its guard to a same-file helper (payments'
+// getActiveSubscription is the live example). Collect the helpers that
+// themselves reach a guard, then treat a call to one as a guard.
+function localGuardHelpers(source: string): string[] {
+  const definitions = [...source.matchAll(topLevelDefinitionPattern)].map((match) => ({
+    name: match[1] ?? match[2] ?? "",
+    index: match.index ?? 0,
+  }));
+  const guarded = new Set<string>();
+
+  for (let pass = 0; pass < definitions.length; pass += 1) {
+    const before = guarded.size;
+    for (const definition of definitions) {
+      if (!definition.name || guarded.has(definition.name)) continue;
+      if (guardPatternFor([...guarded]).test(helperBlockAt(source, definition.index))) {
+        guarded.add(definition.name);
+      }
+    }
+    if (guarded.size === before) break;
+  }
+  return [...guarded];
+}
+
+function guardPatternFor(helpers: string[]): RegExp {
+  return helpers.length === 0
+    ? authGuardPattern
+    : new RegExp(`${authGuardPattern.source}|\\b(?:${helpers.join("|")})\\b`);
+}
 
 function checkAuthInPublicFunctions(context: RuleContext): Violation[] {
   return context.files
@@ -127,16 +193,18 @@ function checkAuthInPublicFunctions(context: RuleContext): Violation[] {
       (file) =>
         !generatedOrTestFile.test(file.path) &&
         domainOf(file.path) !== null &&
-        !publicAuthExemptDomains.has(domainOf(file.path) ?? "") &&
-        publicFunctionPattern.test(file.source) &&
-        !authGuardPattern.test(file.source),
+        !publicAuthExemptDomains.has(domainOf(file.path) ?? ""),
     )
-    .map((file) => ({
-      code: "BE-AUTH-IN-MUTATIONS",
-      file: file.path,
-      detail:
-        "defines a public mutation/query without getAuthUserId or requireAdmin — add a guard or make it internal",
-    }));
+    .flatMap((file) => {
+      const guardPattern = guardPatternFor(localGuardHelpers(file.source));
+      return [...file.source.matchAll(publicFunctionPattern)]
+        .filter((match) => !guardPattern.test(blockAt(file.source, match.index ?? 0)))
+        .map((match) => ({
+          code: "BE-AUTH-IN-MUTATIONS",
+          file: file.path,
+          detail: `public function "${match[1]}" has no getAuthUserId or requireAdmin — add a guard or make it internal`,
+        }));
+    });
 }
 
 export const architectureConfig: ArchitectureConfig = {

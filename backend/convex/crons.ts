@@ -18,6 +18,14 @@ crons.weekly(
   internal.cronHandlers.prunePaymentEvents,
 );
 
+// Intents live for 10 minutes (upgrade.ts UPGRADE_INTENT_TTL_MS), so an hourly
+// sweep keeps abandoned rows from accumulating without chasing the clock.
+crons.hourly(
+  "prune anonymous upgrade intents",
+  { minuteUTC: 20 },
+  internal.cronHandlers.pruneAnonymousUpgradeIntents,
+);
+
 // Reap background jobs stuck in a non-terminal status (see cronHandlers).
 
 export default crons;

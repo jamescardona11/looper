@@ -162,6 +162,29 @@ describe("history sync", () => {
     });
   });
 
+  test("skips already-synced, failed, and blank rows in the backlog", async () => {
+    setHistorySyncOptedIn(true);
+    getTranscriptions.mockResolvedValue([
+      transcription({ id: "record-1", text: "First local transcript" }),
+      transcription({ id: "record-2", synced: true, text: "Already pushed" }),
+      transcription({ id: "record-3", status: "error", text: "Failed row" }),
+      transcription({ id: "record-4", text: "   " }),
+    ]);
+    const rawClient = fakeClient();
+    rawClient.mutation.mockResolvedValue(undefined);
+
+    await pushUnsyncedBacklog(rawClient as unknown as ConvexClient);
+
+    expect(rawClient.mutation).toHaveBeenCalledOnce();
+    expect(rawClient.mutation).toHaveBeenCalledWith(
+      backendApi.dictation.transcriptions.record,
+      expect.objectContaining({ sourceId: "record-1" }),
+    );
+    expect(invoke.mock.calls).toEqual([
+      ["mark_transcription_synced", { id: "record-1" }],
+    ]);
+  });
+
   test("pushes eligible completion events and disposes their native listener", async () => {
     let onComplete:
       ((payload: { record: TranscriptionRecord | null }) => void) | undefined;

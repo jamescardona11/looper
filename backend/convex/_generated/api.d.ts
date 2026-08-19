@@ -610,9 +610,10 @@ export declare const api: {
     claimAnonymousData: FunctionReference<
       "mutation",
       "public",
-      { anonymousUserId: Id<"users"> },
+      { anonymousUserId: Id<"users">; nonce: string },
       any
     >;
+    prepareAnonymousUpgrade: FunctionReference<"mutation", "public", {}, any>;
     viewer: FunctionReference<"query", "public", {}, any>;
   };
   upload: {
@@ -855,6 +856,12 @@ export declare const internal: {
   };
   cronHandlers: {
     archiveStaleThreads: FunctionReference<"mutation", "internal", {}, any>;
+    pruneAnonymousUpgradeIntents: FunctionReference<
+      "mutation",
+      "internal",
+      {},
+      any
+    >;
     prunePaymentEvents: FunctionReference<"mutation", "internal", {}, any>;
   };
   mock: {

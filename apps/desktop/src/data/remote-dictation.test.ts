@@ -94,6 +94,12 @@ describe("remote dictation consumer", () => {
       backendApi.dictation.remote.registerSession,
       { sessionId: "desktop-1", name: "Work Mac" },
     );
+    expect(client.onUpdate).toHaveBeenCalledWith(
+      backendApi.dictation.remote.getPendingDictation,
+      { sessionId: "desktop-1" },
+      expect.any(Function),
+      expect.any(Function),
+    );
     expect(insertText).toHaveBeenCalledWith("Paste this sentence");
     expect(client.mutation).toHaveBeenNthCalledWith(
       2,
@@ -108,6 +114,38 @@ describe("remote dictation consumer", () => {
       { sessionId: "desktop-1" },
     );
     expect(client.close).toHaveBeenCalledOnce();
+  });
+
+  test("retries registration when the session is not authenticated yet", async () => {
+    vi.spyOn(console, "warn").mockImplementation(() => {});
+    const client = fakeClient();
+    client.mutation
+      .mockRejectedValueOnce(new Error("Must be signed in"))
+      .mockResolvedValue(undefined);
+
+    const stop = startRemoteDictationConsumer({
+      convexUrl: "https://convex.example",
+      clientFactory: () => client,
+      ensureSession: vi.fn(),
+      insertText: vi.fn().mockResolvedValue(undefined),
+      sessionId: "desktop-1",
+      sessionName: "Work Mac",
+    });
+    await flushConsumer();
+    await vi.advanceTimersByTimeAsync(1_000);
+
+    expect(client.mutation.mock.calls.slice(0, 2)).toEqual([
+      [
+        backendApi.dictation.remote.registerSession,
+        { sessionId: "desktop-1", name: "Work Mac" },
+      ],
+      [
+        backendApi.dictation.remote.registerSession,
+        { sessionId: "desktop-1", name: "Work Mac" },
+      ],
+    ]);
+
+    stop();
   });
 
   test("does not start a second insertion while one is active", async () => {

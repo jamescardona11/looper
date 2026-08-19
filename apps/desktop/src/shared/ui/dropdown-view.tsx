@@ -8,7 +8,11 @@ import {
 } from "react";
 import { useClickOutside } from "../hooks/useClickOutside";
 import { useMountEffect } from "../hooks/useMountEffect";
-import { DropdownMenu, DropdownTrigger, classNames } from "./dropdownParts";
+import {
+  DropdownMenu,
+  DropdownTrigger,
+  classNames,
+} from "./dropdown-presentation";
 import { filterDropdownOptions, widestButtonLabels } from "./dropdownOptions";
 import type {
   DropdownEditableInput,

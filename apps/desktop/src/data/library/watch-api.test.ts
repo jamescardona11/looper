@@ -16,7 +16,7 @@ import {
   getLibraryTranslations,
   translateLibraryItem,
   deleteLibraryTranslation,
-} from "../../src/data/library";
+} from "../library";
 
 describe("library watch folder API", () => {
   beforeEach(() => {

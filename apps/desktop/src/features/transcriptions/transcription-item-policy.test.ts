@@ -53,6 +53,20 @@ describe("transcription item policy", () => {
     expect(failure.failure).toBe("Decoder stopped");
   });
 
+  it("keeps the shared model label contract for missing and unknown models", () => {
+    expect(
+      describeTranscriptionItem(record({ speech_model: "  " }), [], "Fallback")
+        .speechModel,
+    ).toBeNull();
+    expect(
+      describeTranscriptionItem(
+        record({ speech_model: "unlisted-model" }),
+        [],
+        "Fallback",
+      ).speechModel,
+    ).toBe("unlisted-model");
+  });
+
   it("shows cleanup actions only for eligible local successes", () => {
     const eligible = transcriptionItemActionPolicy({
       failed: false,

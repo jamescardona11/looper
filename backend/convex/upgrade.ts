@@ -7,11 +7,18 @@
 // anonymous user to the currently-authenticated user. Called from the UI
 // AFTER the email OTP signIn flips the session onto the real account.
 //
+// The claim is authorized by a single-use nonce minted by
+// `prepareAnonymousUpgrade` BEFORE the signIn, while the session is still the
+// anonymous one. Minting therefore requires being authenticated as that
+// anonymous user, which is what stops any signed-in account from absorbing —
+// and deleting — a stranger's anonymous session by guessing its user id.
+//
 // Defensive checks:
 //   - Caller must be authenticated (the new account).
+//   - Caller and source must differ.
+//   - The nonce must exist, belong to `anonymousUserId`, and not be expired.
 //   - `anonymousUserId` must exist and have `isAnonymous: true` so we
 //     don't accidentally absorb a real account's data.
-//   - Caller and source must differ.
 
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { v } from "convex/values";
@@ -39,14 +46,71 @@ export const viewer = query({
 // there so anonymous upgrades transfer the rows.
 const USER_SCOPED_TABLES = upgradeScopedTables();
 
+// How long a minted upgrade intent stays spendable. The client mints it and
+// spends it either side of a single OTP sign-in, so minutes are plenty.
+const UPGRADE_INTENT_TTL_MS = 10 * 60 * 1000;
+
+// Mints the single-use nonce that authorizes a later `claimAnonymousData`.
+// MUST be called while the session is still the anonymous one — that is the
+// whole authorization: only the anonymous user can mint their own intent.
+export const prepareAnonymousUpgrade = mutation({
+  args: {},
+  handler: async (ctx) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
+    const user = await ctx.db.get(userId);
+    if (!user) throw new Error("User not found");
+    if (!user.isAnonymous) {
+      throw new Error("Only an anonymous session can prepare an upgrade");
+    }
+
+    // One live intent per anonymous user: a retried upgrade invalidates the
+    // previous nonce instead of leaving spendable copies behind.
+    const previous = await ctx.db
+      .query("anonymousUpgradeIntents")
+      .withIndex("by_anonymous_user", (q) => q.eq("anonymousUserId", userId))
+      .collect();
+    for (const intent of previous) {
+      await ctx.db.delete(intent._id);
+    }
+
+    const nonce = crypto.randomUUID();
+    await ctx.db.insert("anonymousUpgradeIntents", {
+      anonymousUserId: userId,
+      nonce,
+      expiresAt: Date.now() + UPGRADE_INTENT_TTL_MS,
+    });
+
+    return { nonce };
+  },
+});
+
 export const claimAnonymousData = mutation({
-  args: { anonymousUserId: v.id("users") },
-  handler: async (ctx, { anonymousUserId }) => {
+  args: { anonymousUserId: v.id("users"), nonce: v.string() },
+  handler: async (ctx, { anonymousUserId, nonce }) => {
     const userId = await getAuthUserId(ctx);
     if (!userId) throw new Error("Not authenticated");
     if (userId === anonymousUserId) {
+      // Convex Auth may have upgraded the account in place; the client treats
+      // this exact message as "nothing left to transfer".
       throw new Error("Source and target users must differ");
     }
+
+    const intent = await ctx.db
+      .query("anonymousUpgradeIntents")
+      .withIndex("by_nonce", (q) => q.eq("nonce", nonce))
+      .unique();
+    if (!intent || intent.anonymousUserId !== anonymousUserId) {
+      throw new Error("Upgrade intent not found; refusing to merge");
+    }
+    if (intent.expiresAt <= Date.now()) {
+      // No cleanup here: throwing rolls the mutation back, so the row survives
+      // either way. It is unspendable from now on.
+      throw new Error("Upgrade intent expired; refusing to merge");
+    }
+    // Single use: spend it before any row moves.
+    await ctx.db.delete(intent._id);
+
     const source = await ctx.db.get(anonymousUserId);
     if (!source) throw new Error("Anonymous user not found");
     if (!source.isAnonymous) {

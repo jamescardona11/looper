@@ -2,6 +2,7 @@ import { getAuthUserId } from "@convex-dev/auth/server";
 import { v } from "convex/values";
 import { internal } from "../_generated/api";
 import { internalMutation, mutation, query } from "../_generated/server";
+import { assertOwned, findOwned } from "../lib/ownership";
 
 // List the messages of a thread, oldest → newest.
 // Reactive: the chat UI re-renders as the streaming row is patched.
@@ -10,8 +11,8 @@ export const list = query({
   handler: async (ctx, { threadId }) => {
     const userId = await getAuthUserId(ctx);
     if (!userId) return [];
-    const thread = await ctx.db.get(threadId);
-    if (!thread || thread.userId !== userId) return [];
+    const thread = await findOwned(ctx, "agentThreads", threadId, userId);
+    if (!thread) return [];
     return await ctx.db
       .query("agentMessages")
       .withIndex("by_thread", (q) => q.eq("threadId", threadId))
@@ -33,8 +34,7 @@ export const addUserMessage = mutation({
   handler: async (ctx, { threadId, content, memoryScope, meetingId }) => {
     const userId = await getAuthUserId(ctx);
     if (!userId) throw new Error("Not signed in");
-    const thread = await ctx.db.get(threadId);
-    if (!thread || thread.userId !== userId) throw new Error("Thread not found");
+    const thread = await assertOwned(ctx, "agentThreads", threadId, userId, "Thread not found");
 
     // Enforce per-tier daily quota before persisting. Throws with a
     // user-readable message that the client surfaces in the composer. The
@@ -79,8 +79,7 @@ export const regenerateLast = mutation({
   handler: async (ctx, { threadId }) => {
     const userId = await getAuthUserId(ctx);
     if (!userId) throw new Error("Not signed in");
-    const thread = await ctx.db.get(threadId);
-    if (!thread || thread.userId !== userId) throw new Error("Thread not found");
+    await assertOwned(ctx, "agentThreads", threadId, userId, "Thread not found");
 
     const recent = await ctx.db
       .query("agentMessages")
@@ -106,8 +105,7 @@ export const rateMessage = mutation({
     if (!userId) throw new Error("Not signed in");
     const msg = await ctx.db.get(messageId);
     if (!msg) throw new Error("Message not found");
-    const thread = await ctx.db.get(msg.threadId);
-    if (!thread || thread.userId !== userId) throw new Error("Not allowed");
+    await assertOwned(ctx, "agentThreads", msg.threadId, userId, "Not allowed");
     await ctx.db.patch(messageId, { feedback: msg.feedback === rating ? undefined : rating });
   },
 });
@@ -121,8 +119,7 @@ export const editUserMessage = mutation({
     if (!userId) throw new Error("Not signed in");
     const msg = await ctx.db.get(messageId);
     if (!msg || msg.role !== "user") throw new Error("Can only edit your own messages");
-    const thread = await ctx.db.get(msg.threadId);
-    if (!thread || thread.userId !== userId) throw new Error("Not allowed");
+    await assertOwned(ctx, "agentThreads", msg.threadId, userId, "Not allowed");
 
     await ctx.db.patch(messageId, { content });
 
@@ -175,8 +172,7 @@ export const cancelGeneration = mutation({
   handler: async (ctx, { threadId }) => {
     const userId = await getAuthUserId(ctx);
     if (!userId) throw new Error("Not signed in");
-    const thread = await ctx.db.get(threadId);
-    if (!thread || thread.userId !== userId) throw new Error("Thread not found");
+    await assertOwned(ctx, "agentThreads", threadId, userId, "Thread not found");
     const recent = await ctx.db
       .query("agentMessages")
       .withIndex("by_thread", (q) => q.eq("threadId", threadId))

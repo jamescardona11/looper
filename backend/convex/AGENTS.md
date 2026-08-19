@@ -13,7 +13,15 @@ Convex reactive backend. Global rules: see root `AGENTS.md`. Module-specific:
   **An internal helper named `_foo` MUST be `internalQuery/Mutation`, never `query`** —
   a public `query` with no ownership check is an IDOR.
 - Always `const userId = await getAuthUserId(ctx); if (!userId) throw …` and scope
-  every read/write to that user. Verify thread/row ownership before mutating.
+  every read/write to that user.
+- Row ownership is NOT hand-written. Use `assertOwned(ctx, table, id, userId, message)`
+  from `lib/ownership.ts`: it loads the row, throws `message` when the row is missing
+  OR foreign — the two cases stay indistinguishable on purpose, so a probe cannot tell
+  them apart — and returns the typed document for the callers that need the row.
+  `findOwned` is the same check for read paths that answer an unauthorized caller with
+  empty data instead of an error. The message stays at the call site: it is observable
+  API surface. Read the header of `lib/ownership.ts` before assuming it does more than
+  this; it is a deduplicated prologue with one invariant, not a deep module.
 - Validate every public arg with `v.*`. Avoid `v.any()` except metadata bound for
   external systems (PostHog, Resend, speech and payment providers).
 

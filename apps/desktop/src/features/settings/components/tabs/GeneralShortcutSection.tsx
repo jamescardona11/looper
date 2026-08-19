@@ -2,7 +2,7 @@ import { useLingui } from "@lingui/react/macro";
 import { useState } from "react";
 import { Info } from "@phosphor-icons/react";
 import SectionLabel from "../../../../shared/ui/SectionLabel";
-import { ShortcutRow, type ShortcutMode } from "./GeneralShortcuts";
+import { ShortcutRow, type ShortcutMode } from "./ShortcutRow";
 import type { GeneralShortcutProps } from "./GeneralTab.types";
 import { ShortcutHelp } from "./general-shortcut-help";
 import { shortcutModeItems } from "./general-shortcut-section-model";

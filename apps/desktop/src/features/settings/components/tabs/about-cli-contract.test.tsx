@@ -5,7 +5,7 @@ import { I18nProvider } from "@lingui/react";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, test, vi } from "vitest";
 import type { CliInstallStatus } from "../../../../types";
-import { AboutCli } from "./AboutCli";
+import { AboutCli } from "./AboutTab";
 
 const i18n = setupI18n();
 i18n.loadAndActivate({ locale: "en", messages: {} });

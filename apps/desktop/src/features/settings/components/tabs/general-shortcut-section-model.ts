@@ -1,5 +1,5 @@
 import type { GeneralShortcutProps } from "./GeneralTab.types";
-import type { ShortcutMode } from "./GeneralShortcuts";
+import type { ShortcutMode } from "./ShortcutRow";
 
 type ShortcutLabels = Record<
   ShortcutMode,

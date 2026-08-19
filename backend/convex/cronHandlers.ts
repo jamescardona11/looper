@@ -19,6 +19,27 @@ export const archiveStaleThreads = internalMutation({
   },
 });
 
+// Anonymous upgrade intents are spent on a successful claim and replaced when the
+// same anonymous user mints a new one, but an ABANDONED upgrade — the common case
+// of requesting the OTP and never entering it — leaves its row behind forever.
+// The table is excluded from the account-deletion cascade (userScopedTables.ts,
+// ACCOUNT_DATA_TABLE_EXCLUSIONS) precisely because it is meant to expire by
+// timestamp; this is what actually expires it.
+export const pruneAnonymousUpgradeIntents = internalMutation({
+  args: {},
+  handler: async (ctx) => {
+    const expired = await ctx.db
+      .query("anonymousUpgradeIntents")
+      .filter((q) => q.lt(q.field("expiresAt"), Date.now()))
+      .take(500);
+
+    for (const intent of expired) {
+      await ctx.db.delete(intent._id);
+    }
+    return { pruned: expired.length };
+  },
+});
+
 export const prunePaymentEvents = internalMutation({
   args: {},
   handler: async (ctx) => {

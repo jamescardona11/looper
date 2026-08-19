@@ -167,3 +167,60 @@ describe("manual subscription grants", () => {
     expect(subscription).toBeNull();
   });
 });
+
+describe("admin surface authorization", () => {
+  it("denies every admin-only endpoint to a non-admin caller", async () => {
+    const t = convexTest(schema, modules);
+    const outsider = await t.run(async (ctx) => await ctx.db.insert("users", {}));
+    const asOutsider = t.withIdentity({ subject: outsider });
+
+    await expect(asOutsider.query(api.admin.listUsers, {})).rejects.toThrow("Access denied");
+    await expect(asOutsider.query(api.admin.impersonateUser, { userId: outsider })).rejects.toThrow(
+      "Access denied",
+    );
+    await expect(asOutsider.query(api.admin.getUserCount, {})).rejects.toThrow("Access denied");
+    await expect(asOutsider.query(api.admin.getActiveUserCount, {})).rejects.toThrow(
+      "Access denied",
+    );
+    await expect(asOutsider.query(api.admin.getSubscriptionStats, {})).rejects.toThrow(
+      "Access denied",
+    );
+    await expect(asOutsider.query(api.admin.getUsageStats, {})).rejects.toThrow("Access denied");
+    await expect(asOutsider.query(api.admin.getUsageByUser, {})).rejects.toThrow("Access denied");
+    await expect(
+      asOutsider.mutation(api.admin.promoteToAdmin, { userId: outsider }),
+    ).rejects.toThrow("Access denied");
+    await expect(
+      asOutsider.mutation(api.admin.demoteFromAdmin, { userId: outsider }),
+    ).rejects.toThrow("Access denied");
+  });
+
+  // `isAdmin` is the one requireAdmin caller that must NOT throw: it is the
+  // probe the client uses to decide whether to render the admin surface at all,
+  // so it swallows the denial and answers false.
+  it("answers isAdmin with false for a non-admin instead of throwing", async () => {
+    const t = convexTest(schema, modules);
+    const outsider = await t.run(async (ctx) => await ctx.db.insert("users", {}));
+
+    expect(await t.withIdentity({ subject: outsider }).query(api.admin.isAdmin, {})).toBe(false);
+  });
+
+  it("serves the same endpoints to an admin (so the denial above is authorization, not breakage)", async () => {
+    const t = convexTest(schema, modules);
+    const admin = await t.run(async (ctx) => await ctx.db.insert("users", {}));
+    await t.run(async (ctx) => ctx.db.insert("adminUsers", { userId: admin }));
+    const asAdmin = t.withIdentity({ subject: admin });
+
+    expect(await asAdmin.query(api.admin.listUsers, {})).toHaveLength(1);
+    expect(await asAdmin.query(api.admin.impersonateUser, { userId: admin })).toMatchObject({
+      id: admin,
+    });
+    expect(await asAdmin.query(api.admin.getUserCount, {})).toBe(1);
+    expect(await asAdmin.query(api.admin.getActiveUserCount, {})).toBe(0);
+    expect(await asAdmin.query(api.admin.getSubscriptionStats, {})).toEqual({
+      free: 1,
+      pro: 0,
+      ultra: 0,
+    });
+  });
+});

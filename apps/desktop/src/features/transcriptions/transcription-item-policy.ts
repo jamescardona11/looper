@@ -1,9 +1,7 @@
 import type { SpeechModel, TranscriptionRecord } from "../../types";
 import { formatTranscriptionLlmModel } from "../../shared/lib/llmProviders";
-import {
-  formatTranscriptionSpeechModel,
-  isRemoteTranscriptionSpeechModel,
-} from "../../shared/lib/speechProviders";
+import { isRemoteTranscriptionSpeechModel } from "../../shared/lib/speechProviders";
+import { resolveSpeechModelLabel } from "../settings/model-query-contracts";
 
 export type TranscriptionItemPresentation = {
   date: string;
@@ -26,17 +24,6 @@ export type TranscriptionItemActionPolicy = {
   dividerVisible: boolean;
 };
 
-const speechModelLabel = (
-  catalog: SpeechModel[] | undefined,
-  modelId: string,
-): string | null => {
-  if (!modelId) return null;
-  const catalogModel = catalog?.find(
-    (model) => model.id === modelId || model.key === modelId,
-  );
-  return catalogModel?.label ?? formatTranscriptionSpeechModel(modelId);
-};
-
 export function describeTranscriptionItem(
   record: TranscriptionRecord,
   speechModels: SpeechModel[] | undefined,
@@ -55,7 +42,7 @@ export function describeTranscriptionItem(
     failed,
     failure: record.error_message || defaultFailure,
     text: failed ? null : record.text,
-    speechModel: speechModelLabel(speechModels, normalizedSpeechModel),
+    speechModel: resolveSpeechModelLabel(speechModels, normalizedSpeechModel),
     llmModel: record.llm_model
       ? formatTranscriptionLlmModel(record.llm_model)
       : null,

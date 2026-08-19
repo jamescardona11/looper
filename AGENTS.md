@@ -24,7 +24,6 @@
 
 ## DON'T
 
-- Commit, push, or modify git state unless explicitly asked
 - Run destructive commands (`reset --hard`, force-push) without permission
 - Use `any` type broadly — prefer `as any` on specific generated-type mismatches only
 - Install packages without checking if an equivalent exists in the monorepo

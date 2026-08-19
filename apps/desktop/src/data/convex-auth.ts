@@ -259,7 +259,9 @@ export async function requestEmailOtp(
  *
  * If the session was anonymous right before this call, also claims that
  * anonymous user's data (dictionary/replacements/etc, per
- * backend/convex/userScopedTables.ts) onto the new account.
+ * backend/convex/userScopedTables.ts) onto the new account. The claim is
+ * authorized by a nonce minted BEFORE the sign-in, while the session is still
+ * the anonymous one - that is what proves we owned it.
  */
 export async function verifyEmailOtp(
   client: ConvexClient,
@@ -276,6 +278,27 @@ export async function verifyEmailOtp(
     console.warn("[convex-auth] failed to read viewer before OTP verify", err);
   }
 
+  // Minted while the session is still anonymous - that is what authorizes the
+  // claim below. A failure here is not fatal to signing in, but it does mean the
+  // anonymous data cannot be transferred afterwards, so remember why in order to
+  // report it once the sign-in has landed.
+  let upgradeNonce: string | null = null;
+  let upgradeBlockedBy: unknown = null;
+  if (anonymousUserId) {
+    try {
+      const intent = await client.mutation(
+        api.upgrade.prepareAnonymousUpgrade,
+        {},
+      );
+      upgradeNonce = intent?.nonce ?? null;
+      if (!upgradeNonce) {
+        upgradeBlockedBy = new Error("no upgrade intent was minted");
+      }
+    } catch (err) {
+      upgradeBlockedBy = err;
+    }
+  }
+
   const result = await client.action(api.auth.signIn, {
     provider: "resend-otp",
     params: { email, code },
@@ -289,16 +312,37 @@ export async function verifyEmailOtp(
   writeTokens(tokens);
   reauthenticate(client);
 
-  if (anonymousUserId) {
+  // The sign-in itself has succeeded by now, so losing the anonymous rows is not
+  // a reason to pretend the whole flow failed - but it IS a reason to tell the
+  // user, who would otherwise silently lose their dictionary, snippets and
+  // history. Matches the surfaced error in @looper/data's useUpgradeFromAnonymous;
+  // the two paths must not diverge on the same failure.
+  if (anonymousUserId && upgradeNonce) {
     try {
       await client.mutation(api.upgrade.claimAnonymousData, {
         anonymousUserId: anonymousUserId as Id<"users">,
+        nonce: upgradeNonce,
       });
     } catch (err) {
-      console.warn("[convex-auth] claimAnonymousData failed", err);
+      // Convex Auth can upgrade the account in place, in which case source and
+      // target are already the same user and there is nothing left to transfer.
+      if (!isNothingToTransfer(err)) {
+        throw new Error(`Signed in but data transfer failed: ${describeError(err)}`);
+      }
     }
+  } else if (upgradeBlockedBy) {
+    throw new Error(
+      `Signed in but data transfer failed: ${describeError(upgradeBlockedBy)}`,
+    );
   }
 }
+
+const describeError = (error: unknown): string =>
+  error instanceof Error ? error.message : "unknown";
+
+const isNothingToTransfer = (error: unknown): boolean =>
+  error instanceof Error &&
+  /Source and target users must differ/i.test(error.message);
 
 /**
  * Signs out of the real account: best-effort `auth:signOut`, then erases the
