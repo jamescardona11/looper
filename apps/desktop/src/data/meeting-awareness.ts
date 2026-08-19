@@ -37,6 +37,9 @@ export const subscribeMeetingAwareness = (
 export const dismissMeetingAwareness = () =>
   invoke<void>("dismiss_meeting_awareness");
 
+export const disableMeetingAwarenessNotifications = () =>
+  invoke<void>("disable_meeting_awareness_notifications");
+
 export const openMeetingNotificationSettings = () =>
   invoke<void>("open_meeting_notification_settings");
 

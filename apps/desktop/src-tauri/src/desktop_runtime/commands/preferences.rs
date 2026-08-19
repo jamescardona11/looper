@@ -59,6 +59,28 @@ pub(crate) fn dismiss_meeting_awareness(app: AppHandle<AppRuntime>, state: tauri
     state.meeting_awareness().dismiss(&app);
 }
 
+/// Descartar es "ahora no"; esto es "nunca más". Apaga el ajuste que gobierna
+/// todos los avisos de reunión, así que el aviso no vuelve hasta que se
+/// reactive desde Ajustes.
+#[tauri::command]
+pub(crate) fn disable_meeting_awareness_notifications(
+    app: AppHandle<AppRuntime>,
+    state: tauri::State<AppState>,
+) -> Result<(), String> {
+    let (_, next) = state
+        .persist_settings_with(|_, settings| {
+            settings.calendar_meeting_awareness_enabled = false;
+        })
+        .map_err(|failure| failure.to_string())?;
+    state.meeting_awareness().dismiss(&app);
+    state.meeting_awareness().request_refresh();
+    state.emit_settings_changed(&app, &next);
+    tray::refresh_tray_menu(&app, &next).map_err(|failure| failure.to_string())?;
+    #[cfg(target_os = "macos")]
+    crate::set_app_menu(&app, &next).map_err(|failure| failure.to_string())?;
+    Ok(())
+}
+
 #[tauri::command]
 pub(crate) fn open_meeting_notification_settings(
     app: AppHandle<AppRuntime>,

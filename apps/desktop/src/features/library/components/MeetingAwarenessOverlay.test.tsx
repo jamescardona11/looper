@@ -15,11 +15,13 @@ import MeetingAwarenessOverlay from "./MeetingAwarenessOverlay";
 
 const meetingActions = vi.hoisted(() => ({
   dismiss: vi.fn(),
+  disableNotifications: vi.fn(),
   openSettings: vi.fn(),
   startCapture: vi.fn(),
   openUrl: vi.fn(),
 }));
 vi.mock("../../../data/meeting-awareness", () => ({
+  disableMeetingAwarenessNotifications: meetingActions.disableNotifications,
   dismissMeetingAwareness: meetingActions.dismiss,
   openMeetingNotificationSettings: meetingActions.openSettings,
   startPromptedMeetingCapture: meetingActions.startCapture,
@@ -63,6 +65,8 @@ i18n.loadAndActivate({
     "meeting.awareness.meeting_label": "Meeting: {0}",
     "meeting.awareness.dismiss_reminder": "Dismiss meeting reminder",
     "meeting.awareness.dismiss": "Dismiss",
+    "meeting.awareness.never_show_again":
+      "Don't show meeting notifications again",
     "meeting.awareness.disable_notifications.title":
       "Disable meeting notifications?",
     "meeting.awareness.disable_notifications.body":
@@ -83,6 +87,7 @@ const renderAwareness = (state: MeetingAwarenessState) =>
 afterEach(() => {
   cleanup();
   meetingActions.dismiss.mockReset();
+  meetingActions.disableNotifications.mockReset();
   meetingActions.openSettings.mockReset();
   meetingActions.startCapture.mockReset();
   meetingActions.openUrl.mockReset();
@@ -95,8 +100,9 @@ describe("MeetingAwarenessOverlay", () => {
     const notification = screen.getByRole("region", {
       name: "Meeting: Weekly planning",
     });
-    expect(notification.parentElement?.className).toContain("fixed inset-0");
-    expect(notification.parentElement?.className).toContain("p-2");
+    const surface = notification.parentElement?.parentElement;
+    expect(surface?.className).toContain("fixed inset-0");
+    expect(surface?.className).toContain("p-2");
     expect(notification.className).toContain("h-[72px]");
     expect(notification.className).toContain("w-[404px]");
   });
@@ -371,5 +377,40 @@ describe("MeetingAwarenessOverlay", () => {
     expect(screen.getByTitle("Start recording this call")).toBeTruthy();
     expect(screen.getByText("Record")).toBeTruthy();
     expect(screen.queryByText("Join")).toBeNull();
+  });
+
+  test("the corner X turns the notification off for good, dismiss does not", async () => {
+    // Descartar es "ahora no". Sin una salida explícita, la única forma de no
+    // volver a verlo era descartarlo tres veces y esperar el diálogo.
+    meetingActions.disableNotifications.mockResolvedValue(undefined);
+    meetingActions.dismiss.mockResolvedValue(undefined);
+    renderAwareness({ phase: "detected", meeting: undefined });
+
+    fireEvent.click(screen.getByText("Dismiss"));
+    await waitFor(() => expect(meetingActions.dismiss).toHaveBeenCalledTimes(1));
+    expect(meetingActions.disableNotifications).not.toHaveBeenCalled();
+
+    fireEvent.click(
+      screen.getByLabelText("Don't show meeting notifications again"),
+    );
+    await waitFor(() =>
+      expect(meetingActions.disableNotifications).toHaveBeenCalledTimes(1),
+    );
+    expect(meetingActions.dismiss).toHaveBeenCalledTimes(1);
+  });
+
+  test("a failed opt-out says so instead of pretending it worked", async () => {
+    meetingActions.disableNotifications.mockRejectedValue(
+      new Error("settings are locked"),
+    );
+    renderAwareness({ phase: "detected", meeting: undefined });
+
+    fireEvent.click(
+      screen.getByLabelText("Don't show meeting notifications again"),
+    );
+
+    await waitFor(() =>
+      expect(screen.getByRole("alert").textContent).toBe("settings are locked"),
+    );
   });
 });
