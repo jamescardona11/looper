@@ -8,6 +8,9 @@ const subscribeNavigation = (
 export const subscribeNavigateSettings = (handler: () => void) =>
   subscribeNavigation("navigate:settings", handler);
 
+export const subscribeNavigateCalendar = (handler: () => void) =>
+  subscribeNavigation("navigate:calendar", handler);
+
 export const subscribeNavigateAbout = (handler: () => void) =>
   subscribeNavigation("navigate:about", handler);
 

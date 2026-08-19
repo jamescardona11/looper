@@ -47,6 +47,8 @@ vi.mock("./data/license", () => ({
     bridge.subscribe("license-return", handler),
 }));
 vi.mock("./data/navigation", () => ({
+  subscribeNavigateCalendar: (handler: unknown) =>
+    bridge.subscribe("navigate-calendar", handler),
   subscribeNavigateAbout: (handler: unknown) =>
     bridge.subscribe("navigate-about", handler),
   subscribeNavigateFeatureLab: (handler: unknown) =>
@@ -123,6 +125,7 @@ describe("Home native event bridge", () => {
     expect(Object.keys(bridge.state.handlers)).toEqual(
       expect.arrayContaining([
         "navigate-settings",
+        "navigate-calendar",
         "navigate-about",
         "navigate-history",
         "navigate-models",
@@ -137,6 +140,18 @@ describe("Home native event bridge", () => {
     expect(bridge.state.cleanupCount).toBe(
       Object.keys(bridge.state.handlers).length,
     );
+  });
+
+  test("opens Calendar & Meetings from the notification settings action", async () => {
+    render(<BridgeHarness />);
+    await finishRegistrations();
+
+    act(bridge.state.handlers["navigate-calendar"] as () => void);
+
+    expect(currentState()).toMatchObject({
+      activeView: "settings",
+      settingsTab: "app",
+    });
   });
 
   test("deduplicates native drops and routes returned checkout events", async () => {

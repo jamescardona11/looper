@@ -36,6 +36,6 @@ export const initialSettingsSection: Record<SettingsTab, SettingsSection> = {
   general: "processing",
   models: "processing",
   providers: "providers",
-  app: "appearance",
+  app: "calendar",
   about: "about",
 };

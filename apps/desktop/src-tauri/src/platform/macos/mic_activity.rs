@@ -18,7 +18,7 @@ use std::ptr::NonNull;
 
 use objc2_core_audio::{
     kAudioDevicePropertyDeviceIsRunningSomewhere, kAudioHardwareNoError,
-    kAudioHardwarePropertyDevices, kAudioObjectPropertyElementMain,
+    kAudioDevicePropertyStreams, kAudioHardwarePropertyDevices, kAudioObjectPropertyElementMain,
     kAudioObjectPropertyScopeGlobal, kAudioObjectPropertyScopeInput, kAudioObjectSystemObject,
     AudioObjectGetPropertyData, AudioObjectGetPropertyDataSize, AudioObjectID,
     AudioObjectPropertyAddress,
@@ -72,14 +72,33 @@ fn all_devices() -> Vec<AudioObjectID> {
         return Vec::new();
     }
     devices
+        .into_iter()
+        .filter(|device| device_has_input_stream(*device))
+        .collect()
 }
 
-/// El scope de entrada es lo que separa un micrófono de un altavoz: sin él,
-/// cualquier salida reproduciendo música contaría como llamada.
+fn device_has_input_stream(device: AudioObjectID) -> bool {
+    let addr = address(kAudioDevicePropertyStreams, kAudioObjectPropertyScopeInput);
+    let mut size: u32 = 0;
+    let status = unsafe {
+        AudioObjectGetPropertyDataSize(
+            device,
+            NonNull::from(&addr),
+            0,
+            std::ptr::null(),
+            NonNull::from(&mut size),
+        )
+    };
+    status == kAudioHardwareNoError && size > 0
+}
+
+/// `DeviceIsRunningSomewhere` es un estado del dispositivo completo. Se
+/// filtran antes los dispositivos con entrada para no contar altavoces, pero
+/// la consulta de actividad debe usar el scope global de CoreAudio.
 fn device_capturing(device: AudioObjectID) -> Option<bool> {
     let addr = address(
         kAudioDevicePropertyDeviceIsRunningSomewhere,
-        kAudioObjectPropertyScopeInput,
+        kAudioObjectPropertyScopeGlobal,
     );
     let mut running: u32 = 0;
     let mut size = std::mem::size_of::<u32>() as u32;
@@ -140,16 +159,20 @@ mod tests {
     }
 
     #[test]
-    fn capture_is_asked_on_the_input_scope_not_the_output_one() {
-        // Si esto se preguntara en scope global, unos altavoces sonando
-        // contarían como micrófono abierto y Spotify dispararía el aviso.
+    fn running_state_is_asked_on_the_global_scope() {
         let addr = address(
             kAudioDevicePropertyDeviceIsRunningSomewhere,
-            kAudioObjectPropertyScopeInput,
+            kAudioObjectPropertyScopeGlobal,
         );
 
+        assert_eq!(addr.mScope, kAudioObjectPropertyScopeGlobal);
+    }
+
+    #[test]
+    fn input_stream_inventory_is_asked_on_the_input_scope() {
+        let addr = address(kAudioDevicePropertyStreams, kAudioObjectPropertyScopeInput);
+
         assert_eq!(addr.mScope, kAudioObjectPropertyScopeInput);
-        assert_ne!(addr.mScope, kAudioObjectPropertyScopeGlobal);
     }
 
     /// Necesita micrófono y ffmpeg, así que no corre en CI:

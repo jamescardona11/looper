@@ -14,6 +14,7 @@ vi.mock("@tauri-apps/api/event", () => ({
 
 import { getCliInstallStatus, installCli, removeCli } from "./cli";
 import {
+  subscribeNavigateCalendar,
   subscribeNavigateAbout,
   subscribeNavigateFeatureLab,
   subscribeNavigateHistory,
@@ -61,6 +62,7 @@ describe("desktop shell native gateways", () => {
     const handler = vi.fn();
 
     await subscribeNavigateSettings(handler);
+    await subscribeNavigateCalendar(handler);
     await subscribeNavigateAbout(handler);
     await subscribeNavigateHistory(handler);
     await subscribeNavigateModels(handler);
@@ -68,6 +70,7 @@ describe("desktop shell native gateways", () => {
 
     expect(tauri.listen.mock.calls.map(([channel]) => channel)).toEqual([
       "navigate:settings",
+      "navigate:calendar",
       "navigate:about",
       "navigate:history",
       "navigate:models",

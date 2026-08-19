@@ -266,6 +266,7 @@ fn register_commands(builder: tauri::Builder<AppRuntime>) -> tauri::Builder<AppR
         preferences::get_upcoming_calendar_meetings,
         preferences::get_meeting_awareness_state,
         preferences::dismiss_meeting_awareness,
+        preferences::open_meeting_notification_settings,
         preferences::set_shortcut_capture_active,
         preferences::retry_shortcuts,
         preferences::update_settings,

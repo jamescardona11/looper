@@ -52,6 +52,11 @@ pub fn show_with_action(
 }
 
 pub fn hide(app: &AppHandle<AppRuntime>) {
+    hide_surface(app);
+    crate::awareness_notification::restore_after_toast(app);
+}
+
+pub(crate) fn hide_surface(app: &AppHandle<AppRuntime>) {
     MEETING_AWARENESS_MAY_PREEMPT.store(false, Ordering::SeqCst);
     #[cfg(target_os = "macos")]
     permission_watch::invalidate();
@@ -60,7 +65,6 @@ pub fn hide(app: &AppHandle<AppRuntime>) {
     if let Some(window) = app.get_webview_window(WINDOW_LABEL) {
         crate::platform::toast::hide(app, &window);
     }
-    crate::awareness_notification::restore_after_toast(app);
 }
 
 pub(crate) fn meeting_awareness_may_preempt() -> bool {

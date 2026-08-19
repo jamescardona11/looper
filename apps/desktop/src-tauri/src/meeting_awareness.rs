@@ -182,8 +182,7 @@ impl MeetingAwarenessManager {
                 {
                     tracing::warn!("Failed to refresh Calendar menu bar title: {error}");
                 }
-                let mic = microphone_busy_excluding_self(&app);
-                if !should_check_awareness(enabled, mic) {
+                if !should_check_awareness(enabled) {
                     replace_agenda(&app, &agenda, Vec::new());
                     let was_prompting = state.read().phase != MeetingAwarenessPhase::Idle;
                     update_shared_state(&app, &state, MeetingAwarenessState::default());
@@ -192,6 +191,7 @@ impl MeetingAwarenessManager {
                     }
                     continue;
                 }
+                let mic = microphone_busy_excluding_self(&app);
 
                 let meetings = if enabled {
                     let now = Utc::now();
@@ -274,8 +274,8 @@ impl MeetingAwarenessManager {
     }
 }
 
-fn should_check_awareness(calendar_awareness_enabled: bool, microphone_busy: Option<bool>) -> bool {
-    calendar_awareness_enabled || microphone_busy == Some(true)
+fn should_check_awareness(meeting_notifications_enabled: bool) -> bool {
+    meeting_notifications_enabled
 }
 
 fn replace_agenda(
@@ -645,8 +645,8 @@ mod tests {
 
     #[test]
     fn an_external_call_does_not_require_calendar_awareness() {
-        assert!(should_check_awareness(false, Some(true)));
-        assert!(!should_check_awareness(false, Some(false)));
+        assert!(!should_check_awareness(false));
+        assert!(should_check_awareness(true));
     }
 
     #[test]

@@ -1258,7 +1258,7 @@ msgstr "Calendar meeting"
 #. js-lingui-explicit-id
 #: src/features/settings/components/tabs/AppCalendarSection.tsx
 msgid "settings.app.meeting_awareness.unsupported"
-msgstr "Calendar meeting awareness is currently available on macOS."
+msgstr "Meeting notifications are currently available on macOS."
 
 #. js-lingui-explicit-id
 #: src/features/settings/components/tabs/AppCalendarSection.tsx
@@ -3120,7 +3120,7 @@ msgstr "Looper needs these to hear you and type for you."
 #. js-lingui-explicit-id
 #: src/features/settings/components/tabs/AppCalendarSection.tsx
 msgid "settings.app.meeting_awareness.body"
-msgstr "Looper reads local Calendar events with Meet, Zoom, Teams or Webex links. Recording still requires your click."
+msgstr "Looper notifies you when a calendar meeting starts or another app is using your microphone. Recording still requires your click."
 
 #. js-lingui-explicit-id
 #: src/features/library/components/MeetingStartModal.tsx
@@ -4783,7 +4783,7 @@ msgstr "Show timestamps"
 #. js-lingui-explicit-id
 #: src/features/settings/components/tabs/AppCalendarSection.tsx
 msgid "settings.app.meeting_awareness.label"
-msgstr "Show upcoming meetings in the Signal Rail"
+msgstr "Meeting notifications"
 
 #. js-lingui-explicit-id
 #: src/features/sync/components/SyncTab.tsx
@@ -5216,7 +5216,7 @@ msgstr "Toggle auto-update"
 #. js-lingui-explicit-id
 #: src/features/settings/components/tabs/AppCalendarSection.tsx
 msgid "settings.app.meeting_awareness.toggle_aria"
-msgstr "Toggle calendar meeting reminders"
+msgstr "Toggle meeting notifications"
 
 #. js-lingui-explicit-id
 #: src/features/settings/components/tabs/GeneralFeatureSection.tsx
@@ -5885,6 +5885,31 @@ msgstr "Your dictated text will appear here…"
 #: src/features/library/components/MeetingAwarenessOverlay.tsx
 msgid "meeting.awareness.microphone_active"
 msgstr "Your microphone is active"
+
+#. js-lingui-explicit-id
+#: src/features/library/components/MeetingAwarenessOverlay.tsx
+msgid "meeting.awareness.disable_notifications.title"
+msgstr "Disable meeting notifications?"
+
+#. js-lingui-explicit-id
+#: src/features/library/components/MeetingAwarenessOverlay.tsx
+msgid "meeting.awareness.disable_notifications.body"
+msgstr "You've closed the last few meeting notifications. You can change when we notify you about meetings."
+
+#. js-lingui-explicit-id
+#: src/features/library/components/MeetingAwarenessOverlay.tsx
+msgid "meeting.awareness.disable_notifications.keep"
+msgstr "Keep as is"
+
+#. js-lingui-explicit-id
+#: src/features/library/components/MeetingAwarenessOverlay.tsx
+msgid "meeting.awareness.disable_notifications.manage"
+msgstr "Manage notifications"
+
+#. js-lingui-explicit-id
+#: src/features/library/components/MeetingAwarenessOverlay.tsx
+msgid "meeting.awareness.disable_notifications.close"
+msgstr "Close"
 
 #. js-lingui-explicit-id
 #: src/features/transcriptions/components/TranscriptionList.tsx

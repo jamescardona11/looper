@@ -1,10 +1,16 @@
 import { useLingui } from "@lingui/react/macro";
-import { CalendarDots, VideoCamera, X } from "@phosphor-icons/react";
+import {
+  CalendarDots,
+  VideoCamera,
+  WarningCircle,
+  X,
+} from "@phosphor-icons/react";
 import { openUrl } from "@tauri-apps/plugin-opener";
 import { useEffect, useState } from "react";
 import type { MeetingAwarenessState } from "../../../data/meeting-awareness";
 import {
   dismissMeetingAwareness,
+  openMeetingNotificationSettings,
   startPromptedMeetingCapture,
 } from "../../../data/meeting-awareness";
 
@@ -13,10 +19,13 @@ export default function MeetingAwarenessOverlay({
 }: {
   state: MeetingAwarenessState;
 }) {
+  const DISMISSAL_PROMPT_THRESHOLD = 3;
   const { t } = useLingui();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [callOpened, setCallOpened] = useState(false);
+  const [dismissalCount, setDismissalCount] = useState(0);
+  const [settingsPromptOpen, setSettingsPromptOpen] = useState(false);
   const meeting = state.meeting;
 
   useEffect(() => {
@@ -25,7 +34,101 @@ export default function MeetingAwarenessOverlay({
   }, [meeting?.id]);
 
   const detected = state.phase === "detected";
-  if (!meeting && !detected) return null;
+  const dismissCurrentReminder = async () => {
+    const nextDismissalCount = dismissalCount + 1;
+    setDismissalCount(nextDismissalCount);
+    await dismissMeetingAwareness();
+    if (nextDismissalCount >= DISMISSAL_PROMPT_THRESHOLD) {
+      setDismissalCount(0);
+      setSettingsPromptOpen(true);
+    }
+  };
+
+  const keepNotificationsAsIs = () => {
+    setSettingsPromptOpen(false);
+  };
+
+  const manageNotifications = async () => {
+    setSettingsPromptOpen(false);
+    await openMeetingNotificationSettings();
+  };
+
+  if (!meeting && !detected && !settingsPromptOpen) return null;
+
+  if (settingsPromptOpen) {
+    return (
+      <div className="fixed inset-0 flex select-none items-start justify-end p-2">
+        <section
+          aria-labelledby="meeting-notification-settings-title"
+          aria-modal="true"
+          className="ui-overlay-notification relative flex h-[112px] w-[404px] flex-col rounded-[18px] px-3 py-2.5 text-white"
+          role="dialog"
+        >
+          <div className="relative z-10 flex items-center gap-2">
+            <WarningCircle
+              aria-hidden="true"
+              className="shrink-0 text-red-400"
+              size={18}
+              weight="fill"
+            />
+            <p
+              className="ui-text-body-sm min-w-0 flex-1 truncate font-semibold tracking-[-0.01em] text-[var(--ui-capture-fg-strong)]"
+              id="meeting-notification-settings-title"
+            >
+              {t({
+                id: "meeting.awareness.disable_notifications.title",
+                message: "Disable meeting notifications?",
+              })}
+            </p>
+            <button
+              aria-label={t({
+                id: "meeting.awareness.disable_notifications.close",
+                message: "Close",
+              })}
+              className="relative z-30 inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-white/35 text-[var(--ui-capture-muted)] transition-colors duration-150 hover:bg-white/8 hover:text-white"
+              onClick={keepNotificationsAsIs}
+              title={t({
+                id: "meeting.awareness.disable_notifications.close",
+                message: "Close",
+              })}
+              type="button"
+            >
+              <X aria-hidden="true" size={13} weight="bold" />
+            </button>
+          </div>
+          <p className="relative z-10 mt-1.5 ui-text-micro leading-4 text-[var(--ui-capture-muted)]">
+            {t({
+              id: "meeting.awareness.disable_notifications.body",
+              message:
+                "You've closed the last few meeting notifications. You can change when we notify you about meetings.",
+            })}
+          </p>
+          <div className="relative z-10 mt-auto flex justify-end gap-2">
+            <button
+              className="ui-text-label inline-flex h-8 items-center rounded-[10px] bg-white/12 px-3 font-semibold text-[var(--ui-capture-fg-strong)] transition-colors hover:bg-white/18"
+              onClick={keepNotificationsAsIs}
+              type="button"
+            >
+              {t({
+                id: "meeting.awareness.disable_notifications.keep",
+                message: "Keep as is",
+              })}
+            </button>
+            <button
+              className="ui-text-label inline-flex h-8 items-center rounded-[10px] bg-[var(--ui-capture-fg-strong)] px-3 font-semibold text-[var(--color-mask-opaque)] transition-opacity hover:opacity-90"
+              onClick={() => void manageNotifications()}
+              type="button"
+            >
+              {t({
+                id: "meeting.awareness.disable_notifications.manage",
+                message: "Manage notifications",
+              })}
+            </button>
+          </div>
+        </section>
+      </div>
+    );
+  }
 
   const joinAndRecord = async () => {
     if (busy) return;
@@ -134,15 +237,14 @@ export default function MeetingAwarenessOverlay({
 
         <button
           type="button"
-          onClick={() => void dismissMeetingAwareness()}
+          onClick={() => void dismissCurrentReminder()}
           aria-label={t({
             id: "meeting.awareness.dismiss_reminder",
             message: "Dismiss meeting reminder",
           })}
-          title={t({ id: "meeting.awareness.dismiss", message: "Dismiss" })}
-          className="relative z-30 inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-[10px] text-[var(--ui-capture-muted)] transition-colors duration-150 hover:bg-white/8 hover:text-white"
+          className="ui-text-label relative z-30 inline-flex h-8 shrink-0 items-center justify-center rounded-[10px] px-2 text-[var(--ui-capture-muted)] transition-colors duration-150 hover:bg-white/8 hover:text-white"
         >
-          <X size={13} weight="bold" />
+          {t({ id: "meeting.awareness.dismiss", message: "Dismiss" })}
         </button>
       </section>
     </div>

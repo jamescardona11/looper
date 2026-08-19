@@ -28,5 +28,6 @@ describe("settings navigation", () => {
     expect(settingsSectionTab.calendar).toBe("app");
     expect(settingsSectionTab.storage).toBe("app");
     expect(initialSettingsSection.models).toBe("processing");
+    expect(initialSettingsSection.app).toBe("calendar");
   });
 });
