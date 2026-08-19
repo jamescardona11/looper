@@ -10,15 +10,6 @@ components retain their upstream notices in their owning package:
 - [Desktop font notice](apps/desktop/public/fonts/NOTICE.md)
 - [Audio license](packages/rust/audio/LICENSE)
 
-## Source lineage
-
-Some transcription and native dictation components were adapted from the
-projects recorded in the owning package notices, including
-[Glimpse-Speech](https://github.com/glimpse-hq/Glimpse-Speech) and the
-[Voquill project](https://github.com/voquill/voquill). The covered Looper
-contributions are distributed under the root `LICENSE`; the upstream notices
-remain in their package notice files.
-
 The provenance process and remaining manual-review cases are recorded in
 [`docs/rebuild/CONTAMINATION_RISK_REGISTER.md`](docs/rebuild/CONTAMINATION_RISK_REGISTER.md).
 
