@@ -4,16 +4,24 @@ use tauri::{AppHandle, Manager, Monitor, WebviewWindow};
 const TOAST_LOGICAL_SIZE: (f64, f64) = (420.0, 200.0);
 const EDGE_INSET: f64 = 16.0;
 
-#[derive(Clone, Copy, Debug, Eq, PartialEq)]
-struct PhysicalArea {
-    origin: (i32, i32),
-    extent: (u32, u32),
+/// El área utilizable del monitor en puntos, que es el espacio en el que
+/// macOS coloca ventanas. Guardarla en píxeles obligaba a convertir dos veces
+/// y una de las dos conversiones no era nuestra.
+#[derive(Clone, Copy, Debug, PartialEq)]
+struct LogicalArea {
+    origin: (f64, f64),
+    extent: (f64, f64),
 }
 
 pub(super) fn place_toast(app: &AppHandle<AppRuntime>, window: &WebviewWindow<AppRuntime>) {
     place_notification(app, window, TOAST_LOGICAL_SIZE);
 }
 
+/// La posición va en puntos, no en píxeles. Tauri convierte una
+/// `PhysicalPosition` dividiéndola por la escala de *la ventana*, no por la
+/// del monitor al que apunta: con un monitor externo a 1x y el portátil a 2x,
+/// el aviso aterrizaba a mitad de camino y solo se recolocaba en el siguiente
+/// sondeo. En puntos no queda conversión que equivocar.
 pub(super) fn place_notification(
     app: &AppHandle<AppRuntime>,
     window: &WebviewWindow<AppRuntime>,
@@ -22,33 +30,33 @@ pub(super) fn place_notification(
     let Some(monitor) = preferred_monitor(app, window) else {
         return;
     };
-    let scale = monitor.scale_factor();
-    let work_area = monitor.work_area();
-    let area = PhysicalArea {
-        origin: (work_area.position.x, work_area.position.y),
-        extent: (work_area.size.width, work_area.size.height),
-    };
-    let surface_size = scale_pair(logical_size, scale);
-    let inset = (EDGE_INSET * scale).round() as i32;
-    let position = top_right_position(area, surface_size, inset);
+    let area = logical_work_area(&monitor);
+    let position = top_right_position(area, logical_size, EDGE_INSET);
 
-    let _ = window.set_position(tauri::PhysicalPosition::new(position.0, position.1));
+    let _ = window.set_position(tauri::LogicalPosition::new(position.0, position.1));
 }
 
-fn scale_pair(logical: (f64, f64), factor: f64) -> (u32, u32) {
-    (
-        (logical.0 * factor).round() as u32,
-        (logical.1 * factor).round() as u32,
+fn logical_work_area(monitor: &Monitor) -> LogicalArea {
+    let work_area = monitor.work_area();
+    to_logical_area(
+        (work_area.position.x, work_area.position.y),
+        (work_area.size.width, work_area.size.height),
+        monitor.scale_factor(),
     )
 }
 
-fn top_right_position(area: PhysicalArea, surface_size: (u32, u32), inset: i32) -> (i32, i32) {
-    let minimum_x = i64::from(area.origin.0) + i64::from(inset);
-    let proposed_x = i64::from(area.origin.0) + i64::from(area.extent.0)
-        - i64::from(surface_size.0)
-        - i64::from(inset);
-    let y = i64::from(area.origin.1) + i64::from(inset);
-    (proposed_x.max(minimum_x) as i32, y as i32)
+fn to_logical_area(origin: (i32, i32), extent: (u32, u32), scale: f64) -> LogicalArea {
+    LogicalArea {
+        origin: (f64::from(origin.0) / scale, f64::from(origin.1) / scale),
+        extent: (f64::from(extent.0) / scale, f64::from(extent.1) / scale),
+    }
+}
+
+fn top_right_position(area: LogicalArea, surface_size: (f64, f64), inset: f64) -> (f64, f64) {
+    let minimum_x = area.origin.0 + inset;
+    let proposed_x = area.origin.0 + area.extent.0 - surface_size.0 - inset;
+    let y = area.origin.1 + inset;
+    (proposed_x.max(minimum_x), y)
 }
 
 fn preferred_monitor(
@@ -79,37 +87,73 @@ fn monitor_beneath_pointer(window: &WebviewWindow<AppRuntime>) -> Option<Monitor
 
 #[cfg(test)]
 mod tests {
-    use super::{scale_pair, top_right_position, PhysicalArea};
+    use super::{to_logical_area, top_right_position, LogicalArea};
 
     #[test]
-    fn rounds_logical_dimensions_to_physical_pixels() {
-        assert_eq!(scale_pair((420.0, 200.0), 1.25), (525, 250));
-        assert_eq!(scale_pair((333.0, 71.0), 1.5), (500, 107));
+    fn a_retina_monitor_is_measured_in_points() {
+        // Un portátil Retina reporta 3024x1964 píxeles para 1512x982 puntos.
+        // Colocar el aviso con los píxeles lo mandaba al doble de distancia.
+        assert_eq!(
+            to_logical_area((0, -1964), (3024, 1900), 2.0),
+            LogicalArea {
+                origin: (0.0, -982.0),
+                extent: (1512.0, 950.0),
+            }
+        );
+        assert_eq!(
+            to_logical_area((0, 31), (2560, 1409), 1.0),
+            LogicalArea {
+                origin: (0.0, 31.0),
+                extent: (2560.0, 1409.0),
+            }
+        );
     }
 
     #[test]
     fn anchors_to_each_work_areas_top_right_corner() {
-        let primary = PhysicalArea {
-            origin: (0, 24),
-            extent: (1_920, 1_056),
+        let primary = LogicalArea {
+            origin: (0.0, 24.0),
+            extent: (1_920.0, 1_056.0),
         };
-        let left = PhysicalArea {
-            origin: (-1_920, 24),
-            extent: (1_920, 1_056),
+        let left = LogicalArea {
+            origin: (-1_920.0, 24.0),
+            extent: (1_920.0, 1_056.0),
         };
 
-        assert_eq!(top_right_position(primary, (420, 200), 16), (1_484, 40));
-        assert_eq!(top_right_position(primary, (380, 72), 16), (1_524, 40));
-        assert_eq!(top_right_position(left, (420, 200), 16), (-436, 40));
+        assert_eq!(
+            top_right_position(primary, (420.0, 200.0), 16.0),
+            (1_484.0, 40.0)
+        );
+        assert_eq!(
+            top_right_position(primary, (380.0, 72.0), 16.0),
+            (1_524.0, 40.0)
+        );
+        assert_eq!(
+            top_right_position(left, (420.0, 200.0), 16.0),
+            (-436.0, 40.0)
+        );
+    }
+
+    #[test]
+    fn a_retina_monitors_corner_lands_in_points_not_pixels() {
+        let retina = to_logical_area((0, -1964), (3024, 1900), 2.0);
+
+        assert_eq!(
+            top_right_position(retina, (420.0, 128.0), 16.0),
+            (1_076.0, -966.0)
+        );
     }
 
     #[test]
     fn narrow_work_areas_clamp_to_the_left_inset() {
-        let narrow = PhysicalArea {
-            origin: (100, -20),
-            extent: (300, 600),
+        let narrow = LogicalArea {
+            origin: (100.0, -20.0),
+            extent: (300.0, 600.0),
         };
 
-        assert_eq!(top_right_position(narrow, (420, 200), 16), (116, -4));
+        assert_eq!(
+            top_right_position(narrow, (420.0, 200.0), 16.0),
+            (116.0, -4.0)
+        );
     }
 }

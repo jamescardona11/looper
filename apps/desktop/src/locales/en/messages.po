@@ -5883,6 +5883,11 @@ msgstr "Your dictated text will appear here…"
 
 #. js-lingui-explicit-id
 #: src/features/library/components/MeetingAwarenessOverlay.tsx
+msgid "meeting.awareness.never_show_again"
+msgstr "Don't show meeting notifications again"
+
+#. js-lingui-explicit-id
+#: src/features/library/components/MeetingAwarenessOverlay.tsx
 msgid "meeting.awareness.microphone_active"
 msgstr "Your microphone is active"
 

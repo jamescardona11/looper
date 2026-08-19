@@ -9,6 +9,7 @@ import { openUrl } from "@tauri-apps/plugin-opener";
 import { useEffect, useState } from "react";
 import type { MeetingAwarenessState } from "../../../data/meeting-awareness";
 import {
+  disableMeetingAwarenessNotifications,
   dismissMeetingAwareness,
   openMeetingNotificationSettings,
   startPromptedMeetingCapture,
@@ -41,6 +42,16 @@ export default function MeetingAwarenessOverlay({
     if (nextDismissalCount >= DISMISSAL_PROMPT_THRESHOLD) {
       setDismissalCount(0);
       setSettingsPromptOpen(true);
+    }
+  };
+
+  // Descartar es "ahora no"; esto es "nunca más". Apaga los avisos de reunión
+  // en Ajustes, de donde el usuario puede volver a encenderlos.
+  const neverShowAgain = async () => {
+    try {
+      await disableMeetingAwarenessNotifications();
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : String(cause));
     }
   };
 
@@ -193,60 +204,75 @@ export default function MeetingAwarenessOverlay({
         message: `Meeting: ${meeting?.title ?? ""}`,
       });
   const SignalIcon = detected ? VideoCamera : CalendarDots;
+  const neverShowAgainLabel = t({
+    id: "meeting.awareness.never_show_again",
+    message: "Don't show meeting notifications again",
+  });
 
   return (
     <div className="fixed inset-0 flex select-none items-start justify-end p-2">
-      <section
-        aria-label={ariaLabel}
-        className="ui-overlay-notification relative flex h-[72px] w-[404px] items-center gap-3 overflow-hidden rounded-[18px] px-3 text-white"
-      >
-        <div className="relative z-10 grid h-10 w-10 shrink-0 place-items-center rounded-[12px] border border-white/10 bg-white/6 [box-shadow:var(--ui-notification-icon-shadow)]">
-          <SignalIcon
-            size={19}
-            weight="fill"
-            className="text-[var(--color-meeting-awareness)]"
-          />
-        </div>
+      <div className="relative">
+        <button
+          aria-label={neverShowAgainLabel}
+          className="absolute -left-1.5 -top-1.5 z-40 grid h-5 w-5 place-items-center rounded-full border border-white/20 bg-[var(--color-mask-opaque)] text-[var(--ui-capture-muted)] transition-colors duration-150 hover:bg-white/15 hover:text-white"
+          onClick={() => void neverShowAgain()}
+          title={neverShowAgainLabel}
+          type="button"
+        >
+          <X aria-hidden="true" size={10} weight="bold" />
+        </button>
+        <section
+          aria-label={ariaLabel}
+          className="ui-overlay-notification relative flex h-[72px] w-[404px] items-center gap-3 overflow-hidden rounded-[18px] px-3 text-white"
+        >
+          <div className="relative z-10 grid h-10 w-10 shrink-0 place-items-center rounded-[12px] border border-white/10 bg-white/6 [box-shadow:var(--ui-notification-icon-shadow)]">
+            <SignalIcon
+              size={19}
+              weight="fill"
+              className="text-[var(--color-meeting-awareness)]"
+            />
+          </div>
 
-        <div className="relative z-10 min-w-0 flex-1">
-          <p className="ui-text-body-sm truncate font-semibold tracking-[-0.01em] text-[var(--ui-capture-fg-strong)]">
-            {title}
-          </p>
-          <p
-            role={error ? "alert" : undefined}
-            title={meta}
-            className={`truncate text-[10px] leading-4 ${
-              error ? "text-error" : "text-[var(--ui-capture-muted)]"
-            }`}
+          <div className="relative z-10 min-w-0 flex-1">
+            <p className="ui-text-body-sm truncate font-semibold tracking-[-0.01em] text-[var(--ui-capture-fg-strong)]">
+              {title}
+            </p>
+            <p
+              role={error ? "alert" : undefined}
+              title={meta}
+              className={`truncate text-[10px] leading-4 ${
+                error ? "text-error" : "text-[var(--ui-capture-muted)]"
+              }`}
+            >
+              {meta}
+            </p>
+          </div>
+
+          <button
+            type="button"
+            disabled={busy}
+            onClick={() => void joinAndRecord()}
+            aria-label={actionAriaLabel}
+            title={actionAriaLabel}
+            className="ui-text-label relative z-30 inline-flex h-10 shrink-0 items-center gap-1.5 rounded-[12px] border border-white/30 bg-[var(--ui-capture-fg-strong)] px-3 font-semibold text-[var(--color-mask-opaque)] [box-shadow:var(--ui-notification-action-shadow)] transition-[transform,opacity] duration-150 hover:opacity-90 active:scale-[0.97] disabled:opacity-60"
           >
-            {meta}
-          </p>
-        </div>
+            <VideoCamera size={13} weight="fill" />
+            {actionLabel}
+          </button>
 
-        <button
-          type="button"
-          disabled={busy}
-          onClick={() => void joinAndRecord()}
-          aria-label={actionAriaLabel}
-          title={actionAriaLabel}
-          className="ui-text-label relative z-30 inline-flex h-10 shrink-0 items-center gap-1.5 rounded-[12px] border border-white/30 bg-[var(--ui-capture-fg-strong)] px-3 font-semibold text-[var(--color-mask-opaque)] [box-shadow:var(--ui-notification-action-shadow)] transition-[transform,opacity] duration-150 hover:opacity-90 active:scale-[0.97] disabled:opacity-60"
-        >
-          <VideoCamera size={13} weight="fill" />
-          {actionLabel}
-        </button>
-
-        <button
-          type="button"
-          onClick={() => void dismissCurrentReminder()}
-          aria-label={t({
-            id: "meeting.awareness.dismiss_reminder",
-            message: "Dismiss meeting reminder",
-          })}
-          className="ui-text-label relative z-30 inline-flex h-8 shrink-0 items-center justify-center rounded-[10px] px-2 text-[var(--ui-capture-muted)] transition-colors duration-150 hover:bg-white/8 hover:text-white"
-        >
-          {t({ id: "meeting.awareness.dismiss", message: "Dismiss" })}
-        </button>
-      </section>
+          <button
+            type="button"
+            onClick={() => void dismissCurrentReminder()}
+            aria-label={t({
+              id: "meeting.awareness.dismiss_reminder",
+              message: "Dismiss meeting reminder",
+            })}
+            className="ui-text-label relative z-30 inline-flex h-8 shrink-0 items-center justify-center rounded-[10px] px-2 text-[var(--ui-capture-muted)] transition-colors duration-150 hover:bg-white/8 hover:text-white"
+          >
+            {t({ id: "meeting.awareness.dismiss", message: "Dismiss" })}
+          </button>
+        </section>
+      </div>
     </div>
   );
 }
