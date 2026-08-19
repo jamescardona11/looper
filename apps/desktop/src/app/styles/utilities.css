@@ -45,19 +45,19 @@
   .ui-color-warning-subtle { color: color-mix(in srgb, var(--color-warning-strong) 75%, transparent); }
   :root[data-theme="light"] .ui-color-warning-subtle { color: color-mix(in srgb, var(--color-warning-strong) 70%, transparent); }
   .ui-color-error { color: var(--color-error); }
-  .ui-color-error-strong { color: #f87171; }
+  .ui-color-error-strong { color: var(--color-error); }
   :root[data-theme="light"] .ui-color-error-strong { color: var(--color-error); }
-  .ui-color-error-soft { color: #fca5a5; }
-  :root[data-theme="light"] .ui-color-error-soft { color: #dc2626; }
-  .ui-color-error-subtle { color: rgba(248, 113, 113, 0.7); }
-  .ui-color-error-faint { color: #fee2e2; }
-  .ui-color-error-tint { color: #fecaca; }
-  .ui-color-info-strong { color: #60a5fa; }
-  .ui-color-gray-200 { color: #e5e7eb; }
-  .ui-color-gray-500 { color: #6b7280; }
-  .ui-color-on-solid { color: #ffffff; }
-  .ui-color-on-warning { color: #000000; }
-  :root[data-theme="light"] .ui-color-on-warning { color: #ffffff; }
+  .ui-color-error-soft { color: color-mix(in srgb, var(--color-error) 70%, var(--color-text-primary)); }
+  :root[data-theme="light"] .ui-color-error-soft { color: var(--color-error); }
+  .ui-color-error-subtle { color: color-mix(in srgb, var(--color-error) 70%, transparent); }
+  .ui-color-error-faint { color: color-mix(in srgb, var(--color-error) 12%, var(--color-text-primary)); }
+  .ui-color-error-tint { color: color-mix(in srgb, var(--color-error) 25%, var(--color-text-primary)); }
+  .ui-color-info-strong { color: var(--color-info); }
+  .ui-color-gray-200 { color: var(--color-text-secondary); }
+  .ui-color-gray-500 { color: var(--color-text-muted); }
+  .ui-color-on-solid { color: var(--color-on-error); }
+  .ui-color-on-warning { color: var(--color-bg-primary); }
+  :root[data-theme="light"] .ui-color-on-warning { color: var(--color-on-error); }
   .ui-capture-card { display: flex; align-items: center; gap: 14px; padding: 13px 16px; border-radius: var(--radius-xl); border: 1px solid var(--ui-pill-shell-border); background: var(--ui-pill-shell-bg); color: var(--ui-capture-fg); }
   .ui-capture-card { box-shadow: var(--shadow-md); }
   .ui-pill-shell { background: linear-gradient( 180deg, color-mix(in srgb, var(--ui-pill-shell-bg) 92%, white 8%) 0%, var(--ui-pill-shell-bg) 54%, color-mix(in srgb, var(--ui-pill-shell-bg) 88%, black 12%) 100% ); box-shadow: var(--ui-pill-shell-shadow); }
@@ -110,67 +110,67 @@
   .ui-shadow-onboarding-model { box-shadow: var(--ui-shadow-onboarding-model); }
   .ui-shadow-onboarding-model-alt { box-shadow: var(--ui-shadow-onboarding-model-alt); }
   .ui-shadow-modal-deep { box-shadow: var(--ui-shadow-modal-deep); }
-  .ui-hover-on-solid:hover { color: #ffffff; }
-  .ui-hover-error-strong:hover { color: #f87171; }
-  .ui-hover-error-50:hover { color: #fef2f2; }
-  .ui-disabled-gray-600:disabled { color: #4b5563; }
+  .ui-hover-on-solid:hover { color: var(--color-on-error); }
+  .ui-hover-error-strong:hover { color: var(--color-error); }
+  .ui-hover-error-50:hover { color: color-mix(in srgb, var(--color-error) 8%, var(--color-text-primary)); }
+  .ui-disabled-gray-600:disabled { color: var(--color-text-disabled); }
   .text-\[8px\] { font-size: var(--ui-text-size-nano); line-height: var(--ui-text-line-nano); }
   .text-\[9px\] { font-size: var(--ui-text-size-micro); line-height: var(--ui-text-line-micro); }
   .text-\[11px\] { font-size: var(--ui-text-size-label); line-height: var(--ui-text-line-label); }
   .text-\[14px\] { font-size: var(--ui-text-size-body-lg); line-height: var(--ui-text-line-body-lg); }
-  .text-red-400 { color: #f87171; }
-  .text-amber-200 { color: #fde68a; }
-  .text-amber-400 { color: #fbbf24; }
-  .text-amber-400\/90 { color: rgba(251, 191, 36, 0.9); }
-  .hover\:text-red-400:hover { color: #f87171; }
+  .text-red-400 { color: var(--color-error); }
+  .text-amber-200 { color: var(--color-warning); }
+  .text-amber-400 { color: var(--color-warning); }
+  .text-amber-400\/90 { color: color-mix(in srgb, var(--color-warning) 90%, transparent); }
+  .hover\:text-red-400:hover { color: var(--color-error); }
   .bg-amber-400 { background-color: var(--color-cloud); }
   .bg-amber-400\/80 { background-color: var(--color-cloud-80); }
   .bg-amber-400\/20 { background-color: var(--color-cloud-20); }
   .bg-amber-400\/10 { background-color: var(--color-cloud-10); }
   .bg-amber-400\/5 { background-color: var(--color-cloud-5); }
-  .bg-amber-500\/10 { background-color: rgba(245, 158, 11, 0.1); }
-  .bg-blue-400 { background-color: #60a5fa; }
-  .bg-blue-500\/10 { background-color: rgba(59, 130, 246, 0.1); }
-  .bg-emerald-400 { background-color: #34d399; }
-  .bg-emerald-400\/10 { background-color: rgba(52, 211, 153, 0.1); }
+  .bg-amber-500\/10 { background-color: color-mix(in srgb, var(--color-warning) 10%, transparent); }
+  .bg-blue-400 { background-color: var(--color-info); }
+  .bg-blue-500\/10 { background-color: color-mix(in srgb, var(--color-info) 10%, transparent); }
+  .bg-emerald-400 { background-color: var(--color-success); }
+  .bg-emerald-400\/10 { background-color: color-mix(in srgb, var(--color-success) 10%, transparent); }
   .bg-emerald-500 { background-color: var(--color-success); }
-  .bg-green-500 { background-color: #22c55e; }
-  .bg-emerald-500\/10 { background-color: rgba(16, 185, 129, 0.1); }
-  .bg-green-500\/10 { background-color: rgba(34, 197, 94, 0.1); }
-  .bg-emerald-500\/15 { background-color: rgba(16, 185, 129, 0.15); }
+  .bg-green-500 { background-color: var(--color-success); }
+  .bg-emerald-500\/10 { background-color: color-mix(in srgb, var(--color-success) 10%, transparent); }
+  .bg-green-500\/10 { background-color: color-mix(in srgb, var(--color-success) 10%, transparent); }
+  .bg-emerald-500\/15 { background-color: color-mix(in srgb, var(--color-success) 15%, transparent); }
   .bg-red-500 { background-color: var(--color-error); }
-  .bg-red-500\/90 { background-color: rgba(239, 68, 68, 0.9); }
-  .bg-red-500\/10 { background-color: rgba(239, 68, 68, 0.1); }
-  .bg-red-500\/5 { background-color: rgba(239, 68, 68, 0.05); }
-  .bg-red-500\/\[0\.03\] { background-color: rgba(239, 68, 68, 0.03); }
-  .bg-violet-400 { background-color: #a78bfa; }
-  .bg-violet-500 { background-color: #8b5cf6; }
-  .bg-white { background-color: #ffffff; }
-  .bg-black { background-color: #000000; }
-  .bg-black\/60 { background-color: rgba(0, 0, 0, 0.6); }
-  .bg-black\/70 { background-color: rgba(0, 0, 0, 0.7); }
+  .bg-red-500\/90 { background-color: color-mix(in srgb, var(--color-error) 90%, transparent); }
+  .bg-red-500\/10 { background-color: color-mix(in srgb, var(--color-error) 10%, transparent); }
+  .bg-red-500\/5 { background-color: color-mix(in srgb, var(--color-error) 5%, transparent); }
+  .bg-red-500\/\[0\.03\] { background-color: color-mix(in srgb, var(--color-error) 3%, transparent); }
+  .bg-violet-400 { background-color: var(--color-accent); }
+  .bg-violet-500 { background-color: var(--color-accent); }
+  .bg-white { background-color: var(--color-text-primary); }
+  .bg-black { background-color: var(--color-mask-opaque); }
+  .bg-black\/60 { background-color: color-mix(in srgb, var(--color-mask-opaque) 60%, transparent); }
+  .bg-black\/70 { background-color: color-mix(in srgb, var(--color-mask-opaque) 70%, transparent); }
   .border-amber-400 { border-color: var(--color-cloud); }
   .border-amber-400\/20 { border-color: var(--color-cloud-20); }
-  .border-amber-500\/30 { border-color: rgba(245, 158, 11, 0.3); }
-  .border-amber-500\/40 { border-color: rgba(245, 158, 11, 0.4); }
-  .border-blue-500\/30 { border-color: rgba(59, 130, 246, 0.3); }
-  .border-emerald-500\/30 { border-color: rgba(16, 185, 129, 0.3); }
-  .border-green-500\/20 { border-color: rgba(34, 197, 94, 0.2); }
-  .border-red-500\/20 { border-color: rgba(239, 68, 68, 0.2); }
-  .border-red-500\/30 { border-color: rgba(239, 68, 68, 0.3); }
-  .border-red-500\/40 { border-color: rgba(239, 68, 68, 0.4); }
-  .border-violet-500\/40 { border-color: rgba(139, 92, 246, 0.4); }
-  .hover\:bg-amber-300:hover { background-color: #fcd34d; }
+  .border-amber-500\/30 { border-color: color-mix(in srgb, var(--color-warning) 30%, transparent); }
+  .border-amber-500\/40 { border-color: color-mix(in srgb, var(--color-warning) 40%, transparent); }
+  .border-blue-500\/30 { border-color: color-mix(in srgb, var(--color-info) 30%, transparent); }
+  .border-emerald-500\/30 { border-color: color-mix(in srgb, var(--color-success) 30%, transparent); }
+  .border-green-500\/20 { border-color: color-mix(in srgb, var(--color-success) 20%, transparent); }
+  .border-red-500\/20 { border-color: color-mix(in srgb, var(--color-error) 20%, transparent); }
+  .border-red-500\/30 { border-color: color-mix(in srgb, var(--color-error) 30%, transparent); }
+  .border-red-500\/40 { border-color: color-mix(in srgb, var(--color-error) 40%, transparent); }
+  .border-violet-500\/40 { border-color: color-mix(in srgb, var(--color-accent) 40%, transparent); }
+  .hover\:bg-amber-300:hover { background-color: var(--color-warning); }
   :root[data-theme="light"] .hover\:bg-amber-300:hover { background-color: var(--color-cloud-hover); }
-  .hover\:bg-emerald-400:hover { background-color: #34d399; }
-  .hover\:bg-green-400:hover { background-color: #4ade80; }
+  .hover\:bg-emerald-400:hover { background-color: var(--color-success); }
+  .hover\:bg-green-400:hover { background-color: var(--color-success); }
   .hover\:bg-red-500:hover { background-color: var(--color-error); }
-  .hover\:bg-red-500\/15:hover { background-color: rgba(239, 68, 68, 0.15); }
-  .hover\:bg-red-500\/10:hover { background-color: rgba(239, 68, 68, 0.1); }
-  .hover\:bg-violet-400:hover { background-color: #a78bfa; }
-  .hover\:bg-white:hover { background-color: #ffffff; }
+  .hover\:bg-red-500\/15:hover { background-color: color-mix(in srgb, var(--color-error) 15%, transparent); }
+  .hover\:bg-red-500\/10:hover { background-color: color-mix(in srgb, var(--color-error) 10%, transparent); }
+  .hover\:bg-violet-400:hover { background-color: var(--color-accent); }
+  .hover\:bg-white:hover { background-color: var(--color-text-primary); }
   .ring-amber-400\/30 { --tw-ring-color: var(--color-cloud-30); }
   .shadow-black\/40 { --tw-shadow-color: var(--color-shadow-soft-40); --tw-shadow: var(--tw-shadow-colored); }
   .shadow-black\/50 { --tw-shadow-color: var(--color-shadow-soft-50); --tw-shadow: var(--tw-shadow-colored); }
-  .decoration-red-400\/60 { text-decoration-color: rgba(248, 113, 113, 0.6); }
+  .decoration-red-400\/60 { text-decoration-color: color-mix(in srgb, var(--color-error) 60%, transparent); }
 }
