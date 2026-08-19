@@ -22,6 +22,7 @@ export const colors = {
   accentDark: "#6a74dc",
   accentSubtle: "rgba(143, 156, 255, 0.1)",
   overlay: "rgba(0, 0, 0, 0.68)",
+  shadow: "#000000",
   pillShell: "#101116",
   pillBorder: "#2c2d36",
   pillDotBase: "#2d2e37",
