@@ -7,7 +7,7 @@ module.exports = (config) => ({
   deploymentTarget: "16.2",
   colors: {
     $accent: "#8f9cff",
-    $widgetBackground: "#141519",
+    $widgetBackground: "#101116",
   },
   entitlements: {
     "com.apple.security.application-groups":
