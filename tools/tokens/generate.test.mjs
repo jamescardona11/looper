@@ -10,6 +10,7 @@ import {
   PALETTE,
   neutralChroma,
   oklchToHex,
+  oklchToRgb,
 } from "../../packages/ts/config/src/palette.ts";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
@@ -155,4 +156,80 @@ describe("palette guarantees", () => {
       }
     }
   });
+});
+
+describe("native config mirrors the palette", () => {
+  // These are not CSS and the generator does not rewrite them, but they carry
+  // brand colors that used to go stale silently: the Tauri window background
+  // and the iOS widget colors were still on the pre-2026 ramp long after the
+  // tokens moved.
+  const cases = [
+    {
+      file: "apps/desktop/src-tauri/tauri.conf.json",
+      label: "Tauri window background",
+      expected: () => oklchToHex(PALETTE.dark.neutrals.bgSecondary),
+    },
+    {
+      file: "apps/mobile/targets/widgets/expo-target.config.js",
+      label: "iOS widget background",
+      expected: () => oklchToHex(PALETTE.dark.neutrals.bgPrimary),
+    },
+    {
+      file: "apps/mobile/targets/widgets/expo-target.config.js",
+      label: "iOS widget accent",
+      expected: () => oklchToHex(PALETTE.dark.accent.base),
+    },
+  ];
+
+  for (const { file, label, expected } of cases) {
+    test(`${label} uses the current palette`, () => {
+      const contents = readFileSync(join(ROOT, file), "utf8").toLowerCase();
+      const value = expected().toLowerCase();
+      assert.ok(
+        contents.includes(value),
+        `${file} should reference ${value} for ${label}`,
+      );
+    });
+  }
+});
+
+describe("the iOS keyboard extension mirrors the palette", () => {
+  // KeyboardViewController.swift carries a fourth copy of the ramp as UIColor
+  // float triplets — Swift cannot read the CSS tokens or the TS map. It had
+  // silently kept the pre-2026 values. These assertions are the only thing
+  // stopping it from drifting again.
+  const swift = () =>
+    readFileSync(
+      join(ROOT, "apps/mobile/targets/keyboard/KeyboardViewController.swift"),
+      "utf8",
+    );
+
+  const floats = (color) =>
+    oklchToRgb(color).map((channel) => (channel / 255).toFixed(3));
+
+  const roles = [
+    ["background", () => PALETTE.dark.neutrals.bgPrimary],
+    ["backgroundSecondary", () => PALETTE.dark.neutrals.bgSecondary],
+    ["surfaceMuted", () => PALETTE.dark.neutrals.bgTertiary],
+    ["surface", () => PALETTE.dark.neutrals.bgSurface],
+    ["surfaceElevated", () => PALETTE.dark.neutrals.bgElevated],
+    ["border", () => PALETTE.dark.neutrals.borderPrimary],
+    ["text", () => PALETTE.dark.neutrals.textPrimary],
+    ["textSecondary", () => PALETTE.dark.neutrals.textSecondary],
+    ["muted", () => PALETTE.dark.neutrals.textMuted],
+    ["accent", () => PALETTE.dark.accent.base],
+  ];
+
+  for (const [role, resolve] of roles) {
+    test(`Palette.${role} matches the shared ramp`, () => {
+      const [r, g, b] = floats(resolve());
+      const pattern = new RegExp(
+        `static let ${role} = UIColor\\(red: ${r}, green: ${g}, blue: ${b === "1.000" ? "1" : b}, alpha: 1\\)`,
+      );
+      assert.ok(
+        pattern.test(swift()),
+        `Palette.${role} should be UIColor(red: ${r}, green: ${g}, blue: ${b})`,
+      );
+    });
+  }
 });
