@@ -28,6 +28,7 @@ fn resolve_settings_window(app: &AppHandle<AppRuntime>) -> tauri::Result<Setting
         .inner_size(900.0, 750.0)
         .min_inner_size(900.0, 750.0)
         .resizable(true)
+        .background_color(tauri::window::Color(25, 26, 32, 255))
         .visible(false);
     #[cfg(target_os = "macos")]
     let builder = builder.hidden_title(true);
