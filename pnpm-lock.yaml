@@ -518,6 +518,8 @@ importers:
 
   tools/e2e: {}
 
+  tools/tokens: {}
+
 packages:
 
   '@adobe/css-tools@4.5.0':
