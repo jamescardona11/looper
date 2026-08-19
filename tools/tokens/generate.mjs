@@ -366,6 +366,7 @@ function renderMobileTs() {
     ["accentDark", hex(dark.accent.dark)],
     ["accentSubtle", alpha(accent, 0.1)],
     ["overlay", "rgba(0, 0, 0, 0.68)"],
+    ["shadow", "#000000"],
     ["pillShell", n.bgPrimary],
     ["pillBorder", n.borderPrimary],
     ["pillDotBase", n.bgSurface],
