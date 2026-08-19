@@ -62,13 +62,11 @@
     "check": "biome check --write .",
     "convex:push:check": "pnpm --filter @looper/backend run push:check",
     "convex:verify": "pnpm --filter @looper/backend run verify:published",
-    "clean": "turbo run clean",
-    "prepare": "node -e \"try{require('child_process').execSync('git rev-parse --git-dir',{stdio:'ignore'});require('child_process').execSync('husky',{stdio:'inherit'})}catch{console.log('skip husky (no .git)')}\""
+    "clean": "turbo run clean"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.4.15",
     "@types/node": "^20.19.0",
-    "husky": "^9.1.0",
     "lint-staged": "^15.5.0",
     "turbo": "^2.9.0",
     "typescript": "^5.9.3"

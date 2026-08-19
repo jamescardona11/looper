@@ -20,7 +20,6 @@ export function LandingPage() {
       <PageSurface>
         <HeroSection />
         <StackStrip />
-        <ProductSection />
         <ReasonsSection />
         <ProofSection />
         <ComparisonSection />
@@ -209,7 +208,7 @@ function HeroSection() {
   return (
     <section id="top" className="border-border/60 border-b">
       <div className="mx-auto grid max-w-6xl items-center gap-10 px-6 pt-16 pb-20 sm:pt-20 sm:pb-24 lg:grid-cols-12">
-        <div className="lg:col-span-6">
+        <div className="lg:col-span-8">
           <Eyebrow className="text-muted-foreground">{t("landing.hero.eyebrow")}</Eyebrow>
           <h1 className="mt-7 font-bold font-display text-[clamp(3rem,2.35rem+3vw,4.8rem)] text-foreground leading-[0.95] tracking-tighter">
             {t("landing.hero.headline")}{" "}
@@ -247,25 +246,6 @@ function HeroSection() {
             ))}
           </ul>
         </div>
-
-        <div className="animate-fade-up lg:col-span-6">
-          <figure className="shadow-[0_24px_60px_-20px] shadow-primary/20">
-            <Window label="app · workspace">
-              <img
-                src="/shots/web-home.webp"
-                width={1280}
-                height={633}
-                loading="eager"
-                decoding="async"
-                alt={t("landing.product.captionChat")}
-                className="block w-full"
-              />
-            </Window>
-            <figcaption className="mt-3">
-              <Eyebrow className="text-muted-foreground">{t("landing.terminal.caption")}</Eyebrow>
-            </figcaption>
-          </figure>
-        </div>
       </div>
     </section>
   );
@@ -290,47 +270,6 @@ function StackStrip() {
             </span>
           ))}
         </div>
-      </div>
-    </section>
-  );
-}
-
-// ── See the product (real screenshots in window chrome) ────────────────────────
-
-function ProductSection() {
-  const { t } = useTranslation();
-  return (
-    <section className="border-border/60 border-b px-6 py-28">
-      <div className="mx-auto max-w-6xl">
-        <div className="mb-14 max-w-2xl">
-          <Eyebrow className="text-muted-foreground">{t("landing.product.eyebrow")}</Eyebrow>
-          <h2 className="mt-6 font-bold font-display text-4xl text-foreground leading-[0.95] tracking-tighter md:text-5xl">
-            {t("landing.product.headline")}
-          </h2>
-          <p className="mt-6 max-w-prose text-muted-foreground leading-relaxed">
-            {t("landing.product.subtitle")}
-          </p>
-        </div>
-
-        {/* The hero establishes the full workspace; this second screen proves
-            that the same product also exposes operational usage and cost data. */}
-        <figure>
-          <Window label="app · usage" meta="realtime">
-            <img
-              src="/shots/web-usage.webp"
-              width={1280}
-              height={633}
-              loading="lazy"
-              decoding="async"
-              alt={t("landing.product.captionUsage")}
-              className="block w-full"
-            />
-          </Window>
-          <figcaption className="mt-4 flex flex-wrap items-baseline justify-between gap-3">
-            <Eyebrow className="text-muted-foreground">{t("landing.product.captionUsage")}</Eyebrow>
-            <span className="font-mono text-muted-foreground text-xs">looper · /usage</span>
-          </figcaption>
-        </figure>
       </div>
     </section>
   );
