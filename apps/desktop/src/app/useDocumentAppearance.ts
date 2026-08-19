@@ -1,3 +1,4 @@
+import { getCurrentWindow } from "@tauri-apps/api/window";
 import { useEffect } from "react";
 
 import {
@@ -21,6 +22,11 @@ type DocumentAppearanceOptions = {
   onboardingVisible: boolean;
   storedTheme: string | null | undefined;
 };
+
+const SETTINGS_WINDOW_BACKGROUND = {
+  dark: "#191a20",
+  light: "#f5f5f7",
+} as const;
 
 export function useDocumentAppearance({
   windowLabel,
@@ -89,8 +95,16 @@ function useTheme({
 }: DocumentAppearanceOptions) {
   useEffect(() => {
     const root = document.documentElement;
+    const nativeWindow = windowLabel === "settings" ? getCurrentWindow() : null;
+    const applyNativeBackground = (theme: "light" | "dark") => {
+      if (!nativeWindow) return;
+      void nativeWindow
+        .setBackgroundColor(SETTINGS_WINDOW_BACKGROUND[theme])
+        .catch(() => undefined);
+    };
     if (previewMode) {
       root.dataset.theme = previewTheme;
+      applyNativeBackground(previewTheme);
       return;
     }
     if (windowLabel !== "settings" || settingsLoading) {
@@ -104,7 +118,9 @@ function useTheme({
       : parseThemePreference(storedTheme ?? null);
     const apply = (mode: ThemeMode) => {
       selected = mode;
-      root.dataset.theme = themeForDocument(mode, mediaQuery.matches);
+      const theme = themeForDocument(mode, mediaQuery.matches);
+      root.dataset.theme = theme;
+      applyNativeBackground(theme);
     };
     const followSystem = () => {
       if (selected === "system") apply("system");
