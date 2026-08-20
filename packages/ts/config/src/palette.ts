@@ -130,22 +130,28 @@ const LIGHT_NEUTRALS = {
 } as const;
 
 /**
- * El acento no es el mismo valor en los dos modos. `#8f9cff` sobre el fondo
- * claro da 2,3:1 — ilegible. `ink` es su equivalente para texto y bordes en
- * claro, y `solid` el relleno de botón que admite texto blanco.
+ * Un solo morado por modo. `light` y `dark` existían como variantes decorativas
+ * y producían tres morados distintos conviviendo en la misma pantalla — el
+ * logo en uno, el botón en otro, el estado activo en un tercero. Ahora son
+ * alias del acento: la profundidad y el hover los dan las alfas, que comparten
+ * tono.
+ *
+ * Lo que sí cambia entre modos es el valor: `#8f9cff` da 2,3:1 sobre el fondo
+ * claro, así que el modo claro tiene el suyo. `solid` es el relleno de botón
+ * que admite texto claro encima.
  */
 const DARK_ACCENT = {
   base: { l: 0.724, c: 0.144, h: BRAND_HUE },
-  light: { l: 0.792, c: 0.106, h: BRAND_HUE },
-  dark: { l: 0.601, c: 0.156, h: BRAND_HUE },
+  light: { l: 0.724, c: 0.144, h: BRAND_HUE },
+  dark: { l: 0.724, c: 0.144, h: BRAND_HUE },
   ink: { l: 0.724, c: 0.144, h: BRAND_HUE },
   solid: { l: 0.601, c: 0.156, h: BRAND_HUE },
 } as const;
 
 const LIGHT_ACCENT = {
   base: { l: 0.53, c: 0.16, h: BRAND_HUE },
-  light: { l: 0.65, c: 0.15, h: BRAND_HUE },
-  dark: { l: 0.47, c: 0.16, h: BRAND_HUE },
+  light: { l: 0.53, c: 0.16, h: BRAND_HUE },
+  dark: { l: 0.53, c: 0.16, h: BRAND_HUE },
   ink: { l: 0.53, c: 0.16, h: BRAND_HUE },
   solid: { l: 0.5, c: 0.17, h: BRAND_HUE },
 } as const;

@@ -199,7 +199,7 @@ function desktopTokens(mode) {
     ["--surface-pill-control", "rgba(255, 255, 255, 0.04)"],
     ["--surface-pill-control-muted", "rgba(255, 255, 255, 0.06)"],
     ["--surface-pill-control-active", "rgba(255, 255, 255, 0.14)"],
-    ["--color-meeting-awareness", "var(--color-accent-light)"],
+    ["--color-meeting-awareness", "var(--color-accent)"],
 
     /* Canales sueltos para los visualizadores canvas, que no leen colores CSS.
        Se derivan del token: antes eran copias a mano y no seguían al acento. */
@@ -242,7 +242,7 @@ function desktopTokens(mode) {
     ["--color-size-large", isDark ? semantic("error") : n.textMuted],
 
     ["--model-wave-whisper", isDark ? accent : n.textSecondary],
-    ["--model-wave-nvidia", isDark ? accentLight : n.textSecondary],
+    ["--model-wave-nvidia", isDark ? accent : n.textSecondary],
     ["--model-wave-cloud", "var(--color-cloud)"],
     ["--model-wave-glow-strong-whisper", "var(--color-accent-20)"],
     ["--model-wave-glow-soft-whisper", "var(--color-accent-10)"],
@@ -252,7 +252,7 @@ function desktopTokens(mode) {
     ["--model-wave-glow-soft-cloud", "var(--color-cloud-10)"],
 
     ["--color-support-help", isDark ? semantic("warningStrong") : n.textMuted],
-    ["--color-support-info", isDark ? accentLight : n.textMuted],
+    ["--color-support-info", isDark ? accent : n.textMuted],
     [
       "--color-row-action-fade",
       `color-mix(in srgb, var(--color-bg-tertiary) ${isDark ? "96%, #ffffff 4%" : "94%, #1a1716 6%"})`,
