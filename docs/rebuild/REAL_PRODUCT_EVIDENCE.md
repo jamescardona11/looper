@@ -44,6 +44,115 @@ La captura `desktop-packaged-ac7277f.png` se tomó después del fallback
 macOS por PID del commit `ac7277f`; confirma que el bundle reconstruido abre
 Home, pero no sustituye el smoke específico de inserción en TextEdit.
 
+Ejecución Tauri de la rama AGPL actual (18 de agosto de 2026):
+
+- Comando: `pnpm --dir apps/desktop tauri dev`
+- Resultado: Vite listo en `http://localhost:8735/`, Rust compilado y proceso
+  `target/debug/Looper` iniciado sin error de arranque.
+- Captura: `.tcompound/evidence/runtime/looper-tauri-startup.png`
+- SHA-256: `c32362517a2d8c6a24e53f150b82e38b356447f2292570c3e4ef90dc8a777538`
+- Resolución: `3024x1964` (1,489,161 bytes).
+- Smoke visible adicional: desde el menú nativo `Looper > Settings…` se abrió la
+  ventana de Settings con la sección `Processing & Models` visible:
+  `.tcompound/evidence/runtime/looper-settings-startup.png`
+- SHA-256 de esa captura: `a7107fb7ef38604e4689651f08d60599798d5beeed46629e3a026c3147516f42`
+- Repetición después de corregir la propagación de `key` en General Settings:
+  `.tcompound/evidence/runtime/looper-settings-after-key-fix.png`
+- SHA-256: `b5f247d479e8f0836386fefc3a5f68ff85f324fa64b2abe571259287702dfd43`
+- En esa repetición no reaparecieron los errores React de `key`; sí permanecen
+  las advertencias de entorno de Convex sin URL y de la clave cifrada de otro
+  hardware descritas arriba.
+- Smoke nativo de reunión después de corregir el cleanup asíncrono de listeners:
+  se ejecutó `Looper > Record Meeting`, se esperaron 3 segundos, y se ejecutó
+  `Looper > Stop Meeting Recording` desde el menú nativo. La sesión se inició y
+  se detuvo sin el rechazo no manejado de `unregisterListener` observado en la
+  ejecución anterior.
+- Captura durante la sesión: `.tcompound/evidence/runtime/looper-record-meeting-after-fix-start.png`
+- SHA-256: `0aa52b040b1e5adeabe762ac78db712b0d6e32c58740eaaee5d3506aef0d52c6`
+- La consola aún mostró el warning de desarrollo `Couldn't find callback id`
+  asociado a una recarga mientras había una operación asíncrona; no reapareció
+  `Unhandled rejection` ni `unregisterListener` durante el ciclo de reunión.
+
+Gate local de audio/reuniones ejecutado después del smoke Tauri:
+
+- Comando: `pnpm run qa:meeting-audio`
+- Resultado: `PASS` en macOS.
+- Evidencia: `.tcompound/evidence/qa/meeting-audio-automated.txt`.
+- El gate incluye la suite Desktop (266 archivos/915 pruebas), build del
+  webview, contratos nativos Rust y la prueba acotada de captura de dos horas
+  bajo presupuesto de memoria (`115.200.000` muestras, WAV de 219 MB, 0 MB de
+  crecimiento RSS observado).
+- Este gate sigue siendo local/automatizado: no sustituye una captura con un
+  micrófono físico, permisos de macOS, dispositivo de salida ni un modelo STT
+  real en ejecución.
+
+Smoke de inserción en host macOS ejecutado el mismo día:
+
+- Comando: `LOOPER_HOST_INSERTION_SMOKE=1 pnpm run qa:external-desktop-host`
+- Resultado: `assistive::host_smoke_tests::host_insertion_smoke_in_textedit`
+  pasó (`1 passed`, `0 failed`) con Accessibility/Input Monitoring disponibles.
+- Evidencia: `.tcompound/evidence/release/desktop-host-insertion.json` y
+  `.tcompound/evidence/release/desktop-host-insertion.txt`.
+- El smoke confirma escritura en un documento TextEdit enfocado; no demuestra
+  por sí solo captura de micrófono, STT real o inserción desde
+  un proveedor remoto.
+
+Smoke host-level del hotkey y Capture Pill:
+
+- Se inició la ventana Tauri real y se emitió el hotkey macOS `Fn` mediante
+  `CGEvent` (tecla virtual 63), manteniéndolo un segundo y soltándolo después.
+- La captura durante la pulsación muestra el pill en `Listening…`; la captura
+  posterior muestra `Ready to write anywhere`.
+- Validador: `pnpm run qa:external-desktop-hotkey-pill` con evidencia real,
+  resultado `pass`.
+- Evidencia: `.tcompound/evidence/release/desktop-hotkey-pill-host-level.json`
+  y `.tcompound/evidence/release/desktop-hotkey-pill-host-level.txt`.
+- Capturas: `.tcompound/evidence/runtime/looper-hotkey-fn-held-cgevent.png`
+  (SHA-256 `02ec4294c7366444b115cb4034b18f9ffe070156d5dd899466167f8ed7c700fc`)
+  y `.tcompound/evidence/runtime/looper-hotkey-fn-after-cgevent.png`
+  (SHA-256 `a30116ec8dd3dad75b8e7cf359ab6949076a0adcf2be8ed36895a3c330195c37`).
+- Esto prueba el hotkey y la transición visual del pill; no prueba todavía
+  audio hablado, STT ni la inserción de texto generada por voz.
+
+Intento adicional de voz en host:
+
+- TextEdit se enfocó con el texto marcador `VOICE_SMOKE_BEGIN`.
+- Se mantuvo `Fn` mientras `say -v Samantha "hello from Looper voice smoke"`
+  reprodujo la frase por el altavoz del Mac; luego se soltó `Fn` y se leyó de
+  nuevo el documento por AppleScript.
+- El proceso Tauri sí registró captura local y el motor (`mode=Local`, audio de
+  `0.51s`, `long-form transcribe`), pero TextEdit conservó exactamente
+  `VOICE_SMOKE_BEGIN`; no se obtuvo texto insertado.
+- Captura: `.tcompound/evidence/runtime/looper-real-voice-smoke-after.png`.
+- Resultado: evidencia de que el shortcut inicia captura/pipeline, pero el
+  altavoz no constituye una fuente válida de voz para cerrar el gate de STT;
+  micrófono físico o fixture de audio inyectado siguen pendientes.
+- Se repitió el intento reproduciendo `test-support/fixtures/audio/harvard.wav`
+  con `afplay` mientras `Fn` estaba sostenido y TextEdit tenía
+  `FIXTURE_SMOKE_BEGIN`. El documento permaneció sin cambios; Tauri registró
+  `mode=Local`, pero solo `0.51s` de audio útil. La reproducción por altavoz no
+  es una inyección de audio válida para este micrófono y no se cuenta como
+  prueba de dictado end-to-end.
+
+STT local con modelo real y fixture de audio:
+
+- Modelo usado: `parakeet_tdt_int8` INT8 instalado en el cache local de Looper
+  (639 MB).
+- Evidencia completa: `.tcompound/evidence/qa/local-stt-real.txt`.
+- `looper-ts` pasó la prueba ignorada de paridad con `harvard.wav`,
+  `es-voxforge.wav` y `pt-voxforge.wav`, incluyendo timestamps y texto dorado.
+- La integración Desktop `library::meeting_live_transcription` pasó con el
+  mismo modelo y `harvard.wav`; devolvió el transcript esperado en 2,42 s.
+- Esto cierra inferencia local real y el wrapper Desktop con audio de fixture.
+  No sustituye una captura desde un micrófono físico ni prueba proveedores
+  remotos.
+
+Durante esa ejecución el entorno informó que la clave cifrada pertenecía a
+otro hardware y que `VITE_CONVEX_URL` no estaba configurado; Looper conservó
+la clave cifrada y desactivó las rutas remotas/sync, pero la ventana local
+abrió Home correctamente. El proceso se cerró con `Ctrl-C` después de tomar
+la captura.
+
 Validación local:
 
 ```sh
@@ -53,9 +162,11 @@ shasum -a 256 .tcompound/evidence/real-product/desktop-home-positive.*
 ## Alcance de esta evidencia
 
 Esto prueba que el shell desktop puede abrirse y renderizar Home en el host
-macOS utilizado para la reconstrucción. No prueba por sí solo micrófono,
-Accessibility, hotkeys globales, inserción en otra aplicación, modelos locales,
-proveedores remotos, checkout, Windows, iOS, Android ni producción.
+macOS utilizado para la reconstrucción y que el canal de inserción puede escribir
+en TextEdit con los permisos nativos disponibles. También prueba el hotkey `Fn`
+y la transición visible del pill. No prueba por sí solo micrófono, STT,
+modelos locales, proveedores remotos, checkout,
+Windows, iOS, Android ni producción.
 
 La matriz completa de paridad mantiene esas capacidades como `pending` cuando
 requieren un dispositivo, permisos o un servicio externo.
