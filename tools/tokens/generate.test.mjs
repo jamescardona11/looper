@@ -122,7 +122,8 @@ describe("palette guarantees", () => {
 
   test("speaker colors never collide with the accent or with each other", () => {
     // speaker-1 used to sit at ΔE 3.2 from the accent, so "who is talking"
-    // read the same as "active state".
+    // read the same as "active state". They are neutral greys now, which keeps
+    // the accent meaning "active" and nothing else.
     const oklab = (hex) => {
       const [r, g, b] = [0, 2, 4].map((offset) => {
         const v = Number.parseInt(hex.slice(1 + offset, 3 + offset), 16) / 255;
