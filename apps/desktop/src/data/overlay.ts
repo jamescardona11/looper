@@ -23,6 +23,11 @@ export type MeetingOverlayPresentation = {
 export const OVERLAY_POSITION_AUTOMATIC_MOVE_EVENT =
   "looper:overlay-automatic-move";
 
+// Un arrastre de la persona empieza cuando el puntero viaja, no en el
+// pointerdown, y puede nacer sobre cualquier control. Anunciarlo evita que
+// quien guarda la posición tenga que deducirlo del DOM.
+export const OVERLAY_USER_DRAG_EVENT = "looper:overlay-user-drag";
+
 export type PillInsertedPayload = {
   chars: number;
   can_undo: boolean;

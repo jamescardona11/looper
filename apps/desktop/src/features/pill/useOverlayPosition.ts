@@ -2,6 +2,7 @@ import { useEffect, useRef } from "react";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import {
   OVERLAY_POSITION_AUTOMATIC_MOVE_EVENT,
+  OVERLAY_USER_DRAG_EVENT,
   persistOverlayPosition,
   setOverlayPosition,
   type OverlayPosition,
@@ -59,6 +60,12 @@ export function useOverlayPosition(trackMovement: boolean): void {
       if (!compactHandle && !target.closest("[data-tauri-drag-region]")) {
         return;
       }
+      markUserDrag();
+    };
+    // La pill se arrastra desde cualquier punto, botones incluidos, y el gesto
+    // sólo se convierte en arrastre cuando el puntero viaja. Ese momento lo
+    // anuncia el propio arrastre; el DOM no puede deducirlo.
+    const markUserDrag = () => {
       userDragStartedAt.current = performance.now();
     };
     const ignoreAutomaticMove = () => {
@@ -67,6 +74,7 @@ export function useOverlayPosition(trackMovement: boolean): void {
     };
 
     document.addEventListener("pointerdown", rememberUserDrag, true);
+    window.addEventListener(OVERLAY_USER_DRAG_EVENT, markUserDrag);
     window.addEventListener(
       OVERLAY_POSITION_AUTOMATIC_MOVE_EVENT,
       ignoreAutomaticMove,
@@ -107,6 +115,7 @@ export function useOverlayPosition(trackMovement: boolean): void {
     return () => {
       cancelled = true;
       document.removeEventListener("pointerdown", rememberUserDrag, true);
+      window.removeEventListener(OVERLAY_USER_DRAG_EVENT, markUserDrag);
       window.removeEventListener(
         OVERLAY_POSITION_AUTOMATIC_MOVE_EVENT,
         ignoreAutomaticMove,

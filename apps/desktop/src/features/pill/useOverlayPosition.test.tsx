@@ -16,6 +16,7 @@ const windowEvents = vi.hoisted(() => ({
 
 vi.mock("../../data/overlay", () => ({
   OVERLAY_POSITION_AUTOMATIC_MOVE_EVENT: "looper:overlay-automatic-move",
+  OVERLAY_USER_DRAG_EVENT: "looper:overlay-user-drag",
   persistOverlayPosition: overlayActions.persist,
   setOverlayPosition: overlayActions.restore,
 }));
@@ -95,6 +96,30 @@ describe("useOverlayPosition", () => {
     });
 
     expect(overlayActions.persist).toHaveBeenCalledWith({ x: 1_900, y: 32 });
+  });
+
+  test("persists a drag that began on a control", async () => {
+    vi.useFakeTimers();
+    overlayActions.persist.mockResolvedValue({ x: 1_450, y: 900 });
+
+    renderHook(() => useOverlayPosition(true));
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    // The pill drags from anywhere, so a press on the Dictate button that then
+    // travels is a real move. Nothing in the DOM says so - the drag announces
+    // itself.
+    act(() => {
+      window.dispatchEvent(new Event("looper:overlay-user-drag"));
+      windowEvents.moved?.({ payload: { x: 1_450, y: 900 } });
+      vi.advanceTimersByTime(120);
+    });
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    expect(overlayActions.persist).toHaveBeenCalledWith({ x: 1_450, y: 900 });
   });
 
   test("does not persist a programmatic overlay move", async () => {
