@@ -22,9 +22,16 @@ export type Oklch = { l: number; c: number; h: number };
 /** Tono de marca. El acento y todos los neutros viven aquí. */
 export const BRAND_HUE = 276.5;
 
-/** Croma de un neutro: 0 en los extremos, máximo hacia el medio de la rampa. */
-export function neutralChroma(l: number): number {
-  return 0.026 * Math.min(l, 1 - l) * 2;
+/**
+ * Los neutros son neutros: croma 0. Blanco y negro son los protagonistas y el
+ * morado es el único color de la interfaz, así que la escala de grises no
+ * arrastra tinte de marca en ningún peldaño.
+ *
+ * Se probó teñirla con `BRAND_HUE` a croma bajo para que grises y marca se
+ * leyeran como una familia. Se descartó: el fondo dejaba de ser negro.
+ */
+export function neutralChroma(_l: number): number {
+  return 0;
 }
 
 function srgbChannel(value: number): number {
@@ -80,46 +87,44 @@ function neutral(l: number): Oklch {
  * recorre los mismos peldaños en sentido inverso.
  */
 const DARK_NEUTRALS = {
-  bgPrimary: neutral(0.18),
-  bgSecondary: neutral(0.225),
-  bgTertiary: neutral(0.265),
-  bgSurface: neutral(0.305),
-  bgOverlay: neutral(0.345),
-  bgElevated: neutral(0.39),
-  bgElevatedHover: neutral(0.415),
-  bgHover: neutral(0.44),
-  borderPrimary: neutral(0.3),
-  borderSecondary: neutral(0.375),
+  bgPrimary: neutral(0.13),
+  bgSecondary: neutral(0.175),
+  bgTertiary: neutral(0.215),
+  bgSurface: neutral(0.25),
+  bgOverlay: neutral(0.285),
+  bgElevated: neutral(0.33),
+  bgElevatedHover: neutral(0.36),
+  bgHover: neutral(0.395),
+  borderPrimary: neutral(0.29),
+  borderSecondary: neutral(0.36),
   borderHover: neutral(0.48),
-  textDisabled: neutral(0.52),
-  textMuted: neutral(0.645),
+  textDisabled: neutral(0.5),
+  textMuted: neutral(0.63),
   textSecondary: neutral(0.8),
-  textPrimary: neutral(0.97),
+  textPrimary: neutral(1),
 } as const;
 
 /**
- * En claro la elevación no la carga el lightness: la parte alta de la rampa
- * choca contra el techo de 1.0 y sólo quedan ~4 puntos entre la página y el
- * blanco. La separación la hacen el borde y la sombra, y `bgElevated` baja en
- * vez de subir. Por eso los peldaños de este modo son más cortos que los del
- * oscuro, que tiene todo el rango de 0.18 a 0.44 para repartir.
+ * En claro la elevación no la carga el lightness: la parte alta choca contra el
+ * techo de 1.0 y sólo quedan unos pocos puntos entre la página y el blanco. La
+ * separación la hacen el borde y la sombra, y `bgElevated` baja en vez de subir.
  */
 const LIGHT_NEUTRALS = {
-  bgPrimary: neutral(0.962),
-  bgSecondary: neutral(0.982),
-  bgTertiary: neutral(0.992),
+  bgPrimary: neutral(0.98),
+  bgSecondary: neutral(0.99),
+  bgTertiary: neutral(0.995),
   bgSurface: { l: 1, c: 0, h: BRAND_HUE },
   bgOverlay: { l: 1, c: 0, h: BRAND_HUE },
-  bgElevated: neutral(0.94),
-  bgElevatedHover: neutral(0.91),
-  bgHover: neutral(0.88),
-  borderPrimary: neutral(0.905),
-  borderSecondary: neutral(0.845),
+  bgElevated: neutral(0.955),
+  bgElevatedHover: neutral(0.925),
+  bgHover: neutral(0.89),
+  borderPrimary: neutral(0.91),
+  borderSecondary: neutral(0.85),
   borderHover: neutral(0.64),
   textDisabled: neutral(0.66),
-  textMuted: neutral(0.53),
-  textSecondary: neutral(0.42),
-  textPrimary: neutral(0.25),
+  textMuted: neutral(0.52),
+  textSecondary: neutral(0.41),
+  textPrimary: neutral(0.18),
 } as const;
 
 /**
@@ -136,10 +141,10 @@ const DARK_ACCENT = {
 } as const;
 
 const LIGHT_ACCENT = {
-  base: { l: 0.545, c: 0.16, h: BRAND_HUE },
+  base: { l: 0.53, c: 0.16, h: BRAND_HUE },
   light: { l: 0.65, c: 0.15, h: BRAND_HUE },
   dark: { l: 0.47, c: 0.16, h: BRAND_HUE },
-  ink: { l: 0.545, c: 0.16, h: BRAND_HUE },
+  ink: { l: 0.53, c: 0.16, h: BRAND_HUE },
   solid: { l: 0.5, c: 0.17, h: BRAND_HUE },
 } as const;
 
