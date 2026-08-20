@@ -111,15 +111,19 @@ pub(super) fn export(
     output_path: String,
 ) -> Result<(), String> {
     let item = load_item(state, &id)?;
-    let content = if item.kind == "meeting" && matches!(&format, ExportFormat::Md) {
-        let details = state
+    // Una nota guarda las mismas notas y resumen que una reunión: exportarla sin
+    // ellos perdería justo lo que el usuario escribió.
+    let details = if item.is_capture() && matches!(&format, ExportFormat::Md) {
+        state
             .storage()
             .get_meeting_details(&id)
             .map_err(|error| format!("Failed to load meeting details: {error}"))?
-            .ok_or_else(|| "Meeting details not found".to_owned())?;
-        build_meeting_export_content(&item, &details, format)
     } else {
-        build_export_content(&item, format)
+        None
+    };
+    let content = match details {
+        Some(details) => build_meeting_export_content(&item, &details, format),
+        None => build_export_content(&item, format),
     }
     .map_err(|error| format!("Failed to build export: {error}"))?;
     files::write_export(&output_path, &content)

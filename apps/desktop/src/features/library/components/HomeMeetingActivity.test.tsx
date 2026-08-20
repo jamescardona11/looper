@@ -15,9 +15,15 @@ vi.mock("../queries", () => ({
 const i18n = setupI18n();
 i18n.loadAndActivate({ locale: "en", messages: {} });
 
+const NAME_BY_KIND: Record<LibraryItem["kind"], string> = {
+  meeting: "Design review",
+  recording: "Voice memo",
+  import: "Imported file",
+};
+
 const item = (kind: LibraryItem["kind"]): LibraryItem => ({
   id: `${kind}-1`,
-  name: kind === "meeting" ? "Design review" : "Voice memo",
+  name: NAME_BY_KIND[kind],
   audio_path: "",
   source_path: "",
   store_original: false,
@@ -41,10 +47,12 @@ afterEach(() => {
 });
 
 describe("HomeMeetingActivity", () => {
-  test("shows real meeting items and opens the selected meeting", () => {
+  test("lists meetings and notes together and opens the selected capture", () => {
     const meeting = item("meeting");
     useLibraryItems.mockReturnValue({
-      data: { pages: [{ items: [meeting, item("import")] }] },
+      data: {
+        pages: [{ items: [meeting, item("recording"), item("import")] }],
+      },
     });
     const onOpen = vi.fn();
 
@@ -56,11 +64,13 @@ describe("HomeMeetingActivity", () => {
 
     fireEvent.click(screen.getByRole("button", { name: /Design review/ }));
     expect(onOpen).toHaveBeenCalledWith(meeting);
-    expect(screen.queryByText("Voice memo")).toBeNull();
+    // Una nota se graba igual que una reunión: entra. Un import no.
+    expect(screen.getByText("Voice memo")).toBeTruthy();
+    expect(screen.queryByText("Imported file")).toBeNull();
     expect(useLibraryItems).toHaveBeenCalledWith({ since_days: 1 }, true);
   });
 
-  test("does not add an empty meetings section", () => {
+  test("does not add an empty captures section", () => {
     useLibraryItems.mockReturnValue({ data: { pages: [{ items: [] }] } });
     const { container } = render(
       <I18nProvider i18n={i18n}>

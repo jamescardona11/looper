@@ -263,7 +263,7 @@ fn finish_successful_transcription(
         EVENT_LIBRARY_COMPLETE,
         LibraryCompletePayload { id: id.to_owned() },
     );
-    if item.kind == "meeting" {
+    if item.is_capture() {
         if let Err(error) = super::meeting_summary::schedule_meeting_summary(app, id.to_owned()) {
             tracing::warn!("Meeting summary was not scheduled: {error}");
         }

@@ -9,7 +9,6 @@
     "declarationMap": false,
     "noUncheckedIndexedAccess": false,
     "noImplicitOverride": false,
-    "ignoreDeprecations": "6.0",
     "paths": {
       "@/*": ["./src/*"]
     }

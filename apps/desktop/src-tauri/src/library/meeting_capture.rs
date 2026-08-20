@@ -224,9 +224,6 @@ impl MeetingCaptureManager {
     ) -> Result<bool, String> {
         let now = Utc::now();
         let current = self.state();
-        if current.capture_intent != CaptureIntent::Meeting {
-            return Ok(false);
-        }
         let anchor_ms =
             meeting_elapsed_ms_at(current.started_at.as_deref(), current.elapsed_seconds, now);
         let mut gesture = self.note_gesture.lock();
@@ -321,9 +318,6 @@ impl MeetingCaptureManager {
     ) -> Result<bool, String> {
         let now = Utc::now();
         let current = self.state();
-        if current.capture_intent != CaptureIntent::Meeting {
-            return Ok(false);
-        }
         let elapsed_ms =
             meeting_elapsed_ms_at(current.started_at.as_deref(), current.elapsed_seconds, now);
         let mut gesture = self.note_gesture.lock();
@@ -541,9 +535,6 @@ impl MeetingCaptureManager {
         app: &AppHandle<AppRuntime>,
         app_state: &AppState,
     ) -> Result<MeetingNoteMarker, String> {
-        if self.state().capture_intent != CaptureIntent::Meeting {
-            return Err("Moments are available only while recording a meeting.".to_string());
-        }
         let storage = app_state.storage();
         let captured = self.capture_note_at(&storage, Utc::now())?;
         if let Some(snapshot) = captured.state {
@@ -674,13 +665,14 @@ impl MeetingCaptureManager {
         app: &AppHandle<AppRuntime>,
         app_state: &AppState,
         model_key: String,
+        live_model_key: Option<String>,
     ) -> Result<MeetingCaptureState, String> {
         self.start_capture(
             app,
             app_state,
             CaptureStartOptions {
                 model_key,
-                live_model_key: None,
+                live_model_key,
                 system_audio_enabled: false,
                 calendar_context: None,
                 intent: CaptureIntent::VoiceNote,
@@ -771,12 +763,10 @@ impl MeetingCaptureManager {
             return Err("Microphone access is required to record a meeting.".to_string());
         }
         validate_model(app, &options.model_key)?;
+        // Una nota larga se sigue igual de mal a ciegas que una reunión: si hay
+        // modelo en vivo instalado, también transcribe mientras graba.
         #[cfg(not(all(target_os = "macos", target_arch = "x86_64")))]
-        let live_model = if options.intent == CaptureIntent::Meeting {
-            resolve_live_model(app, options.live_model_key.as_deref())?
-        } else {
-            None
-        };
+        let live_model = resolve_live_model(app, options.live_model_key.as_deref())?;
         #[cfg(all(target_os = "macos", target_arch = "x86_64"))]
         if options.live_model_key.is_some() {
             return Err("Live meeting transcription requires Apple Silicon.".to_string());
@@ -874,26 +864,24 @@ impl MeetingCaptureManager {
             speakers: None,
         };
         let storage = app_state.storage();
-        let insert_result = if options.intent == CaptureIntent::Meeting {
-            let details = MeetingDetails {
-                library_item_id: id.clone(),
-                started_at: started_at.clone(),
-                ended_at: None,
-                notes: String::new(),
-                notes_revision: 0,
-                summary: None,
-                summary_status: MeetingSummaryStatus::Idle,
-                summary_error: None,
-                system_audio_enabled: options.system_audio_enabled,
-                recovered: false,
-                calendar_context,
-                note_markers: Vec::new(),
-                live_transcript: Vec::new(),
-            };
-            storage.insert_meeting_item(item, &details).map(|_| ())
-        } else {
-            storage.insert_library_item(item).map(|_| ())
+        // Una nota también guarda detalles de captura: sin ellos no hay resumen
+        // ni chat, y una nota de media hora los necesita igual que una reunión.
+        let details = MeetingDetails {
+            library_item_id: id.clone(),
+            started_at: started_at.clone(),
+            ended_at: None,
+            notes: String::new(),
+            notes_revision: 0,
+            summary: None,
+            summary_status: MeetingSummaryStatus::Idle,
+            summary_error: None,
+            system_audio_enabled: options.system_audio_enabled,
+            recovered: false,
+            calendar_context,
+            note_markers: Vec::new(),
+            live_transcript: Vec::new(),
         };
+        let insert_result = storage.insert_meeting_item(item, &details).map(|_| ());
         if let Err(err) = insert_result {
             drop(writer);
             let _ = fs::remove_dir_all(&item_dir);
@@ -928,7 +916,6 @@ impl MeetingCaptureManager {
         let task_silence_monitor = Arc::clone(&silence_monitor);
         let task_partial_path = partial_path.clone();
         let task_final_path = final_path.clone();
-        let task_intent = options.intent;
         let (armed_tx, armed_rx) = tokio::sync::oneshot::channel();
         let task = tauri::async_runtime::spawn(async move {
             if armed_rx.await.is_err() {
@@ -966,13 +953,11 @@ impl MeetingCaptureManager {
                         },
                     );
                 }
-                if task_intent == CaptureIntent::Meeting {
-                    let _ = task_storage.finish_meeting_details(
-                        &task_id,
-                        &Utc::now().to_rfc3339(),
-                        false,
-                    );
-                }
+                let _ = task_storage.finish_meeting_details(
+                    &task_id,
+                    &Utc::now().to_rfc3339(),
+                    false,
+                );
                 let previous = state.read().clone();
                 *state.write() = MeetingCaptureState {
                     phase: MeetingCapturePhase::Error,
@@ -1057,9 +1042,7 @@ impl MeetingCaptureManager {
         app: &AppHandle<AppRuntime>,
         app_state: &AppState,
     ) -> Result<MeetingCaptureState, String> {
-        if self.state().capture_intent == CaptureIntent::Meeting {
-            self.finish_open_note_before_stop(app, app_state);
-        }
+        self.finish_open_note_before_stop(app, app_state);
         let Some(active) = self.active.lock().take() else {
             return Ok(self.state());
         };
@@ -1112,7 +1095,6 @@ impl MeetingCaptureManager {
                 &id,
                 &partial_path,
                 &final_path,
-                intent,
                 captured,
             ),
             Err(message) => Err(message),
@@ -1144,13 +1126,11 @@ impl MeetingCaptureManager {
                         "Failed to preserve meeting after finalization error: {save_err}"
                     );
                 }
-                if intent == CaptureIntent::Meeting {
-                    let _ = app_state.storage().finish_meeting_details(
-                        &id,
-                        &Utc::now().to_rfc3339(),
-                        false,
-                    );
-                }
+                let _ = app_state.storage().finish_meeting_details(
+                    &id,
+                    &Utc::now().to_rfc3339(),
+                    false,
+                );
                 let failed = MeetingCaptureState {
                     phase: MeetingCapturePhase::Error,
                     id: Some(id),
@@ -1171,7 +1151,6 @@ impl MeetingCaptureManager {
         id: &str,
         partial_path: &Path,
         final_path: &Path,
-        intent: CaptureIntent,
         captured: CaptureResult,
     ) -> Result<(), String> {
         if captured.samples_written == 0 {
@@ -1187,7 +1166,6 @@ impl MeetingCaptureManager {
             id,
             partial_path,
             final_path,
-            intent,
             captured,
             &Utc::now().to_rfc3339(),
         )
@@ -1248,7 +1226,7 @@ impl MeetingCaptureManager {
                 },
             )
             .map_err(|err| format!("Failed to recover the meeting: {err}"))?;
-        if item.kind == "meeting" {
+        if item.is_capture() {
             storage
                 .finish_meeting_details(&item.id, &Utc::now().to_rfc3339(), true)
                 .map_err(|err| format!("Failed to recover the meeting details: {err}"))?;
@@ -1352,7 +1330,6 @@ fn persist_finalized_capture(
     id: &str,
     partial_path: &Path,
     final_path: &Path,
-    intent: CaptureIntent,
     captured: CaptureResult,
     ended_at: &str,
 ) -> Result<()> {
@@ -1381,11 +1358,9 @@ fn persist_finalized_capture(
     if updated.is_none() {
         return Err(anyhow!("Meeting item not found while finalizing capture."));
     }
-    if intent == CaptureIntent::Meeting {
-        storage
-            .finish_meeting_details(id, ended_at, false)
-            .map_err(|err| anyhow!("Failed to finalize the meeting details: {err}"))?;
-    }
+    storage
+        .finish_meeting_details(id, ended_at, false)
+        .map_err(|err| anyhow!("Failed to finalize the meeting details: {err}"))?;
     Ok(())
 }
 
@@ -2427,30 +2402,27 @@ mod tests {
             .to_string(),
             speakers: None,
         };
-        if intent == CaptureIntent::Meeting {
-            storage
-                .insert_meeting_item(
-                    item,
-                    &MeetingDetails {
-                        library_item_id: id.clone(),
-                        started_at: started_at.to_string(),
-                        ended_at: None,
-                        notes: String::new(),
-                        notes_revision: 0,
-                        summary: None,
-                        summary_status: MeetingSummaryStatus::Idle,
-                        summary_error: None,
-                        system_audio_enabled,
-                        recovered: false,
-                        calendar_context: None,
-                        note_markers: Vec::new(),
-                        live_transcript: Vec::new(),
-                    },
-                )
-                .unwrap();
-        } else {
-            storage.insert_library_item(item).unwrap();
-        }
+        // Mismo alta que `prepare_capture`: toda captura entra con detalles.
+        storage
+            .insert_meeting_item(
+                item,
+                &MeetingDetails {
+                    library_item_id: id.clone(),
+                    started_at: started_at.to_string(),
+                    ended_at: None,
+                    notes: String::new(),
+                    notes_revision: 0,
+                    summary: None,
+                    summary_status: MeetingSummaryStatus::Idle,
+                    summary_error: None,
+                    system_audio_enabled,
+                    recovered: false,
+                    calendar_context: None,
+                    note_markers: Vec::new(),
+                    live_transcript: Vec::new(),
+                },
+            )
+            .unwrap();
 
         let writer = create_wav_writer(&partial_path).unwrap();
         let cancel = CancellationToken::new();
@@ -2501,7 +2473,6 @@ mod tests {
             &id,
             &partial_path,
             &final_path,
-            intent,
             captured,
             ended_at,
         )
@@ -2544,15 +2515,20 @@ mod tests {
         assert!(matches!(complete.status, LibraryItemStatus::Complete));
         assert_eq!(complete.transcript.as_deref(), Some("Decision confirmed"));
         assert_eq!(complete.segments.as_ref().map(Vec::len), Some(1));
-        let details = storage.get_meeting_details(&id).unwrap();
-        if intent == CaptureIntent::Meeting {
-            let details = details.unwrap();
-            assert_eq!(details.ended_at.as_deref(), Some(ended_at));
-            assert_eq!(details.system_audio_enabled, system_audio_enabled);
-        } else {
-            assert!(details.is_none());
-            assert_eq!(complete.kind, "recording");
-        }
+        // Una nota termina con los mismos detalles cerrados que una reunión: es
+        // lo que habilita resumen y chat sobre ella.
+        let details = storage.get_meeting_details(&id).unwrap().unwrap();
+        assert_eq!(details.ended_at.as_deref(), Some(ended_at));
+        assert_eq!(details.system_audio_enabled, system_audio_enabled);
+        assert!(complete.is_capture());
+        assert_eq!(
+            complete.kind,
+            if intent == CaptureIntent::Meeting {
+                "meeting"
+            } else {
+                "recording"
+            }
+        );
 
         fs::remove_dir_all(directory).unwrap();
     }

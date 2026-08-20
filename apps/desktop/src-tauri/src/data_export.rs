@@ -143,7 +143,7 @@ fn write_archive(
             }
         }
 
-        if item.kind == "meeting" {
+        if item.is_capture() {
             if let Some(details) = storage.get_meeting_details(&item.id)? {
                 write_json(&mut zip, &format!("library/{id}/meeting.json"), &details)?;
                 meeting_count += 1;

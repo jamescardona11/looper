@@ -52,10 +52,7 @@ const MeetingCaptureOverlay = ({ state }: { state: MeetingCaptureState }) => {
   const stop = useStopMeetingCapture();
   const meetingId = state.id ?? "";
   const voiceNote = state.capture_intent === "voice_note";
-  const { data: details } = useMeetingDetails(
-    meetingId,
-    meetingId.length > 0 && !voiceNote,
-  );
+  const { data: details } = useMeetingDetails(meetingId, meetingId.length > 0);
   const selection = state.active_note_selection ?? null;
   const importantMoment = state.active_important_moment ?? null;
   const markerId = state.last_note_marker?.id ?? null;
@@ -103,10 +100,6 @@ const MeetingCaptureOverlay = ({ state }: { state: MeetingCaptureState }) => {
   };
 
   useMountEffect(() => {
-    if (voiceNote) {
-      setShortcutPermission(true);
-      return;
-    }
     let cancelled = false;
     let shortcutWasReady = false;
     let reportedMissingPermission = false;
@@ -158,9 +151,7 @@ const MeetingCaptureOverlay = ({ state }: { state: MeetingCaptureState }) => {
   });
 
   const transcriptVisible =
-    !voiceNote &&
-    !compact &&
-    (transcriptPinned || (transcriptHovered && !suppressHoverUntilLeave));
+    !compact && (transcriptPinned || (transcriptHovered && !suppressHoverUntilLeave));
 
   const applyOverlayPresentation = (
     next: Parameters<typeof setMeetingOverlayPresentation>[0],
@@ -339,7 +330,7 @@ const MeetingCaptureOverlay = ({ state }: { state: MeetingCaptureState }) => {
               })
           : voiceNote
             ? t({ id: "note.capture.rail_title", message: "Note" })
-            : t({ id: "meeting.capture.rail_title", message: "Meeting" });
+            : t({ id: "meeting.capture.rail_title", message: "Recording" });
   const captureAriaLabel = voiceNote
     ? t({ id: "note.capture.active", message: "Note recording" })
     : t({ id: "meeting.capture.active", message: "Meeting recording" });
@@ -453,10 +444,19 @@ const MeetingCaptureOverlay = ({ state }: { state: MeetingCaptureState }) => {
         signal={signal}
         title={title}
         progress={undefined}
-        compactExtra={formatDuration(state.elapsed_seconds)}
+        // Una captura dura minutos u horas: el cronómetro solo no dice qué se
+        // está grabando, así que aquí el título se queda fijo en vez de esperar
+        // al hover como en Dictation.
+        meta={
+          meetingInfoVisible ? undefined : formatDuration(state.elapsed_seconds)
+        }
         infoVisible={meetingInfoVisible}
         actionsVisible={shortcutBlocked}
-        className={meetingInfoVisible ? "!w-[260px]" : ""}
+        className={
+          meetingInfoVisible
+            ? "!w-[260px]"
+            : "!w-[150px] hover:!w-[260px] focus-within:!w-[260px]"
+        }
         actions={
           shortcutBlocked ? (
             <>
@@ -493,26 +493,24 @@ const MeetingCaptureOverlay = ({ state }: { state: MeetingCaptureState }) => {
             </>
           ) : (
             <>
-              {!voiceNote && (
-                <button
-                  type="button"
-                  title={t({
-                    id: "meeting.capture.transcript.toggle",
-                    message: "Show or hide transcript",
-                  })}
-                  aria-label={t({
-                    id: "meeting.capture.transcript.toggle",
-                    message: "Show or hide transcript",
-                  })}
-                  aria-pressed={transcriptPinned}
-                  onMouseEnter={showTranscriptPreview}
-                  onMouseLeave={() => setSuppressHoverUntilLeave(false)}
-                  onClick={togglePinnedTranscript}
-                  className="inline-flex h-7 w-7 items-center justify-center rounded-[9px] border border-white/10 bg-white/5 text-white/65 transition-colors duration-150 hover:bg-white/10 hover:text-white"
-                >
-                  <TextAlignLeft size={14} weight="bold" />
-                </button>
-              )}
+              <button
+                type="button"
+                title={t({
+                  id: "meeting.capture.transcript.toggle",
+                  message: "Show or hide transcript",
+                })}
+                aria-label={t({
+                  id: "meeting.capture.transcript.toggle",
+                  message: "Show or hide transcript",
+                })}
+                aria-pressed={transcriptPinned}
+                onMouseEnter={showTranscriptPreview}
+                onMouseLeave={() => setSuppressHoverUntilLeave(false)}
+                onClick={togglePinnedTranscript}
+                className="inline-flex h-7 w-7 items-center justify-center rounded-[9px] border border-white/10 bg-white/5 text-white/65 transition-colors duration-150 hover:bg-white/10 hover:text-white"
+              >
+                <TextAlignLeft size={14} weight="bold" />
+              </button>
 
               <button
                 type="button"

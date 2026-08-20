@@ -80,12 +80,12 @@ describe("MeetingDocumentDock", () => {
     renderDock();
 
     fireEvent.click(screen.getByRole("button", { name: "Draft follow-up" }));
-    const input = screen.getByRole("textbox", { name: "Ask this meeting…" });
+    const input = screen.getByRole("textbox", { name: "Ask this recording…" });
     expect((input as HTMLInputElement).value).toBe(
       "Draft a concise follow-up with the decision and owners",
     );
 
-    fireEvent.click(screen.getByRole("button", { name: "Ask meeting" }));
+    fireEvent.click(screen.getByRole("button", { name: "Ask recording" }));
 
     expect(mutate).toHaveBeenCalledWith(
       {
@@ -117,7 +117,7 @@ describe("MeetingDocumentDock", () => {
     expect(
       (
         screen.getByRole("textbox", {
-          name: "Ask this meeting…",
+          name: "Ask this recording…",
         }) as HTMLInputElement
       ).disabled,
     ).toBe(true);
@@ -136,7 +136,7 @@ describe("MeetingDocumentDock", () => {
     expect(
       (
         screen.getByRole("button", {
-          name: "Ask meeting",
+          name: "Ask recording",
         }) as HTMLButtonElement
       ).disabled,
     ).toBe(true);

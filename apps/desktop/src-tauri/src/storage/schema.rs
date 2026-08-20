@@ -78,6 +78,20 @@ SET summary_status = 'error',
     summary_error = 'Summary generation was interrupted. Retry to continue.'
 WHERE summary_status = 'running'";
 
+// Las notas grabadas antes de compartir superficie con las reuniones no tienen
+// detalles de captura, y sin ellos la vista de detalle se queda cargando y el
+// chat las rechaza. `ended_at` sale de la duración porque es lo que habilita el
+// resumen.
+const BACKFILL_RECORDING_DETAILS: &str = "
+INSERT INTO meeting_details (library_item_id, started_at, ended_at, system_audio_enabled)
+SELECT id,
+       created_at,
+       strftime('%Y-%m-%dT%H:%M:%SZ', created_at, '+' || CAST(ROUND(duration_seconds) AS INTEGER) || ' seconds'),
+       0
+FROM library_items
+WHERE kind = 'recording'
+  AND NOT EXISTS (SELECT 1 FROM meeting_details WHERE library_item_id = library_items.id)";
+
 const SEED_LIFETIME_STATS: &str = "
 INSERT INTO lifetime_stats (id, words, duration_ms, dictations)
 SELECT 1,
@@ -255,6 +269,7 @@ fn migrate(database: &Connection) -> Result<()> {
     }
     database.execute_batch(CURRENT_INDEXES)?;
     database.execute(INTERRUPTED_SUMMARY_RECOVERY, [])?;
+    database.execute(BACKFILL_RECORDING_DETAILS, [])?;
     if !stats_are_seeded(database)? {
         database.execute(SEED_LIFETIME_STATS, [])?;
     }
@@ -367,5 +382,41 @@ mod tests {
             .query_row("SELECT COUNT(*) FROM lifetime_stats", [], |row| row.get(0))
             .unwrap();
         assert_eq!(stats_rows, 1);
+    }
+
+    #[test]
+    fn migration_backfills_capture_details_for_older_notes() {
+        let database = Connection::open_in_memory().unwrap();
+        initialize(&database).unwrap();
+        database
+            .execute_batch(
+                "INSERT INTO library_items (
+                    id, name, audio_path, status, duration_seconds, file_size_bytes,
+                    original_format, created_at, speech_model, kind
+                ) VALUES
+                 ('note', 'Note', '', 'complete', 90.4, 0, 'wav', '2026-08-19T19:25:00Z', 'm', 'recording'),
+                 ('import', 'Import', '', 'complete', 12, 0, 'wav', '2026-08-19T19:25:00Z', 'm', 'import');",
+            )
+            .unwrap();
+
+        initialize(&database).unwrap();
+
+        let (started_at, ended_at, system_audio): (String, String, i64) = database
+            .query_row(
+                "SELECT started_at, ended_at, system_audio_enabled FROM meeting_details
+                 WHERE library_item_id = 'note'",
+                [],
+                |row| Ok((row.get(0)?, row.get(1)?, row.get(2)?)),
+            )
+            .unwrap();
+        assert_eq!(started_at, "2026-08-19T19:25:00Z");
+        assert_eq!(ended_at, "2026-08-19T19:26:30Z");
+        assert_eq!(system_audio, 0);
+
+        // Un import no es una captura propia: no gana detalles.
+        let rows: i64 = database
+            .query_row("SELECT COUNT(*) FROM meeting_details", [], |row| row.get(0))
+            .unwrap();
+        assert_eq!(rows, 1);
     }
 }

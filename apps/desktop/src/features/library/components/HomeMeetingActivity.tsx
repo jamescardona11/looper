@@ -3,6 +3,7 @@ import { CalendarBlank, Waveform } from "@phosphor-icons/react";
 import { useMemo } from "react";
 import type { LibraryItem } from "../../../types";
 import { useLibraryItems } from "../queries";
+import { isCaptureItem } from "./library-detail-policy";
 import { formatDuration } from "./library-utils";
 
 type HomeMeetingActivityProps = {
@@ -16,15 +17,12 @@ export function HomeMeetingActivity({
 }: HomeMeetingActivityProps) {
   const { t } = useLingui();
   const { data } = useLibraryItems({ since_days: 1 }, isActive);
-  const meetings = useMemo(
-    () =>
-      (data?.pages.flatMap((page) => page.items) ?? []).filter(
-        (item) => item.kind === "meeting",
-      ),
+  const captures = useMemo(
+    () => (data?.pages.flatMap((page) => page.items) ?? []).filter(isCaptureItem),
     [data],
   );
 
-  if (meetings.length === 0) return null;
+  if (captures.length === 0) return null;
 
   return (
     <section className="mt-5" aria-labelledby="home-meetings-title">
@@ -34,11 +32,11 @@ export function HomeMeetingActivity({
           id="home-meetings-title"
           className="ui-text-uppercase-micro text-content-disabled"
         >
-          {t({ id: "home.meetings.today", message: "Meetings today" })}
+          {t({ id: "home.captures.today", message: "Recorded today" })}
         </h2>
       </div>
       <div className="flex flex-col gap-1">
-        {meetings.map((item) => (
+        {captures.map((item) => (
           <button
             key={item.id}
             type="button"

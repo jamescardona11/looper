@@ -1,4 +1,3 @@
-import { getCurrentWindow } from "@tauri-apps/api/window";
 import { useEffect } from "react";
 
 import {
@@ -6,6 +5,7 @@ import {
   subscribeThemeChanged,
 } from "../data/settings";
 import { detectAppPlatform } from "../platform/service";
+import { setWindowBackgroundColor } from "../data/window";
 import {
   parseTextSizeMode,
   resolveTextScale,
@@ -97,16 +97,15 @@ function useTheme({
 }: DocumentAppearanceOptions) {
   useEffect(() => {
     const root = document.documentElement;
-    const nativeWindow = windowLabel === "settings" ? getCurrentWindow() : null;
     const applyNativeBackground = () => {
-      if (!nativeWindow) return;
+      if (windowLabel !== "settings") return;
       // Se llama siempre después de fijar root.dataset.theme, así que el valor
       // computado ya corresponde al modo activo.
       const background = getComputedStyle(root)
         .getPropertyValue(SETTINGS_WINDOW_BACKGROUND_TOKEN)
         .trim();
       if (!background) return;
-      void nativeWindow.setBackgroundColor(background).catch(() => undefined);
+      void setWindowBackgroundColor(background).catch(() => undefined);
     };
     if (previewMode) {
       root.dataset.theme = previewTheme;

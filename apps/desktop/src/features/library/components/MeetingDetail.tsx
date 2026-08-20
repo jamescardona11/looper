@@ -265,7 +265,7 @@ const MeetingDetail = ({
                   ? t({
                       id: "meeting.detail.ask_help",
                       message:
-                        "Ask about decisions, owners, dates, or anything said in this meeting. Answers cite the relevant timestamps.",
+                        "Ask about decisions, owners, dates, or anything said in this recording. Answers cite the relevant timestamps.",
                     })
                   : (meetingAiStatus?.actionableMessage ??
                     "Meeting intelligence is not ready.")}
@@ -291,7 +291,7 @@ const MeetingDetail = ({
             }}
             placeholder={t({
               id: "meeting.detail.ask_placeholder",
-              message: "Ask this meeting…",
+              message: "Ask this recording…",
             })}
             disabled={!meetingAiReady}
             className="min-h-10 flex-1 resize-none bg-transparent px-2 py-1.5 ui-text-body-sm text-content-primary outline-none placeholder:text-content-disabled"
@@ -304,7 +304,7 @@ const MeetingDetail = ({
             }
             aria-label={t({
               id: "meeting.detail.ask_submit",
-              message: "Ask meeting",
+              message: "Ask recording",
             })}
             className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-content-primary text-surface-primary hover:opacity-90 disabled:opacity-35"
           >
@@ -373,7 +373,7 @@ const MeetingDetail = ({
               t({
                 id: "meeting.detail.no_summary",
                 message:
-                  "Generate a structured summary from the meeting transcript.",
+                  "Generate a structured summary from the transcript.",
               })}
           </p>
           <button

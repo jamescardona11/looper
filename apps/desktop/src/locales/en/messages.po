@@ -1079,28 +1079,28 @@ msgstr "Ask"
 #. js-lingui-explicit-id
 #: src/features/library/components/MeetingDetail.tsx
 msgid "meeting.detail.ask_help"
-msgstr "Ask about decisions, owners, dates, or anything said in this meeting. Answers cite the relevant timestamps."
+msgstr "Ask about decisions, owners, dates, or anything said in this recording. Answers cite the relevant timestamps."
 
 #. js-lingui-explicit-id
 #: src/features/library/components/MeetingTranscriptPanel.tsx
 msgid "meeting.capture.ask.input"
-msgstr "Ask about this meeting"
+msgstr "Ask about this recording"
 
 #. js-lingui-explicit-id
 #: src/features/library/components/MeetingTranscriptPanel.tsx
 msgid "meeting.capture.ask.placeholder"
-msgstr "Ask about this meeting…"
+msgstr "Ask about this recording…"
 
 #. js-lingui-explicit-id
 #: src/features/library/components/MeetingDetail.tsx
 #: src/features/library/components/MeetingDocumentDock.tsx
 msgid "meeting.detail.ask_submit"
-msgstr "Ask meeting"
+msgstr "Ask recording"
 
 #. js-lingui-explicit-id
 #: src/features/library/components/MeetingTranscriptPanel.tsx
 msgid "meeting.capture.ask.submit"
-msgstr "Ask meeting"
+msgstr "Ask recording"
 
 #. js-lingui-explicit-id
 #: src/Home.tsx
@@ -1121,7 +1121,7 @@ msgstr "Ask Memory anything — “what did we decide about pricing?”"
 #: src/features/library/components/MeetingDetail.tsx
 #: src/features/library/components/MeetingDocumentDock.tsx
 msgid "meeting.detail.ask_placeholder"
-msgstr "Ask this meeting…"
+msgstr "Ask this recording…"
 
 #. js-lingui-explicit-id
 #: src/features/library/components/TranscriptSpeakerChip.tsx
@@ -2565,12 +2565,12 @@ msgstr "Frequently Asked Questions"
 #. js-lingui-explicit-id
 #: src/features/library/components/MeetingTranscriptPanel.tsx
 msgid "meeting.capture.ask.context"
-msgstr "From this meeting"
+msgstr "From this recording"
 
 #. js-lingui-explicit-id
 #: src/features/library/components/MeetingDetail.tsx
 msgid "meeting.detail.no_summary"
-msgstr "Generate a structured summary from the meeting transcript."
+msgstr "Generate a structured summary from the transcript."
 
 #. js-lingui-explicit-id
 #: src/features/library/components/MeetingDetail.tsx
@@ -3190,17 +3190,17 @@ msgstr "Marking moment"
 #. js-lingui-explicit-id
 #: src/features/library/components/MeetingCaptureOverlay.tsx
 msgid "meeting.capture.rail_title"
-msgstr "Meeting"
+msgstr "Recording"
 
 #. js-lingui-explicit-id
 #: src/features/library/components/MeetingReviewPanel.tsx
 msgid "meeting.detail.document"
-msgstr "Meeting document"
+msgstr "Recording document"
 
 #. js-lingui-explicit-id
 #: src/features/library/components/MeetingReviewPanel.tsx
 msgid "meeting.detail.document_modes"
-msgstr "Meeting document modes"
+msgstr "Recording document modes"
 
 #. js-lingui-explicit-id
 #: src/features/library/components/MeetingDocumentDock.tsx
@@ -3210,7 +3210,7 @@ msgstr "Meeting intelligence unavailable"
 #. js-lingui-explicit-id
 #: src/features/library/components/MeetingTranscriptPanel.tsx
 msgid "meeting.capture.transcript.live"
-msgstr "Meeting live transcript"
+msgstr "Live transcript"
 
 #. js-lingui-explicit-id
 #: src/features/library/components/MeetingCaptureOverlay.tsx
@@ -3235,8 +3235,8 @@ msgstr "Meetings"
 
 #. js-lingui-explicit-id
 #: src/features/library/components/HomeMeetingActivity.tsx
-msgid "home.meetings.today"
-msgstr "Meetings today"
+msgid "home.captures.today"
+msgstr "Recorded today"
 
 #. js-lingui-explicit-id
 #: src/features/library/components/LibraryView.tsx
@@ -4015,7 +4015,7 @@ msgstr "Read aloud"
 #. js-lingui-explicit-id
 #: src/features/library/components/MeetingTranscriptPanel.tsx
 msgid "meeting.capture.ask.loading"
-msgstr "Reading this meeting…"
+msgstr "Reading this recording…"
 
 #. js-lingui-explicit-id
 #: src/features/settings/components/ModelDownloadActivityBar.tsx
@@ -5597,7 +5597,7 @@ msgstr "Uses Looper Cloud"
 #. js-lingui-explicit-id
 #: src/features/library/components/MeetingDocumentDock.tsx
 msgid "meeting.detail.ask_context"
-msgstr "Using this meeting · private by default"
+msgstr "Using this recording · private by default"
 
 #. js-lingui-explicit-id
 #: src/Home.tsx
@@ -5663,7 +5663,7 @@ msgstr "Voice sections"
 #. js-lingui-explicit-id
 #: src/features/library/components/MeetingTranscriptPanel.tsx
 msgid "meeting.transcript.waiting"
-msgstr "Waiting for meeting speech…"
+msgstr "Waiting for speech…"
 
 #. js-lingui-explicit-id
 #: src/features/import/components/ImportStep.tsx

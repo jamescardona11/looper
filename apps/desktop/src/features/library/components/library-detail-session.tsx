@@ -23,6 +23,7 @@ import {
   alignWordsToSegments,
   availableTagChoices,
   hasUsableTranscript,
+  isCaptureItem,
   isLibraryItemBusy,
   speakerColorAt,
   speakerIndex,
@@ -384,7 +385,7 @@ export function LibraryDetailSession(props: LibraryDetailProps) {
 
   const transcriptPanel = (
     <LibraryTranscriptPanel
-      documentMode={item.kind === "meeting"}
+      documentMode={isCaptureItem(item)}
       item={item}
       showSegmentView={showSegmentView}
       visibleSegments={visibleSegments}
@@ -470,7 +471,7 @@ export function LibraryDetailSession(props: LibraryDetailProps) {
         handleAddSpeaker={handleAddSpeaker}
       />
       <LibraryDetailBody
-        meeting={item.kind === "meeting"}
+        meeting={isCaptureItem(item)}
         transcriptPanel={transcriptPanel}
         workspace={{
           id: item.id,

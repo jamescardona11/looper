@@ -219,6 +219,15 @@ wire_model! {
     }
 }
 
+/// Reuniones y notas se graban desde la app y comparten la misma superficie de
+/// revisión: detalles de captura, resumen y chat. Lo que las separa es la fuente
+/// de audio y el contexto de calendario, no lo que se puede hacer con ellas.
+impl LibraryItem {
+    pub(crate) fn is_capture(&self) -> bool {
+        matches!(self.kind.as_str(), "meeting" | "recording")
+    }
+}
+
 wire_model! {
     #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
     pub LibraryTranslation {

@@ -35,7 +35,7 @@ pub(crate) fn mirror_library_item(
         return Ok(None);
     };
     let body = render_library_item(item, meeting)?;
-    let directory = if meeting.is_some() || item.kind == "meeting" {
+    let directory = if item.kind == "meeting" {
         MEETINGS_DIR
     } else {
         LIBRARY_DIR
@@ -54,7 +54,9 @@ pub(crate) fn mirror_library_by_id(
     let Some(item) = storage.get_library_item(id)? else {
         return Ok(None);
     };
-    let meeting = if item.kind == "meeting" {
+    // Una nota también tiene notas y resumen que espejar; lo que no cambia es
+    // dónde se escribe el fichero, para no mudar lo ya espejado.
+    let meeting = if item.is_capture() {
         storage.get_meeting_details(id)?
     } else {
         None
@@ -115,7 +117,7 @@ fn render_library_item(item: &LibraryItem, meeting: Option<&MeetingDetails>) -> 
         Some(details) => build_meeting_export_content(item, details, ExportFormat::Md)?,
         None => build_export_content(item, ExportFormat::Md)?,
     };
-    let entry_type = if meeting.is_some() || item.kind == "meeting" {
+    let entry_type = if item.kind == "meeting" {
         "meeting"
     } else {
         "library"
