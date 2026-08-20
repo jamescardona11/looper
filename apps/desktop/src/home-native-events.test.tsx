@@ -59,6 +59,8 @@ vi.mock("./data/navigation", () => ({
     bridge.subscribe("navigate-models", handler),
   subscribeNavigateSettings: (handler: unknown) =>
     bridge.subscribe("navigate-settings", handler),
+  subscribeNavigateAppPrivacy: (handler: unknown) =>
+    bridge.subscribe("navigate-app-privacy", handler),
 }));
 vi.mock("./data/overlay", () => ({
   subscribePillInserted: (handler: unknown) =>

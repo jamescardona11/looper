@@ -49,6 +49,7 @@ const EVENT_NAVIGATE_CALENDAR: &str = "navigate:calendar";
 const EVENT_NAVIGATE_HISTORY: &str = "navigate:history";
 const EVENT_NAVIGATE_MODELS: &str = "navigate:models";
 const EVENT_NAVIGATE_FEATURE_LAB: &str = "navigate:feature-lab";
+const EVENT_NAVIGATE_APP_PRIVACY: &str = "navigate:app-privacy";
 
 #[derive(Clone, Copy)]
 enum SettingsNavigationTarget {
@@ -58,6 +59,8 @@ enum SettingsNavigationTarget {
     History,
     Models,
     FeatureLab,
+    /// Ajustes → App, donde vive la fila de Accesibilidad y su explicación.
+    AppPrivacy,
 }
 
 impl SettingsNavigationTarget {
@@ -69,6 +72,7 @@ impl SettingsNavigationTarget {
             Self::History => EVENT_NAVIGATE_HISTORY,
             Self::Models => EVENT_NAVIGATE_MODELS,
             Self::FeatureLab => EVENT_NAVIGATE_FEATURE_LAB,
+            Self::AppPrivacy => EVENT_NAVIGATE_APP_PRIVACY,
         }
     }
 }
@@ -292,6 +296,10 @@ pub(crate) fn open_settings_models(app: &AppHandle<AppRuntime>) -> tauri::Result
 
 pub(crate) fn open_settings_feature_lab(app: &AppHandle<AppRuntime>) -> tauri::Result<()> {
     open_settings_navigation(app, SettingsNavigationTarget::FeatureLab)
+}
+
+pub(crate) fn open_settings_app_privacy(app: &AppHandle<AppRuntime>) -> tauri::Result<()> {
+    open_settings_navigation(app, SettingsNavigationTarget::AppPrivacy)
 }
 
 enum MicrophoneMenuEntry {

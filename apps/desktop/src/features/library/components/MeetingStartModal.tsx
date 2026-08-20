@@ -265,7 +265,9 @@ const MeetingStartModal = ({
               <ToggleSwitch
                 enabled={shareLiveTranscript && liveTranscriptEnabled}
                 onToggle={() => {
-                  const enabled = !(shareLiveTranscript && liveTranscriptEnabled);
+                  const enabled = !(
+                    shareLiveTranscript && liveTranscriptEnabled
+                  );
                   setShareLiveTranscript(enabled);
                   setLiveMeetingSharingEnabled(enabled);
                   if (enabled) setLiveTranscriptEnabled(true);

@@ -35,6 +35,11 @@ const CAPTURE_START_TIMEOUT: Duration = Duration::from_secs(8);
 const CAPTURE_STALL_TIMEOUT: Duration = Duration::from_secs(5);
 const CAPTURE_LAG_WARNING_SAMPLES: u64 = TARGET_SAMPLE_RATE as u64 / 2;
 const MIN_FREE_DISK_BYTES: u64 = 256 * 1024 * 1024;
+/// Por debajo de esto la captura se guarda y se para por su cuenta. Comprobarlo
+/// solo al empezar dejaba que una grabación larga muriera a medio escribir y se
+/// perdiera entera; parar a tiempo la conserva.
+const CAPTURE_LOW_DISK_BYTES: u64 = 128 * 1024 * 1024;
+const DISK_CHECK_EVERY_SECONDS: u64 = 15;
 const NOTE_CONTEXT_BEFORE_MS: u64 = 30_000;
 const NOTE_HOLD_INITIAL_CONTEXT_MS: u64 = 10_000;
 const NOTE_HOLD_STEP_MS: u64 = 2_000;
@@ -138,12 +143,22 @@ struct ActiveCapture {
     live_transcription: Option<super::meeting_live_transcription::MeetingLiveTranscriptionSession>,
 }
 
+/// Reanudar añade audio a una captura que ya terminó, en vez de abrir otra.
+/// El wav es siempre mono de 16 bits al mismo ritmo, así que se le escribe
+/// detrás y los tiempos de lo ya marcado siguen apuntando al mismo sitio.
+#[derive(Clone)]
+struct ResumeTarget {
+    id: String,
+    audio_path: PathBuf,
+}
+
 struct CaptureStartOptions {
     model_key: String,
     live_model_key: Option<String>,
     system_audio_enabled: bool,
     calendar_context: Option<super::types::MeetingCalendarContext>,
     intent: CaptureIntent,
+    resume: Option<ResumeTarget>,
 }
 
 impl From<MeetingStartOptions> for CaptureStartOptions {
@@ -154,6 +169,7 @@ impl From<MeetingStartOptions> for CaptureStartOptions {
             system_audio_enabled: options.system_audio_enabled,
             calendar_context: options.calendar_context,
             intent: CaptureIntent::Meeting,
+            resume: None,
         }
     }
 }
@@ -187,6 +203,20 @@ impl MeetingCaptureManager {
 
     pub(crate) fn is_active(&self) -> bool {
         self.busy.load(Ordering::SeqCst)
+    }
+
+    /// Cierra la píldora de "procesando" cuando el trabajo de fondo de esa
+    /// captura acaba. Se ignora si entretanto empezó otra grabación, para no
+    /// apagar la píldora de la captura en curso.
+    pub(crate) fn finish_processing(&self, app: &AppHandle<AppRuntime>, id: &str) {
+        let current = self.state();
+        if current.phase != MeetingCapturePhase::Processing {
+            return;
+        }
+        if current.id.as_deref() != Some(id) {
+            return;
+        }
+        self.set_state(app, MeetingCaptureState::default());
     }
 
     pub(crate) fn continue_after_silence(
@@ -676,6 +706,43 @@ impl MeetingCaptureManager {
                 system_audio_enabled: false,
                 calendar_context: None,
                 intent: CaptureIntent::VoiceNote,
+                resume: None,
+            },
+        )
+        .await
+    }
+
+    /// Sigue grabando sobre una captura terminada. El audio nuevo se escribe
+    /// detrás del que ya había y se vuelve a transcribir el fichero entero, que
+    /// es lo único que mantiene los tiempos coherentes de punta a punta.
+    pub(crate) async fn resume_capture(
+        &self,
+        app: &AppHandle<AppRuntime>,
+        app_state: &AppState,
+        item: &LibraryItem,
+        model_key: String,
+    ) -> Result<MeetingCaptureState, String> {
+        let audio_path = PathBuf::from(&item.audio_path);
+        if !audio_path.exists() {
+            return Err("The audio for this recording is no longer on disk.".to_string());
+        }
+        self.start_capture(
+            app,
+            app_state,
+            CaptureStartOptions {
+                model_key,
+                live_model_key: None,
+                system_audio_enabled: false,
+                calendar_context: None,
+                intent: if item.kind == "meeting" {
+                    CaptureIntent::Meeting
+                } else {
+                    CaptureIntent::VoiceNote
+                },
+                resume: Some(ResumeTarget {
+                    id: item.id.clone(),
+                    audio_path,
+                }),
             },
         )
         .await
@@ -792,7 +859,11 @@ impl MeetingCaptureManager {
             failure.user_message(options.system_audio_enabled)
         })?;
 
-        let id = Uuid::new_v4().to_string();
+        let resume = options.resume.clone();
+        let id = match &resume {
+            Some(target) => target.id.clone(),
+            None => Uuid::new_v4().to_string(),
+        };
         let now = Local::now();
         let started_at = Utc::now().to_rfc3339();
         let root = library_root(app).map_err(|err| err.to_string())?;
@@ -812,16 +883,38 @@ impl MeetingCaptureManager {
             CaptureIntent::Meeting => "meeting",
             CaptureIntent::VoiceNote => "note",
         };
-        let item_dir = root.join(format!("{capture_label}-{}", &id[..8]));
-        fs::create_dir_all(&item_dir)
-            .map_err(|err| format!("Failed to create the meeting folder: {err}"))?;
-        let partial_path = item_dir.join(format!("{id}.partial.wav"));
-        let final_path = item_dir.join(format!("{id}.wav"));
-        let writer = match create_wav_writer(&partial_path) {
-            Ok(writer) => writer,
-            Err(err) => {
-                let _ = fs::remove_dir_all(&item_dir);
-                return Err(err.to_string());
+        // Al reanudar no se abre carpeta ni fichero nuevos: se escribe detrás
+        // del audio que ya existe, y así los momentos marcados y el transcript
+        // en vivo de la primera tanda siguen apuntando a lo mismo.
+        let (item_dir, partial_path, final_path, writer) = match &resume {
+            Some(target) => {
+                let writer = append_wav_writer(&target.audio_path).map_err(|err| err.to_string())?;
+                let directory = target
+                    .audio_path
+                    .parent()
+                    .map(Path::to_path_buf)
+                    .unwrap_or_else(|| root.clone());
+                (
+                    directory,
+                    target.audio_path.clone(),
+                    target.audio_path.clone(),
+                    writer,
+                )
+            }
+            None => {
+                let item_dir = root.join(format!("{capture_label}-{}", &id[..8]));
+                fs::create_dir_all(&item_dir)
+                    .map_err(|err| format!("Failed to create the meeting folder: {err}"))?;
+                let partial_path = item_dir.join(format!("{id}.partial.wav"));
+                let final_path = item_dir.join(format!("{id}.wav"));
+                let writer = match create_wav_writer(&partial_path) {
+                    Ok(writer) => writer,
+                    Err(err) => {
+                        let _ = fs::remove_dir_all(&item_dir);
+                        return Err(err.to_string());
+                    }
+                };
+                (item_dir, partial_path, final_path, writer)
             }
         };
 
@@ -881,13 +974,30 @@ impl MeetingCaptureManager {
             note_markers: Vec::new(),
             live_transcript: Vec::new(),
         };
-        let insert_result = storage.insert_meeting_item(item, &details).map(|_| ());
+        let insert_result = match &resume {
+            // Reanudar no crea nada: solo devuelve el ítem a grabando, para que
+            // la recuperación lo reconozca si esta tanda se interrumpe.
+            Some(target) => storage
+                .update_library_item(
+                    &target.id,
+                    LibraryItemPatch {
+                        status: Some(LibraryItemStatus::Recording),
+                        ..Default::default()
+                    },
+                )
+                .map(|_| ()),
+            None => storage.insert_meeting_item(item, &details).map(|_| ()),
+        };
         if let Err(err) = insert_result {
             drop(writer);
-            let _ = fs::remove_dir_all(&item_dir);
+            if resume.is_none() {
+                let _ = fs::remove_dir_all(&item_dir);
+            }
             return Err(format!("Failed to save the capture: {err}"));
         }
 
+        #[cfg(not(all(target_os = "macos", target_arch = "x86_64")))]
+        let live_model = if resume.is_some() { None } else { live_model };
         #[cfg(not(all(target_os = "macos", target_arch = "x86_64")))]
         let live_transcription = live_model
             .map(|model| {
@@ -1110,9 +1220,14 @@ impl MeetingCaptureManager {
 
         match result {
             Ok(()) => {
-                let idle = MeetingCaptureState::default();
-                self.set_state(app, idle.clone());
-                Ok(idle)
+                let processing = MeetingCaptureState {
+                    phase: MeetingCapturePhase::Processing,
+                    id: Some(id),
+                    capture_intent: intent,
+                    ..Default::default()
+                };
+                self.set_state(app, processing.clone());
+                Ok(processing)
             }
             Err(message) => {
                 if let Err(save_err) = preserve_failed_capture(
@@ -1333,8 +1448,12 @@ fn persist_finalized_capture(
     captured: CaptureResult,
     ended_at: &str,
 ) -> Result<()> {
-    fs::rename(partial_path, final_path)
-        .map_err(|err| anyhow!("Failed to finalize the meeting audio: {err}"))?;
+    // Al reanudar se escribió directamente sobre el audio definitivo, así que
+    // no hay parcial que renombrar.
+    if partial_path != final_path {
+        fs::rename(partial_path, final_path)
+            .map_err(|err| anyhow!("Failed to finalize the meeting audio: {err}"))?;
+    }
     let info = read_wav_info(final_path)
         .map_err(|err| anyhow!("Failed to read the meeting audio: {err}"))?;
     if info.total_samples == 0 || captured.samples_written == 0 {
@@ -1592,6 +1711,14 @@ fn map_capture_open_error(error: looper_audio_capture::Error) -> String {
     }
 }
 
+/// Continúa escribiendo en un wav que ya existe. El formato de captura es
+/// siempre el mismo, así que `hound` puede seguir detrás de sus muestras sin
+/// reescribir el fichero.
+fn append_wav_writer(path: &Path) -> Result<hound::WavWriter<std::io::BufWriter<fs::File>>> {
+    hound::WavWriter::append(path)
+        .map_err(|err| anyhow!("Failed to reopen the recording to continue it: {err}"))
+}
+
 fn create_wav_writer(path: &Path) -> Result<hound::WavWriter<std::io::BufWriter<fs::File>>> {
     let spec = hound::WavSpec {
         channels: 1,
@@ -1618,6 +1745,9 @@ async fn capture_to_wav(
     let progress_state = Arc::clone(&state);
     let progress_app = app.clone();
     let voice_app = app.clone();
+    let disk_app = app.clone();
+    let disk_root = library_root(&app).ok();
+    let low_disk_handled = Arc::new(AtomicBool::new(false));
     write_capture_stream(
         stream,
         writer,
@@ -1642,6 +1772,28 @@ async fn capture_to_wav(
                 next.clone()
             };
             let _ = progress_app.emit(EVENT_MEETING_CAPTURE_STATE, snapshot);
+
+            if elapsed > 0 && elapsed % DISK_CHECK_EVERY_SECONDS == 0 {
+                let running_out = disk_root.as_ref().is_some_and(|root| {
+                    fs2::available_space(root)
+                        .is_ok_and(|available| available < CAPTURE_LOW_DISK_BYTES)
+                });
+                if running_out && !low_disk_handled.swap(true, Ordering::SeqCst) {
+                    let app = disk_app.clone();
+                    tauri::async_runtime::spawn(async move {
+                        crate::toast::show(
+                            &app,
+                            "error",
+                            Some("Recording saved"),
+                            "The disk is nearly full, so the recording was closed before it could be lost.",
+                        );
+                        let state = app.state::<AppState>();
+                        if let Err(error) = state.meeting_capture().stop(&app, &state).await {
+                            tracing::error!("Failed to stop on a full disk: {error}");
+                        }
+                    });
+                }
+            }
         },
         move || {
             if silence_monitor.observe_voice(Instant::now()) {
@@ -2014,6 +2166,16 @@ mod tests {
     fn disk_preflight_covers_at_least_two_hours_of_pcm_audio() {
         let two_hour_pcm_bytes = TARGET_SAMPLE_RATE as u64 * 2 * 60 * 60 * 2;
         assert!(MIN_FREE_DISK_BYTES > two_hour_pcm_bytes);
+    }
+
+    #[test]
+    fn the_capture_stops_itself_with_room_left_to_close_the_file() {
+        // Parar por debajo del mínimo de arranque, y con margen de sobra para
+        // cerrar la cabecera del wav: si se apurase hasta el último byte, la
+        // grabación moriría justo en el guardado, que es lo que se evita.
+        assert!(CAPTURE_LOW_DISK_BYTES < MIN_FREE_DISK_BYTES);
+        let one_minute_pcm_bytes = TARGET_SAMPLE_RATE as u64 * 2 * 60;
+        assert!(CAPTURE_LOW_DISK_BYTES > one_minute_pcm_bytes);
     }
 
     #[cfg(any(target_os = "macos", target_os = "windows"))]

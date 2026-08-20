@@ -14,6 +14,11 @@ export const startMeetingCapture = (
 export const stopMeetingCapture = (): Promise<MeetingCaptureState> =>
   invoke("stop_meeting_capture");
 
+// Sigue grabando sobre una captura terminada: el audio nuevo va detrás del que
+// ya había, y el fichero entero se vuelve a transcribir.
+export const resumeCapture = (id: string): Promise<MeetingCaptureState> =>
+  invoke("resume_capture", { id });
+
 export const getMeetingCaptureState = (): Promise<MeetingCaptureState> =>
   invoke("get_meeting_capture_state");
 

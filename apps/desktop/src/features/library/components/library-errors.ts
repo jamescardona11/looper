@@ -112,8 +112,7 @@ const DELETE_RULES = [
     ["storage location"],
     msg({
       id: "looper.library.delete.failure.storage-missing",
-      message:
-        "Couldn't delete this item. Library storage couldn't be found.",
+      message: "Couldn't delete this item. Library storage couldn't be found.",
     }),
   ),
   errorRule(
@@ -235,11 +234,15 @@ function localizedRuleMessage(rawMessage: string, rules: readonly ErrorRule[]) {
 }
 
 export function formatImportErrorMessage(rawMessage: string) {
-  return localizedRuleMessage(rawMessage, IMPORT_RULES) ?? translate(IMPORT_FALLBACK);
+  return (
+    localizedRuleMessage(rawMessage, IMPORT_RULES) ?? translate(IMPORT_FALLBACK)
+  );
 }
 
 export function formatDeleteErrorMessage(rawMessage: string) {
-  return localizedRuleMessage(rawMessage, DELETE_RULES) ?? translate(DELETE_FALLBACK);
+  return (
+    localizedRuleMessage(rawMessage, DELETE_RULES) ?? translate(DELETE_FALLBACK)
+  );
 }
 
 export function getLibraryErrorDetails(rawMessage: string) {

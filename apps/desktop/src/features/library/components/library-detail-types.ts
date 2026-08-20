@@ -20,7 +20,10 @@ export type LibraryDetailProps = Record<"item", LibraryTypes.LibraryItem> &
   Record<"models", LibraryTypes.SpeechModel[]> &
   Record<"shiftHeld", boolean> &
   Record<"availableTags", string[]> &
-  Record<"onClose" | "onDelete" | "onCancel", () => void> &
+  Record<
+    "onClose" | "onDelete" | "onCancel" | "onContinueRecording",
+    () => void
+  > &
   Record<"onRetry", () => Promise<void>> &
   FollowTimestampContract &
   DetailMutationContract;

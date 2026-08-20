@@ -10,7 +10,7 @@ import {
 describe("library export policy", () => {
   test("builds a safe default file name and a format-specific filter", () => {
     expect(
-      buildLibraryExportDialog('  Weekly: sync / notes?  ', "md", "Export"),
+      buildLibraryExportDialog("  Weekly: sync / notes?  ", "md", "Export"),
     ).toEqual({
       title: "Export",
       defaultPath: "Weekly- sync - notes-.md",

@@ -66,7 +66,7 @@ describe("library media helpers", () => {
     expect(formatLibraryName("daily_meeting.notes")).toBe(
       "daily meeting notes",
     );
-    expect(sanitizeFileName('  report: week / 1?.md  ')).toBe(
+    expect(sanitizeFileName("  report: week / 1?.md  ")).toBe(
       "report- week - 1-.md",
     );
   });
@@ -77,9 +77,9 @@ describe("library error messages", () => {
     expect(formatImportErrorMessage("selected model is not installed")).toBe(
       "Selected model isn't installed. Download one in Settings -> Models.",
     );
-    expect(formatImportErrorMessage("audio decode failed: corrupt packet")).toBe(
-      "Couldn't decode this audio file. Try installing FFmpeg.",
-    );
+    expect(
+      formatImportErrorMessage("audio decode failed: corrupt packet"),
+    ).toBe("Couldn't decode this audio file. Try installing FFmpeg.");
     expect(formatImportErrorMessage("unclassified failure")).toBe(
       "Import failed for one of the files.",
     );

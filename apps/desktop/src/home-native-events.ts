@@ -12,6 +12,7 @@ import { subscribeLicenseCheckoutReturned } from "./data/license";
 import {
   subscribeNavigateCalendar,
   subscribeNavigateAbout,
+  subscribeNavigateAppPrivacy,
   subscribeNavigateFeatureLab,
   subscribeNavigateHistory,
   subscribeNavigateModels,
@@ -98,6 +99,12 @@ function installSettingsNavigation(
       scope,
       subscribeNavigateModels(() =>
         dispatch({ type: "open-settings", tab: "models" }),
+      ),
+    ),
+    retainSubscription(
+      scope,
+      subscribeNavigateAppPrivacy(() =>
+        dispatch({ type: "open-settings", tab: "app" }),
       ),
     ),
   ];

@@ -17,6 +17,7 @@ import {
   libraryKeys,
   useCancelLibraryTranscription,
   useCreateLibraryItem,
+  useResumeCapture,
   useCreateLibraryYoutubeItem,
   useDeleteLibraryItem,
   useExportLibraryItem,
@@ -145,6 +146,7 @@ export default function LibraryViewContent({
   const retryTranscription = useRetryLibraryTranscription();
   const exportItem = useExportLibraryItem();
   const { data: meetingCapture } = useMeetingCapture(isActive);
+  const resumeCapture = useResumeCapture();
   const startMeeting = useStartMeetingCapture();
 
   const invalidateTags = useCallback(
@@ -251,6 +253,7 @@ export default function LibraryViewContent({
             await deleteWithToast(selectedItem.id);
             closeDetail();
           }}
+          onContinueRecording={() => resumeCapture.mutate(selectedItem.id)}
           onRetry={() => retryTranscription.mutateAsync(selectedItem.id)}
           onCancel={() => cancelTranscription.mutateAsync(selectedItem.id)}
           onUpdate={(patch) => updateWithTags(selectedItem.id, patch)}

@@ -332,6 +332,10 @@ pub enum MeetingCapturePhase {
     Starting,
     Recording,
     Finalizing,
+    /// El audio ya está guardado pero la transcripción y el resumen siguen
+    /// corriendo: la píldora se queda para contarlo en vez de desaparecer y
+    /// dejar el trabajo invisible.
+    Processing,
     Error,
 }
 

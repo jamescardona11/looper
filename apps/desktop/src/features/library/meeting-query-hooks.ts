@@ -65,6 +65,10 @@ export function useStartMeetingCapture() {
   );
 }
 
+export function useResumeCapture() {
+  return useCaptureMutation((id: string) => libraryApi.resumeCapture(id));
+}
+
 export function useStopMeetingCapture() {
   return useCaptureMutation<MeetingCaptureState, void>(() =>
     libraryApi.stopMeetingCapture(),

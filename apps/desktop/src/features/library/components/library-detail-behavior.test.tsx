@@ -183,6 +183,7 @@ function renderDetail(item = libraryItem(), overrides = {}) {
     followTimestamps: false,
     onFollowTimestampsChange: vi.fn(),
     onClose: vi.fn(),
+    onContinueRecording: vi.fn(),
     onDelete: vi.fn(),
     onRetry: vi.fn().mockResolvedValue(undefined),
     onCancel: vi.fn(),
@@ -216,6 +217,45 @@ afterEach(() => {
 });
 
 describe("LibraryDetail", () => {
+  test("offers continuing a finished capture, and not one still working", () => {
+    const onContinueRecording = vi.fn();
+    const { rerender } = renderDetail(libraryItem({ kind: "recording" }), {
+      onContinueRecording,
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: "MORE DISTINCT" }));
+    fireEvent.click(screen.getByText("Continue recording"));
+    expect(onContinueRecording).toHaveBeenCalledTimes(1);
+
+    // Continuar sobre algo que aún se transcribe dejaría el texto a medias
+    // contra un audio que ya creció.
+    rerender(
+      <I18nProvider i18n={i18n}>
+        <LibraryDetail
+          {...{
+            item: libraryItem({
+              kind: "recording",
+              status: { type: "transcribing", progress: 0.4 },
+            }),
+            models: [],
+            shiftHeld: false,
+            followTimestamps: false,
+            onFollowTimestampsChange: vi.fn(),
+            onClose: vi.fn(),
+            onContinueRecording,
+            onDelete: vi.fn(),
+            onRetry: vi.fn().mockResolvedValue(undefined),
+            onCancel: vi.fn(),
+            onUpdate: vi.fn().mockResolvedValue(undefined),
+            onExport: vi.fn().mockResolvedValue(undefined),
+            availableTags: [],
+          }}
+        />
+      </I18nProvider>,
+    );
+    expect(screen.queryByText("Continue recording")).toBeNull();
+  });
+
   test("preserves the header tree, classes, translations, copy and export wiring", () => {
     const { container } = renderDetail();
     const root = container.firstElementChild as HTMLDivElement;

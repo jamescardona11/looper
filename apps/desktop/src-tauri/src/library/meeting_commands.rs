@@ -6,8 +6,8 @@ use crate::pill::PillStatus;
 use crate::{AppRuntime, AppState};
 
 use super::types::{
-    MeetingCalendarContext, MeetingCaptureState, MeetingDetails, MeetingNotesUpdate,
-    MeetingStartOptions, EVENT_MEETING_DETAILS_CHANGED,
+    LibraryItemStatus, MeetingCalendarContext, MeetingCaptureState, MeetingDetails,
+    MeetingNotesUpdate, MeetingStartOptions, EVENT_MEETING_DETAILS_CHANGED,
 };
 
 pub(crate) const MENU_ID_MEETING_TOGGLE: &str = "menu_meeting_toggle";
@@ -199,6 +199,37 @@ pub async fn start_note_from_dock(
             default_meeting_model(&app, &settings)?,
             default_live_meeting_model(&app, &settings),
         )
+        .await
+}
+
+#[tauri::command]
+pub async fn resume_capture(
+    id: String,
+    app: AppHandle<AppRuntime>,
+    state: tauri::State<'_, AppState>,
+) -> Result<MeetingCaptureState, String> {
+    if state.meeting_capture().is_active() {
+        return Err("A note or meeting recording is already active.".to_string());
+    }
+    require_meeting_license(&state)?;
+    let item = state
+        .storage()
+        .get_library_item(&id)
+        .map_err(|error| format!("Failed to load the recording: {error}"))?
+        .filter(|item| item.is_capture())
+        .ok_or_else(|| "Recording not found".to_string())?;
+    // Continuar sobre algo que aún se está transcribiendo dejaría el transcript
+    // a medias contra un audio que ya creció.
+    if !matches!(
+        item.status,
+        LibraryItemStatus::Complete | LibraryItemStatus::Error { .. }
+    ) {
+        return Err("Wait for this recording to finish before continuing it.".to_string());
+    }
+    let settings = state.current_settings_unmasked();
+    state
+        .meeting_capture()
+        .resume_capture(&app, &state, &item, default_meeting_model(&app, &settings)?)
         .await
 }
 

@@ -16,6 +16,7 @@ import {
   getActiveModeRuleSuggestion,
   undoLastInsertion,
 } from "../../data/insertion";
+import { setPillHitSize } from "../../data/overlay";
 import { retryTranscription } from "../../data/transcription";
 import { usePillState } from "./usePillState";
 import {
@@ -224,6 +225,15 @@ const DictationPillOverlay: React.FC<PillOverlayProps> = ({
     actionSelect: isActionSelectPending,
     status: pillStatus,
   });
+  // La zona clicable nativa se calculaba con constantes que no seguían al
+  // shell: sobraba área encima de la píldora expandida y faltaban unos puntos
+  // arriba del rail. Ahora la reporta quien la dibuja.
+  useEffect(() => {
+    void setPillHitSize(shell.width, shell.height).catch((error) =>
+      console.error("Failed to report pill hit size:", error),
+    );
+  }, [shell.width, shell.height]);
+
   const expandedContentTransition = isExpanded
     ? "opacity 0.24s ease 0.1s, flex 0.42s cubic-bezier(0.2, 0.82, 0.18, 1)"
     : "none";

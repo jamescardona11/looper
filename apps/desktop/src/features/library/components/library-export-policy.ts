@@ -5,10 +5,7 @@ import type { ExportFormat } from "../../../types";
 import { sanitizeFileName } from "./library-utils";
 
 export type LibraryExportFailureKind =
-  | "timestamps"
-  | "write"
-  | "missing-item"
-  | "other";
+  "timestamps" | "write" | "missing-item" | "other";
 
 export const LIBRARY_EXPORT_DIALOG_TITLE = msg({
   id: "library.modal.export.title",
@@ -61,9 +58,7 @@ export function completeLibraryExportPath(
   selectedPath: string,
   format: ExportFormat,
 ) {
-  const hasExpectedSuffix = selectedPath
-    .toLowerCase()
-    .endsWith(`.${format}`);
+  const hasExpectedSuffix = selectedPath.toLowerCase().endsWith(`.${format}`);
   return hasExpectedSuffix ? selectedPath : `${selectedPath}.${format}`;
 }
 

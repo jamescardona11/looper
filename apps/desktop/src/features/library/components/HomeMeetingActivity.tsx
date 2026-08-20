@@ -18,7 +18,8 @@ export function HomeMeetingActivity({
   const { t } = useLingui();
   const { data } = useLibraryItems({ since_days: 1 }, isActive);
   const captures = useMemo(
-    () => (data?.pages.flatMap((page) => page.items) ?? []).filter(isCaptureItem),
+    () =>
+      (data?.pages.flatMap((page) => page.items) ?? []).filter(isCaptureItem),
     [data],
   );
 

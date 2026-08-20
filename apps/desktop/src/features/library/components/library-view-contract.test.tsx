@@ -37,6 +37,7 @@ const mocks = vi.hoisted(() => ({
   retryItem: vi.fn(),
   exportItem: vi.fn(),
   startMeeting: vi.fn(),
+  resumeCapture: vi.fn(),
   resetMeeting: vi.fn(),
   fetchNextPage: vi.fn(),
   openDialog: vi.fn(),
@@ -59,6 +60,7 @@ vi.mock("../queries", () => ({
   useRetryLibraryTranscription: () => ({ mutateAsync: mocks.retryItem }),
   useExportLibraryItem: () => ({ mutateAsync: mocks.exportItem }),
   useMeetingCapture: (...args: unknown[]) => mocks.useMeetingCapture(...args),
+  useResumeCapture: () => ({ mutate: mocks.resumeCapture }),
   useStartMeetingCapture: () => ({
     mutateAsync: mocks.startMeeting,
     reset: mocks.resetMeeting,

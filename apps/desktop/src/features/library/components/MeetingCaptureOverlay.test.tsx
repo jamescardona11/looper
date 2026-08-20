@@ -41,6 +41,7 @@ const shortcutPermission = vi.hoisted(() => ({
   check: vi.fn(async () => shortcutPermission.allowed),
   retry: vi.fn(async () => undefined),
   open: vi.fn(async () => undefined),
+  help: vi.fn(async () => undefined),
 }));
 const overlayPresentation = vi.hoisted(() =>
   vi.fn(() =>
@@ -117,6 +118,7 @@ vi.mock("../../../data/shortcuts", () => ({
   checkShortcutPermission: shortcutPermission.check,
   retryShortcuts: shortcutPermission.retry,
   openShortcutPermissionSettings: shortcutPermission.open,
+  openShortcutPermissionHelp: shortcutPermission.help,
 }));
 
 const i18n = setupI18n();
@@ -147,9 +149,9 @@ i18n.loadAndActivate({
     "note.capture.active": "Note recording",
     "note.capture.rail_title": "Note",
     "note.capture.source": "Microphone",
-    "meeting.capture.shortcut_unavailable": "Enable Fn notes",
+    "meeting.capture.shortcut_unavailable": "macOS is blocking Fn",
     "meeting.capture.shortcut_enable_hint": "Accessibility needed",
-    "meeting.capture.shortcut_enable": "Enable",
+    "meeting.capture.shortcut_enable": "Why?",
     "meeting.capture.note.release_max_compact": "Release to save",
     "meeting.capture.note.saved_compact": "still recording",
     "meeting.capture.important_moment.saved_compact":
@@ -205,6 +207,7 @@ afterEach(() => {
   shortcutPermission.check.mockClear();
   shortcutPermission.retry.mockClear();
   shortcutPermission.open.mockClear();
+  shortcutPermission.help.mockClear();
   meetingDetails.live_transcript.splice(3);
   vi.unstubAllGlobals();
   vi.useRealTimers();
@@ -220,12 +223,12 @@ describe("MeetingCaptureOverlay", () => {
     });
 
     const pill = screen.getByLabelText("Meeting recording");
-    expect(pill.textContent).toContain("Enable Fn notes");
+    expect(pill.textContent).toContain("macOS is blocking Fn");
     expect(pill.textContent).not.toContain("Accessibility needed");
     expect(pill.className).toContain("hover:w-[260px]");
 
-    fireEvent.click(screen.getByRole("button", { name: "Enable" }));
-    expect(shortcutPermission.open).toHaveBeenCalledTimes(1);
+    fireEvent.click(screen.getByRole("button", { name: "Why?" }));
+    expect(shortcutPermission.help).toHaveBeenCalledTimes(1);
     expect(shortcutPermission.retry).not.toHaveBeenCalled();
   });
 
@@ -236,12 +239,12 @@ describe("MeetingCaptureOverlay", () => {
     await act(async () => {
       await Promise.resolve();
     });
-    expect(screen.getByText("Enable Fn notes")).toBeTruthy();
+    expect(screen.getByText("macOS is blocking Fn")).toBeTruthy();
 
     fireEvent.click(
       screen.getByRole("button", { name: "Collapse recording pill" }),
     );
-    expect(screen.queryByText("Enable Fn notes")).toBeNull();
+    expect(screen.queryByText("macOS is blocking Fn")).toBeNull();
     expect(
       screen.getByRole("button", { name: "Expand recording pill" }),
     ).toBeTruthy();
@@ -265,7 +268,7 @@ describe("MeetingCaptureOverlay", () => {
     await act(async () => {
       await Promise.resolve();
     });
-    expect(screen.getByText("Enable Fn notes")).toBeTruthy();
+    expect(screen.getByText("macOS is blocking Fn")).toBeTruthy();
 
     shortcutPermission.allowed = true;
     await act(async () => {
@@ -273,7 +276,7 @@ describe("MeetingCaptureOverlay", () => {
     });
 
     expect(shortcutPermission.retry).toHaveBeenCalledTimes(1);
-    expect(screen.queryByText("Enable Fn notes")).toBeNull();
+    expect(screen.queryByText("macOS is blocking Fn")).toBeNull();
     expect(screen.getByText("Recording")).toBeTruthy();
 
     await act(async () => {
@@ -293,7 +296,7 @@ describe("MeetingCaptureOverlay", () => {
 
     expect(shortcutPermission.check).toHaveBeenCalledTimes(1);
     expect(shortcutPermission.retry).toHaveBeenCalledTimes(1);
-    expect(screen.queryByText("Enable Fn notes")).toBeNull();
+    expect(screen.queryByText("macOS is blocking Fn")).toBeNull();
   });
 
   test("shows recording state and stops from the same draggable pill", () => {
@@ -483,7 +486,6 @@ describe("MeetingCaptureOverlay", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "Close answer" }));
     expect(screen.queryByText("What are my action items?")).toBeNull();
-    expect(askMeetingMutation.reset).toHaveBeenCalledTimes(1);
   });
 
   test("keeps Ask hidden on hover previews and without an LLM", () => {
@@ -525,14 +527,17 @@ describe("MeetingCaptureOverlay", () => {
     expect(screen.getByText("Reading this recording…")).toBeTruthy();
 
     askMeetingMutation.isPending = false;
-    askMeetingMutation.error = new Error("provider unavailable");
+    askMeetingMutation.mutate.mock.calls[0][1]?.onError?.(
+      new Error("provider unavailable"),
+    );
     view.rerender(
       <I18nProvider i18n={i18n}>
         <MeetingCaptureOverlay state={recordingState()} />
       </I18nProvider>,
     );
     expect(screen.getByRole("alert").textContent).toContain("Couldn’t answer");
-    expect((input as HTMLInputElement).value).toBe("Who owns QA?");
+    expect(screen.getByText("Who owns QA?")).toBeTruthy();
+    expect((input as HTMLInputElement).value).toBe("");
   });
 
   test("follows new transcript history only while the reader is at the end", () => {
@@ -547,8 +552,7 @@ describe("MeetingCaptureOverlay", () => {
     fireEvent.click(
       screen.getByRole("button", { name: "Show or hide transcript" }),
     );
-    const transcript = screen.getByLabelText("Live transcript");
-    const scroller = transcript.firstElementChild as HTMLDivElement;
+    const scroller = screen.getByTestId("transcript-scroller");
     Object.defineProperties(scroller, {
       scrollHeight: { configurable: true, value: 600 },
       clientHeight: { configurable: true, value: 200 },
@@ -782,11 +786,15 @@ describe("groupMeetingTranscriptSegments", () => {
         id: "segment-1",
         source: "them",
         text: "We should ship the transcript first. Then validate reconnect behavior.",
+        start_ms: 0,
+        end_ms: 2_000,
       },
       {
         id: "segment-3",
         source: "you",
         text: "I will own the QA pass.",
+        start_ms: 2_000,
+        end_ms: 3_000,
       },
     ]);
   });

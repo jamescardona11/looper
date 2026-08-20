@@ -44,8 +44,16 @@ const pillState = vi.hoisted(() => ({
   dismiss: vi.fn(),
 }));
 
+const overlayHitSize = vi.hoisted(() => ({
+  report: vi.fn((_width: number, _height: number) => Promise.resolve()),
+}));
+
 vi.mock("./usePillState", () => ({
   usePillState: () => pillState,
+}));
+
+vi.mock("../../data/overlay", () => ({
+  setPillHitSize: overlayHitSize.report,
 }));
 
 vi.mock("../../data/audio", () => ({
@@ -200,6 +208,21 @@ describe("PillOverlay result", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "Close result" }));
     expect(actions.cancelPendingInsertion).toHaveBeenCalledTimes(1);
+  });
+
+  test("reports the drawn pill size so the native hit area follows it", () => {
+    render(
+      <I18nProvider i18n={i18n}>
+        <PillOverlay />
+      </I18nProvider>,
+    );
+
+    // Sin esto la zona clicable la fijaban constantes en Rust, y dejaban de
+    // coincidir con la píldora en cuanto cambiaba de estado.
+    expect(overlayHitSize.report).toHaveBeenCalled();
+    const call = overlayHitSize.report.mock.calls.at(-1);
+    expect(call?.[0]).toBeGreaterThan(0);
+    expect(call?.[1]).toBeGreaterThan(0);
   });
 
   test("does not render the processing rail over an expanded transcript", () => {

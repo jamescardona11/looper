@@ -82,6 +82,7 @@ pub(crate) fn schedule_meeting_summary(
             Ok(None) => {}
             Err(err) => tracing::error!("Failed to save meeting summary result: {err}"),
         }
+        state.meeting_capture().finish_processing(&task_app, &id);
     });
 
     Ok(Some(running))

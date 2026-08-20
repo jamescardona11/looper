@@ -21,8 +21,8 @@ use super::processing::{
 use super::types::{
     cancelled_error, is_cancelled_error, is_ffmpeg_error_message, LibraryCompletePayload,
     LibraryItem, LibraryItemPatch, LibraryItemStatus, LibraryProgressUpdate,
-    LibraryTranscriptionResult, CHUNK_OVERLAP_SECONDS, DIRECT_TRANSCRIBE_MINUTES,
-    EVENT_LIBRARY_COMPLETE, MAX_CHUNK_MINUTES,
+    LibraryTranscriptionResult, MeetingSummaryStatus, CHUNK_OVERLAP_SECONDS,
+    DIRECT_TRANSCRIBE_MINUTES, EVENT_LIBRARY_COMPLETE, MAX_CHUNK_MINUTES,
 };
 use crate::speech::{VAD_MIN_SPEECH_PERCENT_CHUNK, VAD_MIN_SPEECH_PERCENT_FILE};
 
@@ -264,8 +264,18 @@ fn finish_successful_transcription(
         LibraryCompletePayload { id: id.to_owned() },
     );
     if item.is_capture() {
-        if let Err(error) = super::meeting_summary::schedule_meeting_summary(app, id.to_owned()) {
-            tracing::warn!("Meeting summary was not scheduled: {error}");
+        // La píldora sigue visible mientras haya resumen en marcha. Si no llega
+        // a arrancar —sin IA, sin transcript, error— nadie más la apagaría.
+        let running = match super::meeting_summary::schedule_meeting_summary(app, id.to_owned()) {
+            Ok(details) => details
+                .is_some_and(|details| details.summary_status == MeetingSummaryStatus::Running),
+            Err(error) => {
+                tracing::warn!("Meeting summary was not scheduled: {error}");
+                false
+            }
+        };
+        if !running {
+            state.meeting_capture().finish_processing(app, id);
         }
     }
 }
@@ -374,6 +384,9 @@ fn record_failure(
     cancelled: bool,
 ) {
     let message = message.into();
+    app.state::<AppState>()
+        .meeting_capture()
+        .finish_processing(app, id);
     let status = if cancelled {
         LibraryItemStatus::Cancelled
     } else {

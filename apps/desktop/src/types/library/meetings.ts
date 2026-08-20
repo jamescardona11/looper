@@ -23,7 +23,7 @@ export type MeetingCalendarContext = {
 };
 
 export type MeetingCapturePhase =
-  "idle" | "starting" | "recording" | "finalizing" | "error";
+  "idle" | "starting" | "recording" | "finalizing" | "processing" | "error";
 
 export type MeetingCaptureHealth = {
   status: "healthy" | "delayed" | "degraded";

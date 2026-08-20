@@ -54,9 +54,7 @@ describe("MeetingStartModal", () => {
       "true",
     );
 
-    fireEvent.click(
-      screen.getByRole("switch", { name: "Live transcript" }),
-    );
+    fireEvent.click(screen.getByRole("switch", { name: "Live transcript" }));
     expect(localStorage.getItem("looper.liveMeeting.shareTranscript")).toBe(
       "false",
     );

@@ -112,6 +112,7 @@ const renderDetail = (kind: LibraryItem["kind"]) =>
         followTimestamps={false}
         onFollowTimestampsChange={vi.fn()}
         onClose={vi.fn()}
+        onContinueRecording={vi.fn()}
         onDelete={vi.fn()}
         onRetry={vi.fn().mockResolvedValue(undefined)}
         onCancel={vi.fn()}
@@ -136,9 +137,9 @@ describe("LibraryDetail for a recorded note", () => {
       "Moments",
     ]);
     expect(screen.getByText("Tres decisiones y un pendiente.")).toBeTruthy();
-    expect(
-      screen.getByPlaceholderText("Ask this recording…").isConnected,
-    ).toBe(true);
+    expect(screen.getByPlaceholderText("Ask this recording…").isConnected).toBe(
+      true,
+    );
   });
 
   test("leaves an imported file with the plain transcript", () => {

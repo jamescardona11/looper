@@ -51,7 +51,7 @@ const PREFLIGHT_OVERLAY_HEIGHT: f64 = 48.0;
 const PREFLIGHT_LANGUAGE_MENU_HEIGHT: f64 = 242.0;
 const PREFLIGHT_TRAY_GAP: f64 = 6.0;
 const PREFLIGHT_HIDE_AFTER_LEAVE_MS: u64 = 180;
-const MEETING_TRANSCRIPT_WIDTH: f64 = 252.0;
+const MEETING_TRANSCRIPT_WIDTH: f64 = 320.0;
 const MEETING_TRANSCRIPT_HEIGHT: f64 = 300.0;
 const MEETING_PILL_SLOT_WIDTH: f64 = 260.0;
 const MEETING_PILL_HEIGHT: f64 = 48.0;
@@ -60,6 +60,12 @@ const MEETING_OVERLAY_GAP: f64 = 4.0;
 const MEETING_PILL_GUTTER: f64 = 4.0;
 const MEETING_OVERLAY_WIDTH: f64 = MEETING_PILL_SLOT_WIDTH + MEETING_PILL_GUTTER * 2.0;
 const MEETING_OVERLAY_HEIGHT: f64 = MEETING_PILL_HEIGHT + MEETING_PILL_GUTTER * 2.0;
+// Con el transcript encima, la ventana la manda el panel, que ahora es más
+// ancho que la píldora; ésta queda centrada dentro, de ahí el inset.
+const MEETING_TRANSCRIPT_ABOVE_WIDTH: f64 =
+    MEETING_TRANSCRIPT_WIDTH + MEETING_PILL_GUTTER * 2.0;
+const MEETING_PILL_ABOVE_INSET_X: f64 =
+    (MEETING_TRANSCRIPT_ABOVE_WIDTH - MEETING_PILL_SLOT_WIDTH) / 2.0;
 const MEETING_TRANSCRIPT_ABOVE_HEIGHT: f64 = MEETING_TRANSCRIPT_HEIGHT
     + MEETING_OVERLAY_GAP
     + MEETING_PILL_HEIGHT
@@ -480,6 +486,7 @@ fn cursor_over_pill_window(app: &AppHandle<AppRuntime>) -> Option<(bool, (f64, f
             size,
             scale,
             state.pill().is_expanded(),
+            state.pill().pill_hit_size(),
         ),
         cursor,
     ))
@@ -502,6 +509,11 @@ fn cursor_over_meeting_overlay_bounds(
         (true, MeetingTranscriptPlacement::Left) => {
             window_origin.0
                 + (MEETING_PILL_GUTTER + MEETING_TRANSCRIPT_WIDTH + MEETING_OVERLAY_GAP) * scale
+        }
+        // Con el transcript encima la ventana la manda el panel, y la píldora
+        // queda centrada: buscarla en el borde erraba el blanco.
+        (true, MeetingTranscriptPlacement::Above) => {
+            window_origin.0 + MEETING_PILL_ABOVE_INSET_X * scale
         }
         _ => window_origin.0 + MEETING_PILL_GUTTER * scale,
     };
@@ -547,18 +559,24 @@ fn point_in_rect(point: (f64, f64), origin: (f64, f64), size: (f64, f64)) -> boo
         && point.1 < origin.1 + size.1
 }
 
+/// La píldora se ancla abajo y centrada dentro de una ventana mayor, así que
+/// la zona clicable se deduce de su tamaño. `reported` es el que acaba de
+/// dibujar el webview; las constantes solo cubren el arranque, antes del
+/// primer aviso.
 fn cursor_over_pill_bounds(
     cursor: (f64, f64),
     window_origin: (f64, f64),
     window_size: (f64, f64),
     scale: f64,
     expanded: bool,
+    reported: Option<(f64, f64)>,
 ) -> bool {
-    let hit_width = 260.0 * scale;
-    let hit_height = if expanded {
-        220.0 * scale
-    } else {
-        42.0 * scale
+    let (hit_width, hit_height) = match reported {
+        Some((width, height)) => (width * scale, height * scale),
+        None => (
+            260.0 * scale,
+            if expanded { 220.0 * scale } else { 42.0 * scale },
+        ),
     };
     let bottom_inset = 8.0 * scale;
     let left = window_origin.0 + (window_size.0 - hit_width) / 2.0;
@@ -596,6 +614,7 @@ pub struct PillController {
     mode_state: Mutex<PillModeState>,
     overlay_position: Mutex<Option<(i32, i32)>>,
     meeting_overlay_presentation: Mutex<MeetingOverlayPresentation>,
+    pill_hit_size: Mutex<Option<(f64, f64)>>,
     preflight_tray_anchor: Mutex<Option<PreflightTrayAnchor>>,
     preflight_language_menu_open: Mutex<bool>,
 }
@@ -1864,6 +1883,15 @@ pub fn persist_overlay_position(
     })
 }
 
+/// La píldora avisa de lo que acaba de dibujar. Sin esto la zona clicable era
+/// una constante que no seguía a la píldora: sobraba área encima y faltaban
+/// unos puntos arriba del rail.
+#[tauri::command]
+pub fn set_pill_hit_size(width: f64, height: f64, app: AppHandle<AppRuntime>) {
+    let size = (width > 0.0 && height > 0.0).then_some((width, height));
+    app.state::<AppState>().pill().set_pill_hit_size(size);
+}
+
 #[tauri::command]
 pub fn set_meeting_overlay_presentation(
     compact: bool,
@@ -2678,6 +2706,7 @@ mod meeting_overlay_tests {
             size,
             scale,
             false,
+            None,
         ));
         assert!(!cursor_over_pill_bounds(
             (1_300.0, 650.0),
@@ -2685,6 +2714,7 @@ mod meeting_overlay_tests {
             size,
             scale,
             false,
+            None,
         ));
         assert!(cursor_over_pill_bounds(
             (1_300.0, 650.0),
@@ -2692,6 +2722,54 @@ mod meeting_overlay_tests {
             size,
             scale,
             true,
+            None,
+        ));
+    }
+
+    #[test]
+    fn reported_pill_size_replaces_the_hardcoded_hit_rail() {
+        let origin = (1_000.0, 500.0);
+        let size = (600.0, 380.0);
+        let scale = 2.0;
+
+        // Un rail de 48 con hover: los seis puntos que la constante de 42 se
+        // dejaba fuera ahora sí reciben el clic.
+        let top_of_rail = (1_300.0, 500.0 + 380.0 - 16.0 - 94.0);
+        assert!(!cursor_over_pill_bounds(
+            top_of_rail,
+            origin,
+            size,
+            scale,
+            false,
+            None,
+        ));
+        assert!(cursor_over_pill_bounds(
+            top_of_rail,
+            origin,
+            size,
+            scale,
+            false,
+            Some((260.0, 48.0)),
+        ));
+
+        // Y una píldora expandida de 90 deja de tragarse el hueco vacío que la
+        // constante de 220 reservaba por encima.
+        let above_expanded = (1_300.0, 500.0 + 380.0 - 16.0 - 300.0);
+        assert!(cursor_over_pill_bounds(
+            above_expanded,
+            origin,
+            size,
+            scale,
+            true,
+            None,
+        ));
+        assert!(!cursor_over_pill_bounds(
+            above_expanded,
+            origin,
+            size,
+            scale,
+            true,
+            Some((260.0, 90.0)),
         ));
     }
 
@@ -2701,8 +2779,8 @@ mod meeting_overlay_tests {
             meeting_overlay_geometry((100, 500), 1.0, false, true, (0, 0), (1_920, 1_080));
 
         assert_eq!(geometry.placement, MeetingTranscriptPlacement::Above);
-        assert_eq!(geometry.logical_size, (268, 360));
-        assert_eq!(geometry.origin, (96, 192));
+        assert_eq!(geometry.logical_size, (328, 360));
+        assert_eq!(geometry.origin, (66, 192));
         assert_eq!(
             canonical_meeting_overlay_origin(
                 geometry.origin,
@@ -2724,7 +2802,7 @@ mod meeting_overlay_tests {
 
         assert_eq!(geometry.placement, MeetingTranscriptPlacement::Right);
         assert_eq!(geometry.side_alignment, MeetingTranscriptSideAlignment::Top,);
-        assert_eq!(geometry.logical_size, (524, 308));
+        assert_eq!(geometry.logical_size, (592, 308));
         assert_eq!(geometry.origin, (96, 0));
         assert_eq!(
             canonical_meeting_overlay_origin(
@@ -2747,7 +2825,7 @@ mod meeting_overlay_tests {
             meeting_overlay_geometry((-1_700, 500), 1.0, false, true, (-1_920, 0), (1_920, 1_080));
 
         assert_eq!(geometry.placement, MeetingTranscriptPlacement::Above);
-        assert_eq!(geometry.origin, (-1_704, 192));
+        assert_eq!(geometry.origin, (-1_734, 192));
         assert_eq!(
             canonical_meeting_overlay_origin(
                 geometry.origin,
@@ -2821,14 +2899,14 @@ mod meeting_overlay_tests {
         assert!(cursor_over_meeting_overlay_bounds(
             (1_100.0, 520.0),
             (1_000.0, 500.0),
-            (268.0, 360.0),
+            (328.0, 360.0),
             1.0,
             presentation,
         ));
         assert!(!cursor_over_meeting_overlay_bounds(
             (1_001.0, 505.0),
             (1_000.0, 500.0),
-            (268.0, 360.0),
+            (328.0, 360.0),
             1.0,
             presentation,
         ));

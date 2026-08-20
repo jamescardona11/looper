@@ -72,6 +72,12 @@ export async function persistOverlayPosition(
   return invoke<OverlayPosition>("persist_overlay_position", position);
 }
 
+// El área que acepta clics se deduce de esto: la píldora es la única que sabe
+// cuánto mide después de cada cambio de estado.
+export function setPillHitSize(width: number, height: number): Promise<void> {
+  return invoke<void>("set_pill_hit_size", { width, height });
+}
+
 export async function setMeetingOverlayPresentation(
   presentation: MeetingOverlayPresentation,
 ): Promise<{

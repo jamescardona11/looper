@@ -23,8 +23,17 @@ type TranscriptUpdate = {
 
 type MeetingCaptureState = {
   id?: string | null;
-  phase: "idle" | "starting" | "recording" | "finalizing" | "error";
+  phase:
+    "idle" | "starting" | "recording" | "finalizing" | "processing" | "error";
 };
+
+// El audio ya paró en `processing`: para quien mira en remoto la sesión ha
+// terminado, aunque la píldora siga contando el resumen.
+const RECORDING_OVER: ReadonlySet<MeetingCaptureState["phase"]> = new Set([
+  "idle",
+  "processing",
+  "error",
+]);
 
 export function isLiveMeetingSharingEnabled(): boolean {
   return localStorage.getItem(SHARING_STORAGE_KEY) === "true";
@@ -136,7 +145,7 @@ export function startLiveMeetingPublisher(): () => void {
   const captureReady = listen<MeetingCaptureState>(
     "meeting:capture_state",
     ({ payload }) => {
-      if (payload.phase !== "idle" && payload.phase !== "error") return;
+      if (!RECORDING_OVER.has(payload.phase)) return;
       const meetingId = payload.id;
       if (!meetingId || !knownMeetings.has(meetingId)) return;
       enqueue(async () => {

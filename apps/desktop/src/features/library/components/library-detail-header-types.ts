@@ -7,6 +7,7 @@ export type LibraryDetailHeaderProps = {
   shiftHeld: boolean;
   onClose: () => void;
   onCancel: () => void;
+  onContinueRecording: () => void;
   onRetry: () => Promise<void>;
   nameDraft: string;
   isEditingName: boolean;

@@ -99,6 +99,22 @@ export function AppPrivacySection({
               <PermissionRow key={permission.key} permission={permission} />
             ) : null,
           )}
+          {/* El caso que deja a la gente atascada: el sistema enseña la casilla
+              marcada y aun así niega el permiso, porque va atado al fichero
+              exacto de la app y una actualización lo deja obsoleto. */}
+          {capabilities.requiresAccessibilityPermission &&
+          !props.accessibilityPermission ? (
+            <p
+              className={privacyClass.restartNote}
+              data-testid="accessibility-stale-help"
+            >
+              {t({
+                id: "settings.app.accessibility.stale_help",
+                message:
+                  "Already ticked in System Settings and Fn still does nothing? macOS ties this permission to the exact app file, so an update can leave the box ticked and the permission off. Remove Looper from Accessibility with the − button, add it again, and restart Looper.",
+              })}
+            </p>
+          ) : null}
         </div>
       )}
 

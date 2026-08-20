@@ -2279,13 +2279,13 @@ msgstr "Email address"
 #: src/features/library/components/MeetingCaptureOverlay.tsx
 #: src/i18n.test.ts
 msgid "meeting.capture.shortcut_enable"
-msgstr "Enable"
+msgstr "Why?"
 
 #. js-lingui-explicit-id
 #: src/features/library/components/MeetingCaptureOverlay.tsx
 #: src/i18n.test.ts
 msgid "meeting.capture.shortcut_unavailable"
-msgstr "Enable Fn notes"
+msgstr "macOS is blocking Fn"
 
 #. js-lingui-explicit-id
 #: src/features/onboarding/steps/PermissionsStep.tsx
@@ -5920,3 +5920,23 @@ msgstr "YouTube URL"
 #: src/features/library/components/LibraryYoutubeImportModal.tsx
 msgid "library.youtube.url"
 msgstr "YouTube URL"
+
+#. js-lingui-explicit-id
+#: src/features/library/components/MeetingCaptureOverlay.tsx
+msgid "meeting.capture.summarizing"
+msgstr "Summarizing…"
+
+#. js-lingui-explicit-id
+#: src/features/library/components/MeetingTranscriptPanel.tsx
+msgid "meeting.capture.transcript.minimize"
+msgstr "Minimize transcript"
+
+#. js-lingui-explicit-id
+#: src/features/settings/components/tabs/AppPrivacySection.tsx
+msgid "settings.app.accessibility.stale_help"
+msgstr "Already ticked in System Settings and Fn still does nothing? macOS ties this permission to the exact app file, so an update can leave the box ticked and the permission off. Remove Looper from Accessibility with the − button, add it again, and restart Looper."
+
+#. js-lingui-explicit-id
+#: src/features/library/components/library-detail-header-actions.tsx
+msgid "library.detail.continue_recording"
+msgstr "Continue recording"

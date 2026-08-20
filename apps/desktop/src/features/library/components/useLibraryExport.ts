@@ -36,10 +36,7 @@ export function useLibraryExport({
       );
       const selectedPath = await save(dialog);
       if (selectedPath) {
-        await onExport(
-          format,
-          completeLibraryExportPath(selectedPath, format),
-        );
+        await onExport(format, completeLibraryExportPath(selectedPath, format));
       }
     } catch (err) {
       const message = readLibraryExportError(err);

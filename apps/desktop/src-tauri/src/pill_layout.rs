@@ -2,9 +2,9 @@ use super::{
     MeetingOverlayGeometry, MeetingOverlayPresentation, MeetingTranscriptPlacement,
     MeetingTranscriptSideAlignment, DICTATION_PILL_INSET_X, DICTATION_PILL_INSET_Y,
     MEETING_COMPACT_PILL_SIZE, MEETING_OVERLAY_GAP, MEETING_OVERLAY_HEIGHT, MEETING_OVERLAY_WIDTH,
-    MEETING_PILL_GUTTER, MEETING_PILL_HEIGHT, MEETING_PILL_SLOT_WIDTH,
-    MEETING_TRANSCRIPT_ABOVE_HEIGHT, MEETING_TRANSCRIPT_HEIGHT, MEETING_TRANSCRIPT_SIDE_HEIGHT,
-    MEETING_TRANSCRIPT_SIDE_WIDTH, MEETING_TRANSCRIPT_WIDTH,
+    MEETING_PILL_ABOVE_INSET_X, MEETING_PILL_GUTTER, MEETING_PILL_HEIGHT, MEETING_PILL_SLOT_WIDTH,
+    MEETING_TRANSCRIPT_ABOVE_HEIGHT, MEETING_TRANSCRIPT_ABOVE_WIDTH, MEETING_TRANSCRIPT_HEIGHT,
+    MEETING_TRANSCRIPT_SIDE_HEIGHT, MEETING_TRANSCRIPT_SIDE_WIDTH, MEETING_TRANSCRIPT_WIDTH,
 };
 use crate::capture_pill::{clamp_coordinates as clamp_overlay_coordinates, logical_pixels};
 
@@ -46,7 +46,7 @@ pub(super) fn canonical_meeting_overlay_origin(
 
     match presentation.placement {
         MeetingTranscriptPlacement::Above => (
-            current_origin.0 + logical_pixels(MEETING_PILL_GUTTER, scale),
+            current_origin.0 + logical_pixels(MEETING_PILL_ABOVE_INSET_X, scale),
             current_origin.1
                 + logical_pixels(
                     MEETING_PILL_GUTTER + MEETING_TRANSCRIPT_HEIGHT + MEETING_OVERLAY_GAP,
@@ -101,7 +101,7 @@ pub(super) fn meeting_overlay_geometry(
     }
 
     let above_origin = (
-        canonical_origin.0 - logical_pixels(MEETING_PILL_GUTTER, scale),
+        canonical_origin.0 - logical_pixels(MEETING_PILL_ABOVE_INSET_X, scale),
         canonical_origin.1
             - logical_pixels(
                 MEETING_PILL_GUTTER + MEETING_TRANSCRIPT_HEIGHT + MEETING_OVERLAY_GAP,
@@ -113,7 +113,7 @@ pub(super) fn meeting_overlay_geometry(
             placement: MeetingTranscriptPlacement::Above,
             side_alignment: MeetingTranscriptSideAlignment::Bottom,
             logical_size: (
-                MEETING_OVERLAY_WIDTH as i32,
+                MEETING_TRANSCRIPT_ABOVE_WIDTH as i32,
                 MEETING_TRANSCRIPT_ABOVE_HEIGHT as i32,
             ),
             origin: above_origin,

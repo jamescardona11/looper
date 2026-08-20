@@ -3,6 +3,7 @@ import {
   BookmarkSimple,
   CheckCircle,
   Key,
+  Sparkle,
   Stop,
   TextAlignLeft,
 } from "@phosphor-icons/react";
@@ -24,7 +25,7 @@ import {
 } from "../../../data/overlay";
 import {
   checkShortcutPermission,
-  openShortcutPermissionSettings,
+  openShortcutPermissionHelp,
   retryShortcuts,
 } from "../../../data/shortcuts";
 import { formatDuration } from "./library-utils";
@@ -52,6 +53,9 @@ const MeetingCaptureOverlay = ({ state }: { state: MeetingCaptureState }) => {
   const stop = useStopMeetingCapture();
   const meetingId = state.id ?? "";
   const voiceNote = state.capture_intent === "voice_note";
+  // El audio ya está a salvo; lo que sigue corriendo es la transcripción y el
+  // resumen, y la píldora se queda para que ese trabajo no sea invisible.
+  const processing = state.phase === "processing";
   const { data: details } = useMeetingDetails(meetingId, meetingId.length > 0);
   const selection = state.active_note_selection ?? null;
   const importantMoment = state.active_important_moment ?? null;
@@ -151,7 +155,8 @@ const MeetingCaptureOverlay = ({ state }: { state: MeetingCaptureState }) => {
   });
 
   const transcriptVisible =
-    !compact && (transcriptPinned || (transcriptHovered && !suppressHoverUntilLeave));
+    !compact &&
+    (transcriptPinned || (transcriptHovered && !suppressHoverUntilLeave));
 
   const applyOverlayPresentation = (
     next: Parameters<typeof setMeetingOverlayPresentation>[0],
@@ -306,35 +311,39 @@ const MeetingCaptureOverlay = ({ state }: { state: MeetingCaptureState }) => {
   const progress = selection
     ? Math.min(100, (selectedMs / selection.max_duration_ms) * 100)
     : 0;
-  const title = shortcutBlocked
-    ? t({
-        id: "meeting.capture.shortcut_unavailable",
-        message: "Enable Fn notes",
-      })
-    : importantMoment
+  const title = processing
+    ? t({ id: "meeting.capture.summarizing", message: "Summarizing…" })
+    : shortcutBlocked
       ? t({
-          id: "meeting.capture.important_moment",
-          message: "Important moment",
+          id: "meeting.capture.shortcut_unavailable",
+          message: "macOS is blocking Fn",
         })
-      : selection
-        ? t({ id: "meeting.capture.note", message: "Marking moment" })
-        : noteSaved
-          ? importantMomentSaved
-            ? t({
-                id: "meeting.capture.important_moment_saved",
-                message: "Important moment saved",
-              })
-            : t({
-                id: "meeting.capture.note_saved",
-                message: "Moment saved",
-              })
-          : voiceNote
-            ? t({ id: "note.capture.rail_title", message: "Note" })
-            : t({ id: "meeting.capture.rail_title", message: "Recording" });
+      : importantMoment
+        ? t({
+            id: "meeting.capture.important_moment",
+            message: "Important moment",
+          })
+        : selection
+          ? t({ id: "meeting.capture.note", message: "Marking moment" })
+          : noteSaved
+            ? importantMomentSaved
+              ? t({
+                  id: "meeting.capture.important_moment_saved",
+                  message: "Important moment saved",
+                })
+              : t({
+                  id: "meeting.capture.note_saved",
+                  message: "Moment saved",
+                })
+            : voiceNote
+              ? t({ id: "note.capture.rail_title", message: "Note" })
+              : t({ id: "meeting.capture.rail_title", message: "Recording" });
   const captureAriaLabel = voiceNote
     ? t({ id: "note.capture.active", message: "Note recording" })
     : t({ id: "meeting.capture.active", message: "Meeting recording" });
-  const recordingSignal = shortcutBlocked ? (
+  const recordingSignal = processing ? (
+    <Sparkle size={16} weight="fill" className="animate-pulse text-white/70" />
+  ) : shortcutBlocked ? (
     <Key size={16} weight="bold" className="text-amber-300" />
   ) : importantMoment ? (
     <BookmarkSimple size={16} weight="fill" className="text-red-400" />
@@ -416,6 +425,7 @@ const MeetingCaptureOverlay = ({ state }: { state: MeetingCaptureState }) => {
       meetingId={meetingId}
       segments={transcriptSegments}
       pinned={transcriptPinned}
+      onMinimize={transcriptPinned ? togglePinnedTranscript : undefined}
     />
   ) : null;
 
@@ -448,7 +458,9 @@ const MeetingCaptureOverlay = ({ state }: { state: MeetingCaptureState }) => {
         // está grabando, así que aquí el título se queda fijo en vez de esperar
         // al hover como en Dictation.
         meta={
-          meetingInfoVisible ? undefined : formatDuration(state.elapsed_seconds)
+          meetingInfoVisible || processing
+            ? undefined
+            : formatDuration(state.elapsed_seconds)
         }
         infoVisible={meetingInfoVisible}
         actionsVisible={shortcutBlocked}
@@ -458,23 +470,20 @@ const MeetingCaptureOverlay = ({ state }: { state: MeetingCaptureState }) => {
             : "!w-[150px] hover:!w-[260px] focus-within:!w-[260px]"
         }
         actions={
-          shortcutBlocked ? (
+          processing ? null : shortcutBlocked ? (
             <>
               <button
                 type="button"
                 onClick={() => {
-                  void openShortcutPermissionSettings().catch((error) =>
-                    console.error(
-                      "Failed to open Accessibility settings:",
-                      error,
-                    ),
+                  void openShortcutPermissionHelp().catch((error) =>
+                    console.error("Failed to open the Fn help:", error),
                   );
                 }}
                 className="inline-flex h-7 shrink-0 items-center rounded-[9px] border border-amber-300/25 bg-amber-300/10 px-2 text-[10px] font-semibold text-amber-100 transition-colors duration-150 hover:bg-amber-300/20"
               >
                 {t({
                   id: "meeting.capture.shortcut_enable",
-                  message: "Enable",
+                  message: "Why?",
                 })}
               </button>
               <button

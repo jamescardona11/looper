@@ -5,10 +5,12 @@ import {
   Check,
   Copy,
   DotsThreeVertical,
+  Record,
   Trash,
   Translate,
 } from "@phosphor-icons/react";
 
+import { isCaptureItem } from "./library-detail-policy";
 import { HeaderMenuSurface } from "./library-detail-header-menu";
 import type { LibraryDetailHeaderProps } from "./library-detail-header-types";
 import type { ExportFormat } from "../../../types";
@@ -24,6 +26,7 @@ type ActionsProps = Pick<
   | "isExporting"
   | "item"
   | "onCancel"
+  | "onContinueRecording"
   | "onRetry"
   | "overflowOpen"
   | "overflowMenuRef"
@@ -165,6 +168,17 @@ function OverflowAction(props: ActionsProps) {
           <ArrowClockwise size={11} />
           {t({ id: "library.modal.retranscribe", message: "Retranscribe" })}
         </button>
+        {/* Solo sobre una captura ya terminada: continuar sobre algo que aún se
+            transcribe dejaría el texto a medias contra un audio que creció. */}
+        {isCaptureItem(props.item) && !props.isBusy ? (
+          <button onClick={props.onContinueRecording} className={MENU_ACTION}>
+            <Record size={11} />
+            {t({
+              id: "library.detail.continue_recording",
+              message: "Continue recording",
+            })}
+          </button>
+        ) : null}
         {props.isBusy ? (
           <button
             onClick={cancel}

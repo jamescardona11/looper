@@ -372,8 +372,7 @@ const MeetingDetail = ({
               meetingAiStatus?.actionableMessage ??
               t({
                 id: "meeting.detail.no_summary",
-                message:
-                  "Generate a structured summary from the transcript.",
+                message: "Generate a structured summary from the transcript.",
               })}
           </p>
           <button

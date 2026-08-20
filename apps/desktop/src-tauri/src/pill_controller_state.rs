@@ -32,6 +32,7 @@ impl PillController {
             mode_state: Mutex::new(PillModeState::default()),
             overlay_position: Mutex::default(),
             meeting_overlay_presentation: Mutex::new(MeetingOverlayPresentation::default()),
+            pill_hit_size: Mutex::new(None),
             preflight_tray_anchor: Mutex::<Option<PreflightTrayAnchor>>::default(),
             preflight_language_menu_open: Mutex::default(),
         }
@@ -140,6 +141,18 @@ impl PillController {
         if !is_hidden_sentinel {
             self.overlay_position.lock().replace(position);
         }
+    }
+
+    /// Tamaño real de la píldora tal y como acaba de dibujarla el webview. El
+    /// alto depende del estado de React —hover, expandida, tarjeta de
+    /// resultado—, así que duplicarlo aquí en constantes lo deja desfasado: la
+    /// zona clicable no coincidía con lo que se ve.
+    pub(super) fn pill_hit_size(&self) -> Option<(f64, f64)> {
+        *self.pill_hit_size.lock()
+    }
+
+    pub(super) fn set_pill_hit_size(&self, size: Option<(f64, f64)>) {
+        *self.pill_hit_size.lock() = size;
     }
 
     pub(super) fn meeting_overlay_presentation(&self) -> MeetingOverlayPresentation {
