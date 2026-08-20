@@ -28,35 +28,40 @@ const BANNER = (source) =>
 
 /** Colores propios de una superficie del producto, no de la marca. */
 const PRODUCT = {
+  /* Las ediciones se distinguían por tono (violeta, ámbar, azul). Ahora por
+     luminosidad del acento, que es la misma señal sin salir del sistema. */
   edition: {
-    personal: "#8b5cf6",
-    commercial: "#b45309",
-    founder: "#6d28d9",
-    contributor: "#1d4ed8",
+    personal: { l: 0.72, c: 0.144, h: 276.5 },
+    commercial: { l: 0.6, c: 0.15, h: 276.5 },
+    founder: { l: 0.48, c: 0.16, h: 276.5 },
+    contributor: { l: 0.84, c: 0.1, h: 276.5 },
   },
+  /* La previsualización de documento y la tarjeta de miembro son artefactos
+     dibujados, no cromo de la interfaz, pero llevaban verdes que no salían de
+     ningún token. Pasan a la escala neutra. */
   preview: {
-    canvas: "#e8ebe5",
-    document: "#f7f8f5",
-    primary: "#22251f",
-    secondary: "#65705f",
-    body: "#50594e",
+    canvas: "#eaeaea",
+    document: "#f7f7f7",
+    primary: "#1f1f1f",
+    secondary: "#5f5f5f",
+    body: "#4d4d4d",
     border: "rgba(0, 0, 0, 0.08)",
   },
   memberCardLight: {
-    bg: "#f1f3ee",
-    text: "#171a16",
-    muted: "#697264",
-    border: "#cbd1c5",
-    dot: "#aab5a3",
-    stripe: "#e5e8e1",
+    bg: "#f2f2f2",
+    text: "#161616",
+    muted: "#6b6b6b",
+    border: "#cbcbcb",
+    dot: "#a8a8a8",
+    stripe: "#e6e6e6",
   },
   memberCardDark: {
-    bg: "#171a16",
-    text: "#f3f5ef",
-    muted: "#858f82",
-    border: "#374037",
-    dot: "#4e584d",
-    stripe: "#111316",
+    bg: "#161616",
+    text: "#f4f4f4",
+    muted: "#868686",
+    border: "#383838",
+    dot: "#4e4e4e",
+    stripe: "#101010",
   },
 };
 
@@ -87,6 +92,15 @@ function desktopTokens(mode) {
 
   const alphaScale = (name, base, opacities) =>
     opacities.map((o) => [`--color-${name}-${o}`, alpha(base, o / 100)]);
+
+  /* La semántica sólo conserva color en el error; el resto son alias. */
+  const semantic = (key) => {
+    const value = p.semantic[key];
+    if (value === "ACCENT") return accent;
+    if (value === "TEXT_SECONDARY") return n.textSecondary;
+    if (value === "TEXT_PRIMARY") return n.textPrimary;
+    return value;
+  };
 
   const shadowBase = isDark ? "0, 0, 0" : "26, 23, 22";
   const inkOnLight = isDark ? "255, 255, 255" : "26, 23, 22";
@@ -144,12 +158,12 @@ function desktopTokens(mode) {
     ["--color-section-marker", "var(--color-accent)"],
     ["--color-section-marker-alt", "var(--color-accent)"],
 
-    ["--color-success", p.semantic.success],
-    ["--color-error", p.semantic.error],
-    ["--color-warning", p.semantic.warning],
-    ["--color-warning-strong", p.semantic.warningStrong],
-    ["--color-info", p.semantic.info],
-    ["--color-on-error", p.semantic.onError],
+    ["--color-success", semantic("success")],
+    ["--color-error", semantic("error")],
+    ["--color-warning", semantic("warning")],
+    ["--color-warning-strong", semantic("warningStrong")],
+    ["--color-info", semantic("info")],
+    ["--color-on-error", semantic("onError")],
     [
       "--color-danger-border",
       "color-mix(in srgb, var(--color-error) 30%, transparent)",
@@ -191,7 +205,7 @@ function desktopTokens(mode) {
        Se derivan del token: antes eran copias a mano y no seguían al acento. */
     ["--ui-pill-dot-base-rgb", hexToRgbChannels(n.bgSurface)],
     ["--ui-pill-dot-highlight-rgb", "255, 255, 255"],
-    ["--ui-pill-dot-error-rgb", hexToRgbChannels(p.semantic.error)],
+    ["--ui-pill-dot-error-rgb", hexToRgbChannels(semantic("error"))],
     ["--ui-pill-cleanup-rgb", hexToRgbChannels(accent)],
 
     /* El halo hereda del propio verde de captura. Antes estaba fijado al verde
@@ -225,7 +239,7 @@ function desktopTokens(mode) {
 
     ["--color-size-small", isDark ? accentLight : n.textMuted],
     ["--color-size-medium", isDark ? accent : n.textMuted],
-    ["--color-size-large", isDark ? p.semantic.error : n.textMuted],
+    ["--color-size-large", isDark ? semantic("error") : n.textMuted],
 
     ["--model-wave-whisper", isDark ? accent : n.textSecondary],
     ["--model-wave-nvidia", isDark ? accentLight : n.textSecondary],
@@ -237,7 +251,7 @@ function desktopTokens(mode) {
     ["--model-wave-glow-strong-cloud", "var(--color-cloud-20)"],
     ["--model-wave-glow-soft-cloud", "var(--color-cloud-10)"],
 
-    ["--color-support-help", isDark ? p.semantic.warningStrong : n.textMuted],
+    ["--color-support-help", isDark ? semantic("warningStrong") : n.textMuted],
     ["--color-support-info", isDark ? accentLight : n.textMuted],
     [
       "--color-row-action-fade",
@@ -250,14 +264,14 @@ function desktopTokens(mode) {
 
     ...p.speakers.map((s, i) => [`--data-speaker-${i + 1}`, hex(s)]),
 
-    ["--color-edition-personal", PRODUCT.edition.personal],
-    ["--color-edition-commercial", PRODUCT.edition.commercial],
-    ["--color-edition-founder", PRODUCT.edition.founder],
-    ["--color-edition-contributor", PRODUCT.edition.contributor],
-    ["--surface-edition-personal", alpha(PRODUCT.edition.personal, 0.12)],
-    ["--surface-edition-commercial", alpha(PRODUCT.edition.commercial, 0.1)],
-    ["--surface-edition-founder", alpha(PRODUCT.edition.founder, 0.12)],
-    ["--surface-edition-contributor", alpha(PRODUCT.edition.contributor, 0.1)],
+    ["--color-edition-personal", hex(PRODUCT.edition.personal)],
+    ["--color-edition-commercial", hex(PRODUCT.edition.commercial)],
+    ["--color-edition-founder", hex(PRODUCT.edition.founder)],
+    ["--color-edition-contributor", hex(PRODUCT.edition.contributor)],
+    ["--surface-edition-personal", alpha(hex(PRODUCT.edition.personal), 0.12)],
+    ["--surface-edition-commercial", alpha(hex(PRODUCT.edition.commercial), 0.1)],
+    ["--surface-edition-founder", alpha(hex(PRODUCT.edition.founder), 0.12)],
+    ["--surface-edition-contributor", alpha(hex(PRODUCT.edition.contributor), 0.1)],
 
     ["--surface-preview-canvas", PRODUCT.preview.canvas],
     ["--surface-preview-document", PRODUCT.preview.document],
@@ -298,6 +312,14 @@ function webTokens(mode) {
     Object.entries(p.neutrals).map(([k, v]) => [k, hex(v)]),
   );
   const isDark = mode === "dark";
+  const accent = hex(p.accent.base);
+  const semantic = (key) => {
+    const value = p.semantic[key];
+    if (value === "ACCENT") return accent;
+    if (value === "TEXT_SECONDARY") return n.textSecondary;
+    if (value === "TEXT_PRIMARY") return n.textPrimary;
+    return value;
+  };
   return [
     ["--brand", hex(p.accent.base)],
     ["--brand-foreground", isDark ? n.bgPrimary : "#ffffff"],
@@ -311,14 +333,14 @@ function webTokens(mode) {
     ["--secondary-foreground", n.textPrimary],
     ["--muted", isDark ? n.bgTertiary : n.bgSecondary],
     ["--muted-foreground", n.textMuted],
-    ["--destructive", p.semantic.error],
-    ["--destructive-foreground", p.semantic.onError],
+    ["--destructive", semantic("error")],
+    ["--destructive-foreground", semantic("onError")],
     ["--border", n.borderPrimary],
     ["--input", n.borderSecondary],
-    ["--success-subtle", alpha(p.semantic.success, isDark ? 0.16 : 0.12)],
-    ["--success-foreground", p.semantic.success],
-    ["--warning-subtle", alpha(p.semantic.warning, isDark ? 0.16 : 0.12)],
-    ["--warning-foreground", p.semantic.warning],
+    ["--success-subtle", alpha(semantic("success"), isDark ? 0.16 : 0.12)],
+    ["--success-foreground", semantic("success")],
+    ["--warning-subtle", alpha(semantic("warning"), isDark ? 0.16 : 0.12)],
+    ["--warning-foreground", semantic("warning")],
     ["--primary", "var(--brand)"],
     ["--primary-foreground", "var(--brand-foreground)"],
     ["--accent", "var(--brand)"],

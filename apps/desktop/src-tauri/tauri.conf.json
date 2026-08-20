@@ -38,7 +38,7 @@
         "visible": false,
         "hiddenTitle": true,
         "titleBarStyle": "Overlay",
-        "backgroundColor": "#101010"
+        "backgroundColor": "#0a0a0a"
       },
       {
         "label": "toast",

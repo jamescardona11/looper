@@ -87,34 +87,36 @@ function neutral(l: number): Oklch {
  * recorre los mismos peldaños en sentido inverso.
  */
 const DARK_NEUTRALS = {
-  bgPrimary: neutral(0.13),
-  bgSecondary: neutral(0.175),
-  bgTertiary: neutral(0.215),
-  bgSurface: neutral(0.25),
-  bgOverlay: neutral(0.285),
-  bgElevated: neutral(0.33),
-  bgElevatedHover: neutral(0.36),
-  bgHover: neutral(0.395),
-  borderPrimary: neutral(0.29),
-  borderSecondary: neutral(0.36),
+  bgPrimary: neutral(0),
+  bgSecondary: neutral(0.145),
+  bgTertiary: neutral(0.195),
+  bgSurface: neutral(0.245),
+  bgOverlay: neutral(0.29),
+  bgElevated: neutral(0.335),
+  bgElevatedHover: neutral(0.365),
+  bgHover: neutral(0.4),
+  borderPrimary: neutral(0.275),
+  borderSecondary: neutral(0.35),
   borderHover: neutral(0.48),
   textDisabled: neutral(0.5),
-  textMuted: neutral(0.63),
+  textMuted: neutral(0.62),
   textSecondary: neutral(0.8),
   textPrimary: neutral(1),
 } as const;
 
 /**
- * En claro la elevación no la carga el lightness: la parte alta choca contra el
+ * La página es blanco puro y el fondo oscuro negro puro, que es lo que pedía
+ * el sistema: blanco y negro son los protagonistas. En claro la elevación no
+ * la carga el lightness: la parte alta choca contra el
  * techo de 1.0 y sólo quedan unos pocos puntos entre la página y el blanco. La
  * separación la hacen el borde y la sombra, y `bgElevated` baja en vez de subir.
  */
 const LIGHT_NEUTRALS = {
-  bgPrimary: neutral(0.98),
-  bgSecondary: neutral(0.99),
-  bgTertiary: neutral(0.995),
-  bgSurface: { l: 1, c: 0, h: BRAND_HUE },
-  bgOverlay: { l: 1, c: 0, h: BRAND_HUE },
+  bgPrimary: neutral(1),
+  bgSecondary: neutral(0.985),
+  bgTertiary: neutral(0.97),
+  bgSurface: neutral(1),
+  bgOverlay: neutral(1),
   bgElevated: neutral(0.955),
   bgElevatedHover: neutral(0.925),
   bgHover: neutral(0.89),
@@ -124,7 +126,7 @@ const LIGHT_NEUTRALS = {
   textDisabled: neutral(0.66),
   textMuted: neutral(0.52),
   textSecondary: neutral(0.41),
-  textPrimary: neutral(0.18),
+  textPrimary: neutral(0),
 } as const;
 
 /**
@@ -148,39 +150,53 @@ const LIGHT_ACCENT = {
   solid: { l: 0.5, c: 0.17, h: BRAND_HUE },
 } as const;
 
-/** Estados. `error` es el único color que no se puede sustituir por forma. */
+/**
+ * Sólo el error conserva color propio: es el único estado donde el color carga
+ * significado de seguridad y no de estilo, y el único que un usuario nuevo
+ * interpreta sin aprender nada.
+ *
+ * `success`, `warning` e `info` pasan al acento o a la escala neutra. Eso
+ * traslada la carga al icono y a la forma: un check, un triángulo. Es trabajo
+ * de diseño real, no un cambio de token — si un estado deja de distinguirse,
+ * le falta iconografía, no color.
+ */
 const DARK_SEMANTIC = {
   error: "#ef4444",
-  success: "#10b981",
-  warning: "#f59e0b",
-  warningStrong: "#fbbf24",
-  info: "#3b82f6",
+  success: "ACCENT",
+  warning: "TEXT_SECONDARY",
+  warningStrong: "TEXT_PRIMARY",
+  info: "ACCENT",
   onError: "#ffffff",
 } as const;
 
 const LIGHT_SEMANTIC = {
   error: "#b91c1c",
-  success: "#047857",
-  warning: "#b45309",
-  warningStrong: "#92400e",
-  info: "#1d4ed8",
+  success: "ACCENT",
+  warning: "TEXT_SECONDARY",
+  warningStrong: "TEXT_PRIMARY",
+  info: "ACCENT",
   onError: "#ffffff",
 } as const;
 
 /**
- * Diarización de reuniones. Los tonos evitan a propósito la franja del acento
- * (250-305°) y la del error (5-45°): antes `speaker-1` estaba a ΔE 3,2 del
- * acento y `speaker-5` a 6,2, así que "hablante" y "estado activo" se leían
- * igual. Reparto uniforme por el arco restante.
+ * Diarización de reuniones. Seis peldaños de la escala neutra, no del acento:
+ * el morado queda reservado para "activo" y un hablante nunca debe parecer un
+ * estado. Empiezan en 0.55 para que todos se lean sobre el fondo negro.
+ *
+ * El coste es real y conviene tenerlo presente: seis grises se distinguen peor
+ * que seis tonos. El rango va de 0.52 a 0.97 para que queden 9 puntos de ΔE
+ * entre vecinos, el mínimo que el test acepta. El primero da 4,3:1 sobre negro,
+ * así que sirve como punto o chip, no como color de texto.
+ *
+ * La respuesta a una reunión de seis no es reintroducir seis colores sino
+ * etiquetar al hablante con su inicial además del gris.
  */
-const SPEAKER_HUES = [48, 92, 136, 180, 224, 323] as const;
-const SPEAKER_LIGHTNESS = 0.8;
-const SPEAKER_CHROMA = 0.12;
+const SPEAKER_LIGHTNESS = [0.52, 0.61, 0.7, 0.79, 0.88, 0.97] as const;
 
-export const SPEAKERS: readonly Oklch[] = SPEAKER_HUES.map((h) => ({
-  l: SPEAKER_LIGHTNESS,
-  c: SPEAKER_CHROMA,
-  h,
+export const SPEAKERS: readonly Oklch[] = SPEAKER_LIGHTNESS.map((l) => ({
+  l,
+  c: 0,
+  h: BRAND_HUE,
 }));
 
 /**
