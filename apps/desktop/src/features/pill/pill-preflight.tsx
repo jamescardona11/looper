@@ -104,7 +104,7 @@ function DockControls({
         disabled={starting}
         className="ui-text-body-sm inline-flex h-10 w-[149px] shrink-0 items-center gap-2 rounded-full px-2 font-semibold text-[var(--ui-capture-fg-strong)] transition-colors duration-150 hover:bg-white/6 active:bg-white/10 disabled:opacity-60"
       >
-        <span className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[var(--color-local-light)] text-[var(--color-bg-primary)] [box-shadow:var(--ui-pill-signal-shadow)]">
+        <span className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[var(--color-accent)] text-[var(--color-bg-primary)] [box-shadow:var(--ui-pill-signal-shadow)]">
           <Microphone size={13} weight="fill" />
         </span>
         {starting
@@ -194,7 +194,7 @@ function LanguageMenu({
               <Check
                 size={12}
                 weight="bold"
-                className="text-[var(--color-local-light)]"
+                className="text-[var(--color-accent)]"
               />
             ) : null}
           </button>
