@@ -55,7 +55,7 @@ function getSecret(): string {
   if (!secret || secret.length < 16) {
     throw new Error(
       "BYOK_ENCRYPTION_SECRET is missing or too short on this Convex deployment. " +
-        "Run `cd backend && npx convex env set BYOK_ENCRYPTION_SECRET $(openssl rand -hex 32)`.",
+        "Configure it with at least 16 characters before using BYOK.",
     );
   }
   return secret;

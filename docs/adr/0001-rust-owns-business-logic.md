@@ -27,12 +27,7 @@ The product constraints pushed to the second one:
   module instances. Any state held in the frontend is per-window state; only
   Rust has a single process-wide view.
 
-This is stated in `apps/desktop/AGENTS.md`, section *Mental model*:
-
-> Rust owns business logic, native windows, hotkeys, audio, transcription,
-> storage, updater, permissions, tray/menu, and privacy-sensitive code.
-> React owns rendering, local interaction state, query cache, and thin
-> command/event clients.
+`apps/desktop/AGENTS.md` summarizes this decision for scoped agent work.
 
 ## Decision
 
@@ -56,8 +51,8 @@ Concretely:
 - Rust is the emitter of truth. State reaches the UI as Tauri events
   (`transcription:complete`, `settings:changed`, `meeting:awareness_state`,
   `meeting:capture_state`, …), and the frontend reacts.
-- Each domain has a named Rust owner. `apps/desktop/AGENTS.md`
-  (*Backend ownership*) enumerates them; new behavior extends an existing
+- Each domain has a named Rust owner. `apps/desktop/AGENTS.md` (*Owners*)
+  summarizes them; new behavior extends an existing
   owner rather than adding a parallel one.
 
 ## Consequences
@@ -81,8 +76,8 @@ Concretely:
 
 - Adding a parallel service layer, store, or domain model in TypeScript outside
   the approved `src/data/` boundary.
-  `shared/lib/*` is static metadata and formatting only — explicitly "not a
-  service layer" (`apps/desktop/AGENTS.md`, *Frontend ownership*).
+  `shared/lib/*` is static metadata and formatting only, not a service layer
+  (`apps/desktop/AGENTS.md`, *Owners*).
 - Deriving domain decisions in React from raw events. If the UI needs to know
   something, Rust computes it and emits it. `license_gate_active` is the
   model: one boolean crosses the boundary, not the trial dates plus the rule.

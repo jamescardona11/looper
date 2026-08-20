@@ -30,6 +30,12 @@ for (const file of markdownFiles) {
   if (/\/Users\/[^/]+\//.test(content)) {
     failures.push(`${file}: contiene una ruta local /Users/...`);
   }
+  if (/(^|[\s`(/])ai_docs\//m.test(content)) {
+    failures.push(`${file}: referencia documentación local ignorada bajo ai_docs/`);
+  }
+  if (/\bnpx\b/.test(content)) {
+    failures.push(`${file}: usa npx en vez de un comando versionado del repositorio`);
+  }
 
   for (const match of content.matchAll(linkPattern)) {
     const rawTarget = match[1].replace(/^<|>$/g, "");

@@ -5,9 +5,7 @@
 // Env vars:
 //   POSTHOG_API_KEY   phc_... (from PostHog dashboard → Project Settings)
 //
-// Setup:
-//   1. Create PostHog account at posthog.com
-//   2. Set env var: npx convex env set POSTHOG_API_KEY phc_...
+// Configure POSTHOG_API_KEY in the target Convex deployment.
 
 import { PostHog } from "@posthog/convex";
 import { components } from "./_generated/api";

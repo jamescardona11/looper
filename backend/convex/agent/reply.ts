@@ -147,7 +147,7 @@ export const replyToThread = internalAction({
       // Report raw usage; agent/usage.ts owns deriving totalTokens + $ cost from
       // the model id (single owner of cost). BYOK usage counts too — the dashboard
       // tracks consumption regardless of who supplies the provider key.
-      // Provider cast: schema accepts "google" after `npx convex dev` regenerates types
+      // Provider cast: schema accepts "google" after Convex regenerates types.
       await ctx.runMutation(internal.agent.usage.logUsage, {
         userId,
         threadId,

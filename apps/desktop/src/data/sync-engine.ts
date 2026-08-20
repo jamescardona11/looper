@@ -1,8 +1,8 @@
 // Data boundary for the F3 sync engine: the background orchestrator that
 // wires auth state (convex-auth.ts) to the per-domain sync workers
 // (dictionary-sync.ts, settings-sync.ts, history-sync.ts). Started once from
-// the `main` window (see ../app/providers.tsx's `SyncEngineBridge`) - that's
-// the one window that's always alive, and `settings:changed` (emitted by
+// the `main` window (see ../app/runtime/window-services.tsx) - that's the one
+// window that's always alive, and `settings:changed` (emitted by
 // set_dictionary/set_replacements/set_snippets/set_mode_rules) reaches it regardless of
 // which window the edit happened in, since Tauri broadcasts app events to
 // every window.

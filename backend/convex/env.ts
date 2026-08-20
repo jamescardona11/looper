@@ -5,9 +5,9 @@
 //   at deploy time, so a hard-throw at module load (a missing REQUIRED var)
 //   would break the deployment. Each feature checks its own key at call time
 //   via `requireEnv(...)` and fails only when that feature is actually used.
-// - Values are read from `process.env` at module load. Convex injects env vars
-//   (set with `npx convex env set`) at deploy time, so the snapshot is correct;
-//   it refreshes on the next deploy/reload.
+// - Values are read from `process.env` at module load. Convex injects deployment
+//   environment variables before loading functions, so the snapshot refreshes
+//   on the next deploy/reload.
 
 import { createEnv } from "@t3-oss/env-core";
 import { z } from "zod";
@@ -72,9 +72,7 @@ export function isMockMode(): boolean {
 export function requireEnv(key: keyof typeof env): string {
   const value = env[key];
   if (!value) {
-    throw new Error(
-      `Missing environment variable ${String(key)}. Set it with: npx convex env set ${String(key)} <value>`,
-    );
+    throw new Error(`Missing environment variable ${String(key)} in this Convex deployment.`);
   }
   return value;
 }

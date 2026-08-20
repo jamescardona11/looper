@@ -70,7 +70,7 @@ function DefaultSetupBanner(): ReactNode {
     >
       <strong>Setup needed:</strong> the backend URL is not set. Run{" "}
       <code style={{ background: "rgba(0,0,0,0.06)", padding: "2px 6px", borderRadius: 4 }}>
-        cd backend && npx convex dev
+        pnpm --dir backend dev
       </code>
       , then add the URL to your app env and reload.
     </div>

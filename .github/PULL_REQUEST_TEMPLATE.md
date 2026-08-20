@@ -26,7 +26,7 @@ browser, native Rust, audio, and Windows-specific jobs where applicable.
 - [ ] The affected app/package builds
 - [ ] Required browser, native, device, or provider evidence is attached or explicitly marked missing
 - [ ] Web/mobile parity kept where the feature applies to both
-- [ ] Env vars: declared in the relevant `.env.example` and set via `npx convex env set` (never committed)
+- [ ] Env vars: declared in the relevant `.env.example` and configured in the intended deployment; values are never committed
 - [ ] No secrets, API keys, or `.env*` files in the diff
 
 ## Screenshots / recordings

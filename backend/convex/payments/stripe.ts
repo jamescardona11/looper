@@ -2,7 +2,7 @@
 // Both return a URL the client redirects to. Convex action runs server-side so the secret
 // key never reaches the browser.
 //
-// Env vars (set via `npx convex env set`):
+// Env vars configured in the target Convex deployment:
 //   STRIPE_SECRET_KEY     sk_test_... or sk_live_...
 //   STRIPE_WEBHOOK_SECRET whsec_... (used by webhooks.ts)
 

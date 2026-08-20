@@ -5,14 +5,9 @@ revisión, no una prueba de clean-room, autoría independiente ni una conclusió
 legal. Los resultados numéricos caducan con cada cambio del árbol y deben
 regenerarse antes de usarlos.
 
-## Gate reproducible
-
-```sh
-python3 tools/provenance/corpus-audit.py /tmp/looper-audit \
-  --refs /ruta/a/voices/refs
-python3 tools/provenance/history-audit.py
-node tools/provenance/check-staged.mjs
-```
+El procedimiento y los comandos reproducibles viven en
+[`docs/rebuild/README.md`](README.md) y
+[`tools/provenance/README.md`](../../tools/provenance/README.md).
 
 El snapshot del 18 de agosto de 2026 no encontró filas bloqueantes en el umbral
 técnico configurado. Eso no cierra los casos históricos ni sustituye revisión

@@ -1,7 +1,7 @@
 // Polar payments via @convex-dev/polar component.
 // Polar is a Merchant of Record — handles tax, VAT, and compliance for you.
 //
-// Env vars (set via `npx convex env set`):
+// Env vars configured in the target Convex deployment:
 //   POLAR_ORGANIZATION_TOKEN   your org token from Polar dashboard
 //   POLAR_WEBHOOK_SECRET       whsec_... from Polar webhook settings
 //   POLAR_SERVER                "sandbox" or "production" (default: sandbox)
@@ -11,7 +11,7 @@
 //   2. Set env vars above
 //   3. Create products in Polar dashboard (subscriptions + one-time)
 //   4. Replace product IDs below
-//   5. Run `npx convex dev` to sync products
+//   5. Run `pnpm --dir backend dev` to sync products
 
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { Polar } from "@convex-dev/polar";
