@@ -38,7 +38,7 @@ function FloatingLauncher() {
         message: "Move Capture pill",
       })}
       onPointerDown={dragDock}
-      className="ui-sticky-launcher absolute left-1/2 top-1/2 grid h-11 w-11 -translate-x-1/2 -translate-y-1/2 cursor-grab place-items-center rounded-full text-[var(--color-local-light)] active:cursor-grabbing"
+      className="ui-sticky-launcher absolute left-1/2 top-1/2 grid h-11 w-11 -translate-x-1/2 -translate-y-1/2 cursor-grab place-items-center rounded-full text-content-primary active:cursor-grabbing"
     >
       <span aria-hidden="true">
         <LooperLogo size="sm" />
