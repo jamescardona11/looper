@@ -45,7 +45,7 @@
   --ui-pill-cleanup-field-opacity: 0.68;
   --ui-pill-shell-shadow: none;
   --ui-notification-shadow: none;
-  --ui-pill-signal-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.28), 0 1px 3px rgba(0, 0, 0, 0.42);
+  --ui-pill-signal-shadow: 0 1px 3px rgba(0, 0, 0, 0.42);
   --ui-pill-key-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
   --ui-notification-icon-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.07);
   --ui-notification-action-shadow: 0 2px 5px rgba(0, 0, 0, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.7);

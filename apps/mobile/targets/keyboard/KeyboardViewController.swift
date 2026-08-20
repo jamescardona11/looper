@@ -348,7 +348,7 @@ class KeyboardViewController: UIInputViewController {
     static let text = UIColor(red: 1.000, green: 1.000, blue: 1.000, alpha: 1)
     static let textSecondary = UIColor(red: 0.745, green: 0.745, blue: 0.745, alpha: 1)
     static let muted = UIColor(red: 0.525, green: 0.525, blue: 0.525, alpha: 1)
-    static let accent = UIColor(red: 0.561, green: 0.612, blue: 1.000, alpha: 1)
+    static let accent = UIColor(red: 0.384, green: 0.420, blue: 0.835, alpha: 1)
     static let onAccent = background
   }
 

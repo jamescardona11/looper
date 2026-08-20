@@ -6,7 +6,7 @@ module.exports = (config) => ({
   bundleIdentifier: ".widgets",
   deploymentTarget: "16.2",
   colors: {
-    $accent: "#8f9cff",
+    $accent: "#626bd5",
     $widgetBackground: "#000000",
   },
   entitlements: {

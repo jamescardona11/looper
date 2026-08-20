@@ -74,8 +74,8 @@ describe("palette guarantees", () => {
     for (const mode of ["dark", "light"]) {
       const { neutrals, accent } = PALETTE[mode];
       const solid = oklchToHex(accent.solid);
-      const onSolid =
-        mode === "dark" ? oklchToHex(neutrals.bgPrimary) : "#ffffff";
+      // El acento es el mismo en los dos modos y admite blanco encima a 4,58:1.
+      const onSolid = "#ffffff";
       assert.ok(contrast(onSolid, solid) >= 4.5, `${mode} on-accent`);
     }
   });
@@ -301,6 +301,24 @@ describe("the Expo shell mirrors the brand mark", () => {
     assert.ok(
       occurrences >= 2,
       `app.config.ts should use ${BRAND_MARK.paper} for both the splash and the adaptive icon`,
+    );
+  });
+});
+
+describe("the Android keyboard mirrors the palette", () => {
+  // LooperIME.kt is the fifth copy of the accent — Kotlin can read neither the
+  // CSS tokens nor the TS map, so it hardcodes an ARGB literal. It kept
+  // #8f9cff for a whole round after the accent moved, which is exactly the kind
+  // of drift this file exists to catch.
+  test("COLOR_ACCENT matches the shared accent", () => {
+    const kotlin = readFileSync(
+      join(ROOT, "apps/mobile/native/android/com/j11/looper/mobile/LooperIME.kt"),
+      "utf8",
+    );
+    const expected = oklchToHex(PALETTE.dark.accent.base).slice(1).toUpperCase();
+    assert.ok(
+      kotlin.includes(`0xFF${expected}.toInt()`),
+      `COLOR_ACCENT should be 0xFF${expected}.toInt()`,
     );
   });
 });

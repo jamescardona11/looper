@@ -130,30 +130,33 @@ const LIGHT_NEUTRALS = {
 } as const;
 
 /**
- * Un solo morado por modo. `light` y `dark` existían como variantes decorativas
- * y producían tres morados distintos conviviendo en la misma pantalla — el
- * logo en uno, el botón en otro, el estado activo en un tercero. Ahora son
- * alias del acento: la profundidad y el hover los dan las alfas, que comparten
- * tono.
+ * Un solo morado, el mismo en los dos modos.
  *
- * Lo que sí cambia entre modos es el valor: `#8f9cff` da 2,3:1 sobre el fondo
- * claro, así que el modo claro tiene el suyo. `solid` es el relleno de botón
- * que admite texto claro encima.
+ * Antes había dos: `#8f9cff` en oscuro y `#565ec6` en claro, porque ninguno
+ * pasaba AA contra los dos fondos. La ventana para un valor único es
+ * estrechísima —la luminancia relativa tiene que caer entre 0.175 y 0.183 para
+ * dar 4,5:1 sobre negro y sobre blanco a la vez— y este es el punto óptimo
+ * dentro de ella: 4,58:1 en las cuatro direcciones.
+ *
+ * El coste es que no sobra margen. Si algún día el fondo deja de ser negro o
+ * blanco puros, hay que recalcularlo.
  */
+const ACCENT = { l: 0.574, c: 0.16, h: BRAND_HUE } as const;
+
 const DARK_ACCENT = {
-  base: { l: 0.724, c: 0.144, h: BRAND_HUE },
-  light: { l: 0.724, c: 0.144, h: BRAND_HUE },
-  dark: { l: 0.724, c: 0.144, h: BRAND_HUE },
-  ink: { l: 0.724, c: 0.144, h: BRAND_HUE },
-  solid: { l: 0.601, c: 0.156, h: BRAND_HUE },
+  base: ACCENT,
+  light: ACCENT,
+  dark: ACCENT,
+  ink: ACCENT,
+  solid: ACCENT,
 } as const;
 
 const LIGHT_ACCENT = {
-  base: { l: 0.53, c: 0.16, h: BRAND_HUE },
-  light: { l: 0.53, c: 0.16, h: BRAND_HUE },
-  dark: { l: 0.53, c: 0.16, h: BRAND_HUE },
-  ink: { l: 0.53, c: 0.16, h: BRAND_HUE },
-  solid: { l: 0.5, c: 0.17, h: BRAND_HUE },
+  base: ACCENT,
+  light: ACCENT,
+  dark: ACCENT,
+  ink: ACCENT,
+  solid: ACCENT,
 } as const;
 
 /**

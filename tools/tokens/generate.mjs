@@ -28,14 +28,6 @@ const BANNER = (source) =>
 
 /** Colores propios de una superficie del producto, no de la marca. */
 const PRODUCT = {
-  /* Las ediciones se distinguían por tono (violeta, ámbar, azul). Ahora por
-     luminosidad del acento, que es la misma señal sin salir del sistema. */
-  edition: {
-    personal: { l: 0.72, c: 0.144, h: 276.5 },
-    commercial: { l: 0.6, c: 0.15, h: 276.5 },
-    founder: { l: 0.48, c: 0.16, h: 276.5 },
-    contributor: { l: 0.84, c: 0.1, h: 276.5 },
-  },
   /* La previsualización de documento y la tarjeta de miembro son artefactos
      dibujados, no cromo de la interfaz, pero llevaban verdes que no salían de
      ningún token. Pasan a la escala neutra. */
@@ -81,7 +73,6 @@ function desktopTokens(mode) {
   const accentLight = hex(p.accent.light);
   const accentDark = hex(p.accent.dark);
   const accentInk = hex(p.accent.ink);
-  const accentSolid = hex(p.accent.solid);
 
   /* `local` y `cloud` no pueden estar a 20° del acento como estaban: eran
      indistinguibles. `local` ES el acento (es el estado preferente) y `cloud`
@@ -133,7 +124,6 @@ function desktopTokens(mode) {
     ["--color-accent-dark", accentDark],
     ["--color-accent-hover", isDark ? accentLight : accentDark],
     ["--color-accent-ink", accentInk],
-    ["--color-accent-solid", accentSolid],
     ...alphaScale("accent", accent, [5, 10, 20, 30, 50, 80]),
 
     ["--color-local", "var(--color-accent)"],
@@ -263,15 +253,6 @@ function desktopTokens(mode) {
     ["--color-onboarding-logo-ring", "rgba(255, 255, 255, 0.1)"],
 
     ...p.speakers.map((s, i) => [`--data-speaker-${i + 1}`, hex(s)]),
-
-    ["--color-edition-personal", hex(PRODUCT.edition.personal)],
-    ["--color-edition-commercial", hex(PRODUCT.edition.commercial)],
-    ["--color-edition-founder", hex(PRODUCT.edition.founder)],
-    ["--color-edition-contributor", hex(PRODUCT.edition.contributor)],
-    ["--surface-edition-personal", alpha(hex(PRODUCT.edition.personal), 0.12)],
-    ["--surface-edition-commercial", alpha(hex(PRODUCT.edition.commercial), 0.1)],
-    ["--surface-edition-founder", alpha(hex(PRODUCT.edition.founder), 0.12)],
-    ["--surface-edition-contributor", alpha(hex(PRODUCT.edition.contributor), 0.1)],
 
     ["--surface-preview-canvas", PRODUCT.preview.canvas],
     ["--surface-preview-document", PRODUCT.preview.document],

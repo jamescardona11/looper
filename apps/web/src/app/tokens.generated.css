@@ -3,7 +3,7 @@
 
 :root,
 .dark {
-  --brand: #8f9cff;
+  --brand: #626bd5;
   --brand-foreground: #000000;
   --background: #000000;
   --foreground: #ffffff;
@@ -19,8 +19,8 @@
   --destructive-foreground: #ffffff;
   --border: #282828;
   --input: #3a3a3a;
-  --success-subtle: rgba(143, 156, 255, 0.16);
-  --success-foreground: #8f9cff;
+  --success-subtle: rgba(98, 107, 213, 0.16);
+  --success-foreground: #626bd5;
   --warning-subtle: rgba(190, 190, 190, 0.16);
   --warning-foreground: #bebebe;
   --primary: var(--brand);
@@ -31,7 +31,7 @@
 }
 
 .light {
-  --brand: #565ec6;
+  --brand: #626bd5;
   --brand-foreground: #ffffff;
   --background: #ffffff;
   --foreground: #000000;
@@ -47,8 +47,8 @@
   --destructive-foreground: #ffffff;
   --border: #e1e1e1;
   --input: #cecece;
-  --success-subtle: rgba(86, 94, 198, 0.12);
-  --success-foreground: #565ec6;
+  --success-subtle: rgba(98, 107, 213, 0.12);
+  --success-foreground: #626bd5;
   --warning-subtle: rgba(74, 74, 74, 0.12);
   --warning-foreground: #4a4a4a;
   --primary: var(--brand);

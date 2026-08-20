@@ -82,10 +82,8 @@ export default {
         error: token("error"),
         warning: token("warning"),
         info: token("info"),
-        // Pareja del acento para modo claro: #8f9cff da 2,3:1 sobre el fondo
-        // claro, así que texto y bordes usan `ink` y los rellenos `solid`.
+        // Alias del acento; existe por compatibilidad con el código que lo usa.
         "accent-ink": token("accent-ink"),
-        "accent-solid": token("accent-solid"),
       },
     },
   },
