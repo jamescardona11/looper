@@ -24,12 +24,16 @@ TypeScript object because React Native cannot read CSS variables.
 
 ## The rules
 
-- Brand and neutral colors share one hue; neutral chroma falls toward black and
-  white.
+- Neutrals carry no chroma at all. Black and white are the protagonists and the
+  accent is the only color in the interface, so the greyscale stays neutral at
+  every step. Tinting it with the brand hue was tried and reverted: the
+  background stopped reading as black.
 - Dark backgrounds retain visible lightness steps. Light elevation may rely on
   borders and shadows near the white ceiling.
-- Use `accent` for fills/glows, `accent-ink` for text/borders, and
-  `accent-solid` for filled controls with white labels.
+- One accent per mode, and `accent-light` / `accent-dark` / `accent-ink` are
+  aliases of it. Depth and hover come from the alpha ramp, which shares the hue.
+  Three decorative purples used to coexist on the same screen and read as a
+  mistake.
 - Every text role must meet WCAG AA against its actual background in both
   modes.
 - Alpha ramps and RGB channel values are derived by the generator, never copied
@@ -40,14 +44,29 @@ TypeScript object because React Native cannot read CSS variables.
 - `error` stays red because it communicates destructive or failed states.
 - `local` uses the accent; `cloud` uses the neutral ramp so the distinction does
   not depend on two similar hues.
-- Speaker colors avoid the accent and error bands and maintain tested perceptual
-  distance from one another.
+- Speaker colors are steps of the neutral ramp, deliberately not the accent, so
+  a participant never reads as "active". Six greys separate worse than six hues,
+  so a six-person meeting wants the speaker's initial alongside the grey.
 
 ## The pill
 
 The native pill always uses the dark shell palette because it floats over the
 desktop rather than an app theme. Its capture halo derives from the success
 token.
+
+## The current values
+
+| | Dark | Light |
+| --- | --- | --- |
+| background | `#000000` | `#ffffff` |
+| text | `#ffffff` | `#000000` |
+| accent | `#7079fb` | `#5853fa` |
+| error | `#ef4444` | `#b91c1c` |
+
+The accent is chosen against the grounds it actually sits on — `bg-surface` and
+`accent-10` chips — not against pure black and white. A single value for both
+modes was tried (`#626bd5`); it cleared 4.58:1 on the two pure grounds and
+failed on all three real ones.
 
 ## Changing the palette
 
