@@ -12,7 +12,10 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { colors } from "@/shared/theme/colors";
+import { Button } from "@/shared/components/button";
+import { Icon } from "@/shared/components/icon";
+import { ErrorState } from "@/shared/components/screen-states";
+import { SectionLabel } from "@/shared/components/section-label";
 import {
   createSmartMode,
   type MobileStudioSettings,
@@ -21,9 +24,25 @@ import {
   studioSettingsData,
   type WritingStyle,
 } from "@/shared/studio/studio-settings";
+import { colors } from "@/shared/theme/colors";
+import { hitTarget, radius, relief, space } from "@/shared/theme/layout";
+import { typography } from "@/shared/theme/typography";
 
 type StudioTab = "styles" | "modes";
 
+const FORMAT_LABEL: Record<SmartMode["format"], string> = {
+  bullets: "viñetas",
+  email: "email",
+  message: "mensaje",
+  none: "sin formato",
+  todo: "tareas",
+};
+
+/**
+ * Studio es pantalla empujada, no tab: se abre desde la cabecera de Library y
+ * vuelve con el chevron. Importar cuelga del pie porque es configuración de una
+ * vez, no algo diario.
+ */
 export function StudioScreen() {
   const router = useRouter();
   const remote = useDictationSettings();
@@ -31,6 +50,7 @@ export function StudioScreen() {
   const [tab, setTab] = useState<StudioTab>("styles");
   const [editor, setEditor] = useState<"style" | "mode" | null>(null);
   const [status, setStatus] = useState<string | null>(null);
+  const [failed, setFailed] = useState<MobileStudioSettings | null>(null);
 
   useEffect(() => {
     if (!remote.isLoading) setSettings(normalizeStudioSettings(remote.doc?.data));
@@ -47,57 +67,81 @@ export function StudioScreen() {
 
   const persist = async (next: MobileStudioSettings) => {
     setSettings(next);
+    setFailed(null);
     setStatus("Guardando…");
     try {
       await remote.update(studioSettingsData(next));
       setStatus("Guardado. El teclado se actualiza automáticamente.");
     } catch {
-      setStatus("No se pudo guardar Studio.");
+      setStatus(null);
+      setFailed(next);
     }
   };
+
+  const toggleMode = (id: string) =>
+    void persist({
+      ...settings,
+      smartModes: settings.smartModes.map((mode) =>
+        mode.id === id ? { ...mode, enabled: !mode.enabled } : mode,
+      ),
+    });
 
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.header}>
-        <Text style={styles.title}>Studio</Text>
         <Pressable
-          accessibilityLabel="Configuración del teclado"
-          onPress={() => router.push("/keyboard" as Href)}
-          style={styles.keyboardButton}
+          accessibilityLabel="Volver"
+          accessibilityRole="button"
+          onPress={() => router.back()}
+          style={styles.back}
         >
-          <Text style={styles.keyboardButtonText}>Teclado</Text>
+          <Icon color={colors.textSecondary} name="chevronLeft" size={22} strokeWidth={2.2} />
+        </Pressable>
+        <Pressable
+          accessibilityLabel="Ajustes del teclado"
+          accessibilityRole="button"
+          onPress={() => router.push("/keyboard" as Href)}
+          style={({ pressed }) => [styles.keyboardButton, pressed && styles.sunk]}
+        >
+          <Icon color={colors.textSecondary} name="keyboard" size={16} />
+          <Text style={styles.keyboardLabel}>Teclado</Text>
         </Pressable>
       </View>
-      <View accessibilityLabel="Secciones de Studio" style={styles.tabs}>
-        <StudioTabButton
-          active={tab === "styles"}
-          label="Estilos"
-          onPress={() => setTab("styles")}
-        />
-        <StudioTabButton
-          active={tab === "modes"}
-          label="Smart Modes"
-          onPress={() => setTab("modes")}
-        />
+
+      <View style={styles.intro}>
+        <Text style={styles.title}>Studio</Text>
+        <Text style={styles.lede}>
+          No inventa contenido: solo cambia la forma de lo que dictas.
+        </Text>
       </View>
+
+      <View accessibilityLabel="Secciones de Studio" style={styles.segmented}>
+        <Segment active={tab === "styles"} label="Estilos" onPress={() => setTab("styles")} />
+        <Segment active={tab === "modes"} label="Smart Modes" onPress={() => setTab("modes")} />
+      </View>
+
       <ScrollView contentContainerStyle={styles.content}>
-        {tab === "styles" ? (
-          <StylesSection
-            settings={settings}
+        {failed ? (
+          <ErrorState
+            body="Tus cambios siguen en pantalla, pero el teclado aún usa la última versión guardada."
+            onRetry={() => void persist(failed)}
+            title="No se pudo guardar Studio"
+          />
+        ) : null}
+        {remote.isLoading ? (
+          <StudioSkeleton />
+        ) : tab === "styles" ? (
+          <StylesTab
+            onCreate={() => setEditor("style")}
             select={(activeStyleId) => void persist({ ...settings, activeStyleId })}
+            settings={settings}
           />
         ) : (
-          <ModesSection
+          <ModesTab
             modes={settings.smartModes}
-            styles={settings.styles}
-            toggle={(id) =>
-              void persist({
-                ...settings,
-                smartModes: settings.smartModes.map((mode) =>
-                  mode.id === id ? { ...mode, enabled: !mode.enabled } : mode,
-                ),
-              })
-            }
+            onCreate={() => setEditor("mode")}
+            toggle={toggleMode}
+            writingStyles={settings.styles}
           />
         )}
         {status ? (
@@ -105,24 +149,27 @@ export function StudioScreen() {
             {status}
           </Text>
         ) : null}
-        <View style={styles.runtimeCard}>
-          <Text style={styles.runtimeTitle}>Cómo se aplica</Text>
-          <Text style={styles.runtimeBody}>
-            iPhone: elige el estilo o Smart Mode en el teclado. Android puede además usar una regla
-            por app cuando tenga un package id configurado.
-          </Text>
-          <Text style={styles.runtimeBody}>
-            El teclado no inventa contenido: tono y formato transforman únicamente el dictado.
-          </Text>
-        </View>
       </ScrollView>
-      <Pressable
-        accessibilityLabel={tab === "styles" ? "Crear estilo" : "Crear Smart Mode"}
-        onPress={() => setEditor(tab === "styles" ? "style" : "mode")}
-        style={styles.fab}
-      >
-        <Text style={styles.fabText}>＋</Text>
-      </Pressable>
+
+      <View style={styles.footer}>
+        <Pressable
+          accessibilityHint="Diccionario, reemplazos, estilos y transcripciones"
+          accessibilityLabel="Importar desde otra app"
+          accessibilityRole="button"
+          onPress={() => router.push("/import" as Href)}
+          style={({ pressed }) => [styles.importRow, pressed && styles.dimmed]}
+        >
+          <View style={styles.importTile}>
+            <Icon color={colors.textSecondary} name="import" size={17} />
+          </View>
+          <View style={styles.rowCopy}>
+            <Text style={styles.rowTitle}>Importar desde otra app</Text>
+            <Text style={styles.rowNote}>Diccionario, reemplazos, estilos y transcripciones</Text>
+          </View>
+          <Icon color={colors.disabled} name="chevronRight" size={17} strokeWidth={2.2} />
+        </Pressable>
+      </View>
+
       <StudioEditor
         kind={editor}
         onClose={() => setEditor(null)}
@@ -134,17 +181,17 @@ export function StudioScreen() {
           setEditor(null);
           void persist({
             ...settings,
-            styles: [...settings.styles, style],
             activeStyleId: style.id,
+            styles: [...settings.styles, style],
           });
         }}
-        styles={settings.styles}
+        writingStyles={settings.styles}
       />
     </SafeAreaView>
   );
 }
 
-function StudioTabButton({
+function Segment({
   active,
   label,
   onPress,
@@ -158,194 +205,274 @@ function StudioTabButton({
       accessibilityRole="tab"
       accessibilityState={{ selected: active }}
       onPress={onPress}
-      style={[styles.tab, active && styles.activeTab]}
+      style={[styles.segment, active && styles.segmentActive]}
     >
-      <Text style={[styles.tabText, active && styles.activeTabText]}>{label}</Text>
+      <Text style={[styles.segmentLabel, active && styles.segmentLabelActive]}>{label}</Text>
     </Pressable>
   );
 }
 
-function StylesSection({
-  settings,
+function StylesTab({
+  onCreate,
   select,
+  settings,
 }: {
-  settings: MobileStudioSettings;
+  onCreate: () => void;
   select: (id: string) => void;
+  settings: MobileStudioSettings;
 }) {
-  const active =
-    settings.styles.find((style) => style.id === settings.activeStyleId) ?? settings.styles[0];
   return (
-    <View style={styles.section}>
-      <Text style={styles.intro}>
-        Define cómo suena tu voz después del dictado. El contenido no cambia; sí cambia su forma.
-      </Text>
-      {settings.styles.map((style) => {
-        const selected = style.id === settings.activeStyleId;
-        return (
-          <Pressable
-            accessibilityRole="radio"
-            accessibilityState={{ selected }}
-            key={style.id}
-            onPress={() => select(style.id)}
-            style={[styles.card, styles.styleRow, selected && styles.selectedCard]}
-          >
-            <View style={styles.styleMark}>
-              <Text style={styles.styleMarkText}>{style.name.at(0)}</Text>
-            </View>
-            <View style={styles.cardCopy}>
-              <Text style={styles.cardTitle}>{style.name}</Text>
-              <Text style={styles.cardMeta}>{style.description}</Text>
-            </View>
-            <View style={[styles.radio, selected && styles.radioSelected]} />
-          </Pressable>
-        );
-      })}
-      {active ? (
-        <View style={styles.preview}>
-          <Text style={styles.previewLabel}>VISTA PREVIA · {active.name}</Text>
-          <Text style={styles.previewInput}>
-            “Pues te quería decir que creo que hoy sí te puedo mandar la propuesta…”
-          </Text>
-          <Text style={styles.previewOutput}>{active.example}</Text>
-        </View>
-      ) : null}
+    <View style={styles.list}>
+      {settings.styles.map((style) => (
+        <StyleCard
+          key={style.id}
+          onPress={() => select(style.id)}
+          selected={style.id === settings.activeStyleId}
+          writingStyle={style}
+        />
+      ))}
+      <CreateRow label="Nuevo estilo" onPress={onCreate} />
     </View>
   );
 }
 
-function ModesSection({
-  modes,
-  styles,
-  toggle,
+/**
+ * La caja «suena así» es lo que hace entendible la pantalla: sin el ejemplo, el
+ * nombre del estilo no dice nada.
+ */
+function StyleCard({
+  onPress,
+  selected,
+  writingStyle,
 }: {
-  modes: SmartMode[];
-  styles: WritingStyle[];
-  toggle: (id: string) => void;
+  onPress: () => void;
+  selected: boolean;
+  writingStyle: WritingStyle;
 }) {
   return (
-    <View style={stylesSheet.section}>
-      <Text style={stylesSheet.intro}>
-        Un Smart Mode combina contexto, estilo y formato. En iPhone siempre puedes cambiarlo antes
-        de dictar.
-      </Text>
+    <Pressable
+      accessibilityRole="radio"
+      accessibilityState={{ selected }}
+      onPress={onPress}
+      style={({ pressed }) => [
+        styles.card,
+        selected && styles.cardSelected,
+        pressed && styles.dimmed,
+      ]}
+    >
+      <View style={styles.styleHead}>
+        <View style={[styles.radio, selected && styles.radioSelected]}>
+          {selected ? <View style={styles.radioDot} /> : null}
+        </View>
+        <View style={styles.rowCopy}>
+          <Text style={styles.rowTitle}>{writingStyle.name}</Text>
+          <Text style={styles.rowNote}>{writingStyle.description}</Text>
+        </View>
+      </View>
+      <View style={styles.example}>
+        <SectionLabel>Suena así</SectionLabel>
+        <Text style={styles.exampleText}>{writingStyle.example}</Text>
+      </View>
+    </Pressable>
+  );
+}
+
+function ModesTab({
+  modes,
+  onCreate,
+  toggle,
+  writingStyles,
+}: {
+  modes: SmartMode[];
+  onCreate: () => void;
+  toggle: (id: string) => void;
+  writingStyles: WritingStyle[];
+}) {
+  return (
+    <View style={styles.list}>
       {modes.length === 0 ? (
-        <View style={stylesSheet.empty}>
-          <Text style={stylesSheet.emptyTitle}>Aún no hay Smart Modes</Text>
-          <Text style={stylesSheet.cardMeta}>
-            Crea uno para email, mensajes, notas o seguimiento de reuniones.
+        <View style={styles.emptyCard}>
+          <Text style={styles.rowTitle}>Todavía no hay Smart Modes</Text>
+          <Text style={styles.rowNote}>
+            Un Smart Mode fija estilo y formato para un contexto: email, mensajes, notas o
+            seguimiento de reuniones.
           </Text>
         </View>
       ) : (
         modes.map((mode) => (
-          <View key={mode.id} style={[stylesSheet.card, stylesSheet.modeCard]}>
-            <View style={stylesSheet.modeHead}>
-              <View style={stylesSheet.cardCopy}>
-                <Text style={stylesSheet.cardTitle}>{mode.name}</Text>
-                <Text style={stylesSheet.cardMeta}>
-                  {mode.triggerType === "manual"
-                    ? "Selección manual en el teclado"
-                    : `Android · ${mode.triggerValue}`}
-                </Text>
-              </View>
-              <Switch
-                onValueChange={() => toggle(mode.id)}
-                trackColor={{ false: colors.borderStrong, true: colors.accent }}
-                value={mode.enabled}
-              />
-            </View>
-            <View style={stylesSheet.flow}>
-              <Text style={stylesSheet.flowKey}>CUANDO</Text>
-              <Text style={stylesSheet.flowValue}>
-                {mode.triggerType === "manual" ? "Lo selecciono" : "Abro la app"}
-              </Text>
-              <Text style={stylesSheet.flowKey}>ENTONCES</Text>
-              <Text style={stylesSheet.flowValue}>
-                {styles.find((style) => style.id === mode.styleId)?.name ?? "Estilo"} ·{" "}
-                {mode.format}
-              </Text>
-            </View>
-          </View>
+          <ModeRow key={mode.id} mode={mode} toggle={toggle} writingStyles={writingStyles} />
         ))
       )}
+      <CreateRow label="Nuevo Smart Mode" onPress={onCreate} />
+      <View style={styles.note}>
+        <Text style={styles.rowNote}>
+          En iPhone eliges el modo desde el teclado. En Android puede activarse solo según la app en
+          la que escribas.
+        </Text>
+      </View>
+    </View>
+  );
+}
+
+function ModeRow({
+  mode,
+  toggle,
+  writingStyles,
+}: {
+  mode: SmartMode;
+  toggle: (id: string) => void;
+  writingStyles: WritingStyle[];
+}) {
+  const styleName = writingStyles.find((item) => item.id === mode.styleId)?.name ?? "Estilo";
+  const where =
+    mode.triggerType === "manual"
+      ? "Lo eliges en el teclado"
+      : `Al escribir en ${mode.triggerValue}`;
+
+  return (
+    <View style={styles.card}>
+      <View style={styles.modeRow}>
+        <View style={styles.rowCopy}>
+          <Text style={[styles.rowTitle, !mode.enabled && styles.rowTitleOff]}>{mode.name}</Text>
+          <Text style={styles.rowNote}>
+            {where} · {styleName} · {FORMAT_LABEL[mode.format]}
+          </Text>
+        </View>
+        <Switch
+          accessibilityLabel={mode.name}
+          onValueChange={() => toggle(mode.id)}
+          trackColor={{ false: colors.surface, true: colors.accent }}
+          value={mode.enabled}
+        />
+      </View>
+    </View>
+  );
+}
+
+/** Sustituye al FAB: crear vive al final de la lista, no encima del contenido. */
+function CreateRow({ label, onPress }: { label: string; onPress: () => void }) {
+  return (
+    <Pressable
+      accessibilityLabel={label}
+      accessibilityRole="button"
+      onPress={onPress}
+      style={({ pressed }) => [styles.createRow, pressed && styles.dimmed]}
+    >
+      <Icon color={colors.muted} name="plus" size={17} strokeWidth={2.2} />
+      <Text style={styles.createLabel}>{label}</Text>
+    </Pressable>
+  );
+}
+
+function StudioSkeleton() {
+  return (
+    <View
+      accessibilityElementsHidden
+      importantForAccessibility="no-hide-descendants"
+      style={styles.list}
+    >
+      {[0, 1, 2].map((index) => (
+        <View key={index} style={styles.card}>
+          <View style={styles.styleHead}>
+            <View style={styles.radio} />
+            <View style={styles.rowCopy}>
+              <View style={styles.skeletonBarWide} />
+              <View style={styles.skeletonBarNarrow} />
+            </View>
+          </View>
+          <View style={styles.skeletonExample} />
+        </View>
+      ))}
     </View>
   );
 }
 
 function StudioEditor({
   kind,
-  styles: availableStyles,
   onClose,
-  onStyle,
   onMode,
+  onStyle,
+  writingStyles,
 }: {
   kind: "style" | "mode" | null;
-  styles: WritingStyle[];
   onClose: () => void;
-  onStyle: (style: WritingStyle) => void;
   onMode: (mode: SmartMode) => void;
+  onStyle: (style: WritingStyle) => void;
+  writingStyles: WritingStyle[];
 }) {
   const [name, setName] = useState("");
   const [instructions, setInstructions] = useState("");
-  const [styleId, setStyleId] = useState(availableStyles[0]?.id ?? "concise");
+  const [styleId, setStyleId] = useState(writingStyles[0]?.id ?? "concise");
   const [format, setFormat] = useState<SmartMode["format"]>("none");
+
   const save = () => {
     if (!name.trim()) return;
     if (kind === "style") {
       onStyle({
+        description: "Personalizado",
+        example: "Vista previa disponible al usar este estilo.",
         id: `style_${Date.now()}`,
         name: name.trim(),
-        description: "Personalizado",
         promptTemplate: instructions.trim(),
-        example: "Vista previa disponible al usar este estilo.",
       });
     } else if (kind === "mode") {
-      onMode(createSmartMode({ name, styleId, format, instructions }));
+      onMode(createSmartMode({ format, instructions, name, styleId }));
     }
     setName("");
     setInstructions("");
   };
+
   return (
     <Modal animationType="slide" onRequestClose={onClose} transparent visible={kind !== null}>
-      <View style={stylesSheet.modalBackdrop}>
-        <View style={stylesSheet.sheet}>
-          <View style={stylesSheet.sheetHead}>
-            <Text style={stylesSheet.sheetTitle}>
+      <View style={styles.backdrop}>
+        <View style={styles.sheet}>
+          <View style={styles.sheetHead}>
+            <Text style={styles.sheetTitle}>
               {kind === "style" ? "Nuevo estilo" : "Nuevo Smart Mode"}
             </Text>
-            <Pressable onPress={onClose} style={stylesSheet.close}>
-              <Text style={stylesSheet.closeText}>×</Text>
+            <Pressable
+              accessibilityLabel="Cerrar"
+              accessibilityRole="button"
+              onPress={onClose}
+              style={styles.close}
+            >
+              <Icon color={colors.text} name="close" size={18} />
             </Pressable>
           </View>
           <TextInput
             onChangeText={setName}
             placeholder="Nombre"
             placeholderTextColor={colors.muted}
-            style={stylesSheet.input}
+            style={styles.input}
             value={name}
           />
           {kind === "mode" ? (
             <>
-              <Text style={stylesSheet.fieldLabel}>ESTILO</Text>
-              <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-                {availableStyles.map((style) => (
+              <SectionLabel>Estilo</SectionLabel>
+              <View style={styles.options}>
+                {writingStyles.map((item) => (
                   <Pressable
-                    key={style.id}
-                    onPress={() => setStyleId(style.id)}
-                    style={[stylesSheet.option, styleId === style.id && stylesSheet.optionSelected]}
+                    accessibilityRole="radio"
+                    accessibilityState={{ selected: styleId === item.id }}
+                    key={item.id}
+                    onPress={() => setStyleId(item.id)}
+                    style={[styles.option, styleId === item.id && styles.optionSelected]}
                   >
-                    <Text style={stylesSheet.optionText}>{style.name}</Text>
+                    <Text style={styles.optionLabel}>{item.name}</Text>
                   </Pressable>
                 ))}
-              </ScrollView>
-              <Text style={stylesSheet.fieldLabel}>FORMATO</Text>
-              <View style={stylesSheet.options}>
+              </View>
+              <SectionLabel>Formato</SectionLabel>
+              <View style={styles.options}>
                 {(["none", "email", "message", "bullets", "todo"] as const).map((value) => (
                   <Pressable
+                    accessibilityRole="radio"
+                    accessibilityState={{ selected: format === value }}
                     key={value}
                     onPress={() => setFormat(value)}
-                    style={[stylesSheet.option, format === value && stylesSheet.optionSelected]}
+                    style={[styles.option, format === value && styles.optionSelected]}
                   >
-                    <Text style={stylesSheet.optionText}>{value}</Text>
+                    <Text style={styles.optionLabel}>{FORMAT_LABEL[value]}</Text>
                   </Pressable>
                 ))}
               </View>
@@ -356,174 +483,216 @@ function StudioEditor({
             onChangeText={setInstructions}
             placeholder="Instrucciones"
             placeholderTextColor={colors.muted}
-            style={[stylesSheet.input, stylesSheet.instructions]}
+            style={[styles.input, styles.instructions]}
             textAlignVertical="top"
             value={instructions}
           />
-          <Pressable onPress={save} style={stylesSheet.save}>
-            <Text style={stylesSheet.saveText}>Guardar</Text>
-          </Pressable>
+          <Button disabled={!name.trim()} label="Guardar" onPress={save} variant="primary" />
         </View>
       </View>
     </Modal>
   );
 }
 
-const stylesSheet = StyleSheet.create({
-  safeArea: { backgroundColor: colors.background, flex: 1 },
-  header: { alignItems: "center", flexDirection: "row", paddingHorizontal: 18, paddingTop: 14 },
-  title: { color: colors.text, flex: 1, fontSize: 27, fontWeight: "700" },
-  keyboardButton: {
-    borderColor: colors.border,
-    borderRadius: 10,
-    borderWidth: 1,
-    minHeight: 40,
+const SCREEN_PAD = 20;
+const SHEET_RADIUS = 22;
+
+const styles = StyleSheet.create({
+  back: {
+    alignItems: "center",
+    height: hitTarget,
     justifyContent: "center",
-    paddingHorizontal: 12,
+    width: hitTarget,
   },
-  keyboardButtonText: { color: colors.textSecondary, fontSize: 12, fontWeight: "700" },
-  tabs: {
-    borderBottomColor: colors.border,
-    borderBottomWidth: 1,
-    flexDirection: "row",
-    gap: 18,
-    paddingHorizontal: 18,
-  },
-  tab: { minHeight: 48, justifyContent: "center" },
-  activeTab: { borderBottomColor: colors.accent, borderBottomWidth: 2 },
-  tabText: { color: colors.muted, fontSize: 14, fontWeight: "700" },
-  activeTabText: { color: colors.text },
-  content: { padding: 18, paddingBottom: 110 },
-  section: { gap: 10 },
-  intro: { color: colors.textSecondary, fontSize: 13, lineHeight: 20, marginBottom: 8 },
+  backdrop: { backgroundColor: colors.overlay, flex: 1, justifyContent: "flex-end" },
   card: {
-    backgroundColor: colors.backgroundSecondary,
-    borderColor: colors.border,
-    borderRadius: 15,
-    borderWidth: 1,
-    padding: 14,
-  },
-  styleRow: { alignItems: "center", flexDirection: "row", gap: 12 },
-  selectedCard: { borderColor: colors.accent },
-  styleMark: {
-    alignItems: "center",
-    backgroundColor: colors.surface,
-    borderRadius: 11,
-    height: 40,
-    justifyContent: "center",
-    width: 40,
-  },
-  styleMarkText: { color: colors.accentLight, fontWeight: "800" },
-  cardCopy: { flex: 1, gap: 4 },
-  cardTitle: { color: colors.text, fontSize: 14, fontWeight: "700" },
-  cardMeta: { color: colors.muted, fontSize: 12, lineHeight: 17 },
-  radio: {
-    borderColor: colors.borderStrong,
-    borderRadius: 99,
-    borderWidth: 1,
-    height: 18,
-    width: 18,
-  },
-  radioSelected: { backgroundColor: colors.accent, borderColor: colors.accent, borderWidth: 4 },
-  preview: { gap: 8, marginTop: 12 },
-  previewLabel: { color: colors.muted, fontSize: 10, fontWeight: "800", letterSpacing: 0.7 },
-  previewInput: {
     backgroundColor: colors.surfaceMuted,
-    borderRadius: 12,
-    color: colors.textSecondary,
-    fontSize: 13,
-    lineHeight: 19,
-    padding: 13,
-  },
-  previewOutput: {
-    backgroundColor: colors.accentSubtle,
-    borderColor: colors.accent,
-    borderRadius: 12,
+    borderColor: colors.border,
+    borderRadius: radius.xl,
     borderWidth: 1,
-    color: colors.text,
-    fontSize: 13,
-    lineHeight: 20,
-    padding: 13,
+    gap: 10,
+    padding: space.lg,
   },
-  modeCard: { gap: 13 },
-  modeHead: { alignItems: "center", flexDirection: "row", gap: 10 },
-  flow: { flexDirection: "row", flexWrap: "wrap", gap: 7 },
-  flowKey: { color: colors.muted, fontSize: 10, fontWeight: "800", width: 62 },
-  flowValue: { color: colors.textSecondary, flexBasis: "70%", fontSize: 12 },
-  empty: { backgroundColor: colors.backgroundSecondary, borderRadius: 15, gap: 7, padding: 24 },
-  emptyTitle: { color: colors.text, fontSize: 17, fontWeight: "700" },
-  status: { color: colors.muted, fontSize: 12, lineHeight: 18, marginTop: 14 },
-  runtimeCard: {
-    borderTopColor: colors.border,
-    borderTopWidth: 1,
-    gap: 8,
-    marginTop: 24,
-    paddingTop: 18,
-  },
-  runtimeTitle: { color: colors.text, fontSize: 14, fontWeight: "700" },
-  runtimeBody: { color: colors.muted, fontSize: 12, lineHeight: 18 },
-  fab: {
-    alignItems: "center",
-    backgroundColor: colors.accent,
-    borderRadius: 15,
-    bottom: 18,
-    height: 50,
-    justifyContent: "center",
-    position: "absolute",
-    right: 18,
-    width: 50,
-  },
-  fabText: { color: colors.onAccent, fontSize: 25 },
-  modalBackdrop: { backgroundColor: colors.overlay, flex: 1, justifyContent: "flex-end" },
-  sheet: {
-    backgroundColor: colors.backgroundSecondary,
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-    gap: 14,
-    padding: 20,
-    paddingBottom: 34,
-  },
-  sheetHead: { alignItems: "center", flexDirection: "row" },
-  sheetTitle: { color: colors.text, flex: 1, fontSize: 21, fontWeight: "700" },
+  cardSelected: { borderColor: colors.accent },
   close: {
     alignItems: "center",
     backgroundColor: colors.surface,
-    borderRadius: 10,
+    borderRadius: radius.md,
     height: 36,
     justifyContent: "center",
     width: 36,
   },
-  closeText: { color: colors.text, fontSize: 24 },
-  input: {
+  content: { gap: space.lg, paddingBottom: space.xxl, paddingHorizontal: SCREEN_PAD },
+  createLabel: { ...typography.body, color: colors.muted, fontWeight: "600" },
+  createRow: {
+    alignItems: "center",
+    borderColor: colors.borderStrong,
+    borderRadius: radius.lg,
+    borderStyle: "dashed",
+    borderWidth: 1,
+    flexDirection: "row",
+    gap: 9,
+    justifyContent: "center",
+    minHeight: 52,
+  },
+  dimmed: { opacity: 0.6 },
+  emptyCard: {
+    backgroundColor: colors.surfaceMuted,
+    borderColor: colors.border,
+    borderRadius: radius.xl,
+    borderWidth: 1,
+    gap: space.xs,
+    padding: space.xl,
+  },
+  example: {
     backgroundColor: colors.background,
     borderColor: colors.border,
-    borderRadius: 12,
+    borderRadius: radius.md,
+    borderWidth: 1,
+    gap: 6,
+    padding: space.md,
+  },
+  exampleText: { ...typography.body, color: colors.textSecondary },
+  footer: {
+    borderTopColor: colors.border,
+    borderTopWidth: 1,
+    paddingHorizontal: SCREEN_PAD,
+    paddingVertical: space.md,
+  },
+  header: {
+    alignItems: "center",
+    flexDirection: "row",
+    justifyContent: "space-between",
+    minHeight: 46,
+    paddingLeft: 6,
+    paddingRight: 10,
+  },
+  importRow: {
+    alignItems: "center",
+    flexDirection: "row",
+    gap: 13,
+    minHeight: 56,
+    paddingHorizontal: space.xs,
+  },
+  importTile: {
+    alignItems: "center",
+    backgroundColor: colors.surface,
+    borderColor: colors.border,
+    borderRadius: radius.md,
+    borderWidth: 1,
+    height: 36,
+    justifyContent: "center",
+    width: 36,
+  },
+  input: {
+    ...typography.body,
+    backgroundColor: colors.background,
+    borderColor: colors.border,
+    borderRadius: radius.md,
     borderWidth: 1,
     color: colors.text,
     minHeight: 46,
     paddingHorizontal: 13,
   },
-  instructions: { minHeight: 88, paddingTop: 12 },
-  fieldLabel: { color: colors.muted, fontSize: 10, fontWeight: "800", letterSpacing: 0.7 },
-  options: { flexDirection: "row", flexWrap: "wrap", gap: 7 },
+  instructions: { minHeight: 88, paddingTop: space.md },
+  intro: { gap: 7, paddingBottom: space.lg, paddingHorizontal: SCREEN_PAD, paddingTop: space.xs },
+  keyboardButton: {
+    ...relief.secondary,
+    alignItems: "center",
+    borderRadius: radius.md,
+    flexDirection: "row",
+    gap: space.sm,
+    minHeight: 40,
+    paddingHorizontal: 13,
+  },
+  keyboardLabel: { ...typography.meta, color: colors.textSecondary, fontWeight: "600" },
+  lede: { ...typography.body, color: colors.muted },
+  list: { gap: 9 },
+  modeRow: { alignItems: "center", flexDirection: "row", gap: 13 },
+  note: {
+    borderColor: colors.border,
+    borderRadius: radius.lg,
+    borderWidth: 1,
+    marginTop: 6,
+    padding: space.lg,
+  },
   option: {
     borderColor: colors.border,
-    borderRadius: 9,
+    borderRadius: radius.sm,
     borderWidth: 1,
-    marginRight: 7,
     paddingHorizontal: 10,
-    paddingVertical: 8,
+    paddingVertical: space.sm,
   },
+  optionLabel: { ...typography.meta, color: colors.textSecondary, fontWeight: "600" },
   optionSelected: { backgroundColor: colors.accentSubtle, borderColor: colors.accent },
-  optionText: { color: colors.textSecondary, fontSize: 11, fontWeight: "700" },
-  save: {
+  options: { flexDirection: "row", flexWrap: "wrap", gap: 7 },
+  radio: {
     alignItems: "center",
-    backgroundColor: colors.accent,
-    borderRadius: 13,
+    borderColor: colors.borderStrong,
+    borderRadius: radius.pill,
+    borderWidth: 2,
+    height: 20,
     justifyContent: "center",
-    minHeight: 48,
+    width: 20,
   },
-  saveText: { color: colors.onAccent, fontWeight: "800" },
+  radioDot: {
+    backgroundColor: colors.accent,
+    borderRadius: radius.pill,
+    height: 9,
+    width: 9,
+  },
+  radioSelected: { borderColor: colors.accent },
+  rowCopy: { flex: 1, gap: 2 },
+  rowNote: { ...typography.meta, color: colors.muted, lineHeight: 19 },
+  rowTitle: { ...typography.item, color: colors.text },
+  rowTitleOff: { color: colors.muted },
+  safeArea: { backgroundColor: colors.background, flex: 1 },
+  segment: {
+    alignItems: "center",
+    borderRadius: radius.md,
+    flex: 1,
+    justifyContent: "center",
+    minHeight: 40,
+  },
+  segmentActive: { backgroundColor: colors.surface },
+  segmentLabel: { ...typography.meta, color: colors.muted, fontWeight: "600" },
+  segmentLabelActive: { color: colors.text, fontWeight: "700" },
+  segmented: {
+    backgroundColor: colors.surfaceMuted,
+    borderColor: colors.border,
+    borderRadius: radius.lg,
+    borderWidth: 1,
+    flexDirection: "row",
+    gap: space.xs,
+    marginBottom: 14,
+    marginHorizontal: SCREEN_PAD,
+    padding: space.xs,
+  },
+  sheet: {
+    backgroundColor: colors.surfaceMuted,
+    borderTopLeftRadius: SHEET_RADIUS,
+    borderTopRightRadius: SHEET_RADIUS,
+    gap: 14,
+    padding: SCREEN_PAD,
+    paddingBottom: 34,
+  },
+  sheetHead: { alignItems: "center", flexDirection: "row" },
+  sheetTitle: { ...typography.section, color: colors.text, flex: 1 },
+  skeletonBarNarrow: {
+    backgroundColor: colors.surfaceMuted,
+    borderRadius: radius.xs,
+    height: 10,
+    width: "45%",
+  },
+  skeletonBarWide: {
+    backgroundColor: colors.surface,
+    borderRadius: radius.xs,
+    height: 12,
+    width: "62%",
+  },
+  skeletonExample: { backgroundColor: colors.surface, borderRadius: radius.md, height: 72 },
+  status: { ...typography.meta, color: colors.muted },
+  styleHead: { alignItems: "center", flexDirection: "row", gap: space.md },
+  sunk: relief.pressed,
+  title: { ...typography.display, color: colors.text },
 });
-
-const styles = stylesSheet;

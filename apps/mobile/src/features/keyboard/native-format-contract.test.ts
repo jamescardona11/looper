@@ -90,7 +90,7 @@ describe("native keyboard output formats", () => {
       "transformSelectorButton.topAnchor.constraint(equalTo: view.topAnchor, constant: 8)",
     );
     expect(iosKeyboard).toContain(
-      "dictationRail.topAnchor.constraint(equalTo: transformSelectorButton.bottomAnchor, constant: 2)",
+      "dictationRail.topAnchor.constraint(equalTo: transformSelectorButton.bottomAnchor, constant: 14)",
     );
     expect(iosKeyboard).toContain(
       "transformSelectorWithoutLanguageConstraint.isActive = !showsLanguageSelector",
@@ -102,8 +102,15 @@ describe("native keyboard output formats", () => {
     expect(iosKeyboard).toContain("private let baseDotRadius: CGFloat = 0.9");
     expect(iosKeyboard).toContain("private let activeDotRadius: CGFloat = 1.0");
     expect(iosKeyboard).toContain("private let highlightColor = UIColor.white");
-    expect(iosKeyboard).toContain("waveformView.widthAnchor.constraint(equalToConstant: 32)");
-    expect(iosKeyboard).toContain("waveformView.heightAnchor.constraint(equalToConstant: 18)");
+    // La señal ocupa el ancho del rail: a 32x18 la animación era invisible.
+    expect(iosKeyboard).toContain(
+      "waveformView.leadingAnchor.constraint(equalTo: dictationRail.leadingAnchor, constant: 8)",
+    );
+    expect(iosKeyboard).toContain("waveformView.heightAnchor.constraint(equalToConstant: 26)");
+    // Los dos umbrales que la mantenían apagada. Están en amplitud lineal, no
+    // en dB: subirlos otra vez deja la rejilla plana con voz normal.
+    expect(iosKeyboard).toContain("private let signalFloor: CGFloat = 0.002");
+    expect(iosKeyboard).toContain("private let minimumReference: CGFloat = 0.004");
     expect(iosKeyboard).toContain(
       "let columnSmoothing: CGFloat = desired > columnLevels[index] ? 0.5 : 0.1",
     );

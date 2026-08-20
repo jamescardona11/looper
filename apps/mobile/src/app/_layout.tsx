@@ -32,7 +32,12 @@ export default function RootLayout() {
     <SafeAreaProvider>
       <ConvexProvider config={config}>
         <SessionGate>
-          <Stack screenOptions={{ headerShown: false }} />
+          <Stack
+            screenOptions={{
+              contentStyle: { backgroundColor: colors.background },
+              headerShown: false,
+            }}
+          />
         </SessionGate>
       </ConvexProvider>
     </SafeAreaProvider>

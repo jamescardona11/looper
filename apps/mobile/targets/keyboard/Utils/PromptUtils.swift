@@ -125,7 +125,7 @@ let keyboardFormats: [KeyboardFormat] = [
   ),
   format(
     id: "email",
-    name: "Email",
+    name: "Correo",
     instructions: [
       "Reformat the content as an email with short paragraphs and blank lines between the greeting, body, and sign-off when they exist.",
       "Preserve a greeting or closing that the speaker dictated. Do not invent a recipient, subject, signature, closing, or any other detail.",
@@ -135,7 +135,7 @@ let keyboardFormats: [KeyboardFormat] = [
   ),
   format(
     id: "message",
-    name: "Message",
+    name: "Mensaje",
     instructions: [
       "Reformat the content as a concise chat message that sounds like the speaker typed it.",
       "Keep it casual and natural. Do not over-structure, formalize, or over-punctuate it.",
@@ -145,7 +145,7 @@ let keyboardFormats: [KeyboardFormat] = [
   ),
   format(
     id: "todo",
-    name: "To-do",
+    name: "Tareas",
     instructions: [
       "Reformat the speaker's explicit tasks and follow-ups as a checklist.",
       "Start each task with '- [ ] ' on its own line. Keep one actionable task per line and preserve the speaker's original order, owners, dates, and qualifiers.",

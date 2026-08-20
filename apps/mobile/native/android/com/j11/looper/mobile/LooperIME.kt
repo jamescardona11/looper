@@ -271,14 +271,14 @@ class LooperIME : InputMethodService() {
                 showWaveform(false, primary)
                 showProgress(false, primary)
                 pill?.setColor(primary)
-                configurePill("Dictate", R.drawable.ic_mic, true, "Start dictation", onPrimary)
+                configurePill("Dictate", R.drawable.ic_mic, true, "Empezar a dictar", onPrimary)
             }
             Phase.RECORDING -> {
                 showWaveform(true, primary)
                 showProgress(false, primary)
                 pill?.setColor(primary)
                 configurePill(
-                    "Listening",
+                    "Escuchando",
                     R.drawable.ic_stop,
                     true,
                     "Stop dictation. Listening",
@@ -289,13 +289,13 @@ class LooperIME : InputMethodService() {
                 showWaveform(false, primary)
                 showProgress(true, primary)
                 pill?.setColor(inactive)
-                dictateLabel.text = "Processing"
+                dictateLabel.text = "Procesando"
                 dictateLabel.alpha = 1f
                 dictateIcon.visibility = View.GONE
                 dictateSpinner.visibility = View.VISIBLE
                 dictateButton.isClickable = false
                 dictateButton.isEnabled = false
-                dictateButton.contentDescription = "Dictation processing"
+                dictateButton.contentDescription = "Procesando el dictado"
                 dictateSpinner.indeterminateTintList = ColorStateList.valueOf(onPrimary)
             }
             Phase.ERROR -> {
@@ -1104,7 +1104,7 @@ class LooperIME : InputMethodService() {
             ),
             KeyboardFormat(
                 id = "email",
-                name = "Email",
+                name = "Correo",
                 prompt = """
                     Reformat the content as an email with short paragraphs and blank lines between the greeting, body, and sign-off when they exist.
                     Preserve a greeting or closing that the speaker dictated. Do not invent a recipient, subject, signature, closing, or any other detail.
@@ -1114,7 +1114,7 @@ class LooperIME : InputMethodService() {
             ),
             KeyboardFormat(
                 id = "message",
-                name = "Message",
+                name = "Mensaje",
                 prompt = """
                     Reformat the content as a concise chat message that sounds like the speaker typed it.
                     Keep it casual and natural. Do not over-structure, formalize, or over-punctuate it.
@@ -1124,7 +1124,7 @@ class LooperIME : InputMethodService() {
             ),
             KeyboardFormat(
                 id = "todo",
-                name = "To-do",
+                name = "Tareas",
                 prompt = """
                     Reformat the speaker's explicit tasks and follow-ups as a checklist.
                     Start each task with '- [ ] ' on its own line. Keep one actionable task per line and preserve the speaker's original order, owners, dates, and qualifiers.

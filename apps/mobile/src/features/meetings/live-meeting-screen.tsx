@@ -1,30 +1,47 @@
 import { type Href, useRouter } from "expo-router";
-import {
-  ActivityIndicator,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-} from "react-native";
+import { type RefObject, useEffect, useRef } from "react";
+import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
+import Animated, {
+  cancelAnimation,
+  Easing,
+  ReduceMotion,
+  useAnimatedStyle,
+  useSharedValue,
+  withRepeat,
+  withTiming,
+} from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
+import Svg, { Circle } from "react-native-svg";
+import { Button } from "@/shared/components/button";
+import { Chip } from "@/shared/components/chip";
+import { Icon } from "@/shared/components/icon";
 import { PillListeningSignal } from "@/shared/components/pill-listening-signal";
+import { ErrorState } from "@/shared/components/screen-states";
+import { SectionLabel } from "@/shared/components/section-label";
 import { colors } from "@/shared/theme/colors";
+import { hitTarget, radius, space } from "@/shared/theme/layout";
+import { typography } from "@/shared/theme/typography";
+import { formatMeetingDuration } from "./meeting-capture-logic";
 import { useMeetingCapture } from "./use-meeting-capture";
+
+const STEPS = [
+  "Looper graba mientras tú escribes lo que quieras.",
+  "Al terminar, Parakeet transcribe sin conexión.",
+  "Queda un documento buscable, con tus momentos marcados.",
+];
 
 export function LiveMeetingScreen() {
   const router = useRouter();
   const capture = useMeetingCapture();
-  const isReady = capture.phase === "ready";
+  const notesRef = useRef<TextInput>(null);
+  const modelReady = capture.localSttStatus === "ready";
   const isRecording = capture.phase === "recording";
+  const busyPhase =
+    capture.phase === "starting" || capture.phase === "processing" || capture.phase === "complete"
+      ? capture.phase
+      : null;
 
-  const finish = async () => {
-    const meetingId = await capture.finish();
-    if (meetingId) router.replace(`/meeting/${meetingId}` as Href);
-  };
-  const retry = async () => {
-    const meetingId = await capture.retry();
+  const openMeeting = (meetingId: string | null) => {
     if (meetingId) router.replace(`/meeting/${meetingId}` as Href);
   };
 
@@ -38,319 +55,440 @@ export function LiveMeetingScreen() {
           onPress={() => router.replace("/")}
           style={styles.headerButton}
         >
-          <Text style={styles.headerButtonText}>‹</Text>
+          <Icon color={colors.textSecondary} name="chevronLeft" size={22} strokeWidth={2.2} />
         </Pressable>
         <Text style={styles.headerTitle}>Meeting</Text>
         <View style={styles.headerButton} />
       </View>
+
       <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
-        {isReady ? (
-          <ReadyState
+        {capture.phase === "ready" ? (
+          <ReadyPhase
             install={capture.installLocalStt}
             memoryTier={capture.localSttMemoryTier}
+            modelReady={modelReady}
             progress={capture.localSttProgress}
             setTitle={capture.setTitle}
-            start={capture.start}
             sttStatus={capture.localSttStatus}
             title={capture.title}
           />
         ) : null}
+
         {isRecording ? (
-          <View style={styles.recordingWorkspace}>
-            <View style={styles.captureHead}>
-              <View style={styles.liveLabel}>
-                <View style={styles.liveDot} />
-                <Text style={styles.liveText}>Grabando</Text>
-              </View>
-              <PillListeningSignal
-                active
-                elapsedMs={capture.durationMs}
-                level={capture.audioLevel}
-              />
-              <Text style={styles.source}>Micrófono del dispositivo</Text>
-            </View>
-            <View style={styles.noticeCard}>
-              <Text style={styles.noticeLabel}>TRANSCRIPCIÓN</Text>
-              <Text style={styles.noticeBody}>
-                Parakeet procesará el audio localmente al terminar. Tus notas y momentos ya quedan
-                unidos a este meeting.
-              </Text>
-            </View>
-            {capture.moments.length > 0 ? (
-              <Text accessibilityLiveRegion="polite" style={styles.markedCopy}>
-                {capture.moments.length}{" "}
-                {capture.moments.length === 1 ? "momento marcado" : "momentos marcados"}
-              </Text>
-            ) : null}
-            <View style={styles.notesCard}>
-              <Text style={styles.notesLabel}>MIS NOTAS</Text>
-              <TextInput
-                multiline
-                onChangeText={capture.setNotes}
-                placeholder="Escribe mientras Looper escucha…"
-                placeholderTextColor={colors.muted}
-                style={styles.notesInput}
-                textAlignVertical="top"
-                value={capture.notes}
-              />
-            </View>
-          </View>
+          <RecordingPhase
+            audioLevel={capture.audioLevel}
+            durationMs={capture.durationMs}
+            moments={capture.moments}
+            notes={capture.notes}
+            notesRef={notesRef}
+            setNotes={capture.setNotes}
+          />
         ) : null}
-        {capture.phase === "starting" || capture.phase === "processing" ? (
-          <ProcessingState phase={capture.phase} />
-        ) : null}
+
+        {busyPhase ? <BusyPhase durationMs={capture.durationMs} phase={busyPhase} /> : null}
+
         {capture.phase === "error" ? (
-          <View style={styles.centerState}>
-            <Text style={styles.stateTitle}>El meeting necesita atención</Text>
-            <Text style={styles.stateBody}>{capture.error ?? "No se pudo continuar."}</Text>
-            <Pressable onPress={() => void retry()} style={styles.primaryButton}>
-              <Text style={styles.primaryText}>Reintentar procesamiento</Text>
-            </Pressable>
-          </View>
+          <ErrorState
+            body={`El audio está a salvo: son ${describeMinutes(capture.durationMs)} y no se ha perdido nada. Parakeet no pudo terminar de procesarlo.`}
+            detail={capture.error ?? "local-stt: el runtime no devolvió detalle."}
+            onRetry={() => void capture.retry().then(openMeeting)}
+            title="La transcripción se quedó a medias"
+          />
         ) : null}
       </ScrollView>
-      {isRecording ? (
-        <View style={styles.captureActions}>
-          <Pressable onPress={capture.markMoment} style={styles.markButton}>
-            <Text style={styles.markText}>Marcar momento</Text>
-          </Pressable>
-          <Pressable onPress={() => void finish()} style={styles.stopButton}>
-            <Text style={styles.stopText}>Terminar</Text>
-          </Pressable>
-        </View>
-      ) : null}
+
+      <View style={styles.footer}>
+        {isRecording ? (
+          <View style={styles.actionRow}>
+            <View style={styles.action}>
+              <Button icon="bookmark" label="Momento" onPress={capture.markMoment} />
+            </View>
+            <View style={styles.action}>
+              <Button icon="edit" label="Nota" onPress={() => notesRef.current?.focus()} />
+            </View>
+          </View>
+        ) : null}
+
+        {capture.phase === "ready" ? (
+          <Button
+            disabled={!modelReady}
+            label="Empezar meeting"
+            onPress={() => void capture.start()}
+            variant="primary"
+          />
+        ) : null}
+
+        {isRecording ? (
+          <Button
+            label="Terminar y transcribir"
+            onPress={() => void capture.finish().then(openMeeting)}
+            variant="primary"
+          />
+        ) : null}
+
+        {busyPhase === "starting" || busyPhase === "processing" ? (
+          <Text style={styles.footNote}>Se guardará en Library al terminar</Text>
+        ) : null}
+      </View>
     </SafeAreaView>
   );
 }
 
-function ReadyState({
-  title,
+function ReadyPhase({
+  install,
+  memoryTier,
+  modelReady,
+  progress,
   setTitle,
   sttStatus,
-  progress,
-  memoryTier,
-  install,
-  start,
+  title,
 }: {
-  title: string;
+  install: () => Promise<void>;
+  memoryTier: string;
+  modelReady: boolean;
+  progress: number;
   setTitle: (value: string) => void;
   sttStatus: string;
-  progress: number;
-  memoryTier: string;
-  install: () => Promise<void>;
-  start: () => Promise<boolean>;
+  title: string;
 }) {
-  const modelReady = sttStatus === "ready";
-  const installing =
-    sttStatus === "downloading" || sttStatus === "extracting" || sttStatus === "checking";
-  const installLabel =
-    sttStatus === "downloading"
-      ? `Descargando ${progress}%`
-      : sttStatus === "extracting"
-        ? `Preparando ${progress}%`
-        : "Comprobando modelo";
+  const installing = sttStatus === "downloading" || sttStatus === "extracting";
+  const unsupported = memoryTier === "unsupported";
+
   return (
-    <View style={styles.readyState}>
-      <Text style={styles.heroEyebrow}>LIVE MEETING COMPANION</Text>
-      <Text style={styles.heroTitle}>Toma notas sin perder la conversación.</Text>
-      <Text style={styles.heroBody}>
-        Looper graba, transcribe localmente y convierte el resultado en un documento consultable.
-      </Text>
-      <View style={styles.field}>
-        <Text style={styles.fieldLabel}>Nombre</Text>
-        <TextInput
-          onChangeText={setTitle}
-          placeholderTextColor={colors.muted}
-          style={styles.titleInput}
-          value={title}
+    <View style={styles.ready}>
+      <View style={styles.chipRow}>
+        <Chip
+          icon="lock"
+          label={modelReady ? "Parakeet · en el dispositivo" : "Parakeet · sin instalar"}
+          selected={modelReady}
         />
       </View>
-      {!modelReady ? (
-        <View style={styles.modelCard}>
-          <Text style={styles.modelTitle}>Dictado local requerido</Text>
-          <Text style={styles.modelBody}>
-            {memoryTier === "unsupported"
-              ? "Este dispositivo no tiene memoria suficiente para Parakeet."
-              : "Instala Parakeet una vez. El audio del meeting no sale del dispositivo para transcribirse."}
-          </Text>
-          {memoryTier !== "unsupported" ? (
-            <Pressable
-              disabled={installing}
-              onPress={() => void install()}
-              style={[styles.secondaryButton, installing && styles.disabled]}
-            >
-              <Text style={styles.secondaryText}>
-                {installing ? installLabel : "Instalar modelo local"}
-              </Text>
-            </Pressable>
-          ) : null}
+
+      <View style={styles.field}>
+        <SectionLabel>Nombre</SectionLabel>
+        <View style={styles.fieldRow}>
+          <TextInput
+            accessibilityLabel="Nombre del meeting"
+            onChangeText={setTitle}
+            placeholder="Sin título"
+            placeholderTextColor={colors.disabled}
+            style={styles.fieldInput}
+            value={title}
+          />
+          <Icon color={colors.muted} name="edit" size={17} />
         </View>
-      ) : null}
-      <Pressable
-        disabled={!modelReady}
-        onPress={() => void start()}
-        style={[styles.primaryButton, !modelReady && styles.disabled]}
-      >
-        <Text style={styles.primaryText}>Empezar meeting</Text>
-      </Pressable>
+      </View>
+
+      <View style={styles.card}>
+        <Text style={styles.cardTitle}>Qué va a pasar</Text>
+        {STEPS.map((step, index) => (
+          <View key={step} style={styles.step}>
+            <Text style={styles.stepIndex}>{index + 1}</Text>
+            <Text style={styles.stepText}>{step}</Text>
+          </View>
+        ))}
+      </View>
+
+      {modelReady ? null : (
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>Falta el modelo local</Text>
+          <Text style={styles.cardBody}>
+            {unsupported
+              ? "Este dispositivo no tiene memoria suficiente para Parakeet, así que el meeting no puede transcribirse aquí."
+              : "Parakeet se instala una vez y el audio del meeting no sale del dispositivo para transcribirse."}
+          </Text>
+          {unsupported ? null : installing ? (
+            <View style={styles.installProgress}>
+              <ProgressRing percent={progress} />
+              <Text style={styles.cardBody}>
+                {sttStatus === "downloading" ? "Descargando el modelo" : "Preparando el modelo"}
+              </Text>
+            </View>
+          ) : (
+            <Button icon="import" label="Instalar modelo local" onPress={() => void install()} />
+          )}
+        </View>
+      )}
     </View>
   );
 }
 
-function ProcessingState({ phase }: { phase: "starting" | "processing" }) {
+function RecordingPhase({
+  audioLevel,
+  durationMs,
+  moments,
+  notes,
+  notesRef,
+  setNotes,
+}: {
+  audioLevel: number;
+  durationMs: number;
+  moments: number[];
+  notes: string;
+  notesRef: RefObject<TextInput | null>;
+  setNotes: (value: string) => void;
+}) {
   return (
-    <View style={styles.centerState}>
-      <ActivityIndicator color={colors.accent} size="large" />
-      <Text style={styles.stateTitle}>
-        {phase === "starting" ? "Abriendo el meeting" : "Organizando la reunión"}
-      </Text>
-      <Text style={styles.stateBody}>
-        {phase === "starting"
-          ? "Preparando el micrófono y la sesión privada."
-          : "Parakeet transcribe el audio y Looper une tus notas y momentos marcados."}
-      </Text>
+    <View style={styles.recording}>
+      <View style={styles.recordingHead}>
+        <View style={styles.liveLabel}>
+          <View style={styles.liveDot} />
+          <SectionLabel>Grabando</SectionLabel>
+        </View>
+        <Text style={styles.timer}>{formatMeetingDuration(durationMs)}</Text>
+        <PillListeningSignal active elapsedMs={durationMs} level={audioLevel} />
+      </View>
+
+      <View style={styles.moments}>
+        <View style={styles.momentsHead}>
+          <SectionLabel>{`Momentos · ${moments.length}`}</SectionLabel>
+          <View style={styles.rule} />
+        </View>
+        {moments.length === 0 ? (
+          <Text style={styles.momentsHint}>
+            Marca un momento y queda anclado al minuto exacto de la grabación.
+          </Text>
+        ) : (
+          moments.map((timestamp, index) => (
+            <View key={timestamp} style={styles.momentRow}>
+              <Icon color={colors.accent} name="bookmark" size={14} strokeWidth={2.2} />
+              <Text style={styles.momentAt}>{formatMeetingDuration(timestamp)}</Text>
+              <Text numberOfLines={1} style={styles.momentText}>{`Momento ${index + 1}`}</Text>
+            </View>
+          ))
+        )}
+      </View>
+
+      <View style={styles.notesCard}>
+        <SectionLabel>Mis notas</SectionLabel>
+        <TextInput
+          accessibilityLabel="Mis notas"
+          multiline
+          onChangeText={setNotes}
+          placeholder="Escribe mientras Looper escucha…"
+          placeholderTextColor={colors.disabled}
+          ref={notesRef}
+          style={styles.notesInput}
+          textAlignVertical="top"
+          value={notes}
+        />
+      </View>
     </View>
   );
+}
+
+function BusyPhase({
+  durationMs,
+  phase,
+}: {
+  durationMs: number;
+  phase: "starting" | "processing" | "complete";
+}) {
+  if (phase === "starting") {
+    return (
+      <BusyPanel
+        body="Preparando el micrófono y la sesión privada."
+        percent={null}
+        title="Abriendo el meeting"
+      />
+    );
+  }
+  if (phase === "complete") {
+    return <BusyPanel body="Ya está en Library." percent={100} title="Meeting guardado" />;
+  }
+  return (
+    <BusyPanel
+      body={`${describeMinutes(durationMs)} de audio, sin conexión. Puedes cerrar la app: sigue al volver.`}
+      percent={null}
+      title="Transcribiendo"
+    />
+  );
+}
+
+function BusyPanel({
+  body,
+  percent,
+  title,
+}: {
+  body: string;
+  percent: number | null;
+  title: string;
+}) {
+  return (
+    <View style={styles.busy}>
+      <ProgressRing percent={percent} />
+      <View style={styles.busyCopy}>
+        <Text style={styles.busyTitle}>{title}</Text>
+        <Text style={styles.busyBody}>{body}</Text>
+      </View>
+    </View>
+  );
+}
+
+const RING_SIZE = 96;
+const RING_RADIUS = 45;
+const RING_LENGTH = 2 * Math.PI * RING_RADIUS;
+/** Arco del anillo cuando no hay cifra: gira en vez de inventarse un número. */
+const RING_INDETERMINATE = 0.24;
+
+/**
+ * `percent` es `null` cuando no existe una cifra real que enseñar — transcribir
+ * no publica progreso — y entonces el anillo gira sin porcentaje.
+ */
+function ProgressRing({ percent }: { percent: number | null }) {
+  const spin = useSharedValue(0);
+
+  useEffect(() => {
+    if (percent !== null) return;
+    spin.set(
+      withRepeat(
+        withTiming(1, {
+          duration: 1200,
+          easing: Easing.linear,
+          reduceMotion: ReduceMotion.System,
+        }),
+        -1,
+      ),
+    );
+    return () => cancelAnimation(spin);
+  }, [percent, spin]);
+
+  const spinStyle = useAnimatedStyle(() => ({
+    transform: [{ rotate: `${spin.get() * 360}deg` }],
+  }));
+
+  const filled = percent === null ? RING_INDETERMINATE : Math.min(100, Math.max(0, percent)) / 100;
+
+  return (
+    <View
+      accessibilityLabel={percent === null ? "En curso" : `${Math.round(percent)} por ciento`}
+      accessibilityRole="progressbar"
+      style={styles.ring}
+    >
+      <Animated.View style={[styles.ringArc, spinStyle]}>
+        <Svg height={RING_SIZE} width={RING_SIZE}>
+          <Circle
+            cx={RING_SIZE / 2}
+            cy={RING_SIZE / 2}
+            fill="none"
+            r={RING_RADIUS}
+            stroke={colors.accentSubtle}
+            strokeWidth={3}
+          />
+          <Circle
+            cx={RING_SIZE / 2}
+            cy={RING_SIZE / 2}
+            fill="none"
+            r={RING_RADIUS}
+            stroke={colors.accent}
+            strokeDasharray={`${RING_LENGTH * filled} ${RING_LENGTH}`}
+            strokeLinecap="round"
+            strokeWidth={3}
+            transform={`rotate(-90 ${RING_SIZE / 2} ${RING_SIZE / 2})`}
+          />
+        </Svg>
+      </Animated.View>
+      {percent === null ? null : (
+        <Text style={styles.ringPercent}>{`${Math.round(percent)}%`}</Text>
+      )}
+    </View>
+  );
+}
+
+function describeMinutes(durationMs: number): string {
+  const minutes = Math.max(1, Math.round(durationMs / 60000));
+  return `${minutes} ${minutes === 1 ? "minuto" : "minutos"}`;
 }
 
 const styles = StyleSheet.create({
-  safeArea: { backgroundColor: colors.background, flex: 1 },
-  header: {
-    alignItems: "center",
-    borderBottomColor: colors.border,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    flexDirection: "row",
-    minHeight: 54,
-    paddingHorizontal: 14,
-  },
-  headerButton: { alignItems: "center", height: 44, justifyContent: "center", width: 44 },
-  headerButtonText: { color: colors.textSecondary, fontSize: 30, lineHeight: 34 },
-  headerTitle: {
-    color: colors.text,
-    flex: 1,
-    fontSize: 16,
-    fontWeight: "700",
-    textAlign: "center",
-  },
-  content: { flexGrow: 1, padding: 20, paddingBottom: 116 },
-  readyState: { gap: 18 },
-  heroEyebrow: { color: colors.accentLight, fontSize: 11, fontWeight: "800", letterSpacing: 1 },
-  heroTitle: {
-    color: colors.text,
-    fontSize: 30,
-    fontWeight: "700",
-    letterSpacing: -0.9,
-    lineHeight: 35,
-  },
-  heroBody: { color: colors.textSecondary, fontSize: 15, lineHeight: 22 },
-  field: { gap: 7 },
-  fieldLabel: { color: colors.muted, fontSize: 12, fontWeight: "700" },
-  titleInput: {
-    backgroundColor: colors.backgroundSecondary,
-    borderColor: colors.border,
-    borderRadius: 12,
-    borderWidth: 1,
-    color: colors.text,
-    fontSize: 16,
-    minHeight: 48,
-    paddingHorizontal: 14,
-  },
-  modelCard: {
-    backgroundColor: colors.backgroundSecondary,
-    borderColor: colors.border,
-    borderCurve: "continuous",
-    borderRadius: 16,
-    borderWidth: 1,
-    gap: 10,
-    padding: 16,
-  },
-  modelTitle: { color: colors.text, fontSize: 16, fontWeight: "700" },
-  modelBody: { color: colors.textSecondary, lineHeight: 20 },
-  primaryButton: {
-    alignItems: "center",
-    backgroundColor: colors.accent,
-    borderCurve: "continuous",
-    borderRadius: 14,
-    justifyContent: "center",
-    minHeight: 50,
-    paddingHorizontal: 18,
-  },
-  primaryText: { color: colors.onAccent, fontSize: 15, fontWeight: "800" },
-  secondaryButton: {
-    alignItems: "center",
-    alignSelf: "flex-start",
-    borderColor: colors.borderStrong,
-    borderRadius: 11,
-    borderWidth: 1,
-    minHeight: 44,
-    justifyContent: "center",
-    paddingHorizontal: 14,
-  },
-  secondaryText: { color: colors.text, fontSize: 13, fontWeight: "700" },
-  disabled: { backgroundColor: colors.surfaceElevated, opacity: 0.65 },
-  recordingWorkspace: { gap: 16 },
-  captureHead: { alignItems: "center", gap: 7, paddingTop: 10 },
-  liveLabel: { alignItems: "center", flexDirection: "row", gap: 8 },
-  liveDot: { backgroundColor: colors.danger, borderRadius: 99, height: 8, width: 8 },
-  liveText: { color: colors.textSecondary, fontSize: 12, fontWeight: "700" },
-  source: { color: colors.muted, fontSize: 12 },
-  noticeCard: {
+  action: { flex: 1 },
+  actionRow: { flexDirection: "row", gap: 10, marginBottom: 10 },
+  busy: { alignItems: "center", flex: 1, gap: 26, justifyContent: "center", paddingBottom: 60 },
+  busyBody: { ...typography.body, color: colors.muted, maxWidth: 270, textAlign: "center" },
+  busyCopy: { alignItems: "center", gap: space.sm },
+  busyTitle: { ...typography.title, color: colors.text, textAlign: "center" },
+  card: {
     backgroundColor: colors.surfaceMuted,
     borderColor: colors.border,
     borderCurve: "continuous",
-    borderRadius: 15,
+    borderRadius: radius.xl,
     borderWidth: 1,
-    gap: 9,
-    padding: 15,
+    gap: 10,
+    padding: 17,
   },
-  noticeLabel: { color: colors.muted, fontSize: 11, fontWeight: "800", letterSpacing: 0.7 },
-  noticeBody: { color: colors.textSecondary, fontSize: 14, lineHeight: 21 },
-  markedCopy: { color: colors.accentLight, fontSize: 13, fontWeight: "700" },
-  notesCard: {
-    backgroundColor: colors.backgroundSecondary,
-    borderColor: colors.border,
-    borderCurve: "continuous",
-    borderRadius: 15,
-    borderWidth: 1,
-    gap: 8,
-    padding: 15,
-  },
-  notesLabel: { color: colors.muted, fontSize: 11, fontWeight: "800", letterSpacing: 0.7 },
-  notesInput: { color: colors.text, fontSize: 15, lineHeight: 22, minHeight: 150, padding: 0 },
-  centerState: { alignItems: "center", flex: 1, gap: 12, justifyContent: "center", minHeight: 480 },
-  stateTitle: { color: colors.text, fontSize: 22, fontWeight: "700", textAlign: "center" },
-  stateBody: { color: colors.textSecondary, lineHeight: 21, maxWidth: 300, textAlign: "center" },
-  captureActions: {
-    backgroundColor: colors.background,
-    borderTopColor: colors.border,
-    borderTopWidth: StyleSheet.hairlineWidth,
-    bottom: 0,
+  cardBody: { ...typography.body, color: colors.muted },
+  cardTitle: { ...typography.item, color: colors.text },
+  chipRow: { alignItems: "flex-start" },
+  content: { flexGrow: 1, paddingBottom: space.lg, paddingHorizontal: space.xl, paddingTop: 6 },
+  field: { gap: space.sm },
+  fieldInput: { ...typography.title, color: colors.text, flex: 1, padding: 0 },
+  fieldRow: {
+    alignItems: "center",
+    borderBottomColor: colors.borderStrong,
+    borderBottomWidth: 1,
     flexDirection: "row",
     gap: 10,
-    left: 0,
-    padding: 14,
-    paddingBottom: 20,
-    position: "absolute",
-    right: 0,
+    paddingBottom: 11,
   },
-  markButton: {
+  footNote: { ...typography.meta, color: colors.muted, paddingTop: 10, textAlign: "center" },
+  footer: { paddingBottom: 30, paddingHorizontal: space.xl, paddingTop: space.md },
+  header: {
     alignItems: "center",
-    backgroundColor: colors.surface,
-    borderColor: colors.borderStrong,
-    borderRadius: 14,
+    flexDirection: "row",
+    height: 48,
+    justifyContent: "space-between",
+    paddingLeft: 6,
+    paddingRight: 10,
+  },
+  headerButton: {
+    alignItems: "center",
+    height: hitTarget,
+    justifyContent: "center",
+    width: hitTarget,
+  },
+  headerTitle: { ...typography.item, color: colors.textSecondary },
+  installProgress: { alignItems: "center", gap: space.md, paddingTop: space.sm },
+  liveDot: { backgroundColor: colors.accent, borderRadius: radius.pill, height: 8, width: 8 },
+  liveLabel: { alignItems: "center", flexDirection: "row", gap: space.sm },
+  momentAt: {
+    ...typography.meta,
+    color: colors.accent,
+    fontVariant: ["tabular-nums"],
+    fontWeight: "700",
+  },
+  momentRow: {
+    alignItems: "center",
+    backgroundColor: colors.surfaceMuted,
+    borderRadius: radius.md,
+    flexDirection: "row",
+    gap: 11,
+    paddingHorizontal: space.md,
+    paddingVertical: 9,
+  },
+  momentText: { ...typography.body, color: colors.textSecondary, flex: 1 },
+  moments: { gap: 9 },
+  momentsHead: { alignItems: "center", flexDirection: "row", gap: space.sm },
+  momentsHint: { ...typography.meta, color: colors.muted },
+  notesCard: {
+    backgroundColor: colors.surfaceMuted,
+    borderColor: colors.border,
+    borderCurve: "continuous",
+    borderRadius: radius.lg,
     borderWidth: 1,
-    flex: 1,
-    justifyContent: "center",
-    minHeight: 52,
+    gap: space.sm,
+    padding: 15,
   },
-  markText: { color: colors.text, fontSize: 13, fontWeight: "700" },
-  stopButton: {
-    alignItems: "center",
-    backgroundColor: colors.danger,
-    borderRadius: 14,
-    flex: 1.25,
-    justifyContent: "center",
-    minHeight: 52,
-  },
-  stopText: { color: colors.onDanger, fontSize: 15, fontWeight: "800" },
+  notesInput: { ...typography.body, color: colors.textSecondary, minHeight: 120, padding: 0 },
+  ready: { gap: 22 },
+  recording: { gap: space.xl },
+  recordingHead: { alignItems: "center", gap: 14 },
+  ring: { alignItems: "center", height: RING_SIZE, justifyContent: "center", width: RING_SIZE },
+  ringArc: { position: "absolute" },
+  ringPercent: { ...typography.section, color: colors.text },
+  rule: { backgroundColor: colors.border, flex: 1, height: 1 },
+  safeArea: { backgroundColor: colors.background, flex: 1 },
+  step: { flexDirection: "row", gap: 10 },
+  stepIndex: { ...typography.body, color: colors.disabled },
+  stepText: { ...typography.body, color: colors.muted, flex: 1 },
+  timer: { ...typography.display, color: colors.text, fontVariant: ["tabular-nums"] },
 });

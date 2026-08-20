@@ -367,6 +367,8 @@ function renderMobileTs() {
     ["accent", accent],
     ["accentLight", hex(dark.accent.light)],
     ["accentDark", hex(dark.accent.dark)],
+    // Sobre negro puro el relieve de un control primario es un borde inferior,
+    // no una sombra: necesita un morado más oscuro que el propio acento.
     ["accentSubtle", alpha(accent, 0.1)],
     ["overlay", "rgba(0, 0, 0, 0.68)"],
     ["shadow", "#000000"],

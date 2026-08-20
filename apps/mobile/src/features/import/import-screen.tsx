@@ -11,11 +11,49 @@ import { useRouter } from "expo-router";
 import { useState } from "react";
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { Button } from "@/shared/components/button";
+import { Chip } from "@/shared/components/chip";
+import { Icon } from "@/shared/components/icon";
+import { ErrorState } from "@/shared/components/screen-states";
+import { SectionLabel } from "@/shared/components/section-label";
 import { colors } from "@/shared/theme/colors";
+import { hitTarget, radius, space } from "@/shared/theme/layout";
+import { typography } from "@/shared/theme/typography";
 import { type MobileImportBundle, parseMobileImport } from "./import-logic";
 
 type ImportSection = "dictionary" | "replacements" | "styles" | "transcripts";
+type PickedFile = { name: string; size: number | null };
 
+const SECTIONS: { id: ImportSection; title: string; note: string }[] = [
+  {
+    id: "dictionary",
+    note: "Términos que el dictado no debe corregir",
+    title: "Diccionario",
+  },
+  {
+    id: "replacements",
+    note: "Sustituciones que se aplican al escribir",
+    title: "Reemplazos",
+  },
+  {
+    id: "styles",
+    note: "Entran como copia y los eliges en Studio",
+    title: "Estilos",
+  },
+  {
+    id: "transcripts",
+    note: "Se guardan como notas dictadas en Library",
+    title: "Transcripciones",
+  },
+];
+
+/** Lo que `parseMobileImport` sabe leer hoy. */
+const KNOWN_SOURCES = ["superwhisper", "Aqua Voice", "Otra app (JSON)", "Texto plano"];
+
+/**
+ * Dos pasos: elegir el archivo y revisar qué entra. La revisión es la parte que
+ * importa — nadie debe pulsar «Importar» sin ver el recuento por tipo.
+ */
 export function ImportScreen() {
   const router = useRouter();
   const dictionary = useDictationDictionary();
@@ -23,6 +61,7 @@ export function ImportScreen() {
   const settings = useDictationSettings();
   const notes = useNotes({ loadList: false });
   const history = useDictationHistory({ loadList: false });
+  const [file, setFile] = useState<PickedFile | null>(null);
   const [bundle, setBundle] = useState<MobileImportBundle | null>(null);
   const [selected, setSelected] = useState<Set<ImportSection>>(
     new Set(["dictionary", "replacements", "styles", "transcripts"]),
@@ -46,6 +85,7 @@ export function ImportScreen() {
       if (!asset) throw new Error("No se pudo leer el archivo seleccionado.");
       const raw = await new File(asset.uri).text();
       setBundle(parseMobileImport(asset.name, raw));
+      setFile({ name: asset.name, size: asset.size ?? null });
       setPhase("idle");
     } catch (cause) {
       setPhase("idle");
@@ -104,153 +144,228 @@ export function ImportScreen() {
     }
   };
 
+  const counts = bundle ? countsOf(bundle) : null;
+  const total = counts
+    ? SECTIONS.reduce(
+        (sum, section) => sum + (selected.has(section.id) ? counts[section.id] : 0),
+        0,
+      )
+    : 0;
+
+  const toggle = (id: ImportSection) => {
+    const next = new Set(selected);
+    if (next.has(id)) next.delete(id);
+    else next.add(id);
+    setSelected(next);
+  };
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.header}>
-        <Pressable accessibilityLabel="Volver" onPress={() => router.back()} style={styles.back}>
-          <Text style={styles.backText}>‹</Text>
+        <Pressable
+          accessibilityLabel="Volver"
+          accessibilityRole="button"
+          onPress={() => router.back()}
+          style={styles.back}
+        >
+          <Icon color={colors.textSecondary} name="chevronLeft" size={22} strokeWidth={2.2} />
         </Pressable>
-        <Text style={styles.title}>Importar</Text>
+        <Text style={styles.headerTitle}>Importar</Text>
         <View style={styles.back} />
       </View>
+
       <ScrollView contentContainerStyle={styles.content}>
+        {error ? (
+          <ErrorState
+            body={
+              bundle
+                ? "Lo que ya se guardó se queda en Looper. Puedes reintentar el resto sin duplicar nada."
+                : "Elige otro archivo o vuelve a intentarlo: no se ha cambiado nada."
+            }
+            detail={error}
+            onRetry={() => (bundle ? void apply() : void pick())}
+            title={bundle ? "La importación quedó incompleta" : "No se pudo abrir la exportación"}
+          />
+        ) : null}
+
         {phase === "done" ? (
           <View style={styles.done}>
-            <Text style={styles.doneTitle}>Importación terminada</Text>
-            <Text style={styles.body}>
-              El contenido ya está disponible en Library, Studio y Ask.
+            <Text style={styles.title}>Ya está todo dentro</Text>
+            <Text style={styles.lede}>
+              El contenido está disponible en Library, Studio y Ask. Nada de lo que ya tenías se ha
+              sobrescrito.
             </Text>
-            <Pressable
-              accessibilityRole="button"
-              onPress={() => router.replace("/")}
-              style={styles.primary}
-            >
-              <Text style={styles.primaryText}>Abrir Library</Text>
-            </Pressable>
           </View>
-        ) : bundle ? (
-          <View style={styles.preview}>
-            <Text style={styles.eyebrow}>VISTA PREVIA · {bundle.source}</Text>
-            <Text style={styles.previewTitle}>Elige qué traer a Looper</Text>
-            <ImportChoice
-              count={bundle.dictionary.length}
-              id="dictionary"
-              label="Diccionario"
-              selected={selected}
-              setSelected={setSelected}
-            />
-            <ImportChoice
-              count={bundle.replacements.length}
-              id="replacements"
-              label="Reemplazos"
-              selected={selected}
-              setSelected={setSelected}
-            />
-            <ImportChoice
-              count={bundle.styles.length}
-              id="styles"
-              label="Estilos"
-              selected={selected}
-              setSelected={setSelected}
-            />
-            <ImportChoice
-              count={bundle.transcripts.length}
-              id="transcripts"
-              label="Historial de dictados"
-              selected={selected}
-              setSelected={setSelected}
-            />
-            <Text style={styles.privacy}>
-              Solo se importa texto. Looper no copia audio ni accede a la base privada de otra app.
-            </Text>
-            <Pressable
-              accessibilityRole="button"
-              disabled={phase === "importing"}
-              onPress={() => void apply()}
-              style={styles.primary}
-            >
-              {phase === "importing" ? (
-                <ActivityIndicator color={colors.onAccent} />
-              ) : (
-                <Text style={styles.primaryText}>Importar selección</Text>
-              )}
-            </Pressable>
-            <Pressable
-              accessibilityRole="button"
-              onPress={() => setBundle(null)}
-              style={styles.secondary}
-            >
-              <Text style={styles.secondaryText}>Elegir otro archivo</Text>
-            </Pressable>
-          </View>
+        ) : bundle && counts ? (
+          <>
+            <FileCard file={file} source={bundle.source} />
+            <View style={styles.list}>
+              <SectionLabel>Qué se va a importar</SectionLabel>
+              {SECTIONS.map((section) => (
+                <SectionRow
+                  checked={selected.has(section.id)}
+                  count={counts[section.id]}
+                  key={section.id}
+                  note={section.note}
+                  onToggle={() => toggle(section.id)}
+                  title={section.title}
+                />
+              ))}
+            </View>
+            <View style={styles.note}>
+              <Icon color={colors.muted} name="warning" size={16} />
+              <Text style={styles.noteText}>
+                Nada se sobrescribe. Los estilos con el mismo nombre entran como copia y los eliges
+                tú en Studio.
+              </Text>
+            </View>
+          </>
         ) : (
-          <View style={styles.hero}>
-            <Text style={styles.eyebrow}>DESDE OTRAS APPS</Text>
-            <Text style={styles.heroTitle}>Tu contexto no empieza de cero.</Text>
-            <Text style={styles.body}>
-              Selecciona una exportación JSON, Markdown o texto de superwhisper, Aqua u otra app.
-            </Text>
-            <View style={styles.infoCard}>
-              <Text style={styles.infoTitle}>Compatible ahora</Text>
-              <Text style={styles.body}>
-                Diccionario · reemplazos · estilos · historial de texto
+          <>
+            <View style={styles.intro}>
+              <Text style={styles.title}>Trae lo que ya tenías</Text>
+              <Text style={styles.lede}>
+                Elige el archivo de exportación de tu dictador anterior. Looper lee su diccionario,
+                sus reemplazos, sus estilos y sus transcripciones.
               </Text>
             </View>
             <Pressable
+              accessibilityHint=".json exportado, o texto plano"
+              accessibilityLabel="Elegir archivo"
               accessibilityRole="button"
               disabled={phase === "reading"}
               onPress={() => void pick()}
-              style={styles.primary}
+              style={({ pressed }) => [styles.dropZone, pressed && styles.dimmed]}
             >
               {phase === "reading" ? (
-                <ActivityIndicator color={colors.onAccent} />
+                <ActivityIndicator color={colors.accent} />
               ) : (
-                <Text style={styles.primaryText}>Elegir archivo</Text>
+                <>
+                  <View style={styles.dropTile}>
+                    <Icon color={colors.textSecondary} name="import" size={24} strokeWidth={1.9} />
+                  </View>
+                  <View style={styles.dropCopy}>
+                    <Text style={styles.rowTitle}>Elegir archivo</Text>
+                    <Text style={styles.dropHint}>.json exportado, o texto plano</Text>
+                  </View>
+                </>
               )}
             </Pressable>
-          </View>
+            <View style={styles.sources}>
+              <SectionLabel>Reconoce exportaciones de</SectionLabel>
+              <View style={styles.chips}>
+                {KNOWN_SOURCES.map((name) => (
+                  <Chip key={name} label={name} />
+                ))}
+              </View>
+            </View>
+          </>
         )}
-        {error ? <Text style={styles.error}>{error}</Text> : null}
       </ScrollView>
+
+      {phase === "done" ? (
+        <View style={styles.footer}>
+          <Button label="Abrir Library" onPress={() => router.replace("/")} variant="primary" />
+        </View>
+      ) : bundle ? (
+        <View style={styles.footer}>
+          <Button
+            label="Elegir otro archivo"
+            onPress={() => {
+              setBundle(null);
+              setFile(null);
+              setError(null);
+            }}
+            variant="ghost"
+          />
+          <Button
+            disabled={total === 0 || phase === "importing"}
+            label={importLabel(total, phase === "importing")}
+            onPress={() => void apply()}
+            variant="primary"
+          />
+        </View>
+      ) : null}
     </SafeAreaView>
   );
 }
 
-function ImportChoice({
-  id,
-  label,
+function FileCard({ file, source }: { file: PickedFile | null; source: string }) {
+  const meta = [source === file?.name ? null : source, formatSize(file?.size ?? null)]
+    .filter(Boolean)
+    .join(" · ");
+
+  return (
+    <View style={styles.fileCard}>
+      <View style={styles.fileTile}>
+        <Icon color={colors.accent} name="nota" size={18} />
+      </View>
+      <View style={styles.rowCopy}>
+        <Text numberOfLines={1} style={styles.rowTitle}>
+          {file?.name ?? source}
+        </Text>
+        {meta ? <Text style={styles.rowNote}>{meta}</Text> : null}
+      </View>
+    </View>
+  );
+}
+
+function SectionRow({
+  checked,
   count,
-  selected,
-  setSelected,
+  note,
+  onToggle,
+  title,
 }: {
-  id: ImportSection;
-  label: string;
+  checked: boolean;
   count: number;
-  selected: Set<ImportSection>;
-  setSelected: (next: Set<ImportSection>) => void;
+  note: string;
+  onToggle: () => void;
+  title: string;
 }) {
-  const checked = selected.has(id);
-  const toggle = () => {
-    const next = new Set(selected);
-    if (checked) next.delete(id);
-    else next.add(id);
-    setSelected(next);
-  };
+  const empty = count === 0;
+
   return (
     <Pressable
       accessibilityRole="checkbox"
-      accessibilityState={{ checked, disabled: count === 0 }}
-      disabled={count === 0}
-      onPress={toggle}
-      style={[styles.choice, count === 0 && styles.disabled]}
+      accessibilityState={{ checked: checked && !empty, disabled: empty }}
+      disabled={empty}
+      onPress={onToggle}
+      style={({ pressed }) => [styles.sectionRow, empty && styles.dimmed, pressed && styles.dimmed]}
     >
-      <View style={[styles.check, checked && styles.checked]}>
-        <Text style={styles.checkText}>{checked ? "✓" : ""}</Text>
+      <View style={[styles.checkbox, checked && !empty && styles.checkboxOn]}>
+        {checked && !empty ? (
+          <Icon color={colors.onAccent} name="check" size={12} strokeWidth={3.2} />
+        ) : null}
       </View>
-      <Text style={styles.choiceLabel}>{label}</Text>
       <Text style={styles.count}>{count}</Text>
+      <View style={styles.rowCopy}>
+        <Text style={styles.rowTitle}>{title}</Text>
+        <Text style={styles.rowNote}>{empty ? "El archivo no trae nada de esto" : note}</Text>
+      </View>
     </Pressable>
   );
+}
+
+function countsOf(bundle: MobileImportBundle): Record<ImportSection, number> {
+  return {
+    dictionary: bundle.dictionary.length,
+    replacements: bundle.replacements.length,
+    styles: bundle.styles.length,
+    transcripts: bundle.transcripts.length,
+  };
+}
+
+function importLabel(total: number, running: boolean): string {
+  if (running) return "Importando…";
+  if (total === 0) return "Nada seleccionado";
+  return total === 1 ? "Importar 1 elemento" : `Importar ${total} elementos`;
+}
+
+function formatSize(bytes: number | null): string | null {
+  if (bytes === null || !Number.isFinite(bytes) || bytes <= 0) return null;
+  if (bytes >= 1_000_000) return `${(bytes / 1_000_000).toFixed(1).replace(".", ",")} MB`;
+  return `${Math.max(1, Math.round(bytes / 1000))} kB`;
 }
 
 function mergeImportedStudioSettings(
@@ -274,86 +389,114 @@ function titleFromTranscript(value: string): string {
   return title.length > 60 ? `${title.slice(0, 57)}…` : title;
 }
 
+const SCREEN_PAD = 20;
+
 const styles = StyleSheet.create({
-  safeArea: { backgroundColor: colors.background, flex: 1 },
+  back: {
+    alignItems: "center",
+    height: hitTarget,
+    justifyContent: "center",
+    width: hitTarget,
+  },
+  checkbox: {
+    alignItems: "center",
+    borderColor: colors.borderStrong,
+    borderRadius: radius.xs,
+    borderWidth: 1.5,
+    height: 20,
+    justifyContent: "center",
+    width: 20,
+  },
+  checkboxOn: { backgroundColor: colors.accent, borderColor: colors.accent },
+  chips: { flexDirection: "row", flexWrap: "wrap", gap: 7 },
+  content: { gap: 22, paddingBottom: space.xxl, paddingHorizontal: SCREEN_PAD, paddingTop: 6 },
+  count: {
+    ...typography.item,
+    color: colors.text,
+    fontVariant: ["tabular-nums"],
+    fontWeight: "700",
+    width: 34,
+  },
+  dimmed: { opacity: 0.5 },
+  done: { gap: 10, paddingTop: space.xxl },
+  dropCopy: { alignItems: "center", gap: space.xs },
+  dropHint: { ...typography.meta, color: colors.disabled },
+  dropTile: {
+    alignItems: "center",
+    backgroundColor: colors.surface,
+    borderColor: colors.borderStrong,
+    borderRadius: radius.lg,
+    borderWidth: 1,
+    height: 52,
+    justifyContent: "center",
+    width: 52,
+  },
+  dropZone: {
+    alignItems: "center",
+    backgroundColor: colors.surfaceMuted,
+    borderColor: colors.borderStrong,
+    borderRadius: radius.xl,
+    borderStyle: "dashed",
+    borderWidth: 1,
+    gap: 14,
+    justifyContent: "center",
+    minHeight: 200,
+  },
+  fileCard: {
+    alignItems: "center",
+    backgroundColor: colors.surfaceMuted,
+    borderColor: colors.border,
+    borderRadius: radius.xl,
+    borderWidth: 1,
+    flexDirection: "row",
+    gap: space.md,
+    padding: space.lg,
+  },
+  fileTile: {
+    alignItems: "center",
+    backgroundColor: colors.accentSubtle,
+    borderRadius: radius.md,
+    height: 38,
+    justifyContent: "center",
+    width: 38,
+  },
+  footer: { gap: space.sm, paddingHorizontal: SCREEN_PAD, paddingVertical: 14 },
   header: {
     alignItems: "center",
-    borderBottomColor: colors.border,
-    borderBottomWidth: StyleSheet.hairlineWidth,
     flexDirection: "row",
-    minHeight: 54,
-    paddingHorizontal: 12,
+    justifyContent: "space-between",
+    minHeight: 48,
+    paddingHorizontal: 6,
   },
-  back: { alignItems: "center", height: 44, justifyContent: "center", width: 44 },
-  backText: { color: colors.textSecondary, fontSize: 30 },
-  title: { color: colors.text, flex: 1, fontSize: 17, fontWeight: "700", textAlign: "center" },
-  content: { flexGrow: 1, padding: 20 },
-  hero: { gap: 18, paddingTop: 28 },
-  preview: { gap: 11 },
-  done: { gap: 16, justifyContent: "center", minHeight: 520 },
-  eyebrow: { color: colors.accentLight, fontSize: 11, fontWeight: "800", letterSpacing: 0.9 },
-  heroTitle: {
-    color: colors.text,
-    fontSize: 31,
-    fontWeight: "700",
-    letterSpacing: -0.9,
-    lineHeight: 36,
-  },
-  previewTitle: { color: colors.text, fontSize: 23, fontWeight: "700", marginBottom: 8 },
-  doneTitle: { color: colors.text, fontSize: 26, fontWeight: "700" },
-  body: { color: colors.textSecondary, fontSize: 14, lineHeight: 21 },
-  infoCard: {
-    backgroundColor: colors.backgroundSecondary,
+  headerTitle: { ...typography.item, color: colors.textSecondary },
+  intro: { gap: 10 },
+  lede: { ...typography.body, color: colors.muted, lineHeight: 23 },
+  list: { gap: 10 },
+  note: {
+    alignItems: "flex-start",
     borderColor: colors.border,
-    borderRadius: 15,
-    borderWidth: 1,
-    gap: 7,
-    padding: 15,
-  },
-  infoTitle: { color: colors.text, fontSize: 14, fontWeight: "700" },
-  choice: {
-    alignItems: "center",
-    backgroundColor: colors.backgroundSecondary,
-    borderColor: colors.border,
-    borderRadius: 13,
+    borderRadius: radius.lg,
     borderWidth: 1,
     flexDirection: "row",
     gap: 11,
-    minHeight: 54,
-    paddingHorizontal: 13,
+    padding: space.lg,
   },
-  check: {
+  noteText: { ...typography.meta, color: colors.muted, flex: 1, lineHeight: 20 },
+  rowCopy: { flex: 1, gap: 2 },
+  rowNote: { ...typography.meta, color: colors.muted, lineHeight: 19 },
+  rowTitle: { ...typography.item, color: colors.text },
+  safeArea: { backgroundColor: colors.background, flex: 1 },
+  sectionRow: {
     alignItems: "center",
-    borderColor: colors.borderStrong,
-    borderRadius: 6,
+    backgroundColor: colors.surfaceMuted,
+    borderColor: colors.border,
+    borderRadius: radius.lg,
     borderWidth: 1,
-    height: 22,
-    justifyContent: "center",
-    width: 22,
+    flexDirection: "row",
+    gap: 13,
+    paddingHorizontal: 15,
+    paddingVertical: 14,
   },
-  checked: { backgroundColor: colors.accent, borderColor: colors.accent },
-  checkText: { color: colors.onAccent, fontSize: 13, fontWeight: "800" },
-  choiceLabel: { color: colors.text, flex: 1, fontSize: 14, fontWeight: "700" },
-  count: { color: colors.muted, fontSize: 13 },
-  privacy: { color: colors.muted, fontSize: 12, lineHeight: 18, paddingVertical: 6 },
-  primary: {
-    alignItems: "center",
-    backgroundColor: colors.accent,
-    borderRadius: 14,
-    justifyContent: "center",
-    minHeight: 50,
-    marginTop: 8,
-  },
-  primaryText: { color: colors.onAccent, fontSize: 14, fontWeight: "800" },
-  secondary: {
-    alignItems: "center",
-    borderColor: colors.borderStrong,
-    borderRadius: 14,
-    borderWidth: 1,
-    justifyContent: "center",
-    minHeight: 48,
-  },
-  secondaryText: { color: colors.text, fontSize: 13, fontWeight: "700" },
-  disabled: { opacity: 0.4 },
-  error: { color: colors.danger, lineHeight: 20, marginTop: 16 },
+  sources: { gap: space.sm },
+  title: { ...typography.title, color: colors.text },
 });

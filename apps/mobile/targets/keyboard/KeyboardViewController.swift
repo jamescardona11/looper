@@ -22,8 +22,9 @@ class AudioWaveformView: UIView {
   private var frameClock: CADisplayLink?
   private var signal = SignalState()
 
-  // Mirrors Desktop's compact 32×18 signal canvas: 3 pt grid,
-  // dark base dots and white listening dots.
+  // Rejilla de 3 pt con puntos base oscuros y puntos blancos al escuchar, como
+  // en el desktop. El lienzo ya no es el compacto de 32×18: ocupa el ancho del
+  // rail, porque a ese tamaño la animación no se percibía.
   private let dotSpacing: CGFloat = 3
   private let baseDotRadius: CGFloat = 0.9
   private let activeDotRadius: CGFloat = 1.0
@@ -31,8 +32,17 @@ class AudioWaveformView: UIView {
   private let highlightColor = UIColor.white
   private let attackSmoothing: CGFloat = 0.45
   private let decaySmoothing: CGFloat = 0.08
-  private let signalFloor: CGFloat = 0.015
-  private let minimumReference: CGFloat = 0.05
+  // Amplitud lineal, no dB: 0.015 son unos -36 dBFS, un umbral que se tragaba
+  // la voz baja y dejaba la señal clavada en cero. 0.002 (~-54 dBFS) queda por
+  // encima del silencio digital pero deja pasar el habla floja.
+  private let signalFloor: CGFloat = 0.002
+  // El divisor de la normalización. Estaba en 0.05, muy por encima de lo que
+  // capta un micro en una sala normal (~0.005), así que `normalized` nunca se
+  // acercaba a 1 y la rejilla no llegaba a encender ni su fila central: la
+  // adaptación al nivel de tu voz, que es el objetivo de referenceLevel,
+  // quedaba anulada. Con 0.004 el divisor lo marca la señal real y del silencio
+  // se encarga signalFloor.
+  private let minimumReference: CGFloat = 0.004
 
   var isActive = false {
     didSet {
@@ -411,10 +421,6 @@ class KeyboardViewController: UIInputViewController {
 
   private var memberInfo: MemberInfo?
   private var memberRefreshTimer: Timer?
-  private var statusBanner: UIView!
-  private var statusIcon: UIImageView!
-  private var statusLabel: UILabel!
-  private var upgradeButton: UIButton!
   private var fullAccessBanner: UIView!
 
   override func viewDidLoad() {
@@ -610,7 +616,7 @@ class KeyboardViewController: UIInputViewController {
 
     controlIconView = configured(UIImageView()) { icon in
       icon.translatesAutoresizingMaskIntoConstraints = false
-      icon.tintColor = Palette.onAccent
+      icon.tintColor = Palette.text
       icon.contentMode = .scaleAspectFit
       icon.isUserInteractionEnabled = false
     }
@@ -628,61 +634,6 @@ class KeyboardViewController: UIInputViewController {
     press.minimumPressDuration = 0
     pillButton.addGestureRecognizer(press)
 
-    statusBanner = configured(UIView()) { banner in
-      banner.translatesAutoresizingMaskIntoConstraints = false
-      banner.isHidden = true
-    }
-
-    statusIcon = configured(UIImageView()) { icon in
-      icon.translatesAutoresizingMaskIntoConstraints = false
-      icon.tintColor = Palette.muted
-      icon.contentMode = .scaleAspectFit
-    }
-    statusBanner.addSubview(statusIcon)
-
-    statusLabel = configured(UILabel()) { label in
-      label.translatesAutoresizingMaskIntoConstraints = false
-      label.font = .systemFont(ofSize: 12, weight: .medium)
-      label.textColor = Palette.muted
-    }
-    statusBanner.addSubview(statusLabel)
-
-    let dot = configured(UILabel()) { label in
-      label.translatesAutoresizingMaskIntoConstraints = false
-      label.text = "·"
-      label.font = .systemFont(ofSize: 12, weight: .bold)
-      label.textColor = Palette.muted
-    }
-    statusBanner.addSubview(dot)
-
-    upgradeButton = configured(UIButton(type: .system)) { button in
-      button.translatesAutoresizingMaskIntoConstraints = false
-      button.setTitle("Upgrade", for: .normal)
-      button.titleLabel?.font = .systemFont(ofSize: 12, weight: .semibold)
-      button.setTitleColor(Palette.accent, for: .normal)
-      button.addTarget(self, action: #selector(onUpgradeTap), for: .touchUpInside)
-    }
-    statusBanner.addSubview(upgradeButton)
-
-    let bannerAnchors = statusBanner!
-    let iconAnchors = statusIcon!
-    let textAnchors = statusLabel!
-    let upgradeAnchors = upgradeButton!
-    NSLayoutConstraint.activate([
-      bannerAnchors.heightAnchor.constraint(equalToConstant: 20),
-      iconAnchors.leadingAnchor.constraint(equalTo: bannerAnchors.leadingAnchor),
-      iconAnchors.centerYAnchor.constraint(equalTo: bannerAnchors.centerYAnchor),
-      iconAnchors.widthAnchor.constraint(equalToConstant: 14),
-      iconAnchors.heightAnchor.constraint(equalToConstant: 14),
-      textAnchors.leadingAnchor.constraint(equalTo: iconAnchors.trailingAnchor, constant: 4),
-      textAnchors.centerYAnchor.constraint(equalTo: bannerAnchors.centerYAnchor),
-      dot.leadingAnchor.constraint(equalTo: textAnchors.trailingAnchor, constant: 4),
-      dot.centerYAnchor.constraint(equalTo: bannerAnchors.centerYAnchor),
-      upgradeAnchors.leadingAnchor.constraint(equalTo: dot.trailingAnchor, constant: 4),
-      upgradeAnchors.trailingAnchor.constraint(equalTo: bannerAnchors.trailingAnchor),
-      upgradeAnchors.centerYAnchor.constraint(equalTo: bannerAnchors.centerYAnchor),
-    ])
-
     let lockIcon = configured(UIImageView(image: UIImage(systemName: "lock.fill"))) { icon in
       icon.translatesAutoresizingMaskIntoConstraints = false
       icon.tintColor = Palette.muted
@@ -691,7 +642,7 @@ class KeyboardViewController: UIInputViewController {
 
     let accessLabel = configured(UILabel()) { label in
       label.translatesAutoresizingMaskIntoConstraints = false
-      label.text = "Full Access required"
+      label.text = "Falta el acceso completo"
       label.font = .systemFont(ofSize: 14, weight: .medium)
       label.textColor = Palette.text
     }
@@ -708,7 +659,7 @@ class KeyboardViewController: UIInputViewController {
     ])
 
     let settingsButton = configured(UIButton(type: .system)) { button in
-      button.setTitle("Open Settings", for: .normal)
+      button.setTitle("Abrir ajustes", for: .normal)
       button.titleLabel?.font = .systemFont(ofSize: 14, weight: .semibold)
       button.backgroundColor = Palette.accent
       button.setTitleColor(Palette.onAccent, for: .normal)
@@ -730,19 +681,18 @@ class KeyboardViewController: UIInputViewController {
 
     view.addSubview(dictationRail)
     view.addSubview(fullAccessBanner)
-    dictationRail.addSubview(statusBanner)
 
     NSLayoutConstraint.activate([
       dictationVisuals.leadingAnchor.constraint(equalTo: dictationRail.leadingAnchor, constant: 16),
       dictationVisuals.trailingAnchor.constraint(
         equalTo: dictationRail.trailingAnchor, constant: -16),
-      dictationVisuals.topAnchor.constraint(equalTo: pillButton.bottomAnchor, constant: 3),
+      dictationVisuals.topAnchor.constraint(equalTo: pillButton.bottomAnchor, constant: 14),
       dictationVisuals.heightAnchor.constraint(equalToConstant: 23),
 
-      waveformView.centerXAnchor.constraint(equalTo: dictationRail.centerXAnchor),
-      waveformView.bottomAnchor.constraint(equalTo: pillButton.topAnchor, constant: -2),
-      waveformView.widthAnchor.constraint(equalToConstant: 32),
-      waveformView.heightAnchor.constraint(equalToConstant: 18),
+      waveformView.leadingAnchor.constraint(equalTo: dictationRail.leadingAnchor, constant: 8),
+      waveformView.trailingAnchor.constraint(equalTo: dictationRail.trailingAnchor, constant: -8),
+      waveformView.bottomAnchor.constraint(equalTo: pillButton.topAnchor, constant: -16),
+      waveformView.heightAnchor.constraint(equalToConstant: 26),
 
       progressView.leadingAnchor.constraint(equalTo: waveformView.leadingAnchor),
       progressView.trailingAnchor.constraint(equalTo: waveformView.trailingAnchor),
@@ -754,7 +704,7 @@ class KeyboardViewController: UIInputViewController {
       pillLabel.centerYAnchor.constraint(equalTo: dictationVisuals.centerYAnchor),
 
       pillButton.centerXAnchor.constraint(equalTo: dictationRail.centerXAnchor),
-      pillButton.topAnchor.constraint(equalTo: dictationRail.topAnchor, constant: 17),
+      pillButton.topAnchor.constraint(equalTo: dictationRail.topAnchor, constant: 48),
       pillButton.widthAnchor.constraint(equalToConstant: 64),
       pillButton.heightAnchor.constraint(equalToConstant: 64),
 
@@ -766,8 +716,6 @@ class KeyboardViewController: UIInputViewController {
       controlActivityIndicator.centerXAnchor.constraint(equalTo: pillButton.centerXAnchor),
       controlActivityIndicator.centerYAnchor.constraint(equalTo: pillButton.centerYAnchor),
 
-      statusBanner.centerXAnchor.constraint(equalTo: dictationRail.centerXAnchor),
-      statusBanner.topAnchor.constraint(equalTo: dictationRail.topAnchor),
     ])
 
     transformSelectorButton = UIButton(type: .system)
@@ -778,7 +726,7 @@ class KeyboardViewController: UIInputViewController {
     transformSelectorButton.layer.cornerRadius = 12
     transformSelectorButton.addTarget(
       self, action: #selector(onTransformSelectorTap), for: .touchUpInside)
-    transformSelectorButton.accessibilityLabel = "Transformation"
+    transformSelectorButton.accessibilityLabel = "Transformación"
     addButtonFeedback(transformSelectorButton)
     view.addSubview(transformSelectorButton)
 
@@ -791,7 +739,7 @@ class KeyboardViewController: UIInputViewController {
 
     let transformLabel = UILabel()
     transformLabel.translatesAutoresizingMaskIntoConstraints = false
-    transformLabel.text = "Transformation"
+    transformLabel.text = "Transformación"
     transformLabel.textColor = Palette.muted
     transformLabel.font = .systemFont(ofSize: 9.5, weight: .semibold)
     transformLabel.isUserInteractionEnabled = false
@@ -848,10 +796,10 @@ class KeyboardViewController: UIInputViewController {
         equalTo: view.trailingAnchor, constant: -12),
       transformSelectorButton.heightAnchor.constraint(equalToConstant: 44),
 
-      dictationRail.topAnchor.constraint(equalTo: transformSelectorButton.bottomAnchor, constant: 2),
+      dictationRail.topAnchor.constraint(equalTo: transformSelectorButton.bottomAnchor, constant: 14),
       dictationRail.centerXAnchor.constraint(equalTo: view.centerXAnchor),
       dictationRail.widthAnchor.constraint(equalTo: view.widthAnchor, constant: -32),
-      dictationRail.heightAnchor.constraint(equalToConstant: 112),
+      dictationRail.heightAnchor.constraint(equalToConstant: 160),
 
       fullAccessBanner.centerXAnchor.constraint(equalTo: dictationRail.centerXAnchor),
       fullAccessBanner.centerYAnchor.constraint(equalTo: dictationRail.centerYAnchor),
@@ -910,7 +858,7 @@ class KeyboardViewController: UIInputViewController {
 
     let title = UILabel()
     title.translatesAutoresizingMaskIntoConstraints = false
-    title.text = "Transformation"
+    title.text = "Transformación"
     title.textColor = Palette.text
     title.font = .systemFont(ofSize: 15, weight: .semibold)
     transformationPanel.addSubview(title)
@@ -919,21 +867,21 @@ class KeyboardViewController: UIInputViewController {
     closeButton.translatesAutoresizingMaskIntoConstraints = false
     closeButton.setImage(UIImage(systemName: "xmark"), for: .normal)
     closeButton.tintColor = Palette.textSecondary
-    closeButton.accessibilityLabel = "Close transformation selector"
+    closeButton.accessibilityLabel = "Cerrar el selector de transformación"
     closeButton.addTarget(self, action: #selector(onDoneTransformationTap), for: .touchUpInside)
     transformationPanel.addSubview(closeButton)
 
-    let formatRow = makeTransformationRow(label: "Format")
+    let formatRow = makeTransformationRow(label: "Formato")
     formatPickerButton = formatRow.button
     transformationPanel.addSubview(formatRow.container)
 
-    let styleRow = makeTransformationRow(label: "Style")
+    let styleRow = makeTransformationRow(label: "Estilo")
     stylePickerButton = styleRow.button
     transformationPanel.addSubview(styleRow.container)
 
     let doneButton = UIButton(type: .system)
     doneButton.translatesAutoresizingMaskIntoConstraints = false
-    doneButton.setTitle("Done", for: .normal)
+    doneButton.setTitle("Hecho", for: .normal)
     doneButton.setTitleColor(Palette.onAccent, for: .normal)
     doneButton.titleLabel?.font = .systemFont(ofSize: 14, weight: .bold)
     doneButton.backgroundColor = Palette.accent
@@ -1052,14 +1000,14 @@ class KeyboardViewController: UIInputViewController {
 
   private func updateTransformationSummary() {
     guard transformSummaryLabel != nil else { return }
-    let formatName = keyboardFormats.first { $0.id == selectedFormatId }?.name ?? "No format"
+    let formatName = keyboardFormats.first { $0.id == selectedFormatId }?.name ?? "Sin formato"
     let styleName: String
     if let workflow = manualWorkflows.first(where: { $0.id == selectedWorkflowId }) {
       styleName = "Smart · \(workflow.name)"
     } else if let toneId = selectedToneId, let tone = toneById[toneId] {
       styleName = tone.name
     } else {
-      styleName = "No style"
+      styleName = "Sin estilo"
     }
     let summary = "\(formatName) · \(styleName)"
     transformSummaryLabel.text = summary
@@ -1069,7 +1017,7 @@ class KeyboardViewController: UIInputViewController {
 
   private func refreshTransformationMenus() {
     guard formatPickerButton != nil, stylePickerButton != nil else { return }
-    let noFormat = UIAction(title: "No format", state: selectedFormatId == nil ? .on : .off) {
+    let noFormat = UIAction(title: "Sin formato", state: selectedFormatId == nil ? .on : .off) {
       [weak self] _ in
       self?.selectFormat(nil)
     }
@@ -1080,12 +1028,12 @@ class KeyboardViewController: UIInputViewController {
       }
     }
     formatPickerButton.menu = UIMenu(
-      title: "Format", options: .singleSelection, children: [noFormat] + formats)
+      title: "Formato", options: .singleSelection, children: [noFormat] + formats)
     formatPickerButton.setTitle(
-      keyboardFormats.first { $0.id == selectedFormatId }?.name ?? "No format", for: .normal)
+      keyboardFormats.first { $0.id == selectedFormatId }?.name ?? "Sin formato", for: .normal)
 
     let noStyle = UIAction(
-      title: "No style", state: selectedToneId == nil && selectedWorkflowId == nil ? .on : .off
+      title: "Sin estilo", state: selectedToneId == nil && selectedWorkflowId == nil ? .on : .off
     ) { [weak self] _ in
       self?.selectStyle(toneId: nil, workflowId: nil)
     }
@@ -1105,13 +1053,13 @@ class KeyboardViewController: UIInputViewController {
       }
     }
     stylePickerButton.menu = UIMenu(
-      title: "Style", options: .singleSelection, children: [noStyle] + workflows + tones)
+      title: "Estilo", options: .singleSelection, children: [noStyle] + workflows + tones)
     if let workflow = manualWorkflows.first(where: { $0.id == selectedWorkflowId }) {
       stylePickerButton.setTitle("Smart · \(workflow.name)", for: .normal)
     } else if let toneId = selectedToneId, let tone = toneById[toneId] {
       stylePickerButton.setTitle(tone.name, for: .normal)
     } else {
-      stylePickerButton.setTitle("No style", for: .normal)
+      stylePickerButton.setTitle("Sin estilo", for: .normal)
     }
   }
 
@@ -1140,9 +1088,8 @@ class KeyboardViewController: UIInputViewController {
         self.waveformView.alpha = 0
         self.waveformView.isActive = false
         self.progressView.alpha = 0
-        self.statusBanner.alpha = self.statusBanner.isHidden ? 0 : 1
         self.pillButton.backgroundColor = Palette.accent
-        self.pillLabel.text = "Ready to dictate"
+        self.pillLabel.text = "Listo para dictar"
         self.pillLabel.alpha = 1
         self.controlIconView.image = UIImage(systemName: "mic.fill")
         self.controlIconView.alpha = 1
@@ -1150,7 +1097,7 @@ class KeyboardViewController: UIInputViewController {
         self.pillButton.isUserInteractionEnabled = true
         self.transformSelectorButton.isEnabled = true
         self.transformSelectorButton.alpha = 1
-        self.pillButton.accessibilityLabel = "Start dictation"
+        self.pillButton.accessibilityLabel = "Empezar a dictar"
         self.pillButton.accessibilityValue = "Ready"
         self.pillButton.accessibilityTraits = .button
       }
@@ -1161,9 +1108,8 @@ class KeyboardViewController: UIInputViewController {
         self.waveformView.alpha = 1
         self.waveformView.isActive = true
         self.progressView.alpha = 0
-        self.statusBanner.alpha = 0
         self.pillButton.backgroundColor = Palette.accent
-        self.pillLabel.text = "Listening"
+        self.pillLabel.text = "Escuchando"
         self.pillLabel.alpha = 1
         self.controlIconView.image = UIImage(systemName: "stop.fill")
         self.controlIconView.alpha = 1
@@ -1171,8 +1117,8 @@ class KeyboardViewController: UIInputViewController {
         self.pillButton.isUserInteractionEnabled = true
         self.transformSelectorButton.isEnabled = false
         self.transformSelectorButton.alpha = 0.48
-        self.pillButton.accessibilityLabel = "Stop dictation"
-        self.pillButton.accessibilityValue = "Listening"
+        self.pillButton.accessibilityLabel = "Terminar el dictado"
+        self.pillButton.accessibilityValue = "Escuchando"
         self.pillButton.accessibilityTraits = .button
       }
       progressView.stopAnimating()
@@ -1182,17 +1128,16 @@ class KeyboardViewController: UIInputViewController {
         self.waveformView.alpha = 0
         self.waveformView.isActive = false
         self.progressView.alpha = 1
-        self.statusBanner.alpha = 0
         self.pillButton.backgroundColor = Palette.surfaceElevated
-        self.pillLabel.text = "Preparing your text"
+        self.pillLabel.text = "Preparando tu texto"
         self.pillLabel.alpha = 1
         self.controlIconView.alpha = 0
         self.controlActivityIndicator.startAnimating()
         self.pillButton.isUserInteractionEnabled = false
         self.transformSelectorButton.isEnabled = false
         self.transformSelectorButton.alpha = 0.48
-        self.pillButton.accessibilityLabel = "Dictation processing"
-        self.pillButton.accessibilityValue = "Processing"
+        self.pillButton.accessibilityLabel = "Procesando el dictado"
+        self.pillButton.accessibilityValue = "Procesando"
         self.pillButton.accessibilityTraits = [.button, .notEnabled]
       }
       progressView.startAnimating()
@@ -1202,7 +1147,6 @@ class KeyboardViewController: UIInputViewController {
         self.waveformView.alpha = 0
         self.waveformView.isActive = false
         self.progressView.alpha = 0
-        self.statusBanner.alpha = 0
         self.pillButton.backgroundColor = UIColor.systemRed
         self.pillLabel.text = message
         self.pillLabel.alpha = 1
@@ -1212,7 +1156,7 @@ class KeyboardViewController: UIInputViewController {
         self.pillButton.isUserInteractionEnabled = true
         self.transformSelectorButton.isEnabled = true
         self.transformSelectorButton.alpha = 1
-        self.pillButton.accessibilityLabel = "Dictation error"
+        self.pillButton.accessibilityLabel = "Error de dictado"
         self.pillButton.accessibilityValue = message
         self.pillButton.accessibilityTraits = .button
       }
@@ -1450,7 +1394,6 @@ class KeyboardViewController: UIInputViewController {
       loadLanguage()
       loadDictionary()
       loadSnippets()
-      updateStatusBanner()
     }
 
     let defaults = UserDefaults(suiteName: DictationConstants.appGroupId)
@@ -1565,7 +1508,6 @@ class KeyboardViewController: UIInputViewController {
 
           await MainActor.run {
             self.memberInfo = member
-            self.updateStatusBanner()
           }
         } catch {
           NSLog("[LooperKB] Failed to refresh member: %@", error.localizedDescription)
@@ -1574,50 +1516,6 @@ class KeyboardViewController: UIInputViewController {
     }
   }
 
-  private func updateStatusBanner() {
-    let defaults = UserDefaults(suiteName: DictationConstants.appGroupId)
-    let banner = KeyboardMemberBanner.resolve(
-      member: memberInfo,
-      transcriptionMode: defaults?.string(forKey: "looper_ai_transcription_mode") ?? "cloud",
-      postProcessingMode: defaults?.string(forKey: "looper_ai_post_processing_mode") ?? "cloud",
-      now: Date()
-    )
-    switch banner {
-    case .hidden:
-      setStatusBannerVisible(false)
-    case .free:
-      statusIcon.image = UIImage(systemName: "pencil.line")
-      statusLabel.text = "Free plan"
-      setStatusBannerVisible(true)
-    case .trial(let description):
-      statusIcon.image = UIImage(systemName: "hourglass.bottomhalf.filled")
-      statusLabel.text = description
-      setStatusBannerVisible(true)
-    }
-  }
-
-  private func setStatusBannerVisible(_ visible: Bool) {
-    let alreadyVisible = !statusBanner.isHidden
-    guard visible != alreadyVisible else { return }
-
-    if visible {
-      statusBanner.alpha = 0
-      statusBanner.isHidden = false
-    }
-
-    UIView.animate(withDuration: 0.3, delay: 0, options: .curveEaseInOut) {
-      self.statusBanner.alpha = visible ? 1 : 0
-      self.view.layoutIfNeeded()
-    } completion: { _ in
-      if !visible {
-        self.statusBanner.isHidden = true
-      }
-    }
-  }
-
-  @objc private func onUpgradeTap() {
-    openURL("looper://upgrade")
-  }
 
   // MARK: - Transcription
 

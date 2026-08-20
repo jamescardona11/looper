@@ -16,8 +16,8 @@
   },
   "dependencies": {
     "@bacons/apple-targets": "^4.0.7",
-    "@expo/metro-runtime": "~57.0.11",
     "@convex-dev/auth": "^0.0.94",
+    "@expo/metro-runtime": "~57.0.11",
     "@kesha-antonov/react-native-background-downloader": "^4.6.1",
     "@looper/data": "workspace:*",
     "convex": "^1.38.0",
@@ -27,6 +27,7 @@
     "expo-device": "~57.0.1",
     "expo-document-picker": "~57.0.1",
     "expo-file-system": "~57.0.4",
+    "expo-haptics": "~57.0.1",
     "expo-linking": "~57.0.6",
     "expo-router": "~57.0.14",
     "expo-secure-store": "~57.0.1",
@@ -36,11 +37,12 @@
     "react-native-reanimated": "~4.5.1",
     "react-native-safe-area-context": "~5.7.0",
     "react-native-screens": "~4.26.2",
-    "react-native-sherpa-onnx": "^0.4.3"
+    "react-native-sherpa-onnx": "^0.4.3",
+    "react-native-svg": "15.15.4"
   },
   "devDependencies": {
-    "@looper/architecture-check": "workspace:*",
     "@babel/core": "^7.29.0",
+    "@looper/architecture-check": "workspace:*",
     "@types/react": "^19.2.0",
     "babel-preset-expo": "~57.0.0",
     "expo-doctor": "^1.17.14",
