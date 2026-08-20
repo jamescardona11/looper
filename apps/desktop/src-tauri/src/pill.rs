@@ -1,4 +1,5 @@
 #[cfg(target_os = "macos")]
+use crate::hover_intent::{HoverDecision, HoverIntent};
 use crate::permissions;
 use crate::{
     accessibility_context, assistive,
@@ -22,7 +23,7 @@ use std::sync::{
     atomic::{AtomicBool, AtomicU64, Ordering},
     Arc,
 };
-use std::time::Duration;
+use std::time::{Duration, Instant};
 use tauri::{AppHandle, Emitter, LogicalSize, Manager, Rect, WebviewWindow};
 
 #[path = "pill_controller_state.rs"]
@@ -329,17 +330,38 @@ impl PillHoverEmitter {
     fn start(app: AppHandle<AppRuntime>) -> Self {
         std::thread::spawn(move || {
             let interval = Duration::from_millis(50);
-            let mut last_emitted: Option<bool> = None;
+            let started = Instant::now();
+            let mut intent = HoverIntent::default();
+            let mut last: Option<HoverDecision> = None;
             loop {
+                // A drag owns the pill until the pointer is released. Polling
+                // through it would collapse the pill mid-drag and, worse, hand
+                // the panel back to click-through while the user still holds it.
+                if app.state::<AppState>().pill().is_dragging() {
+                    intent.forget_travel();
+                    std::thread::sleep(interval);
+                    continue;
+                }
+                let now_ms = started.elapsed().as_millis() as u64;
                 // Mouse-query failures must fail closed. Keeping the previous
                 // interactive state can leave an invisible NSPanel consuming
                 // clicks after the pointer has moved away from the pill.
-                let hovering = cursor_over_pill_window(&app).unwrap_or(false);
-                if last_emitted != Some(hovering) {
-                    last_emitted = Some(hovering);
+                let decision = match cursor_over_pill_window(&app) {
+                    Some((inside, cursor)) => intent.observe(inside, cursor, now_ms),
+                    None => intent.abandon(),
+                };
+                let previous = last.replace(decision);
+
+                // The window takes the pointer the moment it arrives, while
+                // expanding waits for the pointer to settle. Coupling them
+                // would either lose a fast click or expand at every crossing.
+                if previous.map(|last| last.interactive) != Some(decision.interactive) {
+                    set_overlay_interactive(&app, decision.interactive);
+                }
+                if previous.map(|last| last.hovering) != Some(decision.hovering) {
+                    let hovering = decision.hovering;
                     tracing::debug!(hovering, "Capture pill hover changed");
                     app.state::<AppState>().pill().set_hovering(hovering);
-                    set_overlay_interactive(&app, hovering);
                     emit_event(&app, EVENT_PILL_HOVER, PillHoverPayload { hovering });
                 }
                 std::thread::sleep(interval);
@@ -349,7 +371,10 @@ impl PillHoverEmitter {
     }
 }
 
-fn cursor_over_pill_window(app: &AppHandle<AppRuntime>) -> Option<bool> {
+/// Reports whether the cursor is on the pill, and where it is. The position
+/// travels with the answer because hover intent is judged from how fast the
+/// pointer is moving, not only from where it ended up.
+fn cursor_over_pill_window(app: &AppHandle<AppRuntime>) -> Option<(bool, (f64, f64))> {
     let window = app.get_webview_window(MAIN_WINDOW_LABEL)?;
     let cursor = window.cursor_position().ok()?;
     let pos = window.outer_position().ok()?;
@@ -359,48 +384,60 @@ fn cursor_over_pill_window(app: &AppHandle<AppRuntime>) -> Option<bool> {
     let state = app.state::<AppState>();
     let meeting_overlay_active = state.meeting_capture().is_active();
     if meeting_overlay_active {
-        return Some(cursor_over_meeting_overlay_bounds(
+        return Some((cursor_over_meeting_overlay_bounds(
             (cursor.x, cursor.y),
             (pos.x as f64, pos.y as f64),
             (size.width as f64, size.height as f64),
             scale,
             state.pill().meeting_overlay_presentation(),
-        ));
+        ), (cursor.x, cursor.y)));
     }
 
     if state.pill().status() == PillStatus::Preflight {
-        return Some(point_in_rect(
+        return Some((
+            point_in_rect(
+                (cursor.x, cursor.y),
+                (pos.x as f64, pos.y as f64),
+                (size.width as f64, size.height as f64),
+            ),
             (cursor.x, cursor.y),
-            (pos.x as f64, pos.y as f64),
-            (size.width as f64, size.height as f64),
         ));
     }
 
     if state.pill().status() == PillStatus::Idle {
         let settings = state.current_settings_unmasked();
         if *state.pill().preflight_language_menu_open.lock() {
-            return Some(point_in_rect(
+            return Some((
+                point_in_rect(
+                    (cursor.x, cursor.y),
+                    (pos.x as f64, pos.y as f64),
+                    (size.width as f64, size.height as f64),
+                ),
                 (cursor.x, cursor.y),
-                (pos.x as f64, pos.y as f64),
-                (size.width as f64, size.height as f64),
             ));
         }
-        return Some(capture_pill::hit_test(
+        return Some((
+            capture_pill::hit_test(
             (cursor.x - pos.x as f64, cursor.y - pos.y as f64),
             (size.width as f64, size.height as f64),
             scale,
-            settings.capture_pill_presentation,
-            settings.capture_pill_dock_position,
-            state.pill().is_hovering(),
+                settings.capture_pill_presentation,
+                settings.capture_pill_dock_position,
+                state.pill().is_hovering(),
+            ),
+            (cursor.x, cursor.y),
         ));
     }
 
-    Some(cursor_over_pill_bounds(
+    Some((
+        cursor_over_pill_bounds(
+            (cursor.x, cursor.y),
+            (pos.x as f64, pos.y as f64),
+            (size.width as f64, size.height as f64),
+            scale,
+            state.pill().is_expanded(),
+        ),
         (cursor.x, cursor.y),
-        (pos.x as f64, pos.y as f64),
-        (size.width as f64, size.height as f64),
-        scale,
-        state.pill().is_expanded(),
     ))
 }
 
@@ -509,6 +546,7 @@ pub struct PillController {
     audio_spectrum_emitter: Mutex<Option<AudioSpectrumEmitter>>,
     hover_emitter: Mutex<Option<PillHoverEmitter>>,
     hovering: AtomicBool,
+    drag_started_at: Mutex<Option<Instant>>,
     recording_generation: AtomicU64,
     is_expanded: Mutex<bool>,
     mode_state: Mutex<PillModeState>,
@@ -576,7 +614,7 @@ impl PillController {
             let state = app_handle.state::<AppState>();
             let pill = state.pill();
             if pill.status() == PillStatus::Preflight
-                && !cursor_over_pill_window(&app_handle).unwrap_or(false)
+                && !cursor_over_pill_window(&app_handle).is_some_and(|(inside, _)| inside)
             {
                 pill.transition_to(&app_handle, PillStatus::Idle);
             }
@@ -2003,6 +2041,13 @@ pub fn set_capture_pill_dock_position(
         dock_position: next.capture_pill_dock_position,
         language: next.language,
     })
+}
+
+/// Freezes hover tracking while the user drags the pill. A lost pointer-up
+/// cannot strand the pill: `is_dragging` expires on its own.
+#[tauri::command]
+pub fn set_pill_dragging(dragging: bool, app: AppHandle<AppRuntime>) {
+    app.state::<AppState>().pill().set_dragging(dragging);
 }
 
 #[tauri::command]

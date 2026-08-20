@@ -46,8 +46,6 @@ const grandfatheredTauriConsumers = [
   "features/license/components/customer-portal-action.ts",
   "features/onboarding/OnboardingScreen.tsx",
   "features/personalization/components/personality-modal-icons.tsx",
-  "features/pill/pill-dictation-overlay.tsx",
-  "features/pill/pill-preflight.tsx",
   "features/pill/use-pill-interactions.ts",
   "features/pill/useOverlayPosition.ts",
   "features/pill/usePillState.ts",

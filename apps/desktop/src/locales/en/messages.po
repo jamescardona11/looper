@@ -2099,20 +2099,10 @@ msgid "pill.rail.cancelled"
 msgstr "Discarded"
 
 #. js-lingui-explicit-id
-#: src/features/library/components/MeetingAwarenessOverlay.tsx
-msgid "meeting.awareness.dismiss"
-msgstr "Dismiss"
-
-#. js-lingui-explicit-id
 #. placeholder {0}: activity.label
 #: src/features/settings/components/ModelDownloadActivityBar.tsx
 msgid "models.download_activity.dismiss"
 msgstr "Dismiss {0} download"
-
-#. js-lingui-explicit-id
-#: src/features/library/components/MeetingAwarenessOverlay.tsx
-msgid "meeting.awareness.dismiss_reminder"
-msgstr "Dismiss meeting reminder"
 
 #. js-lingui-explicit-id
 #. placeholder {0}: suggestion.to
@@ -5890,31 +5880,6 @@ msgstr "Don't show meeting notifications again"
 #: src/features/library/components/MeetingAwarenessOverlay.tsx
 msgid "meeting.awareness.microphone_active"
 msgstr "Your microphone is active"
-
-#. js-lingui-explicit-id
-#: src/features/library/components/MeetingAwarenessOverlay.tsx
-msgid "meeting.awareness.disable_notifications.title"
-msgstr "Disable meeting notifications?"
-
-#. js-lingui-explicit-id
-#: src/features/library/components/MeetingAwarenessOverlay.tsx
-msgid "meeting.awareness.disable_notifications.body"
-msgstr "You've closed the last few meeting notifications. You can change when we notify you about meetings."
-
-#. js-lingui-explicit-id
-#: src/features/library/components/MeetingAwarenessOverlay.tsx
-msgid "meeting.awareness.disable_notifications.keep"
-msgstr "Keep as is"
-
-#. js-lingui-explicit-id
-#: src/features/library/components/MeetingAwarenessOverlay.tsx
-msgid "meeting.awareness.disable_notifications.manage"
-msgstr "Manage notifications"
-
-#. js-lingui-explicit-id
-#: src/features/library/components/MeetingAwarenessOverlay.tsx
-msgid "meeting.awareness.disable_notifications.close"
-msgstr "Close"
 
 #. js-lingui-explicit-id
 #: src/features/transcriptions/components/TranscriptionList.tsx

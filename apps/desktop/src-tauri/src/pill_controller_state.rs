@@ -5,6 +5,10 @@ use super::{
     UserSettings, EVENT_PILL_MODE, EVENT_PILL_STATE, OVERLAY_OFFSCREEN_LIMIT,
 };
 use parking_lot::Mutex;
+use std::time::{Duration, Instant};
+
+/// A drag that never reported its end stops freezing hover after this long.
+const DRAG_FREEZE_TIMEOUT: Duration = Duration::from_secs(10);
 
 impl PillController {
     pub fn new(recorder: Arc<RecorderManager>) -> Self {
@@ -22,6 +26,7 @@ impl PillController {
             audio_spectrum_emitter: Mutex::default(),
             hover_emitter: Mutex::default(),
             hovering: AtomicBool::default(),
+            drag_started_at: Mutex::default(),
             recording_generation: AtomicU64::default(),
             is_expanded: Mutex::default(),
             mode_state: Mutex::new(PillModeState::default()),
@@ -107,6 +112,20 @@ impl PillController {
 
     pub(super) fn set_hovering(&self, hovering: bool) {
         self.hovering.store(hovering, Ordering::Relaxed);
+    }
+
+    pub(super) fn set_dragging(&self, dragging: bool) {
+        let started = dragging.then(Instant::now);
+        self.drag_started_at.lock().clone_from(&started);
+    }
+
+    /// True while a drag holds the pill. The timeout is the safety net for a
+    /// pointer-up the webview never sees, which would otherwise freeze hover
+    /// tracking for the rest of the session.
+    pub(super) fn is_dragging(&self) -> bool {
+        self.drag_started_at
+            .lock()
+            .is_some_and(|started| started.elapsed() < DRAG_FREEZE_TIMEOUT)
     }
 
     pub(super) fn overlay_position(&self) -> Option<(i32, i32)> {

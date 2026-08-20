@@ -13,16 +13,15 @@ Native/Expo mobile app, a React web app, and Convex-backed shared contracts.
 ## Install
 
 ```sh
-pnpm install --frozen-lockfile
+make install
 ```
 
 ## Common commands
 
 ```sh
-pnpm run verify
-pnpm run build
-pnpm run typecheck
-pnpm --dir apps/desktop tauri dev
+make ci
+make build-all
+make dev
 pnpm --filter @looper/mobile prebuild
 pnpm --filter @looper/mobile ios
 ```
@@ -37,8 +36,10 @@ host app's private model directory.
 
 Unit tests, typechecks, and local builds do not prove physical microphone
 capture, native permissions, device behavior, production backend connectivity,
-store distribution, or release signing. The current evidence and open cases
-are recorded under [`docs/rebuild`](docs/rebuild/README.md).
+store distribution, or release signing. The durable reconstruction procedure
+and manual provenance cases live under [`docs/rebuild`](docs/rebuild/README.md);
+run-specific evidence belongs in CI artifacts or ignored local evidence
+directories, not in the repository.
 
 ## Licensing
 

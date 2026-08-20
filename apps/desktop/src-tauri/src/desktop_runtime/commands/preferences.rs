@@ -54,14 +54,9 @@ pub(crate) fn get_meeting_awareness_state(
     state.meeting_awareness().state()
 }
 
-#[tauri::command]
-pub(crate) fn dismiss_meeting_awareness(app: AppHandle<AppRuntime>, state: tauri::State<AppState>) {
-    state.meeting_awareness().dismiss(&app);
-}
-
-/// Descartar es "ahora no"; esto es "nunca más". Apaga el ajuste que gobierna
-/// todos los avisos de reunión, así que el aviso no vuelve hasta que se
-/// reactive desde Ajustes.
+/// La tarjeta se retira sola pasado su tiempo de vida; esto es "nunca más".
+/// Apaga el ajuste que gobierna todos los avisos de reunión, así que no
+/// vuelven hasta que se reactiven desde Ajustes.
 #[tauri::command]
 pub(crate) fn disable_meeting_awareness_notifications(
     app: AppHandle<AppRuntime>,

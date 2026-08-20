@@ -21,7 +21,7 @@ APP_NAME := looper
 .PHONY: help install \
         status diff diff-stat diff-check gitignore-audit review \
         dev dev-web dev-mobile dev-all build build-debug build-release build-all test-desktop test-mobile \
-        typecheck lint lint-fix format format-check check test ci \
+        typecheck lint lint-desktop lint-fix format format-check check check-fix docs-check test ci \
         update-deps licenses-audit \
         clean nuke
 
@@ -52,7 +52,9 @@ diff-check: ## Fail on whitespace errors in staged or unstaged diffs
 	@git diff --cached --check
 
 gitignore-audit: ## Fail if tracked files now match ignore rules
-	@tracked_ignored="$$(git ls-files -ci --exclude-standard)"; \
+	@tracked_ignored="$$(git ls-files -ci --exclude-standard | while IFS= read -r file; do \
+		if [ -e "$$file" ]; then printf '%s\n' "$$file"; fi; \
+	done)"; \
 	if [ -n "$$tracked_ignored" ]; then \
 		echo "Tracked files matching ignore rules:"; \
 		echo "$$tracked_ignored"; \
@@ -66,7 +68,7 @@ review: status diff-stat diff-check gitignore-audit ## Review current git change
 
 
 install: ## Just install dependencies (no wizard)
-	@pnpm install
+	@pnpm install --frozen-lockfile
 	@echo "✓ install done. Run 'make dev' to start."
 
 
@@ -106,6 +108,9 @@ typecheck: ## Run TypeScript type checking everywhere
 lint: ## Run Biome linter
 	@pnpm exec biome lint .
 
+lint-desktop: ## Enforce the desktop Tauri data boundary
+	@pnpm --dir $(DESKTOP_DIR) lint:ci
+
 lint-fix: ## Run Biome linter with auto-fix
 	@pnpm exec biome lint --write .
 
@@ -115,8 +120,14 @@ format: ## Format all files with Biome
 format-check: ## Check formatting without writing
 	@pnpm exec biome format .
 
-check: ## Biome check (lint + format + organize imports, with fixes)
+check: ## Check lint, format, and imports without writing
+	@pnpm exec biome check .
+
+check-fix: ## Fix Biome lint, format, and import issues
 	@pnpm exec biome check --write .
+
+docs-check: ## Check tracked Markdown links and repository-safe paths
+	@pnpm run docs:check
 
 test: ## Run all tests
 	@pnpm turbo run test
@@ -130,8 +141,8 @@ test-desktop: ## Run desktop frontend and Rust tests
 test-mobile: ## Typecheck and test the React Native app
 	@pnpm --filter @looper/mobile typecheck
 	@pnpm --filter @looper/mobile test
-
-ci: typecheck check test ## Run full CI checks locally
+ci: ## Run portable static and unit checks locally
+	@pnpm run verify
 
 
 

@@ -20,6 +20,7 @@ crate_modules!(
     desktop_runtime,
     dictionary,
     field_format,
+    hover_intent,
     import,
     integrations,
     library,

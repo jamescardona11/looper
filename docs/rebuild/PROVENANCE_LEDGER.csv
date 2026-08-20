@@ -19,6 +19,7 @@ turbo.json,owned,build,authored_for_rebuild,AGPL-3.0-or-later,task graph,current
 fixtures/**,owned,testing,authored_for_rebuild,AGPL-3.0-or-later,formatting corpus,current,
 test-support/**,owned,testing,authored_for_rebuild,AGPL-3.0-or-later,shared fixtures and scripts,current,
 tools/architecture-check/**,owned,governance,authored_for_rebuild,AGPL-3.0-or-later,layering gate,current,
+tools/docs/**,owned,governance,authored_for_rebuild,AGPL-3.0-or-later,documentation consistency gate,current,
 packages/AGENTS.md,owned,governance,authored_for_rebuild,AGPL-3.0-or-later,package rules,current,
 patches/**,permissive,third_party,upstream package patches,MIT,notice retained,current,NOTICE.md
 pnpm-lock.yaml,owned,build,workspace dependency lock synchronized,AGPL-3.0-or-later,frozen install plus workspace gates,current,

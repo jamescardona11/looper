@@ -75,10 +75,6 @@ pnpm-debug.log*
 **/ai_docs/
 /corpus-inventory.csv
 /corpus-summary.json
-/docs/
-!/docs/
-!/docs/rebuild/
-!/docs/rebuild/**
 
 # Product artwork Looper owns and ships. Anything the app loads at build or run
 # time is tracked: a clone that cannot produce a bundle is not a release.

@@ -3,6 +3,10 @@ import type {
   CapturePillPresentation,
 } from "../../data/dictation";
 
+// `shellPlacement` decides where the expanded pill lands, and the native hover
+// hit-test reproduces that anchor in `capture_pill.rs::expanded_rect`. Moving a
+// shell anchor here without moving it there leaves a strip of the pill inert;
+// the Rust side has the tests that catch it.
 export function resolveDockLayout(
   dock: CapturePillDockPosition,
   presentation: CapturePillPresentation,

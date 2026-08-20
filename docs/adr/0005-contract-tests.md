@@ -77,9 +77,9 @@ A contract test is illegitimate when it does any of:
   adds only a second place to update.
 
 Line-count budgets are ceilings against unbounded growth, not design criteria.
-`MAX_LINES` is 2000 and `LEGACY_BUDGET` is 3500 — deliberately far above any
-healthy file, so the budget never decides where a module boundary goes.
-`apps/desktop/AGENTS.md` decides that.
+Their values and legacy allowlist live in `src/file-size-contract.test.ts`, so
+the ADR does not duplicate volatile thresholds. `apps/desktop/AGENTS.md`
+decides where module boundaries go.
 
 ## Consequences
 

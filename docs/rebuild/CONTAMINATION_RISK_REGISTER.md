@@ -1,182 +1,46 @@
 # Registro de riesgo de procedencia
 
 La auditoría de corpus mide coincidencia textual agregada. Es una señal de
-revisión, no una prueba de clean-room ni una conclusión legal. Un archivo puede
-quedar por debajo del umbral después de extraer helpers, cambiar nombres o
-mover bloques y aun así conservar una derivación sustantiva.
+revisión, no una prueba de clean-room, autoría independiente ni una conclusión
+legal. Los resultados numéricos caducan con cada cambio del árbol y deben
+regenerarse antes de usarlos.
 
-## Estado del gate técnico
+## Gate reproducible
 
-Auditoría ejecutada sobre la rama activa con `tools/provenance/corpus-audit.py`:
+```sh
+python3 tools/provenance/corpus-audit.py /tmp/looper-audit \
+  --refs /ruta/a/voices/refs
+python3 tools/provenance/history-audit.py
+node tools/provenance/check-staged.mjs
+```
 
-- filas con contención `>= 30%`: `0`;
-- filas con repositorio bloqueante: `0`;
-- máximo observado: `29.9%`.
+El snapshot del 18 de agosto de 2026 no encontró filas bloqueantes en el umbral
+técnico configurado. Eso no cierra los casos históricos ni sustituye revisión
+legal.
 
-Esto permite usar el gate como control de regresión, pero no cierra por sí solo
-la revisión de los casos históricos de alto riesgo.
+## Casos manuales abiertos
 
-## Casos que requieren revisión sustantiva
-
-| Archivo actual | Señal histórica | Estado técnico actual | Riesgo que permanece |
-| --- | ---: | ---: | --- |
-| `apps/desktop/src-tauri/src/core/keyboard/macos.rs` | 97.6% | 15.2% | Revisión sustantiva aplicada: la frontera nativa ahora traduce eventos a una sesión propia, el estado usa familias de modificadores y el catálogo está agrupado por función; falta validación en una ventana macOS real. |
-| `apps/desktop/src-tauri/src/core/keyboard/catalog.rs` | 100% | 4.6% | Revisión de contrato completada: variantes, etiquetas y aliases son datos de interoperabilidad con eventos del sistema y se generan desde un keybook local; falta validación con códigos de teclado de cada host real. |
-| `apps/desktop/src-tauri/src/music.rs` | 95.7% | 15.6% | La coordinación usa una máquina de fases propia y los programas JXA separan dispatch, identidad y volumen; falta observar pause/duck en reproductores reales. |
-| `apps/desktop/src-tauri/src/platform/macos/audio_devices.rs` | 98.5% | 21.0% | Revisión de contrato completada: registro/eliminación CoreAudio, mailbox acotado, orden de suscripciones y refresh de menús están cubiertos; el smoke nativo sigue pendiente de permisos/host. |
-| `apps/desktop/src-tauri/src/core/keyboard/mod.rs` | 96.3% | 24.1% | Revisión de contrato completada: el parser de modificadores usa una tabla de alias propia, el matching separa familias izquierda/derecha y el lifecycle de shutdown conserva join explícito; falta validación con hotkeys globales en un host real. |
-| `apps/desktop/src/features/settings/components/SpeechModelPanel.tsx` | 98.6% | 24.8% | Revisión funcional completada: provider/model discovery, reset de presets, API key, callbacks y copy Lingui viven en contratos propios; la equivalencia visual por píxel aún no está demostrada. |
-| `apps/desktop/src-tauri/src/recorder.rs` | 96.3% | 17.3% | Revisión sustantiva completada: captura, journal parcial, procesamiento, validación, archivo y recovery están separados en límites propios; faltan micrófono, permisos y acústica reales. |
-| `apps/desktop/src-tauri/src/analytics.rs` | 97.1% | 28.8% | Revisión sustantiva completada: consentimiento, eventos, excepciones, clasificación y markers están encapsulados en políticas propias; nombres de eventos y categorías siguen siendo contratos observables y no se validó envío PostHog real. |
-
-## Casos móviles
-
-La misma auditoría incluye `apps/mobile` y no encontró filas sobre el umbral
-técnico (`86` archivos auditables, máximo actual `27.7%`). Aun así, estos son
-los casos que requieren revisión sustantiva por su referencia principal:
-
-| Archivo actual | Señal actual | Referencia principal | Riesgo que permanece |
-| --- | ---: | --- | --- |
-| `apps/mobile/targets/keyboard/KeyboardViewController.swift` | 27.7% | Voquill (AGPLv3) | Revisión sustantiva aplicada: waveform, estados de dictado, selección de formato/style, refresh de sesión y servicios están separados por políticas/helpers; falta validar extensión, permisos, captura e inserción en un dispositivo real. |
-| `apps/mobile/targets/_shared/DarwinNotificationManager.swift` | 23.7% | Voquill (AGPLv3) | Revisión de lifecycle completada: observer token, cola main, reemplazo por nombre y remove-all están encapsulados; falta prueba en dos procesos/extensión real. |
-| `apps/mobile/targets/widgets/MeetingLiveActivity.swift` | 23.1% | Voquill (AGPLv3) | Revisión de presentación completada: fases, timer, deep link y regiones Dynamic Island son propias; falta compilación del widget y validación en dispositivo. |
-| `apps/mobile/targets/keyboard/Repos/MemberRepo.swift` | 22.9% | Voquill (AGPLv3) | Revisión de wire completada: snapshot de suscripción, defaults y transporte inyectable están separados; falta query Convex real y sandbox de extensión. |
-| `apps/mobile/targets/keyboard/Types/SharedWorkflow.swift` | 11.8% | Referencia histórica no verificada | El codec local filtra/normaliza defaults y limita output. No existe un aviso verificable en el árbol actual para esta referencia; el archivo requiere revisión de licencia antes de redistribuirse como código independiente. |
+| Superficie | Riesgo que sigue abierto |
+| --- | --- |
+| `apps/desktop/src-tauri/src/core/keyboard/{macos,catalog,mod}.rs` | Faltan permisos, hotkeys globales y layouts físicos en hosts macOS/Windows reales. |
+| `apps/desktop/src-tauri/src/music.rs` | Falta observar pause/duck y restauración de volumen en reproductores reales. |
+| `apps/desktop/src-tauri/src/platform/macos/audio_devices.rs` | Falta registrar listeners CoreAudio con permisos reales. |
+| `apps/desktop/src/features/settings/components/SpeechModelPanel.tsx` | Falta evidencia visual y contra proveedores reales. |
+| `apps/desktop/src-tauri/src/recorder.rs` | Faltan micrófono, permisos, acústica y VAD en vivo. |
+| `apps/desktop/src-tauri/src/analytics.rs` | Falta envío real a PostHog y ejecución empaquetada. |
+| `apps/mobile/targets/keyboard/KeyboardViewController.swift` | Faltan extensión, permisos, captura e inserción en dispositivo real. |
+| `apps/mobile/targets/_shared/DarwinNotificationManager.swift` | Falta prueba entre procesos/extensión real. |
+| `apps/mobile/targets/widgets/MeetingLiveActivity.swift` | Falta compilación y observación del widget en dispositivo. |
+| `apps/mobile/targets/keyboard/Repos/MemberRepo.swift` | Falta query Convex real dentro del sandbox de la extensión. |
+| `apps/mobile/targets/keyboard/Types/SharedWorkflow.swift` | La referencia histórica y su licencia no están verificadas; requiere revisión antes de redistribución independiente. |
 
 ## Regla de remediación
 
-Cambiar nombres, mover archivos o eliminar tests no se considera por sí mismo
-una reimplementación. Para cada caso abierto solo hay dos vías defendibles:
+Cambiar nombres, mover archivos o eliminar tests no constituye una
+reimplementación. Cada caso solo se cierra conservando la licencia y los avisos
+aplicables, o mediante una reimplementación sustantiva basada en contratos
+observables, con pruebas nuevas y decisiones documentadas.
 
-1. conservar el código bajo GNU AGPL-3.0-or-later, con sus avisos y atribución
-   correspondientes; o
-2. hacer una reimplementación sustantiva basada en contratos observables,
-   escribir pruebas nuevas y documentar qué decisiones de diseño cambiaron.
-
-No se debe presentar el resultado como clean-room únicamente porque el porcentaje
-de coincidencia textual bajó. La revisión legal externa sigue siendo necesaria
-antes de redistribuir.
-
-## Elementos retirados
-
-Los módulos de producto `import/handy.rs` y `import/wispr.rs` no existen en el
-árbol reconstruido. La mención de `Handy` en el script de auditoría solo identifica
-un repositorio de referencia del corpus y no es una dependencia del producto.
-
-## Revisión sustantiva registrada
-
-El 18 de agosto de 2026 se revisó `core/keyboard/macos.rs` contra el contrato
-observable de `KeyboardListener`: permisos de Accesibilidad, creación y
-reactivación del event tap, traducción de teclas/punteros, Caps Lock, lados de
-modificadores, autorepeat, bloqueo/forwarding y liberación. La implementación
-actual separa `NativeEvent`, `TapSession` y `KeyboardState`; no se eliminaron
-pruebas para reducir la señal. Se añadieron contratos unitarios para la
-traducción de sesión y la recuperación de un tap deshabilitado. Verificación:
-14 pruebas de teclado, `cargo check --all-targets`, suite Rust completa,
-`qa:desktop-native`, `pnpm verify` y auditoría de corpus; la última evidencia
-no prueba interacción nativa con una ventana macOS ni permisos del sistema.
-
-En la misma fecha se revisó `music.rs` contra el contrato de `PillController`:
-sesiones no nulas, pause/duck, carreras de sesiones superpuestas, reanudación
-solo del reproductor pausado por Looper, cancelación y restauración de volumen.
-La implementación actual usa `SessionPhase` para distinguir estado inactivo y
-activo, conserva el token público y reescribe los dispatchers JXA con rutas de
-comando explícitas. La sintaxis de ambos programas JXA se validó con
-`osascript`; los contratos Rust de lifecycle/wire pasaron y no se eliminaron
-tests para reducir la señal. No se ejecutó Spotify/Apple Music ni se cambió el
-volumen real del host.
-
-También se revisó `platform/macos/audio_devices.rs` contra el contrato del
-watcher de entrada: ambos selectores CoreAudio, coalescencia en un canal de
-capacidad uno, actualización de menú/tray, emisión al renderer y eliminación
-RAII de listeners. Las pruebas cubren la dirección de propiedad, el callback
-con contexto nulo y la coalescencia; el smoke que registra listeners reales se
-mantiene explícitamente ignorado porque requiere CoreAudio y permisos del host.
-
-Finalmente se revisó `core/keyboard/mod.rs` contra el contrato observable de
-hotkeys: aliases y parseo de modificadores, representación de lados, matching
-genérico/específico, shortcuts de solo modificador, forwarding de teclas no
-registradas, eventos de liberación y parada ordenada del worker. La
-implementación actual separa `ModifierGroup`, `EventPolicy` y
-`PlatformShutdown`, conserva los mensajes de error y no elimina tests para
-reducir la señal. Las pruebas focales cubren la tabla de verdad, aliases,
-forwarding y ambos bordes de un modificador; la evidencia no incluye una
-ventana macOS/Windows real ni una hotkey global disparada por dispositivo.
-
-El catálogo `core/keyboard/catalog.rs` se revisó por separado porque su
-señal histórica correspondía a una tabla completa de claves. Las etiquetas,
-variantes y aliases son parte del protocolo observable entre el parser de
-shortcuts y los códigos nativos; cambiarlos por nombres inventados rompería
-configuraciones existentes. La implementación actual usa un `keybook` local
-que genera el enum y sus metadatos, encapsula la búsqueda en `KeyEntry` y
-mantiene el error público `Unknown key`. Las pruebas cubren round-trip de
-todas las etiquetas, aliases de puntuación, mouse y keypad; no se eliminaron
-tests para bajar la señal. Falta todavía una prueba de dispositivo para cada
-layout físico de teclado.
-
-`SpeechModelPanel.tsx` se revisó contra el contrato observable de Settings:
-selección de proveedor, endpoint custom, presets, modelo automático, modelos
-descubiertos y faltantes, API key, capability de discovery, callbacks y todos
-los IDs de traducción. El entrypoint actual prepara datos y copy, y delega el
-render en `ProviderConfigurationPanel`; las pruebas focales cubren cambio de
-provider, preservación de API key, normalización de modelos, modelo faltante,
-discovery condicional y nombres accesibles localizados. No se eliminaron
-tests. El gate no prueba renderizado pixel-perfect, GPU ni interacción con un
-backend/proveedor remoto real.
-
-`recorder.rs` se revisó contra el contrato observable de captura: worker de
-CPAL, armado por señal, espectro de 512 muestras, lectura incremental de audio,
-journal parcial con cierre/descartado, downmix, resample, VAD, validación,
-archivo WAV canónico y recuperación de parciales. La implementación actual
-separa `RecorderState`, `CaptureWorker`, `PartialJournal`, `AudioProcessor`,
-`RecordingValidator`, `RecordingArchive` y `RecoveryScan`; conserva las APIs
-públicas, el orden stop→journal→hook→procesado y los errores existentes. Las
-pruebas cubren 15 contratos deterministas, incluyendo persistencia temporal,
-recovery, downmix, límites de señal y WAV. No se eliminaron tests. No se
-afirma evidencia de CPAL, permisos de micrófono, dispositivo, acústica o VAD
-en vivo.
-
-`analytics.rs` se revisó contra el contrato observable de telemetría y
-diagnóstico local: identidad anónima, consentimiento opt-in/final opt-out,
-orden de eventos de settings, payloads acotados, excepciones, clasificación de
-fallos/pánicos y parsing de markers de crash. La implementación actual separa
-`AnalyticsConfig`, `AnalyticsIdentity`, `EventDraft`, `ExceptionDraft`,
-`TelemetryRoute`, tablas de reglas y `CrashMarker`; conserva los nombres de
-eventos, campos públicos, fase monotónica y ausencia de transcript/audio en
-payloads. Las pruebas focales cubren 13 contratos, incluyendo anonimización,
-precedencia de categorías, wire de crash y límites de propiedades. No se
-eliminaron tests. No se ejecutó un envío real a PostHog ni una producción
-Tauri, por lo que esa parte permanece sin evidencia externa.
-
-`apps/mobile/targets/keyboard/KeyboardViewController.swift` se revisó contra
-el contrato observable de la extensión: lifecycle de `UIInputViewController`,
-estado idle/recording/loading/error, waveform y progress, acceso completo,
-permisos de micrófono, selección de idioma/formato/style/workflow, refresh de
-sesión, transporte de audio y actualización de `UserDefaults`/Darwin. La
-versión actual cambia la estructura de render y separa políticas de idioma,
-banner de membresía y wire de sesión en helpers propios; conserva callbacks,
-claves, textos, tamaños y rutas de servicio. Los contratos nativos cubren seis
-grupos y el gate móvil pasa typecheck y 35 pruebas Vitest. También se compiló
-el harness Swift con `swiftc -warnings-as-errors`; el linker solo advierte una
-ruta global ausente. No hay proyecto Xcode generado con schemes utilizables,
-por lo que no se afirma prueba de extensión, teclado host, permiso, micrófono,
-inserción ni proveedor real en dispositivo.
-
-Los cuatro casos móviles restantes también se revisaron por contrato.
-`DarwinNotificationManager` encapsula el centro Darwin, token, tabla de
-callbacks y forwarding a la cola principal; el harness nativo cubre registro,
-post, reemplazo, remove y remove-all. `MemberRepo` separa
-`SubscriptionSnapshot` y permite un query inyectable; el harness cubre tier,
-trial, fecha y defaults free, mientras que el typecheck/Vitest móvil permanece
-verde.
-
-`MeetingLiveActivity` no comparte el layout de la referencia: modela fases de
-meeting, timer, marked moments, deep link y cada región de Dynamic Island con
-presentadores propios. La evidencia disponible es estática y de typecheck
-móvil; el proyecto Xcode generado no tiene schemes, así que el widget no se
-ha compilado ni observado en un dispositivo. `SharedWorkflow` es un codec
-local de `UserDefaults`: normaliza campos, aplica defaults y restringe output
-a `insert|replace|copy`; el contrato de workflows se mantiene con la licencia
-documentada en `NOTICE.md`, sin declarar autoría independiente sobre datos
-externos. No se eliminaron tests para reducir señales en ninguno de los cuatro
-casos.
+Los módulos `import/handy.rs` e `import/wispr.rs` fueron retirados del árbol.
+Los nombres Handy/Wispr en herramientas de auditoría identifican referencias
+del corpus, no dependencias distribuidas.

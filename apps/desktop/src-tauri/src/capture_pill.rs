@@ -61,57 +61,163 @@ pub fn dock_origin(
     }
 }
 
+/// Height of the expanded shell painted by `resolveDockLayout`.
+const SHELL_HEIGHT: f64 = 48.0;
+/// The collapsed floating launcher is a 44pt circle; the extra points keep it
+/// reachable without widening what the user sees.
+const FLOATING_LAUNCHER_SIZE: f64 = 48.0;
+/// The docked edge handle is painted 44x6; its active area is grown so a 6pt
+/// sliver stays hittable.
+const DOCK_HANDLE_LONG: f64 = 64.0;
+const DOCK_HANDLE_SHORT: f64 = 20.0;
+/// Collapsing again takes a deliberate move away, not a pixel of jitter.
+const HOVER_EXIT_MARGIN: f64 = 10.0;
+
+#[derive(Debug, Clone, Copy, PartialEq)]
+struct Rect {
+    x: f64,
+    y: f64,
+    width: f64,
+    height: f64,
+}
+
+impl Rect {
+    fn contains(self, point: (f64, f64)) -> bool {
+        point.0 >= self.x
+            && point.0 < self.x + self.width
+            && point.1 >= self.y
+            && point.1 < self.y + self.height
+    }
+
+    fn union(self, other: Self) -> Self {
+        let x = self.x.min(other.x);
+        let y = self.y.min(other.y);
+        Self {
+            x,
+            y,
+            width: (self.x + self.width).max(other.x + other.width) - x,
+            height: (self.y + self.height).max(other.y + other.height) - y,
+        }
+    }
+
+    fn inflate(self, margin: f64) -> Self {
+        Self {
+            x: self.x - margin,
+            y: self.y - margin,
+            width: self.width + margin * 2.0,
+            height: self.height + margin * 2.0,
+        }
+    }
+}
+
+/// What the pointer must reach to expand the pill: exactly what is painted
+/// while collapsed.
+fn collapsed_rect(
+    window_size: (f64, f64),
+    scale: f64,
+    presentation: CapturePillPresentation,
+    dock_position: CapturePillDockPosition,
+) -> Rect {
+    match presentation {
+        CapturePillPresentation::Floating => {
+            let size = FLOATING_LAUNCHER_SIZE * scale;
+            Rect {
+                x: (window_size.0 - size) / 2.0,
+                y: (window_size.1 - size) / 2.0,
+                width: size,
+                height: size,
+            }
+        }
+        CapturePillPresentation::Dock => {
+            let long = DOCK_HANDLE_LONG * scale;
+            let short = DOCK_HANDLE_SHORT * scale;
+            match dock_position {
+                CapturePillDockPosition::TopCenter => Rect {
+                    x: (window_size.0 - long) / 2.0,
+                    y: 0.0,
+                    width: long,
+                    height: short,
+                },
+                CapturePillDockPosition::LeftCenter => Rect {
+                    x: 0.0,
+                    y: (window_size.1 - long) / 2.0,
+                    width: short,
+                    height: long,
+                },
+                CapturePillDockPosition::RightCenter => Rect {
+                    x: window_size.0 - short,
+                    y: (window_size.1 - long) / 2.0,
+                    width: short,
+                    height: long,
+                },
+                CapturePillDockPosition::BottomCenter => Rect {
+                    x: (window_size.0 - long) / 2.0,
+                    y: window_size.1 - short,
+                    width: long,
+                    height: short,
+                },
+            }
+        }
+    }
+}
+
+/// Where the expanded shell actually lands. Mirrors `shellPlacement` in
+/// `pill-preflight-layout.ts`: floating and the side docks centre the shell,
+/// the top and bottom docks pin it to their edge.
+fn expanded_rect(
+    window_size: (f64, f64),
+    scale: f64,
+    presentation: CapturePillPresentation,
+    dock_position: CapturePillDockPosition,
+) -> Rect {
+    let height = SHELL_HEIGHT * scale;
+    let centered = (window_size.1 - height) / 2.0;
+    let y = match presentation {
+        CapturePillPresentation::Floating => centered,
+        CapturePillPresentation::Dock => match dock_position {
+            CapturePillDockPosition::TopCenter => 0.0,
+            CapturePillDockPosition::BottomCenter => window_size.1 - height,
+            CapturePillDockPosition::LeftCenter | CapturePillDockPosition::RightCenter => centered,
+        },
+    };
+    Rect {
+        x: 0.0,
+        y,
+        width: window_size.0,
+        height,
+    }
+}
+
+/// The area the pointer has to leave before the pill collapses again.
+///
+/// It is the union of both painted states plus a margin, which makes it a
+/// superset of the area that expanded the pill in the first place. Without
+/// that guarantee, expanding can push the pointer outside its own hit area and
+/// the pill oscillates - that was the flicker along the floating pill's top
+/// edge, where the collapsed circle sat 6pt above the expanded shell.
+fn exit_rect(
+    window_size: (f64, f64),
+    scale: f64,
+    presentation: CapturePillPresentation,
+    dock_position: CapturePillDockPosition,
+) -> Rect {
+    collapsed_rect(window_size, scale, presentation, dock_position)
+        .union(expanded_rect(window_size, scale, presentation, dock_position))
+        .inflate(HOVER_EXIT_MARGIN * scale)
+}
+
 pub fn hit_test(
     cursor: (f64, f64),
     window_size: (f64, f64),
     scale: f64,
     presentation: CapturePillPresentation,
     dock_position: CapturePillDockPosition,
-    expanded: bool,
+    hovering: bool,
 ) -> bool {
-    if expanded {
-        let shell_height = 48.0 * scale;
-        let shell_top = match dock_position {
-            CapturePillDockPosition::TopCenter => 0.0,
-            CapturePillDockPosition::LeftCenter | CapturePillDockPosition::RightCenter => {
-                (window_size.1 - shell_height) / 2.0
-            }
-            CapturePillDockPosition::BottomCenter => window_size.1 - shell_height,
-        };
-        return point_in_rect(cursor, (0.0, shell_top), (window_size.0, shell_height));
-    }
-
-    match presentation {
-        CapturePillPresentation::Floating => {
-            let size = 48.0 * scale;
-            point_in_rect(
-                cursor,
-                ((window_size.0 - size) / 2.0, (window_size.1 - size) / 2.0),
-                (size, size),
-            )
-        }
-        CapturePillPresentation::Dock => {
-            let long = 64.0 * scale;
-            let short = 20.0 * scale;
-            match dock_position {
-                CapturePillDockPosition::TopCenter => {
-                    point_in_rect(cursor, ((window_size.0 - long) / 2.0, 0.0), (long, short))
-                }
-                CapturePillDockPosition::LeftCenter => {
-                    point_in_rect(cursor, (0.0, (window_size.1 - long) / 2.0), (short, long))
-                }
-                CapturePillDockPosition::RightCenter => point_in_rect(
-                    cursor,
-                    (window_size.0 - short, (window_size.1 - long) / 2.0),
-                    (short, long),
-                ),
-                CapturePillDockPosition::BottomCenter => point_in_rect(
-                    cursor,
-                    ((window_size.0 - long) / 2.0, window_size.1 - short),
-                    (long, short),
-                ),
-            }
-        }
+    if hovering {
+        exit_rect(window_size, scale, presentation, dock_position).contains(cursor)
+    } else {
+        collapsed_rect(window_size, scale, presentation, dock_position).contains(cursor)
     }
 }
 
@@ -188,13 +294,6 @@ fn squared_distance_to_rect(point: (i32, i32), rect: (i32, i32, u32, u32)) -> i6
     dx * dx + dy * dy
 }
 
-fn point_in_rect(point: (f64, f64), origin: (f64, f64), size: (f64, f64)) -> bool {
-    point.0 >= origin.0
-        && point.0 < origin.0 + size.0
-        && point.1 >= origin.1
-        && point.1 < origin.1 + size.1
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -268,6 +367,138 @@ mod tests {
         ));
         assert!(hit_test(
             (10.0, 30.0),
+            size,
+            1.0,
+            CapturePillPresentation::Dock,
+            CapturePillDockPosition::BottomCenter,
+            true,
+        ));
+    }
+
+    const EVERY_PLACEMENT: [(CapturePillPresentation, CapturePillDockPosition); 8] = [
+        (
+            CapturePillPresentation::Dock,
+            CapturePillDockPosition::TopCenter,
+        ),
+        (
+            CapturePillPresentation::Dock,
+            CapturePillDockPosition::LeftCenter,
+        ),
+        (
+            CapturePillPresentation::Dock,
+            CapturePillDockPosition::RightCenter,
+        ),
+        (
+            CapturePillPresentation::Dock,
+            CapturePillDockPosition::BottomCenter,
+        ),
+        (
+            CapturePillPresentation::Floating,
+            CapturePillDockPosition::TopCenter,
+        ),
+        (
+            CapturePillPresentation::Floating,
+            CapturePillDockPosition::LeftCenter,
+        ),
+        (
+            CapturePillPresentation::Floating,
+            CapturePillDockPosition::RightCenter,
+        ),
+        (
+            CapturePillPresentation::Floating,
+            CapturePillDockPosition::BottomCenter,
+        ),
+    ];
+
+    /// The oscillation guard. Every point that expands the pill must still be
+    /// inside it once expanded, or hover flips back and forth forever.
+    #[test]
+    fn expanding_never_moves_the_pointer_out_of_the_pill() {
+        let size = (260.0, 60.0);
+        for (presentation, dock) in EVERY_PLACEMENT {
+            for scale in [1.0, 2.0] {
+                let window = (size.0 * scale, size.1 * scale);
+                let enter = collapsed_rect(window, scale, presentation, dock);
+                let exit = exit_rect(window, scale, presentation, dock);
+                for corner in [
+                    (enter.x, enter.y),
+                    (enter.x + enter.width - 1.0, enter.y),
+                    (enter.x, enter.y + enter.height - 1.0),
+                    (enter.x + enter.width - 1.0, enter.y + enter.height - 1.0),
+                ] {
+                    assert!(
+                        exit.contains(corner),
+                        "{presentation:?}/{dock:?} at {scale}x drops {corner:?} on expand",
+                    );
+                    assert!(hit_test(corner, window, scale, presentation, dock, false));
+                    assert!(hit_test(corner, window, scale, presentation, dock, true));
+                }
+            }
+        }
+    }
+
+    /// No dead pixels: everything the user can see of the expanded pill still
+    /// answers the pointer, so the shell never has an inert strip along an edge.
+    #[test]
+    fn the_whole_painted_shell_keeps_the_pill_expanded() {
+        let size = (260.0, 60.0);
+        for (presentation, dock) in EVERY_PLACEMENT {
+            let shell = expanded_rect(size, 1.0, presentation, dock);
+            for corner in [
+                (shell.x, shell.y),
+                (shell.x + shell.width - 1.0, shell.y),
+                (shell.x, shell.y + shell.height - 1.0),
+                (shell.x + shell.width - 1.0, shell.y + shell.height - 1.0),
+            ] {
+                assert!(
+                    hit_test(corner, size, 1.0, presentation, dock, true),
+                    "{presentation:?}/{dock:?} leaves {corner:?} inert while expanded",
+                );
+            }
+        }
+    }
+
+    /// Regression: the floating launcher is centred while the expanded shell
+    /// used to be pinned to the bottom, so the pill's top 6pt expanded and
+    /// immediately collapsed again.
+    #[test]
+    fn the_floating_pills_top_edge_stays_expanded() {
+        let size = (260.0, 60.0);
+        let top_edge = (130.0, 8.0);
+
+        assert!(hit_test(
+            top_edge,
+            size,
+            1.0,
+            CapturePillPresentation::Floating,
+            CapturePillDockPosition::BottomCenter,
+            false,
+        ));
+        assert!(hit_test(
+            top_edge,
+            size,
+            1.0,
+            CapturePillPresentation::Floating,
+            CapturePillDockPosition::BottomCenter,
+            true,
+        ));
+    }
+
+    #[test]
+    fn leaving_the_pill_needs_more_than_a_pixel_of_jitter() {
+        let size = (260.0, 60.0);
+        let just_outside = (130.0, 62.0);
+
+        assert!(hit_test(
+            just_outside,
+            size,
+            1.0,
+            CapturePillPresentation::Dock,
+            CapturePillDockPosition::BottomCenter,
+            true,
+        ));
+        assert!(!hit_test(
+            (130.0, 78.0),
             size,
             1.0,
             CapturePillPresentation::Dock,

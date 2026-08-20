@@ -1,6 +1,7 @@
 // Entrada explícita al flujo de Dictation desde el dock de la bandeja.
 // Mantiene fuera del componente el contrato Tauri de este gesto de captura.
 import { invoke } from "@tauri-apps/api/core";
+import { getCurrentWindow } from "@tauri-apps/api/window";
 import { listen, type UnlistenFn } from "@tauri-apps/api/event";
 
 export type CapturePillPresentation = "dock" | "floating";
@@ -25,6 +26,18 @@ export async function setPreflightLanguageMenuOpen(
   open: boolean,
 ): Promise<void> {
   await invoke("set_preflight_language_menu_open", { open });
+}
+
+// Hands the overlay window to the window server for a native drag. Hover
+// tracking is frozen first: polling through a drag collapses the pill mid-move
+// and can hand the panel back to click-through while the user still holds it.
+export async function beginOverlayDrag(): Promise<void> {
+  await invoke("set_pill_dragging", { dragging: true });
+  await getCurrentWindow().startDragging();
+}
+
+export async function endOverlayDrag(): Promise<void> {
+  await invoke("set_pill_dragging", { dragging: false });
 }
 
 export async function syncPillRendererState(): Promise<void> {

@@ -1,7 +1,5 @@
 import { useLingui } from "@lingui/react/macro";
 import { CaretDown, Check, Microphone, Plus } from "@phosphor-icons/react";
-import { getCurrentWindow } from "@tauri-apps/api/window";
-import type { PointerEvent as ReactPointerEvent } from "react";
 import type { CapturePillDockPosition } from "../../data/dictation";
 import type { TranscriptionLanguageOption } from "../../shared/lib/transcriptionLanguages";
 import { LooperLogo } from "../../shared/ui/LooperLogo";
@@ -9,6 +7,7 @@ import {
   languageMenuPlacement,
   resolveDockLayout,
 } from "./pill-preflight-layout";
+import { useOverlayDrag } from "./use-overlay-drag";
 import { usePillPreflight } from "./use-pill-preflight";
 
 const tenPixelTextClass = `text-[${10}px]`;
@@ -19,57 +18,43 @@ export type CapturePreflightProps = {
   isHovered?: boolean;
 };
 
-function dragDock(event: ReactPointerEvent<HTMLButtonElement>) {
-  if (event.button !== 0) return;
-  event.preventDefault();
-  void getCurrentWindow()
-    .startDragging()
-    .catch((error) => console.error("Failed to drag Dictation dock:", error));
-}
-
-function FloatingLauncher() {
+function FloatingLauncher({
+  onPointerDown,
+}: Pick<ReturnType<typeof useOverlayDrag>, "onPointerDown">) {
   const { t } = useLingui();
   return (
-    <button
-      type="button"
+    <div
       data-overlay-drag-handle
+      onPointerDown={onPointerDown}
+      role="img"
       aria-label={t({
         id: "pill.preflight.drag_floating",
         message: "Move Capture pill",
       })}
-      onPointerDown={dragDock}
       className="ui-sticky-launcher absolute left-1/2 top-1/2 grid h-11 w-11 -translate-x-1/2 -translate-y-1/2 cursor-grab place-items-center rounded-full text-content-primary active:cursor-grabbing"
     >
       <span aria-hidden="true">
         <LooperLogo size="sm" />
       </span>
-    </button>
+    </div>
   );
 }
 
+// Signals that the pill can be moved. The whole shell is the drag surface, so
+// these dots are a hint, not a target.
 function FloatingGrip() {
-  const { t } = useLingui();
-  const dragLabel = t({
-    id: "pill.preflight.drag",
-    message: "Move Dictation dock",
-  });
   return (
-    <button
-      type="button"
-      data-overlay-drag-handle
-      aria-label={dragLabel}
-      title={dragLabel}
-      onPointerDown={dragDock}
-      className="flex h-10 w-2.5 shrink-0 cursor-grab flex-col items-center justify-center gap-[2px] rounded-full active:cursor-grabbing"
+    <span
+      aria-hidden="true"
+      className="pointer-events-none flex h-10 w-2.5 shrink-0 flex-col items-center justify-center gap-[2px]"
     >
       {[0, 1, 2, 3].map((dot) => (
         <span
           key={dot}
-          aria-hidden="true"
           className="h-0.5 w-0.5 rounded-full bg-[var(--ui-capture-muted)]"
         />
       ))}
-    </button>
+    </span>
   );
 }
 
@@ -102,9 +87,9 @@ function DockControls({
         type="button"
         onClick={beginDictation}
         disabled={starting}
-        className="ui-text-body-sm inline-flex h-10 w-[149px] shrink-0 items-center gap-2 rounded-full px-2 font-semibold text-[var(--ui-capture-fg-strong)] transition-colors duration-150 hover:bg-white/6 active:bg-white/10 disabled:opacity-60"
+        className="ui-text-body-sm inline-flex h-10 w-[149px] shrink-0 cursor-pointer items-center gap-2 rounded-full px-2 font-semibold text-[var(--ui-capture-fg-strong)] transition-colors duration-150 hover:bg-white/6 active:bg-white/10 disabled:opacity-60"
       >
-        <span className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[var(--color-accent)] text-[var(--color-bg-primary)] [box-shadow:var(--ui-pill-signal-shadow)]">
+        <span className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[var(--color-accent)] ui-color-on-solid [box-shadow:var(--ui-pill-signal-shadow)]">
           <Microphone size={13} weight="fill" />
         </span>
         {starting
@@ -126,7 +111,7 @@ function DockControls({
           message: "Dictation language",
         })}
         onClick={() => setMenuOpen(!menuOpen)}
-        className={`inline-flex h-8 min-w-9 shrink-0 items-center justify-center gap-0.5 rounded-xl px-1 ${tenPixelTextClass} font-semibold text-[var(--ui-capture-fg)] transition-colors duration-150 hover:bg-white/6 active:bg-white/10`}
+        className={`inline-flex h-8 min-w-9 shrink-0 cursor-pointer items-center justify-center gap-0.5 rounded-xl px-1 ${tenPixelTextClass} font-semibold text-[var(--ui-capture-fg)] transition-colors duration-150 hover:bg-white/6 active:bg-white/10`}
       >
         {language ? language.toUpperCase() : "AUTO"}
         <CaretDown
@@ -140,7 +125,7 @@ function DockControls({
         aria-label={t({ id: "pill.preflight.new_note", message: "New note" })}
         title={t({ id: "pill.preflight.new_note", message: "New note" })}
         onClick={beginNote}
-        className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-[var(--ui-capture-fg)] transition-colors duration-150 hover:bg-white/6 hover:text-[var(--ui-capture-fg-strong)] active:bg-white/10"
+        className="inline-flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-full text-[var(--ui-capture-fg)] transition-colors duration-150 hover:bg-white/6 hover:text-[var(--ui-capture-fg-strong)] active:bg-white/10"
       >
         <Plus size={17} weight="bold" />
       </button>
@@ -209,6 +194,7 @@ export function CapturePreflight({
 }: CapturePreflightProps) {
   const { t } = useLingui();
   const preflight = usePillPreflight();
+  const drag = useOverlayDrag();
   const expanded = !sticky || isHovered || preflight.menuOpen;
   const layout = resolveDockLayout(
     preflight.dockPosition,
@@ -233,11 +219,13 @@ export function CapturePreflight({
           />
         ) : null}
         {sticky && !expanded && preflight.presentation === "floating" ? (
-          <FloatingLauncher />
+          <FloatingLauncher onPointerDown={drag.onPointerDown} />
         ) : null}
         {expanded ? (
           <section
-            className={`ui-pill-shell relative flex h-12 w-[260px] items-center overflow-hidden rounded-full border border-[var(--ui-pill-shell-border)] px-1 text-white ${sticky ? `ui-capture-dock absolute z-20 ${layout.shellPlacement}` : ""}`}
+            onPointerDown={drag.onPointerDown}
+            onClickCapture={drag.onClickCapture}
+            className={`ui-pill-shell relative flex h-12 w-[260px] cursor-grab items-center overflow-hidden rounded-full border border-[var(--ui-pill-shell-border)] px-1 text-white active:cursor-grabbing ${sticky ? `ui-capture-dock absolute z-20 ${layout.shellPlacement}` : ""}`}
             role="group"
             aria-label={t({
               id: "pill.preflight.label",

@@ -7,14 +7,7 @@ import {
   Waveform,
   X,
 } from "@phosphor-icons/react";
-import React, {
-  useRef,
-  useEffect,
-  useCallback,
-  useMemo,
-  useState,
-} from "react";
-import { getCurrentWindow } from "@tauri-apps/api/window";
+import React, { useRef, useEffect, useMemo, useState } from "react";
 import { finishRecording } from "../../data/audio";
 import {
   cancelPendingInsertion,
@@ -35,6 +28,7 @@ import { useMountEffect } from "../../shared/hooks/useMountEffect";
 import { SIGNAL_RAIL_SHELL_CLASS, SignalRailContent } from "./SignalRail";
 import { CapturePreflight } from "./pill-preflight";
 import { buildAnimatedTextTokens } from "./pill-expanded-text-model";
+import { useOverlayDrag } from "./use-overlay-drag";
 import { usePillInteractions } from "./use-pill-interactions";
 import {
   measureResultCard,
@@ -106,6 +100,7 @@ const DictationPillOverlay: React.FC<PillOverlayProps> = ({
     isHovered,
     dismiss,
   } = usePillState();
+  const drag = useOverlayDrag();
   const isPreviewPending = isExpanded && pillTone === "preview";
   const [isPreviewEditing, setIsPreviewEditing] = useState(false);
   const [previewDraft, setPreviewDraft] = useState("");
@@ -126,6 +121,9 @@ const DictationPillOverlay: React.FC<PillOverlayProps> = ({
   const isAskResultPending = isExpanded && pillTone === "ask_result";
   const isCopyResultPending = isExpanded && pillTone === "copy_result";
   const isInsertedResultPending = isExpanded && pillTone === "inserted_result";
+  // A result card is a window the user can push out of the way.
+  const isResultDraggable =
+    isCopyResultPending || isAskResultPending || isInsertedResultPending;
   const isResultCard =
     isPreviewPending ||
     isAskResultPending ||
@@ -136,25 +134,6 @@ const DictationPillOverlay: React.FC<PillOverlayProps> = ({
   const [selectedPreset, setSelectedPreset] = useState<
     TransformPreset | undefined
   >(undefined);
-
-  const handleResultDragStart = useCallback(
-    (event: React.PointerEvent<HTMLElement>) => {
-      if (
-        event.button !== 0 ||
-        (event.target as Element).closest("button, textarea, input, a")
-      ) {
-        return;
-      }
-
-      event.preventDefault();
-      getCurrentWindow()
-        .startDragging()
-        .catch((error) =>
-          console.error("Failed to drag result window:", error),
-        );
-    },
-    [],
-  );
 
   useEffect(() => {
     if (!isActionSelectPending) {
@@ -311,12 +290,9 @@ const DictationPillOverlay: React.FC<PillOverlayProps> = ({
         <AnimatePresence>
           {(pillStatus !== "idle" || inserted) && (
             <motion.div
-              onPointerDown={
-                isCopyResultPending ||
-                isAskResultPending ||
-                isInsertedResultPending
-                  ? handleResultDragStart
-                  : undefined
+              onPointerDown={isResultDraggable ? drag.onPointerDown : undefined}
+              onClickCapture={
+                isResultDraggable ? drag.onClickCapture : undefined
               }
               className={`${SIGNAL_RAIL_SHELL_CLASS} flex-col ${pillTone === "cleanup" ? "pill-shell-cleanup" : ""} ${isErrorFlashing ? "animate-shake" : ""}`}
               initial={pillInitial}

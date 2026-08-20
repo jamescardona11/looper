@@ -5,7 +5,7 @@ use crate::{meeting_awareness::MeetingAwarenessPhase, pill::PillStatus, AppRunti
 pub const WINDOW_LABEL: &str = "meeting-awareness";
 const SHADOW_GUTTER: f64 = 8.0;
 const SURFACE_WIDTH: f64 = 404.0;
-const SURFACE_HEIGHT: f64 = 112.0;
+const SURFACE_HEIGHT: f64 = 72.0;
 const WIDTH: f64 = SURFACE_WIDTH + SHADOW_GUTTER * 2.0;
 const HEIGHT: f64 = SURFACE_HEIGHT + SHADOW_GUTTER * 2.0;
 

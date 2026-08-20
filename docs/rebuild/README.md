@@ -5,7 +5,7 @@ historia de Git y sustituir bloques cuya procedencia requería revisión. El
 objetivo es conservar la funcionalidad observable sin copiar una estructura
 externa por inercia.
 
-## Estado actual
+## Invariantes verificables
 
 - La raíz de la historia nueva es `b1efa21`.
 - `LICENSE` contiene el texto completo de GNU AGPL v3.
@@ -15,6 +15,8 @@ externa por inercia.
 - La rama activa se verifica con `tools/provenance/history-audit.py`,
   `tools/provenance/corpus-audit.py` y la compuerta
   `tools/provenance/check-staged.mjs`.
+- Los enlaces de Markdown y las rutas locales se verifican con
+  `pnpm run docs:check`.
 
 ## Auditoría reproducible
 

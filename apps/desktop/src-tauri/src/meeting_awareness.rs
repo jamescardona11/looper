@@ -17,10 +17,13 @@ const REMINDER_LEAD_SECONDS: i64 = 60;
 const LATE_JOIN_WINDOW_MINUTES: i64 = 15;
 const CALENDAR_READ_ATTEMPTS: usize = 3;
 const CALENDAR_RETRY_DELAY_MILLIS: u64 = 100;
-/// El aviso de una llamada detectada es una oferta, no un estado: si no la
-/// aceptas se retira sola. Un micrófono puede quedarse abierto durante horas,
-/// y sin este límite la píldora se quedaba ahí toda la reunión.
-const DETECTED_PROMPT_TTL_SECONDS: u64 = 20;
+/// Un aviso es una oferta, no un estado: si no la aceptas se retira sola.
+/// Vale igual para las dos clases de aviso. Un micrófono puede quedarse
+/// abierto durante horas, y una reunión de calendario seguía siendo
+/// "todavía puedes unirte" hasta quince minutos después de empezar, así que
+/// las dos se quedaban en pantalla mucho más de lo que dura un vistazo. La
+/// oferta sigue viva en el menú de la barra; lo que caduca es la tarjeta.
+const PROMPT_TTL_SECONDS: u64 = 20;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
@@ -243,15 +246,18 @@ impl MeetingAwarenessManager {
                 );
                 let next_phase = next.phase;
                 let should_show = next_phase != MeetingAwarenessPhase::Idle;
-                let previous_phase = state.read().phase;
+                let (previous_phase, previous_prompt) = {
+                    let current = state.read();
+                    (current.phase, prompt_identity(&current))
+                };
+                let next_prompt = prompt_identity(&next);
                 update_shared_state(&app, &state, next);
                 if should_show && !dictation_busy(&app.state::<AppState>()) {
-                    if next_phase == MeetingAwarenessPhase::Detected
-                        && previous_phase != MeetingAwarenessPhase::Detected
-                    {
-                        arm_detected_prompt_timeout(
+                    if next_prompt.is_some() && next_prompt != previous_prompt {
+                        arm_prompt_timeout(
                             &app,
                             &state,
+                            &dismissed,
                             &detected_dismissed,
                             &detected_generation,
                         );
@@ -352,29 +358,56 @@ fn dictation_busy(state: &AppState) -> bool {
         )
 }
 
-/// Retira el aviso detectado pasado su tiempo de vida, salvo que ya lo haya
-/// reemplazado otro. Se marca como descartado para que el sondeo no lo levante
-/// otra vez mientras el mismo micrófono siga abierto.
-fn arm_detected_prompt_timeout(
+/// Lo que el aviso está enseñando. Dos estados con la misma identidad son el
+/// mismo aviso: una reunión que pasa de `Upcoming` a `Ready` no reinicia su
+/// cuenta atrás, porque para quien mira es la misma tarjeta.
+#[derive(Clone, Debug, PartialEq, Eq)]
+enum PromptIdentity {
+    DetectedCall,
+    Event(String),
+}
+
+fn prompt_identity(state: &MeetingAwarenessState) -> Option<PromptIdentity> {
+    match (state.phase, state.meeting.as_ref()) {
+        (MeetingAwarenessPhase::Idle, _) => None,
+        (_, Some(meeting)) => Some(PromptIdentity::Event(meeting.id.clone())),
+        (_, None) => Some(PromptIdentity::DetectedCall),
+    }
+}
+
+/// Retira el aviso pasado su tiempo de vida, salvo que ya lo haya reemplazado
+/// otro. Se marca como descartado para que el siguiente sondeo no lo levante
+/// otra vez mientras la señal que lo provocó siga ahí: el micrófono abierto o
+/// la reunión todavía en su ventana.
+fn arm_prompt_timeout(
     app: &AppHandle<AppRuntime>,
     state: &Arc<parking_lot::RwLock<MeetingAwarenessState>>,
+    dismissed_event_ids: &Arc<parking_lot::Mutex<HashSet<String>>>,
     detected_dismissed: &Arc<AtomicBool>,
     detected_generation: &Arc<AtomicU64>,
 ) {
     let token = detected_generation.fetch_add(1, Ordering::SeqCst) + 1;
     let app = app.clone();
     let state = Arc::clone(state);
+    let dismissed_event_ids = Arc::clone(dismissed_event_ids);
     let detected_dismissed = Arc::clone(detected_dismissed);
     let detected_generation = Arc::clone(detected_generation);
     tauri::async_runtime::spawn(async move {
-        tokio::time::sleep(std::time::Duration::from_secs(DETECTED_PROMPT_TTL_SECONDS)).await;
+        tokio::time::sleep(std::time::Duration::from_secs(PROMPT_TTL_SECONDS)).await;
         if detected_generation.load(Ordering::SeqCst) != token {
             return;
         }
-        if state.read().phase != MeetingAwarenessPhase::Detected {
+        let Some(showing) = prompt_identity(&state.read()) else {
             return;
+        };
+        match showing {
+            PromptIdentity::Event(event_id) => {
+                dismissed_event_ids.lock().insert(event_id);
+            }
+            PromptIdentity::DetectedCall => {
+                detected_dismissed.store(true, Ordering::SeqCst);
+            }
         }
-        detected_dismissed.store(true, Ordering::SeqCst);
         update_shared_state(&app, &state, MeetingAwarenessState::default());
         hide_prompt_if_safe(&app);
     });
@@ -593,9 +626,10 @@ mod platform;
 #[cfg(test)]
 mod tests {
     use super::{
-        is_meeting_url, meeting_url, prune_dismissed_events, recurring_identity,
+        is_meeting_url, meeting_url, prompt_identity, prune_dismissed_events, recurring_identity,
         retry_calendar_read, select_awareness_state, should_check_awareness, AwarenessSignals,
-        CalendarMeeting, MeetingAwarenessManager, MeetingAwarenessPhase,
+        CalendarMeeting, MeetingAwarenessManager, MeetingAwarenessPhase, MeetingAwarenessState,
+        PromptIdentity,
     };
     use chrono::{Duration, TimeZone, Utc};
     use std::collections::HashSet;
@@ -628,6 +662,62 @@ mod tests {
             organizer: Some("Ada".into()),
             attendee_count: 3,
         }
+    }
+
+    #[test]
+    fn the_same_meeting_getting_closer_does_not_restart_the_countdown() {
+        // `Upcoming` pasa a `Ready` cuando la reunion empieza. Para quien mira
+        // es la misma tarjeta, asi que rearmar el temporizador ahi la dejaria
+        // en pantalla el doble de lo que dura la oferta.
+        let upcoming = MeetingAwarenessState {
+            phase: MeetingAwarenessPhase::Upcoming,
+            meeting: Some(event(30)),
+            seconds_until_start: Some(30),
+        };
+        let ready = MeetingAwarenessState {
+            phase: MeetingAwarenessPhase::Ready,
+            meeting: Some(event(0)),
+            seconds_until_start: Some(0),
+        };
+
+        assert_eq!(prompt_identity(&upcoming), prompt_identity(&ready));
+    }
+
+    #[test]
+    fn each_prompt_gets_its_own_countdown() {
+        let detected = MeetingAwarenessState {
+            phase: MeetingAwarenessPhase::Detected,
+            meeting: None,
+            seconds_until_start: None,
+        };
+        let mut other = event(30);
+        other.id = "event-2".into();
+        let second_meeting = MeetingAwarenessState {
+            phase: MeetingAwarenessPhase::Upcoming,
+            meeting: Some(other),
+            seconds_until_start: Some(30),
+        };
+        let first_meeting = MeetingAwarenessState {
+            phase: MeetingAwarenessPhase::Upcoming,
+            meeting: Some(event(30)),
+            seconds_until_start: Some(30),
+        };
+
+        assert_eq!(
+            prompt_identity(&detected),
+            Some(PromptIdentity::DetectedCall)
+        );
+        assert_ne!(prompt_identity(&first_meeting), prompt_identity(&detected));
+        assert_ne!(
+            prompt_identity(&first_meeting),
+            prompt_identity(&second_meeting),
+            "una reunion que releva a otra estrena cuenta atras"
+        );
+        assert_eq!(
+            prompt_identity(&MeetingAwarenessState::default()),
+            None,
+            "sin aviso no hay nada que caducar"
+        );
     }
 
     #[test]

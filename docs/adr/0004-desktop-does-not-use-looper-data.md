@@ -7,9 +7,8 @@ Accepted, with a known cost. **Open to revision** — see *Consequences*.
 ## Context
 
 `packages/ts/data` (`@looper/data`) is described by `packages/AGENTS.md` as
-"the SINGLE source for the Convex data layer: domain hooks, normalized types,
-auth seam, and the Convex provider mount", and the cardinal rule there is
-"consume, don't duplicate".
+the single Convex data layer for web and mobile. Desktop is the explicit
+exception documented by this decision.
 
 Two apps consume it: `apps/web` and `apps/mobile` (both declare
 `"@looper/data": "workspace:*"`). `apps/desktop` does not. It has zero imports
@@ -72,7 +71,7 @@ The anonymous-account rule now lives in two places with no shared test:
 | --- | --- | --- |
 | surface | `useUpgradeFromAnonymous()` hook | `requestEmailOtp` / `verifyEmailOtp` / `ensureAnonymousSession` |
 | ordering rule | snapshot anonymous userId + mint upgrade nonce **before** `signIn`, claim **after** | same, inside `verifyEmailOtp` |
-| tests | none (`packages/ts/data` has only `dictation-mappers`, `upload-protocol`, `quota` tests) | `convex-auth.test.ts`, 217 lines |
+| tests | no dedicated upgrade-order contract | dedicated `convex-auth.test.ts` coverage |
 
 The load-bearing part is the ordering: the upgrade nonce can only be minted
 while the client still *is* the anonymous user, so it must precede `signIn`,

@@ -19,12 +19,12 @@
 
 ## Checklist
 
-These mirror the CI gates — green locally means green in CI.
+`make ci` is the portable local baseline. GitHub CI also runs provider,
+browser, native Rust, audio, and Windows-specific jobs where applicable.
 
-- [ ] `pnpm typecheck` passes (backend + web + mobile)
-- [ ] `pnpm test` passes (vitest: backend + i18n)
-- [ ] `pnpm check` is clean (Biome lint + format)
-- [ ] `pnpm build` succeeds for any app I touched
+- [ ] `make ci` passes (typecheck, non-mutating checks, desktop boundary, docs, unit tests)
+- [ ] The affected app/package builds
+- [ ] Required browser, native, device, or provider evidence is attached or explicitly marked missing
 - [ ] Web/mobile parity kept where the feature applies to both
 - [ ] Env vars: declared in the relevant `.env.example` and set via `npx convex env set` (never committed)
 - [ ] No secrets, API keys, or `.env*` files in the diff

@@ -1,4 +1,4 @@
-# 0001 — Rust owns the business logic; React is a thin command/event client
+# 0001 — Rust owns native and local domain logic; React stays thin
 
 ## Status
 
@@ -36,27 +36,29 @@ This is stated in `apps/desktop/AGENTS.md`, section *Mental model*:
 
 ## Decision
 
-Rust is the application. The frontend renders it.
+Rust owns the native, latency-sensitive, privacy-sensitive and local domain
+logic. The frontend renders it and coordinates cloud clients only through the
+explicit `src/data/` boundary.
 
 Concretely:
 
-- Every domain rule — recording lifecycle, transcription routing (local vs
+- Native and local domain rules — recording lifecycle, transcription routing (local vs
   remote), dictionary and snippet expansion, personality and mode-rule
   matching, LLM cleanup, license gating, library queue and processing,
   meeting capture and awareness, storage and migrations — lives in
   `src-tauri/src/`.
-- The frontend holds only: rendering, local interaction state, the React
-  Query cache, and typed wrappers over `invoke`/`listen`.
+- The frontend holds rendering, local interaction state, the React Query cache,
+  and typed wrappers over `invoke`/`listen`.
+- Desktop-only auth, remote dictation and synchronization may contain
+  orchestration in `src/data/` when they must talk directly to Convex. This is
+  the documented exception in ADR 0004, not permission to put domain rules in
+  React components.
 - Rust is the emitter of truth. State reaches the UI as Tauri events
   (`transcription:complete`, `settings:changed`, `meeting:awareness_state`,
   `meeting:capture_state`, …), and the frontend reacts.
 - Each domain has a named Rust owner. `apps/desktop/AGENTS.md`
   (*Backend ownership*) enumerates them; new behavior extends an existing
   owner rather than adding a parallel one.
-
-The proportions match: ~70.8k lines of Rust under `src-tauri/src/` against
-~57.9k lines of non-test TypeScript/TSX under `src/`, and the TypeScript side
-includes the whole design system, four window shells and all i18n.
 
 ## Consequences
 
@@ -77,7 +79,8 @@ includes the whole design system, four window shells and all i18n.
 
 **What this forbids**
 
-- Adding a service layer, store, or domain model in TypeScript.
+- Adding a parallel service layer, store, or domain model in TypeScript outside
+  the approved `src/data/` boundary.
   `shared/lib/*` is static metadata and formatting only — explicitly "not a
   service layer" (`apps/desktop/AGENTS.md`, *Frontend ownership*).
 - Deriving domain decisions in React from raw events. If the UI needs to know

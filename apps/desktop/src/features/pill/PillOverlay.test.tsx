@@ -13,6 +13,8 @@ import { afterEach, beforeAll, describe, expect, test, vi } from "vitest";
 import PillOverlay from "./PillOverlay";
 
 const actions = vi.hoisted(() => ({
+  beginOverlayDrag: vi.fn(() => Promise.resolve()),
+  endOverlayDrag: vi.fn(() => Promise.resolve()),
   cancelEditAction: vi.fn(() => Promise.resolve()),
   cancelPendingInsertion: vi.fn(() => Promise.resolve()),
   cancelRecording: vi.fn(() => Promise.resolve()),
@@ -52,6 +54,8 @@ vi.mock("../../data/audio", () => ({
 }));
 
 vi.mock("../../data/dictation", () => ({
+  beginOverlayDrag: actions.beginOverlayDrag,
+  endOverlayDrag: actions.endOverlayDrag,
   getCapturePillPreferences: () =>
     Promise.resolve({
       presentation: "dock",
@@ -164,6 +168,8 @@ afterEach(() => {
   actions.setDictationLanguage.mockClear();
   actions.setPreflightLanguageMenuOpen.mockClear();
   actions.startDragging.mockClear();
+  actions.beginOverlayDrag.mockClear();
+  actions.endOverlayDrag.mockClear();
   actions.startDictationFromDock.mockClear();
   actions.startNoteFromDock.mockClear();
   actions.undoLastInsertion.mockClear();
@@ -295,7 +301,7 @@ describe("PillOverlay result", () => {
     expect(actions.cancelPendingInsertion).toHaveBeenCalledTimes(1);
   });
 
-  test("drags the result from non-interactive content only", () => {
+  test("turns a press into a drag only once the pointer travels", () => {
     render(
       <I18nProvider i18n={i18n}>
         <PillOverlay />
@@ -304,13 +310,49 @@ describe("PillOverlay result", () => {
 
     fireEvent.pointerDown(screen.getByText("Select a textbox first, or copy"), {
       button: 0,
+      clientX: 40,
+      clientY: 20,
     });
-    expect(actions.startDragging).toHaveBeenCalledTimes(1);
+    expect(actions.beginOverlayDrag).not.toHaveBeenCalled();
 
-    fireEvent.pointerDown(screen.getByRole("button", { name: "Copy" }), {
-      button: 0,
-    });
-    expect(actions.startDragging).toHaveBeenCalledTimes(1);
+    fireEvent.pointerMove(window, { clientX: 42, clientY: 21 });
+    expect(actions.beginOverlayDrag).not.toHaveBeenCalled();
+
+    fireEvent.pointerMove(window, { clientX: 60, clientY: 20 });
+    expect(actions.beginOverlayDrag).toHaveBeenCalledTimes(1);
+  });
+
+  test("drags from a control too, and swallows the click it would have fired", () => {
+    render(
+      <I18nProvider i18n={i18n}>
+        <PillOverlay />
+      </I18nProvider>,
+    );
+
+    const copyButton = screen.getByRole("button", { name: "Copy" });
+    fireEvent.pointerDown(copyButton, { button: 0, clientX: 10, clientY: 10 });
+    fireEvent.pointerMove(window, { clientX: 40, clientY: 10 });
+    expect(actions.beginOverlayDrag).toHaveBeenCalledTimes(1);
+
+    fireEvent.pointerUp(window, { clientX: 40, clientY: 10 });
+    fireEvent.click(copyButton);
+    expect(actions.copy).not.toHaveBeenCalled();
+  });
+
+  test("a press that never travels still activates the control", () => {
+    render(
+      <I18nProvider i18n={i18n}>
+        <PillOverlay />
+      </I18nProvider>,
+    );
+
+    const copyButton = screen.getByRole("button", { name: "Copy" });
+    fireEvent.pointerDown(copyButton, { button: 0, clientX: 10, clientY: 10 });
+    fireEvent.pointerUp(window, { clientX: 10, clientY: 10 });
+    fireEvent.click(copyButton);
+
+    expect(actions.beginOverlayDrag).not.toHaveBeenCalled();
+    expect(actions.copy).toHaveBeenCalledTimes(1);
   });
 
   test("auto-dismisses after ten seconds while not hovered", async () => {

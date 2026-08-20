@@ -10,6 +10,15 @@ components retain their upstream notices in their owning package:
 - [Desktop font notice](apps/desktop/public/fonts/NOTICE.md)
 - [Audio license](packages/rust/audio/LICENSE)
 
+Patched dependencies retain their upstream license declarations:
+
+- `expo-modules-jsi@57.0.4` — MIT; patch:
+  `patches/expo-modules-jsi@57.0.4.patch`; upstream package:
+  `https://github.com/expo/expo/tree/main/packages/expo-modules-jsi`.
+- `react-native-sherpa-onnx@0.4.3` — MIT; patch:
+  `patches/react-native-sherpa-onnx@0.4.3.patch`; full notice in the mobile
+  notices linked above.
+
 The provenance process and remaining manual-review cases are recorded in
 [`docs/rebuild/CONTAMINATION_RISK_REGISTER.md`](docs/rebuild/CONTAMINATION_RISK_REGISTER.md).
 
