@@ -21,7 +21,7 @@ APP_NAME := looper
 .PHONY: help install \
         status diff diff-stat diff-check gitignore-audit review \
         dev dev-web dev-mobile dev-all build build-debug build-release build-all test-desktop test-mobile \
-        typecheck lint lint-desktop lint-fix format format-check check check-fix docs-check test ci \
+        typecheck lint lint-desktop lint-fix format format-check check check-fix tokens tokens-check test ci \
         update-deps licenses-audit \
         clean nuke
 
@@ -126,8 +126,11 @@ check: ## Check lint, format, and imports without writing
 check-fix: ## Fix Biome lint, format, and import issues
 	@pnpm exec biome check --write .
 
-docs-check: ## Check tracked Markdown links and repository-safe paths
-	@pnpm run docs:check
+tokens: ## Generate shared desktop, web, and mobile color tokens
+	@node tools/tokens/generate.mjs
+
+tokens-check: ## Check that generated color tokens match the shared palette
+	@node tools/tokens/generate.mjs --check
 
 test: ## Run all tests
 	@pnpm turbo run test

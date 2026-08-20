@@ -1,6 +1,6 @@
 // Adapted from parakeet-rs 0.3.6 at revision
 // 7deba612fc9a30c4a7182f4eaa53554cb2fa42c8.
-// Copyright (c) 2025 Enes Altun. Licensed under MIT; see THIRD_PARTY_NOTICES.md.
+// Copyright (c) 2025 Enes Altun. Licensed under MIT; see the root THIRD_PARTY_NOTICES.md.
 
 use std::f32::consts::PI;
 use std::sync::Arc;

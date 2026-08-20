@@ -40,12 +40,11 @@ body:
     attributes:
       label: Environment
       description: OS, Node version (`node -v`), package manager, device/simulator if mobile.
-      placeholder: macOS 15.4, Node 20.11, pnpm 9, iOS Simulator 18.2
+      placeholder: macOS 15.4, Node 20.11, pnpm 10, iOS Simulator 18.2
     validations:
       required: true
   - type: textarea
     id: logs
     attributes:
-      label: Logs / screenshots
-      description: Relevant output. Redact any secrets or keys first.
-      render: shell
+      label: Logs and attachments
+      description: Paste relevant output or attach screenshots. Redact secrets and private user data first.

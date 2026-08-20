@@ -429,7 +429,7 @@ function HomeWorkspace({
             </span>
           </div>
         ) : (
-          <span className="font-satoshi ui-text-nav-brand ui-color-primary">
+          <span className="font-display ui-text-nav-brand ui-color-primary">
             Looper
           </span>
         )}

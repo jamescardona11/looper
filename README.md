@@ -1,51 +1,176 @@
-# Looper
+<h1 align="center">
+  <img src="assets/brand/looper-logo.svg" alt="Looper" width="360">
+</h1>
 
-Looper is a voice productivity workspace with a Tauri desktop app, a React
-Native/Expo mobile app, a React web app, and Convex-backed shared contracts.
+<p align="center">
+  <strong>Voice productivity across desktop, mobile, and web.</strong>
+</p>
 
-## Requirements
+<p align="center">
+  <a href="#product">Product</a> ·
+  <a href="#getting-started">Getting started</a> ·
+  <a href="#architecture">Architecture</a> ·
+  <a href="#verification">Verification</a> ·
+  <a href="LICENSE">AGPL-3.0-or-later</a>
+</p>
+
+---
+
+## Product
+
+Looper turns speech into text where you are already working. On desktop, hold
+the shortcut, speak, and release: Looper transcribes locally or through the
+configured cloud provider, then inserts the result into the focused app.
+
+Longer recordings and meetings live in the Library with playback, searchable
+transcripts, speakers, markers, exports, and a unified local Memory. Voice
+profiles, dictionary entries, replacements, snippets, and workflows control
+how the final text is written.
+
+### What you can do
+
+- Dictate into any desktop app with global shortcuts and text insertion.
+- Choose local transcription for on-device processing or configure a remote
+  speech provider.
+- Record meetings, import media, follow live transcription, and export the
+  result.
+- Search dictations, recordings, and meetings from one local index.
+- Capture from mobile and send remote dictation to an authenticated desktop.
+- Use the web workspace for account, agent, dictation, usage, and billing
+  flows backed by Convex.
+
+### Repository surfaces
+
+| Surface | Stack | Responsibility |
+| --- | --- | --- |
+| `apps/desktop` | Tauri, Rust, React | Native capture, local transcription, insertion, Library, Memory, meetings, and settings |
+| `apps/mobile` | React Native, Expo | Mobile capture, notes, meetings, Library, Android local STT, and the iOS keyboard extension |
+| `apps/web` | React, Vite | Browser workspace, authentication, agent, dictation, account, and billing |
+| `backend` | Convex | Authentication, sync, meetings, notes, AI/provider calls, usage, and payments |
+| `packages/ts` | TypeScript | Shared configuration, i18n, domain types, and the web/mobile Convex client boundary |
+| `packages/rust` | Rust | Shared audio and transcription engines |
+
+---
+
+## Getting started
+
+### Requirements
 
 - Node.js 20.11 or newer
 - pnpm 10 or newer
-- Rust 1.88 or newer for the desktop and local transcription crates
-- macOS 14 or newer for the macOS desktop target
+- Rust 1.88 or newer for desktop and local transcription
+- macOS 14 or newer when building the macOS desktop target
 
-## Install
+Install the workspace once:
 
 ```sh
 make install
 ```
 
-## Common commands
+### Desktop
 
 ```sh
-make ci
-make build-all
 make dev
-pnpm --filter @looper/mobile prebuild
-pnpm --filter @looper/mobile ios
 ```
 
-The desktop Tauri commands are owned by `apps/desktop`; they are not root
-scripts. Mobile native code requires an Expo development build rather than
-Expo Go. Android can use local Parakeet when its model is installed. The iOS
-keyboard extension uses the remote provider because its sandbox cannot read the
-host app's private model directory.
+Desktop capture and local features can run without Convex. To enable account,
+sync, and remote-dictation features, copy `apps/desktop/.env.example` to
+`apps/desktop/.env.local` and set `VITE_CONVEX_URL`.
 
-## Evidence boundaries
+### Mobile
 
-Unit tests, typechecks, and local builds do not prove physical microphone
-capture, native permissions, device behavior, production backend connectivity,
-store distribution, or release signing. The durable reconstruction procedure
-and manual provenance cases live under [`docs/rebuild`](docs/rebuild/README.md);
-run-specific evidence belongs in CI artifacts or ignored local evidence
-directories, not in the repository.
+```sh
+cp apps/mobile/.env.example apps/mobile/.env.local
+pnpm --filter @looper/mobile prebuild
+pnpm --filter @looper/mobile ios       # or: android
+```
 
-## Licensing
+The keyboard and local speech engine contain native code, so mobile requires
+an Expo development build rather than Expo Go. Set `EXPO_PUBLIC_CONVEX_URL`
+before starting it.
 
-Original Looper contributions are licensed under GNU AGPLv3 or any later
-version. See [`COPYRIGHT`](COPYRIGHT), [`LICENSE`](LICENSE), and
-[`NOTICE.md`](NOTICE.md). Third-party component notices remain in the package
-that owns the corresponding asset or adapted source. Historical provenance is
-kept in [`docs/rebuild`](docs/rebuild/README.md), separate from distribution
-notices.
+### Web and backend
+
+Configure the checked-in examples first:
+
+```sh
+cp backend/.env.example backend/.env.local
+cp apps/web/.env.example apps/web/.env.local
+```
+
+Then run the backend and web app in separate terminals:
+
+```sh
+pnpm --filter @looper/backend dev
+pnpm --filter @looper/web dev
+```
+
+Provider credentials stay in the backend environment. Do not place AI,
+payment, or email-provider secrets in a client environment.
+
+---
+
+## Architecture
+
+```text
+Web ─────┐
+         ├── @looper/data ────────────────┐
+Mobile ──┘                                │
+                                          ▼
+Desktop React ── src/data ──┬────────── Convex backend ── external providers
+                            │
+                            ▼
+                      Tauri commands/events
+                            │
+                            ▼
+                     Rust local core ── OS, storage, audio, local models
+```
+
+The boundaries that matter:
+
+- Rust owns desktop native behavior, privacy-sensitive local state, audio,
+  transcription routing, storage, windows, hotkeys, and insertion. React owns
+  presentation and local interaction state.
+- `apps/desktop/src/data` owns Tauri command/event names and the desktop's
+  headless Convex clients. Desktop does not consume `@looper/data` because its
+  workers run outside one shared React tree.
+- Web and mobile consume Convex through `@looper/data`; server implementation
+  stays in `backend/convex`.
+- The packaged desktop routes its four native windows by Tauri label, not URL.
+- AI and external-provider calls stay server-side unless the desktop feature is
+  explicitly configured for a user-owned local or remote provider.
+- Colors originate in `packages/ts/config/src/palette.ts`. Run `make tokens`
+  after changing the palette; generated targets must not be edited directly.
+
+Directory-specific constraints live in the nearest `AGENTS.md`. Stable product
+vocabulary is defined in `CONTEXT.md`.
+
+---
+
+## Verification
+
+```sh
+make ci             # portable static checks and unit tests
+make build-all      # build every workspace package
+make test-desktop   # desktop frontend, Tauri Rust, audio, and STT tests
+make test-mobile    # mobile typecheck and tests
+pnpm run qa:local-full
+```
+
+Static checks, unit tests, and local builds do not prove physical microphone
+capture, native permissions, device behavior, external providers, deployment,
+release signing, or store distribution. Treat an unexecuted capability as
+missing evidence, not as a pass.
+
+---
+
+## License
+
+Original Looper contributions are licensed under
+[GNU AGPLv3 or later](LICENSE). See [COPYRIGHT](COPYRIGHT) and
+[third-party notices](THIRD_PARTY_NOTICES.md) for retained upstream terms and
+open distribution checks.
+
+<p align="center">
+  <sub>Looper · AGPL-3.0-or-later</sub>
+</p>

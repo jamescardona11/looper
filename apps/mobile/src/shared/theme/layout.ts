@@ -1,8 +1,6 @@
 import type { ViewStyle } from "react-native";
 import { colors } from "./colors";
 
-/** Geometría del rediseño móvil (ai_docs/mobile-redesign.md). */
-
 export const radius = {
   xs: 4,
   sm: 8,

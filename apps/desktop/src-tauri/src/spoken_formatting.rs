@@ -798,7 +798,7 @@ mod tests {
 
     #[test]
     fn matches_the_cross_platform_conformance_corpus() {
-        let corpus = include_str!("../../../../fixtures/spoken-formatting.tsv");
+        let corpus = include_str!("../tests/fixtures/spoken-formatting.tsv");
         for (line_number, line) in corpus.lines().enumerate() {
             if line.is_empty() || line.starts_with('#') {
                 continue;

@@ -41,7 +41,7 @@ describe("HomeTodayHeader", () => {
     expect(header.className).toBe("mb-6 shrink-0");
     expect(header.children).toHaveLength(2);
     expect(screen.getByRole("heading", { name: "Good morning" }).className).toBe(
-      "mt-1 font-satoshi ui-text-screen-title ui-color-primary font-semibold",
+      "mt-1 font-display ui-text-screen-title ui-color-primary font-semibold",
     );
     expect(header.firstElementChild?.className).toBe(
       "ui-text-uppercase-micro ui-color-muted capitalize",

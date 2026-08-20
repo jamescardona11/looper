@@ -52,7 +52,6 @@
   },
   "devDependencies": {
     "@edge-runtime/vm": "^5.0.0",
-    "@looper/architecture-check": "workspace:*",
     "@types/node": "^20.19.0",
     "convex-test": "^0.0.52",
     "typescript": "^5.9.3",

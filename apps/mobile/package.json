@@ -42,7 +42,6 @@
   },
   "devDependencies": {
     "@babel/core": "^7.29.0",
-    "@looper/architecture-check": "workspace:*",
     "@types/react": "^19.2.0",
     "babel-preset-expo": "~57.0.0",
     "expo-doctor": "^1.17.14",

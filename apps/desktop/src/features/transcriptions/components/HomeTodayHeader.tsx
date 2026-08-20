@@ -15,7 +15,7 @@ export default function HomeTodayHeader(props: HomeTodayHeaderProps) {
       <p className="ui-text-uppercase-micro ui-color-muted capitalize">
         {dateLabel}
       </p>
-      <h1 className="mt-1 font-satoshi ui-text-screen-title ui-color-primary font-semibold">
+      <h1 className="mt-1 font-display ui-text-screen-title ui-color-primary font-semibold">
         {greeting}
       </h1>
       {transcriptionsFetched && statText ? (

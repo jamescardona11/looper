@@ -894,18 +894,19 @@ export const en = {
   "roadmap.subtitle": "What's shipped and what's coming next.",
   "roadmap.title": "Roadmap",
   "terms.intro":
-    'Please read these Terms of Service ("Terms") carefully before using Looper. By accessing or using our service, you agree to be bound by these Terms.',
-  "terms.lastUpdatedDate": "June 7, 2026",
+    'These Terms of Service ("Terms") govern Looper accounts, paid features, and services we host. Looper software is separately governed by the open-source license included with its distribution.',
+  "terms.lastUpdatedDate": "August 20, 2026",
   "terms.s1Body":
-    "By creating an account or using any part of Looper, you confirm that you are at least 16 years old and agree to these Terms and our Privacy Policy. If you are using Looper on behalf of an organization, you represent that you have the authority to bind that organization to these Terms.",
+    "By creating an account or using a Looper-hosted service, you confirm that you are at least 16 years old and agree to these Terms and our Privacy Policy. If you use the hosted service on behalf of an organization, you represent that you have authority to bind that organization to these Terms.",
   "terms.s1Title": "1. Acceptance of Terms",
   "terms.s2Intro":
-    "We grant you a limited, non-exclusive, non-transferable, revocable license to access and use Looper for your personal or internal business purposes. You may not:",
-  "terms.s2Li1": "Reproduce, distribute, or resell any part of the service.",
-  "terms.s2Li2": "Reverse-engineer, decompile, or extract source code from the service.",
-  "terms.s2Li3": "Use the service to build a competing product.",
+    "These Terms govern access to the hosted service, accounts, paid features, and Looper trademarks. They do not restrict rights granted by an open-source license. You may not:",
+  "terms.s2Li1": "Resell or provide unauthorized access to the hosted service.",
+  "terms.s2Li2":
+    "Interfere with, probe, or bypass the hosted service's security or access controls.",
+  "terms.s2Li3": "Use Looper trademarks in a way that implies endorsement or affiliation.",
   "terms.s2Li4": "Use the service for any illegal or unauthorized purpose.",
-  "terms.s2Title": "2. Use License",
+  "terms.s2Title": "2. Hosted Service Use",
   "terms.s3Body":
     "You are responsible for maintaining the confidentiality of your account credentials and for all activity under your account. If you suspect unauthorized access, notify us through our",
   "terms.s3BodySuffix": "We reserve the right to terminate accounts that violate these Terms.",
@@ -914,7 +915,7 @@ export const en = {
     "Paid plans are billed in advance on a monthly or annual basis. All fees are non-refundable except as required by law or as explicitly stated in a refund policy we provide. We may change pricing with at least 30 days' notice. Failure to pay may result in suspension or termination of your account.",
   "terms.s4Title": "4. Payment Terms",
   "terms.s5Body":
-    "Looper and its original content, features, and functionality are owned by us and protected by copyright, trademark, and other applicable laws. You retain ownership of any content you submit through the service. By submitting content, you grant us a limited license to use it solely to provide the service.",
+    "Looper trademarks, hosted-service content, and original materials are owned by their respective rights holders. Software source code is licensed under the open-source license identified in its distribution, and these Terms do not override that license. You retain ownership of content you submit through the service and grant us a limited license to use it solely to provide the service.",
   "terms.s5Title": "5. Intellectual Property",
   "terms.s6Body":
     'To the maximum extent permitted by law, Looper is provided "as is" without warranties of any kind. We shall not be liable for any indirect, incidental, special, or consequential damages arising from your use of the service, including loss of data, revenue, or profits, even if we have been advised of the possibility of such damages. Our total liability to you for any claim shall not exceed the amount you paid us in the 12 months preceding the claim.',

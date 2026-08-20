@@ -9,6 +9,6 @@
     "resolveJsonModule": true,
     "types": ["node"]
   },
-  "include": ["convex/**/*", "architecture.config.ts"],
+  "include": ["convex/**/*"],
   "exclude": ["node_modules", "convex/_generated"]
 }

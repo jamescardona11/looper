@@ -894,19 +894,19 @@ export const es: Record<keyof typeof en, string> = {
   "roadmap.subtitle": "Qué está lanzado y qué viene después.",
   "roadmap.title": "Hoja de ruta",
   "terms.intro":
-    "Lee detenidamente estos Términos de Servicio («Términos») antes de usar Looper. Al acceder o usar nuestro servicio, aceptas estar vinculado por estos Términos.",
-  "terms.lastUpdatedDate": "7 de junio de 2026",
+    "Estos Términos de Servicio («Términos») regulan las cuentas, las funciones de pago y los servicios de Looper que alojamos. El software de Looper se rige por separado por la licencia de código abierto incluida en su distribución.",
+  "terms.lastUpdatedDate": "20 de agosto de 2026",
   "terms.s1Body":
-    "Al crear una cuenta o usar cualquier parte de Looper, confirmas que tienes al menos 16 años y que aceptas estos Términos y nuestra Política de Privacidad. Si usas Looper en nombre de una organización, declaras que tienes autoridad para vincularla a estos Términos.",
+    "Al crear una cuenta o usar un servicio alojado de Looper, confirmas que tienes al menos 16 años y que aceptas estos Términos y nuestra Política de Privacidad. Si usas el servicio alojado en nombre de una organización, declaras que tienes autoridad para vincularla a estos Términos.",
   "terms.s1Title": "1. Aceptación de los Términos",
   "terms.s2Intro":
-    "Te otorgamos una licencia limitada, no exclusiva, intransferible y revocable para acceder y usar Looper con fines personales o comerciales internos. No puedes:",
-  "terms.s2Li1": "Reproducir, distribuir o revender ninguna parte del servicio.",
+    "Estos Términos regulan el acceso al servicio alojado, las cuentas, las funciones de pago y las marcas de Looper. No restringen los derechos concedidos por una licencia de código abierto. No puedes:",
+  "terms.s2Li1": "Revender o proporcionar acceso no autorizado al servicio alojado.",
   "terms.s2Li2":
-    "Realizar ingeniería inversa, descompilar o extraer el código fuente del servicio.",
-  "terms.s2Li3": "Usar el servicio para desarrollar un producto competidor.",
+    "Interferir, sondear o eludir la seguridad o los controles de acceso del servicio alojado.",
+  "terms.s2Li3": "Usar las marcas de Looper de una forma que implique respaldo o afiliación.",
   "terms.s2Li4": "Usar el servicio para ningún fin ilegal o no autorizado.",
-  "terms.s2Title": "2. Licencia de uso",
+  "terms.s2Title": "2. Uso del servicio alojado",
   "terms.s3Body":
     "Eres responsable de mantener la confidencialidad de las credenciales de tu cuenta y de toda la actividad bajo tu cuenta. Si sospechas acceso no autorizado, notifícanos mediante nuestro",
   "terms.s3BodySuffix": "Nos reservamos el derecho de cancelar cuentas que violen estos Términos.",
@@ -915,7 +915,7 @@ export const es: Record<keyof typeof en, string> = {
     "Los planes de pago se facturan por adelantado de forma mensual o anual. Todas las tarifas no son reembolsables, salvo lo exigido por la ley o lo indicado expresamente en una política de reembolso que proporcionemos. Podemos cambiar los precios con al menos 30 días de aviso. El incumplimiento de pago puede resultar en la suspensión o cancelación de tu cuenta.",
   "terms.s4Title": "4. Términos de pago",
   "terms.s5Body":
-    "Looper y su contenido original, características y funcionalidad son de nuestra propiedad y están protegidos por derechos de autor, marcas registradas y otras leyes aplicables. Conservas la propiedad del contenido que envíes a través del servicio. Al enviar contenido, nos otorgas una licencia limitada para usarlo únicamente con el fin de prestar el servicio.",
+    "Las marcas de Looper, el contenido del servicio alojado y los materiales originales pertenecen a sus respectivos titulares. El código fuente del software se ofrece bajo la licencia de código abierto indicada en su distribución, y estos Términos no prevalecen sobre ella. Conservas la propiedad del contenido que envíes y nos otorgas una licencia limitada para usarlo únicamente con el fin de prestar el servicio.",
   "terms.s5Title": "5. Propiedad intelectual",
   "terms.s6Body":
     "En la máxima medida permitida por la ley, Looper se proporciona «tal cual» sin garantías de ningún tipo. No seremos responsables de ningún daño indirecto, incidental, especial o consecuente derivado del uso del servicio, incluyendo pérdida de datos, ingresos o beneficios, incluso si hemos sido advertidos de la posibilidad de tales daños. Nuestra responsabilidad total ante cualquier reclamación no superará el importe que nos hayas pagado en los 12 meses anteriores a la misma.",

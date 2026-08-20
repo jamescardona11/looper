@@ -7,7 +7,6 @@ import { describe, expect, test } from "vitest";
 // superficies rediseñadas. Nunca debe afirmar la forma textual del código (la
 // firma de un ternario, una cadena exacta de clases Tailwind) ni leer un
 // wrapper de reexport que no contiene la lógica que dice vigilar.
-// Ver docs/adr/0005-contract-tests.md.
 
 const SRC = import.meta.dirname;
 const read = (path: string) => readFileSync(join(SRC, path), "utf8");

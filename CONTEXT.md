@@ -1,7 +1,7 @@
 # CONTEXT — Looper domain language
 
 Stable vocabulary and ownership for terms that are easy to confuse. Agent rules
-live in `AGENTS.md`; architecture lives in `docs/adr/`.
+live in `AGENTS.md`; the public architecture overview lives in `README.md`.
 
 ## Capture and dictation
 
@@ -104,12 +104,3 @@ local grants support a bounded offline window. Frontend presentation lives in
 
 The settings UI calls this domain **Account**. It is distinct from the **Sync**
 tab, which represents Convex identity.
-
-## Storage
-
-- `settings.db` owns settings, correction counters, and dismissals.
-- `transcriptions.db` owns dictation history, library records, meeting
-  details, and lifetime statistics.
-- `app_data_dir/library` owns imported media, transcoded files, and exports.
-
-Do not add alternate stores for the same settings or history.
