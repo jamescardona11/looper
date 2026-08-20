@@ -371,36 +371,80 @@ impl PillHoverEmitter {
     }
 }
 
+/// A point in logical screen coordinates.
+type Point = (f64, f64);
+
+/// The pointer, and the pill's origin and size - all in logical points.
+struct OverlayGeometry {
+    cursor: Point,
+    origin: Point,
+    size: Point,
+}
+
+/// The pointer and the pill's frame, both in logical points.
+fn overlay_geometry_in_points(window: &WebviewWindow<AppRuntime>) -> Option<OverlayGeometry> {
+    let cursor = window.cursor_position().ok()?;
+    let origin = window.outer_position().ok()?;
+    let size = window.outer_size().ok()?;
+    let (cursor, origin, size) = capture_pill::to_shared_points(
+        (cursor.x, cursor.y),
+        primary_scale_factor(window),
+        (f64::from(origin.x), f64::from(origin.y)),
+        (f64::from(size.width), f64::from(size.height)),
+        window.scale_factor().ok()?,
+    );
+    Some(OverlayGeometry {
+        cursor,
+        origin,
+        size,
+    })
+}
+
+/// The factor the toolkit used to report the cursor position.
+fn primary_scale_factor(window: &WebviewWindow<AppRuntime>) -> f64 {
+    window
+        .primary_monitor()
+        .ok()
+        .flatten()
+        .map(|monitor| monitor.scale_factor())
+        .unwrap_or(1.0)
+}
+
 /// Reports whether the cursor is on the pill, and where it is. The position
 /// travels with the answer because hover intent is judged from how fast the
 /// pointer is moving, not only from where it ended up.
 fn cursor_over_pill_window(app: &AppHandle<AppRuntime>) -> Option<(bool, (f64, f64))> {
     let window = app.get_webview_window(MAIN_WINDOW_LABEL)?;
-    let cursor = window.cursor_position().ok()?;
-    let pos = window.outer_position().ok()?;
-    let size = window.outer_size().ok()?;
-    let scale = window.scale_factor().ok()?;
+    // Everything below is in logical points. See `to_shared_points`: the
+    // toolkit scales the cursor and the window frame differently once two
+    // screens have different densities, and points are where they agree.
+    let OverlayGeometry {
+        cursor,
+        origin: pos,
+        size,
+    } = overlay_geometry_in_points(&window)?;
+    let scale = 1.0;
 
     let state = app.state::<AppState>();
     let meeting_overlay_active = state.meeting_capture().is_active();
     if meeting_overlay_active {
         return Some((cursor_over_meeting_overlay_bounds(
-            (cursor.x, cursor.y),
-            (pos.x as f64, pos.y as f64),
-            (size.width as f64, size.height as f64),
+            cursor,
+            pos,
+            size,
             scale,
             state.pill().meeting_overlay_presentation(),
-        ), (cursor.x, cursor.y)));
+        ), cursor));
     }
 
     if state.pill().status() == PillStatus::Preflight {
         return Some((
             point_in_rect(
-                (cursor.x, cursor.y),
-                (pos.x as f64, pos.y as f64),
-                (size.width as f64, size.height as f64),
+                cursor,
+                pos,
+                size,
             ),
-            (cursor.x, cursor.y),
+            cursor,
         ));
     }
 
@@ -409,35 +453,35 @@ fn cursor_over_pill_window(app: &AppHandle<AppRuntime>) -> Option<(bool, (f64, f
         if *state.pill().preflight_language_menu_open.lock() {
             return Some((
                 point_in_rect(
-                    (cursor.x, cursor.y),
-                    (pos.x as f64, pos.y as f64),
-                    (size.width as f64, size.height as f64),
+                    cursor,
+                    pos,
+                    size,
                 ),
-                (cursor.x, cursor.y),
+                cursor,
             ));
         }
         return Some((
             capture_pill::hit_test(
-            (cursor.x - pos.x as f64, cursor.y - pos.y as f64),
-            (size.width as f64, size.height as f64),
+            (cursor.0 - pos.0, cursor.1 - pos.1),
+            size,
             scale,
                 settings.capture_pill_presentation,
                 settings.capture_pill_dock_position,
                 state.pill().is_hovering(),
             ),
-            (cursor.x, cursor.y),
+            cursor,
         ));
     }
 
     Some((
         cursor_over_pill_bounds(
-            (cursor.x, cursor.y),
-            (pos.x as f64, pos.y as f64),
-            (size.width as f64, size.height as f64),
+            cursor,
+            pos,
+            size,
             scale,
             state.pill().is_expanded(),
         ),
-        (cursor.x, cursor.y),
+        cursor,
     ))
 }
 
@@ -1911,13 +1955,21 @@ fn preferred_capture_monitor(window: &WebviewWindow<AppRuntime>) -> Option<tauri
     // debe seguir la pantalla en la que está trabajando el usuario; el frame
     // anterior del NSPanel puede pertenecer a un monitor distinto.
     if let (Ok(cursor), Ok(monitors)) = (window.cursor_position(), window.available_monitors()) {
+        // Compared in logical points, for the same reason the hit test is:
+        // the cursor carries the primary screen's scale and each monitor
+        // carries its own, so the raw numbers only agree on a uniform desktop.
+        let cursor_scale = primary_scale_factor(window);
+        let cursor = (cursor.x / cursor_scale, cursor.y / cursor_scale);
         if let Some(monitor) = monitors.into_iter().find(|monitor| {
+            let scale = monitor.scale_factor();
             let position = monitor.position();
             let size = monitor.size();
-            cursor.x >= position.x as f64
-                && cursor.x < (position.x + size.width as i32) as f64
-                && cursor.y >= position.y as f64
-                && cursor.y < (position.y + size.height as i32) as f64
+            let left = f64::from(position.x) / scale;
+            let top = f64::from(position.y) / scale;
+            cursor.0 >= left
+                && cursor.0 < left + f64::from(size.width) / scale
+                && cursor.1 >= top
+                && cursor.1 < top + f64::from(size.height) / scale
         }) {
             return Some(monitor);
         }

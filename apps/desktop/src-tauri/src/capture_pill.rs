@@ -206,6 +206,34 @@ fn exit_rect(
         .inflate(HOVER_EXIT_MARGIN * scale)
 }
 
+/// Puts a cursor reading and a window frame into one coordinate space.
+///
+/// The window toolkit measures them with two different rulers: the cursor is
+/// scaled by the PRIMARY screen's factor, window geometry by the factor of the
+/// screen the window sits on. On a single-density desktop the two agree and
+/// nothing shows. Put a 2x display next to a 1x primary and they disagree by
+/// that factor, so subtracting one from the other lands the pill's hit area
+/// off-screen and the pill stops answering the pointer entirely.
+///
+/// Logical points are the space that stays continuous across both, so every
+/// hit test is done there - which is why the rects above are in points and
+/// take a scale of 1.
+pub fn to_shared_points(
+    cursor: (f64, f64),
+    cursor_scale: f64,
+    origin: (f64, f64),
+    size: (f64, f64),
+    window_scale: f64,
+) -> ((f64, f64), (f64, f64), (f64, f64)) {
+    let cursor_scale = if cursor_scale > 0.0 { cursor_scale } else { 1.0 };
+    let window_scale = if window_scale > 0.0 { window_scale } else { 1.0 };
+    (
+        (cursor.0 / cursor_scale, cursor.1 / cursor_scale),
+        (origin.0 / window_scale, origin.1 / window_scale),
+        (size.0 / window_scale, size.1 / window_scale),
+    )
+}
+
 pub fn hit_test(
     cursor: (f64, f64),
     window_size: (f64, f64),
@@ -435,6 +463,45 @@ mod tests {
                 }
             }
         }
+    }
+
+    /// Regression: a pill dragged onto a 2x display beside a 1x primary became
+    /// unreachable. The toolkit reported the cursor in the primary's scale and
+    /// the window in the Retina's, so the pointer appeared to be 1444pt above
+    /// a pill it was sitting exactly on top of.
+    #[test]
+    fn a_retina_screen_beside_a_1x_primary_keeps_the_pill_reachable() {
+        // The pill sits at logical (254, 1474) on the 2x screen; the pointer is
+        // dead centre on its collapsed circle, at logical (384, 1504).
+        let (cursor, origin, size) = to_shared_points(
+            (384.0, 1504.0), // cursor, scaled by the 1x primary
+            1.0,
+            (508.0, 2948.0), // window origin, scaled by the 2x screen
+            (520.0, 120.0),
+            2.0,
+        );
+
+        assert_eq!(cursor, (384.0, 1504.0));
+        assert_eq!(origin, (254.0, 1474.0));
+        assert_eq!(size, (260.0, 60.0));
+        assert!(hit_test(
+            (cursor.0 - origin.0, cursor.1 - origin.1),
+            size,
+            1.0,
+            CapturePillPresentation::Floating,
+            CapturePillDockPosition::BottomCenter,
+            false,
+        ));
+    }
+
+    #[test]
+    fn a_uniform_desktop_is_left_exactly_as_it_was() {
+        let (cursor, origin, size) =
+            to_shared_points((384.0, 1504.0), 1.0, (254.0, 1474.0), (260.0, 60.0), 1.0);
+
+        assert_eq!(cursor, (384.0, 1504.0));
+        assert_eq!(origin, (254.0, 1474.0));
+        assert_eq!(size, (260.0, 60.0));
     }
 
     /// No dead pixels: everything the user can see of the expanded pill still
