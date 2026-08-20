@@ -130,33 +130,34 @@ const LIGHT_NEUTRALS = {
 } as const;
 
 /**
- * Un solo morado, el mismo en los dos modos.
+ * Dos acentos, uno por modo, y con margen.
  *
- * Antes había dos: `#8f9cff` en oscuro y `#565ec6` en claro, porque ninguno
- * pasaba AA contra los dos fondos. La ventana para un valor único es
- * estrechísima —la luminancia relativa tiene que caer entre 0.175 y 0.183 para
- * dar 4,5:1 sobre negro y sobre blanco a la vez— y este es el punto óptimo
- * dentro de ella: 4,58:1 en las cuatro direcciones.
+ * Hubo un intento de usar un valor único (#626bd5). Pasaba 4,58:1 sobre negro y
+ * sobre blanco, pero esos no son los fondos donde vive el texto de acento: vive
+ * sobre chips `accent-10` y sobre `bg-surface`, y ahí caía a 4,28, 4,04 y 3,56.
+ * Optimizaba la métrica equivocada.
  *
- * El coste es que no sobra margen. Si algún día el fondo deja de ser negro o
- * blanco puros, hay que recalcularlo.
+ * Estos dos se eligieron midiendo contra los fondos reales, y con el croma más
+ * alto que los aguanta: 0.19 y 0.24 frente al 0.144 del periwinkle anterior,
+ * que era pastel precisamente por tener poco croma y mucha luz.
  */
-const ACCENT = { l: 0.574, c: 0.16, h: BRAND_HUE } as const;
+const DARK_ACCENT_BASE = { l: 0.635, c: 0.19, h: BRAND_HUE } as const;
+const LIGHT_ACCENT_BASE = { l: 0.555, c: 0.24, h: BRAND_HUE } as const;
 
 const DARK_ACCENT = {
-  base: ACCENT,
-  light: ACCENT,
-  dark: ACCENT,
-  ink: ACCENT,
-  solid: ACCENT,
+  base: DARK_ACCENT_BASE,
+  light: DARK_ACCENT_BASE,
+  dark: DARK_ACCENT_BASE,
+  ink: DARK_ACCENT_BASE,
+  solid: DARK_ACCENT_BASE,
 } as const;
 
 const LIGHT_ACCENT = {
-  base: ACCENT,
-  light: ACCENT,
-  dark: ACCENT,
-  ink: ACCENT,
-  solid: ACCENT,
+  base: LIGHT_ACCENT_BASE,
+  light: LIGHT_ACCENT_BASE,
+  dark: LIGHT_ACCENT_BASE,
+  ink: LIGHT_ACCENT_BASE,
+  solid: LIGHT_ACCENT_BASE,
 } as const;
 
 /**

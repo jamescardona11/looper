@@ -1067,7 +1067,7 @@ class LooperIME : InputMethodService() {
         const val KEY_LOCAL_STT_MODEL_PATH = "looper_local_stt_model_path"
         const val EXTRA_SHOW_PAYWALL = "looper_show_paywall"
 
-        const val COLOR_ACCENT = 0xFF626BD5.toInt()
+        const val COLOR_ACCENT = 0xFF7079FB.toInt()
         const val COLOR_GRAY_LIGHT = 0xFFC7C7CC.toInt()
         const val COLOR_GRAY_DARK = 0xFF48484A.toInt()
         const val COLOR_UTILITY_LIGHT = 0xFFD1D1D6.toInt()

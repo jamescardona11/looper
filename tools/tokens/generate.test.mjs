@@ -74,8 +74,10 @@ describe("palette guarantees", () => {
     for (const mode of ["dark", "light"]) {
       const { neutrals, accent } = PALETTE[mode];
       const solid = oklchToHex(accent.solid);
-      // El acento es el mismo en los dos modos y admite blanco encima a 4,58:1.
-      const onSolid = "#ffffff";
+      // El acento oscuro es claro y admite tinta negra; el claro es oscuro y
+      // admite blanca.
+      const onSolid =
+        mode === "dark" ? oklchToHex(neutrals.bgPrimary) : "#ffffff";
       assert.ok(contrast(onSolid, solid) >= 4.5, `${mode} on-accent`);
     }
   });
