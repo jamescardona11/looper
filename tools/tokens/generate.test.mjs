@@ -87,13 +87,13 @@ describe("palette guarantees", () => {
     //
     // The floors differ by mode on purpose. Dark mode spreads its surfaces
     // across 0.18-0.44, so every step can be a comfortable 4-5 points. Light
-    // mode runs into the 1.0 ceiling with only ~4 points between the page and
+    // mode runs into the 1.0 ceiling with only ~2 points between the page and
     // white, and leans on borders and shadows for elevation instead.
     //
     // `bgOverlay` is deliberately excluded: in light mode a floating overlay
     // sits on white like the surface below it and is separated by its shadow,
     // so the two share a lightness by design.
-    const FLOOR = { dark: 0.03, light: 0.008 };
+    const FLOOR = { dark: 0.03, light: 0.005 };
     const order = ["bgPrimary", "bgSecondary", "bgTertiary", "bgSurface"];
     for (const mode of ["dark", "light"]) {
       const { neutrals } = PALETTE[mode];
@@ -223,14 +223,21 @@ describe("the iOS keyboard extension mirrors the palette", () => {
 
   for (const [role, resolve] of roles) {
     test(`Palette.${role} matches the shared ramp`, () => {
-      const [r, g, b] = floats(resolve());
-      const pattern = new RegExp(
-        `static let ${role} = UIColor\\(red: ${r}, green: ${g}, blue: ${b === "1.000" ? "1" : b}, alpha: 1\\)`,
-      );
-      assert.ok(
-        pattern.test(swift()),
-        `Palette.${role} should be UIColor(red: ${r}, green: ${g}, blue: ${b})`,
-      );
+      const declared = new RegExp(
+        `static let ${role} = UIColor\\(red: ([\\d.]+), green: ([\\d.]+), blue: ([\\d.]+)`,
+      ).exec(swift());
+      assert.ok(declared, `Palette.${role} is missing from the Swift palette`);
+
+      // Compared numerically: Swift writes 1 where the generator writes 1.000,
+      // and both are the same color.
+      const expected = floats(resolve()).map(Number);
+      const actual = declared.slice(1, 4).map(Number);
+      for (const [index, channel] of expected.entries()) {
+        assert.ok(
+          Math.abs(channel - actual[index]) < 0.001,
+          `Palette.${role} should be UIColor(red: ${expected.join(", ")}) but is (${actual.join(", ")})`,
+        );
+      }
     });
   }
 });
@@ -267,7 +274,12 @@ describe("the web boot splash mirrors the palette", () => {
   }
 
   test("no color from the old warm splash survives", () => {
-    const retired = ["#f8f5f2", "#241b18", "#ded7d2", "#b14b25", "#0e0806", "#160d0a"];
+    const retired = [
+      // la paleta terracota original
+      "#f8f5f2", "#241b18", "#ded7d2", "#b14b25", "#0e0806", "#160d0a",
+      // y el intento intermedio de neutros teñidos con el tono de marca
+      "#f2f2f4", "#202128", "#dfdfe3", "#5a62cb", "#101116", "#1a1b21",
+    ];
     const contents = html().toLowerCase();
     for (const color of retired) {
       assert.ok(!contents.includes(color), `${color} should be gone`);

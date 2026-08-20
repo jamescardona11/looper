@@ -339,16 +339,16 @@ private final class LooperLogoView: UIView {
 
 class KeyboardViewController: UIInputViewController {
   private enum Palette {
-    static let background = UIColor(red: 0.063, green: 0.067, blue: 0.086, alpha: 1)
-    static let backgroundSecondary = UIColor(red: 0.102, green: 0.106, blue: 0.129, alpha: 1)
-    static let surfaceMuted = UIColor(red: 0.137, green: 0.145, blue: 0.173, alpha: 1)
-    static let surface = UIColor(red: 0.176, green: 0.180, blue: 0.216, alpha: 1)
-    static let surfaceElevated = UIColor(red: 0.259, green: 0.267, blue: 0.314, alpha: 1)
-    static let border = UIColor(red: 0.173, green: 0.176, blue: 0.212, alpha: 1)
-    static let text = UIColor(red: 0.961, green: 0.961, blue: 0.965, alpha: 1)
-    static let textSecondary = UIColor(red: 0.737, green: 0.741, blue: 0.773, alpha: 1)
-    static let muted = UIColor(red: 0.541, green: 0.553, blue: 0.600, alpha: 1)
-    static let accent = UIColor(red: 0.561, green: 0.612, blue: 1, alpha: 1)
+    static let background = UIColor(red: 0.027, green: 0.027, blue: 0.027, alpha: 1)
+    static let backgroundSecondary = UIColor(red: 0.063, green: 0.063, blue: 0.063, alpha: 1)
+    static let surfaceMuted = UIColor(red: 0.098, green: 0.098, blue: 0.098, alpha: 1)
+    static let surface = UIColor(red: 0.133, green: 0.133, blue: 0.133, alpha: 1)
+    static let surfaceElevated = UIColor(red: 0.208, green: 0.208, blue: 0.208, alpha: 1)
+    static let border = UIColor(red: 0.169, green: 0.169, blue: 0.169, alpha: 1)
+    static let text = UIColor(red: 1.000, green: 1.000, blue: 1.000, alpha: 1)
+    static let textSecondary = UIColor(red: 0.745, green: 0.745, blue: 0.745, alpha: 1)
+    static let muted = UIColor(red: 0.537, green: 0.537, blue: 0.537, alpha: 1)
+    static let accent = UIColor(red: 0.561, green: 0.612, blue: 1.000, alpha: 1)
     static let onAccent = background
   }
 
