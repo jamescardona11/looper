@@ -2,6 +2,7 @@ import type { ComponentProps, Dispatch, SetStateAction } from "react";
 
 import type { LibraryAudioFooter } from "./LibraryAudioFooter";
 import type { MeetingReviewView } from "./MeetingReviewPanel";
+import { isCaptureItem } from "./library-detail-policy";
 import type { LibraryDetailProps } from "./library-detail-types";
 import type { useLibraryPlayer } from "./useLibraryPlayer";
 
@@ -30,7 +31,7 @@ export function createLibraryDetailFooter({
   followTimestampsActive,
   detail,
 }: FooterInput): ComponentProps<typeof LibraryAudioFooter> {
-  const meeting = item.kind === "meeting";
+  const meeting = isCaptureItem(item);
   return {
     meetingId: meeting ? item.id : undefined,
     meetingDockProps: meeting

@@ -14,3 +14,9 @@ export function performWindowAction(action: WindowAction): Promise<void> {
       return appWindow.close();
   }
 }
+
+// El fondo nativo de la ventana no puede leer una variable CSS, así que
+// recibe ya resuelto el mismo token que pinta el documento.
+export function setWindowBackgroundColor(color: string): Promise<void> {
+  return getCurrentWindow().setBackgroundColor(color);
+}

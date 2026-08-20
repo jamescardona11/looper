@@ -327,7 +327,10 @@ export async function verifyEmailOtp(
       // Convex Auth can upgrade the account in place, in which case source and
       // target are already the same user and there is nothing left to transfer.
       if (!isNothingToTransfer(err)) {
-        throw new Error(`Signed in but data transfer failed: ${describeError(err)}`);
+        throw new Error(
+          `Signed in but data transfer failed: ${describeError(err)}`,
+          { cause: err },
+        );
       }
     }
   } else if (upgradeBlockedBy) {

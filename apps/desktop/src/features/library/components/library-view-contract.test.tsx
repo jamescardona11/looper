@@ -465,6 +465,24 @@ describe("LibraryView contract", () => {
     expect(await screen.findByText("DETAIL-Weekly sync")).toBeTruthy();
   });
 
+  test("clears the focus search when the focused detail is closed", async () => {
+    renderLibrary({ focusItem: { id: "item-2", query: "Old interview" } });
+
+    expect(await screen.findByText("DETAIL-Old interview")).toBeTruthy();
+    await waitFor(() => {
+      const latest = mocks.useLibraryItems.mock.calls.at(-1)?.[0];
+      expect(latest).toMatchObject({ search: "Old interview" });
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: "Close detail" }));
+
+    await waitFor(() => {
+      const latest = mocks.useLibraryItems.mock.calls.at(-1)?.[0];
+      expect(latest).toMatchObject({ search: null });
+    });
+    expect(screen.queryByText("DETAIL-Old interview")).toBeNull();
+  });
+
   test("preserves name, tag and card mutation policies", async () => {
     const { queryClient } = renderLibrary();
     const invalidate = vi.spyOn(queryClient, "invalidateQueries");

@@ -142,7 +142,7 @@ export function MeetingDocumentDock({
               meetingAiReady
                 ? t({
                     id: "meeting.detail.ask_placeholder",
-                    message: "Ask this meeting…",
+                    message: "Ask this recording…",
                   })
                 : (meetingAiStatus?.actionableMessage ??
                   t({
@@ -153,13 +153,13 @@ export function MeetingDocumentDock({
             className="w-full bg-transparent ui-text-body-sm text-content-primary outline-none placeholder:text-content-disabled disabled:cursor-not-allowed"
             aria-label={t({
               id: "meeting.detail.ask_placeholder",
-              message: "Ask this meeting…",
+              message: "Ask this recording…",
             })}
           />
           <span className="mt-0.5 block ui-text-nano text-content-disabled">
             {t({
               id: "meeting.detail.ask_context",
-              message: "Using this meeting · private by default",
+              message: "Using this recording · private by default",
             })}
           </span>
         </label>
@@ -205,7 +205,7 @@ export function MeetingDocumentDock({
           className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-[var(--color-toggle-on)] text-surface-primary transition-[filter,transform] hover:brightness-110 active:scale-95 disabled:cursor-not-allowed disabled:opacity-35 motion-reduce:transition-none"
           aria-label={t({
             id: "meeting.detail.ask_submit",
-            message: "Ask meeting",
+            message: "Ask recording",
           })}
         >
           {askMeeting.isPending ? (

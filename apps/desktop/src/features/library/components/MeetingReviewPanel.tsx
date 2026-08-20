@@ -69,7 +69,7 @@ export const MeetingReviewPanel = ({
       className="min-h-0 flex-1 overflow-y-auto px-6 pb-36 pt-9 custom-scrollbar"
       aria-label={t({
         id: "meeting.detail.document",
-        message: "Meeting document",
+        message: "Recording document",
       })}
     >
       <article
@@ -117,7 +117,7 @@ export const MeetingReviewPanel = ({
           className="mt-7 inline-flex w-fit max-w-full items-center gap-1 rounded-2xl bg-surface-secondary p-1"
           aria-label={t({
             id: "meeting.detail.document_modes",
-            message: "Meeting document modes",
+            message: "Recording document modes",
           })}
         >
           {tabs.map((tab) => (

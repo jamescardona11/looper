@@ -56,7 +56,7 @@ export function MeetingTranscriptPanel({
     <section
       aria-label={t({
         id: "meeting.capture.transcript.live",
-        message: "Meeting live transcript",
+        message: "Live transcript",
       })}
       className={`flex h-[300px] w-[252px] flex-col overflow-hidden rounded-[14px] border border-[var(--ui-pill-shell-border)] bg-[var(--ui-pill-shell-bg)] text-white [box-shadow:none] ${
         pinned ? "pointer-events-auto" : "pointer-events-none"
@@ -97,7 +97,7 @@ export function MeetingTranscriptPanel({
           <p className="flex h-full items-end pb-1 text-[13px] leading-5 text-white/45">
             {t({
               id: "meeting.transcript.waiting",
-              message: "Waiting for meeting speech…",
+              message: "Waiting for speech…",
             })}
           </p>
         )}
@@ -128,7 +128,7 @@ export function MeetingTranscriptPanel({
                 <Sparkle size={12} className="animate-pulse" />
                 {t({
                   id: "meeting.capture.ask.loading",
-                  message: "Reading this meeting…",
+                  message: "Reading this recording…",
                 })}
               </div>
             ) : answer ? (
@@ -137,7 +137,7 @@ export function MeetingTranscriptPanel({
                   <span className="h-1.5 w-1.5 rounded-full bg-current" />
                   {t({
                     id: "meeting.capture.ask.context",
-                    message: "From this meeting",
+                    message: "From this recording",
                   })}
                 </div>
                 <div className="prose prose-invert max-w-none text-[13px] leading-[18px] text-white/90 prose-p:my-0 prose-p:leading-[18px] prose-li:my-0 prose-ul:my-1.5 prose-ol:my-1.5">
@@ -195,11 +195,11 @@ export function MeetingTranscriptPanel({
               disabled={askMeeting.isPending}
               aria-label={t({
                 id: "meeting.capture.ask.input",
-                message: "Ask about this meeting",
+                message: "Ask about this recording",
               })}
               placeholder={t({
                 id: "meeting.capture.ask.placeholder",
-                message: "Ask about this meeting…",
+                message: "Ask about this recording…",
               })}
               className="min-w-0 flex-1 bg-transparent text-[12px] leading-4 text-white outline-none placeholder:text-white/30 disabled:opacity-50"
             />
@@ -208,7 +208,7 @@ export function MeetingTranscriptPanel({
               disabled={!question.trim() || askMeeting.isPending}
               aria-label={t({
                 id: "meeting.capture.ask.submit",
-                message: "Ask meeting",
+                message: "Ask recording",
               })}
               className="grid h-[30px] w-[30px] shrink-0 place-items-center rounded-[9px] bg-white text-[var(--ui-pill-shell-bg)] transition-colors duration-150 hover:bg-emerald-200 disabled:bg-white/15 disabled:text-white/30"
             >

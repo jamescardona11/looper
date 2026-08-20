@@ -193,7 +193,12 @@ pub async fn start_note_from_dock(
     let settings = state.current_settings_unmasked();
     state
         .meeting_capture()
-        .start_voice_note(&app, &state, default_meeting_model(&app, &settings)?)
+        .start_voice_note(
+            &app,
+            &state,
+            default_meeting_model(&app, &settings)?,
+            default_live_meeting_model(&app, &settings),
+        )
         .await
 }
 
@@ -383,7 +388,7 @@ pub async fn ask_meeting(
         .storage()
         .get_library_item(&id)
         .map_err(|error| format!("Failed to load meeting: {error}"))?
-        .filter(|item| item.kind == "meeting")
+        .filter(|item| item.is_capture())
         .ok_or_else(|| "Meeting not found".to_string())?;
     let details = state
         .storage()

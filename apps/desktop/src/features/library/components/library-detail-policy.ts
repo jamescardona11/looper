@@ -20,6 +20,13 @@ export function isLibraryItemBusy(item: LibraryItem) {
   return BUSY_STATES.has(item.status.type);
 }
 
+// Reuniones y notas se graban desde la app y comparten superficie de revisión:
+// documento, resumen, momentos y chat. Un import no, porque no hay captura
+// detrás de la que hablar.
+export function isCaptureItem(item: LibraryItem) {
+  return item.kind === "meeting" || item.kind === "recording";
+}
+
 export function speakersWithPalette(item: LibraryItem): Speaker[] {
   return (item.speakers ?? []).map((speaker, position) => ({
     ...speaker,

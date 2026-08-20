@@ -82,6 +82,8 @@ export default function LibraryViewContent({
   const [youtubeImportOpen, setYoutubeImportOpen] = useState(false);
   const [meetingModalOpen, setMeetingModalOpen] = useState(false);
   const lastFocusItemId = useRef<string | null>(null);
+  const openedFocusItemId = useRef<string | null>(null);
+  const focusSearchQuery = useRef<string | null>(null);
   const shiftHeld = useShiftHeld(isActive);
 
   const debouncedSearch = useDebouncedValue(searchQuery, 300);
@@ -103,12 +105,16 @@ export default function LibraryViewContent({
   useEffect(() => {
     if (!focusItem || lastFocusItemId.current === focusItem.id) return;
     lastFocusItemId.current = focusItem.id;
+    focusSearchQuery.current = focusItem.query;
     setSearchQuery(focusItem.query);
   }, [focusItem]);
+  // Abrir el elemento enfocado una sola vez: si se reabriera en cada refetch,
+  // cerrar el detalle sería imposible mientras hubiera una captura en curso.
   useEffect(() => {
-    if (focusItem && items.some(({ id }) => id === focusItem.id)) {
-      setSelectedItemId(focusItem.id);
-    }
+    if (!focusItem || openedFocusItemId.current === focusItem.id) return;
+    if (!items.some(({ id }) => id === focusItem.id)) return;
+    openedFocusItemId.current = focusItem.id;
+    setSelectedItemId(focusItem.id);
   }, [focusItem, items]);
   const { data: availableTags = [] } = useLibraryTags(isActive);
   const { data: speechModels = [] } = useSpeechModels(isActive);
@@ -120,6 +126,16 @@ export default function LibraryViewContent({
     () => selectLibraryModels(speechModels, defaultModelKey),
     [defaultModelKey, speechModels],
   );
+
+  // El buscador solo llevaba el título con el que se abrió el detalle; si se
+  // queda puesto al cerrarlo, la lista sigue filtrada y las grabaciones nuevas
+  // desaparecen tras un filtro que nadie escribió.
+  const closeDetail = useCallback(() => {
+    const focusQuery = focusSearchQuery.current;
+    focusSearchQuery.current = null;
+    setSelectedItemId(null);
+    setSearchQuery((current) => (current === focusQuery ? "" : current));
+  }, []);
 
   const createItem = useCreateLibraryItem();
   const createYoutubeItem = useCreateLibraryYoutubeItem();
@@ -230,10 +246,10 @@ export default function LibraryViewContent({
           shiftHeld={shiftHeld}
           followTimestamps={followTimestamps}
           onFollowTimestampsChange={setFollowTimestamps}
-          onClose={() => setSelectedItemId(null)}
+          onClose={closeDetail}
           onDelete={async () => {
             await deleteWithToast(selectedItem.id);
-            setSelectedItemId(null);
+            closeDetail();
           }}
           onRetry={() => retryTranscription.mutateAsync(selectedItem.id)}
           onCancel={() => cancelTranscription.mutateAsync(selectedItem.id)}
