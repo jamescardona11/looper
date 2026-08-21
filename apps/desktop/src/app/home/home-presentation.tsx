@@ -17,8 +17,8 @@ import { lazy, Suspense, useRef, type Dispatch, type RefObject } from "react";
 
 import SettingsRoute from "../../features/settings/components/SettingsRoute";
 import type { FeatureDiagnostic } from "../../features/feature-lab/types";
-import { HomeMeetingActivity } from "../../features/library/components/HomeMeetingActivity";
-import LibraryView from "../../features/library/components/LibraryView";
+import { HomeMeetingActivity } from "../../features/library/meeting/HomeMeetingActivity";
+import LibraryView from "../../features/library/list/LibraryView";
 import MemoryView from "../../features/memory/components/MemoryView";
 import CaptureStatusCard from "../../features/transcriptions/components/CaptureStatusCard";
 import HomeAskBar from "../../features/transcriptions/components/HomeAskBar";

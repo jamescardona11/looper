@@ -29,7 +29,7 @@ vi.mock("../../../features/settings/components/SettingsRoute", () => ({
 vi.mock("../../../features/feature-lab/components/FeatureLabView", () => ({
   default: () => <div data-testid="feature-lab" />,
 }));
-vi.mock("../../../features/library/components/HomeMeetingActivity", () => ({
+vi.mock("../../../features/library/meeting/HomeMeetingActivity", () => ({
   HomeMeetingActivity: ({
     onOpen,
   }: {
@@ -40,7 +40,7 @@ vi.mock("../../../features/library/components/HomeMeetingActivity", () => ({
     </button>
   ),
 }));
-vi.mock("../../../features/library/components/LibraryView", () => ({
+vi.mock("../../../features/library/list/LibraryView", () => ({
   default: () => <div data-testid="library-view" />,
 }));
 vi.mock("../../../features/memory/components/MemoryView", () => ({

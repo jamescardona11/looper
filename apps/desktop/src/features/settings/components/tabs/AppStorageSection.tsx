@@ -1,7 +1,7 @@
 import { useLingui } from "@lingui/react/macro";
 import SectionLabel from "../../../../shared/ui/SectionLabel";
 import ToggleSwitch from "../../../../shared/ui/ToggleSwitch";
-import WatchFoldersSetting from "../../../library/components/WatchFoldersSetting";
+import WatchFoldersSetting from "../../../library/import/WatchFoldersSetting";
 import type { AppArchiveProps } from "./AppTab.types";
 import { isAppSectionVisible } from "./app-section-model";
 import type { AppTabControls } from "./useAppTabControls";

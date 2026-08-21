@@ -3,7 +3,7 @@ import {
   editionInfo,
   type LicenseEdition,
 } from "../../../shared/lib/licenseEdition";
-import type { PurchaseTier } from "../../license/purchaseConfig";
+import type { PurchaseTier } from "../purchaseConfig";
 import {
   CARD_DETAILS_HEIGHT_SLIM,
   CardDetailsGrid,

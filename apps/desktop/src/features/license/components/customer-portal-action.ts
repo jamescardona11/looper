@@ -3,7 +3,7 @@ import { openUrl as openExternalDestination } from "@tauri-apps/plugin-opener";
 import {
   customerPortalUrlFor as resolveTrackedPortal,
   type PurchaseSource as CustomerPortalSource,
-} from "../../license/purchaseConfig";
+} from "../purchaseConfig";
 
 export type { CustomerPortalSource };
 

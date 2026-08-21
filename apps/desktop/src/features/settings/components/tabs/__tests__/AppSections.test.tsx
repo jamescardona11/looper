@@ -28,7 +28,7 @@ vi.mock("../../../../../data/settings", () => ({
   openAccessibilitySettings: platformMocks.openAccessibility,
   openInputMonitoringSettings: platformMocks.openInputMonitoring,
 }));
-vi.mock("../../../../library/components/WatchFoldersSetting", () => ({
+vi.mock("../../../../library/import/WatchFoldersSetting", () => ({
   default: () => <div>Watch folder controls</div>,
 }));
 

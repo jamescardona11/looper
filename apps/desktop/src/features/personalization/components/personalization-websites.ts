@@ -12,7 +12,7 @@ export function normalizeWebsite(value: string) {
 
 export function formatWebsitePreview(value: string) {
   const label = value.trim();
-  const separator = label.indexOf(".");
+  const separator = label.indexOf("./");
   return separator === -1 ? label : label.slice(0, separator);
 }
 
@@ -28,7 +28,7 @@ function isDnsLabel(label: string) {
 
 export function isValidDomain(value: string) {
   const hostname = value.trim().toLowerCase();
-  const labels = hostname.split(".");
+  const labels = hostname.split("./");
   return (
     hostname.length > 0 &&
     hostname.length <= 253 &&

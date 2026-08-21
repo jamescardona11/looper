@@ -1,6 +1,6 @@
 import type { LicenseState } from "../../../data/license";
 import { editionFromLicenseState } from "../../../shared/lib/licenseEdition";
-import type { PurchaseTier } from "../../license/purchaseConfig";
+import type { PurchaseTier } from "../purchaseConfig";
 import { formatCardDate } from "./member-card-geometry";
 import type { CardRevealStage } from "./useCardActivationSequence";
 

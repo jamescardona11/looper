@@ -1,6 +1,6 @@
 import type { CSSProperties } from "react";
 import { EDITION_COLORS } from "../../../shared/lib/licenseEdition";
-import type { PurchaseTier } from "../../license/purchaseConfig";
+import type { PurchaseTier } from "../purchaseConfig";
 import type { MemberCardPalette } from "./member-card-palette";
 
 const cardDimensions = {

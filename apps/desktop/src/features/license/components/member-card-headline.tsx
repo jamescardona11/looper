@@ -2,7 +2,7 @@ import { useLingui } from "@lingui/react/macro";
 import { motion } from "framer-motion";
 import type { CSSProperties, ReactNode } from "react";
 import { TypewriterText } from "../../../shared/ui/TypewriterText";
-import { tierInfo, type PurchaseTier } from "../../license/purchaseConfig";
+import { tierInfo, type PurchaseTier } from "../purchaseConfig";
 import {
   CARD_HEADLINE_HEIGHT_EXPANDED,
   CARD_TITLE_FONT,

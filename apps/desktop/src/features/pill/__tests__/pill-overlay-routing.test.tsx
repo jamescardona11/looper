@@ -5,7 +5,7 @@ import { afterEach, describe, expect, test, vi } from "vitest";
 import type { MeetingCaptureState } from "../../../types";
 import PillOverlay from "../PillOverlay";
 
-vi.mock("../../library/components/MeetingCaptureOverlay", () => ({
+vi.mock("../../library/meeting/MeetingCaptureOverlay", () => ({
   default: ({ state }: { state: MeetingCaptureState }) => (
     <output data-testid="meeting-capture">{state.id}</output>
   ),
