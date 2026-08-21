@@ -8,9 +8,9 @@ const dataTestContract = {
   environment: "node",
   globals: true,
   include: [
-    "src/agent/**/*.{test,spec}.ts",
-    "src/adapters/convex/dictation-mappers.test.ts",
-    "src/adapters/convex/upload-protocol.test.ts",
+    "src/agent/**/__tests__/*.{test,spec}.ts",
+    "src/adapters/convex/__tests__/dictation-mappers.test.ts",
+    "src/adapters/convex/__tests__/upload-protocol.test.ts",
   ],
 };
 
