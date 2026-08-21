@@ -1,7 +1,7 @@
 // biome-ignore-all assist/source/organizeImports: module markers keep optional imports removable.
 import { useCurrentUser } from "@looper/data";
 import { useTranslation } from "@looper/i18n/react";
-import { IconArrowRight, IconMessage, IconMicrophone } from "@tabler/icons-react";
+import { IconArrowRight, IconFileText, IconMessage } from "@tabler/icons-react";
 import { Link, Navigate } from "@tanstack/react-router";
 import type { AppPath } from "@/app/navigation";
 import { useAuth } from "@/features/auth";
@@ -22,10 +22,10 @@ const capabilities: ReadonlyArray<{
     icon: IconMessage,
   },
   {
-    to: "/transcribe",
-    labelKey: "home.startVoice",
-    hintKey: "home.startVoiceHint",
-    icon: IconMicrophone,
+    to: "/library",
+    labelKey: "nav.library",
+    hintKey: "home.reviewLibraryHint",
+    icon: IconFileText,
   },
 ];
 

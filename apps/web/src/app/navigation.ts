@@ -2,8 +2,8 @@
 import {
   IconChartBar,
   IconHome,
+  IconFileText,
   IconMessage,
-  IconMicrophone,
   IconNotebook,
   IconSettings,
 } from "@tabler/icons-react";
@@ -47,11 +47,11 @@ export const APP_DESTINATIONS = [
     productRoute: true,
   },
   {
-    id: "transcribe",
-    to: "/transcribe",
-    labelKey: "nav.transcribe",
-    keywords: "stt speech to text",
-    icon: IconMicrophone,
+    id: "library",
+    to: "/library",
+    labelKey: "nav.library",
+    keywords: "library transcriptions notes meetings synced text",
+    icon: IconFileText,
     navGroup: "voice",
     command: true,
     productRoute: true,

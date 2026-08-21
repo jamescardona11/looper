@@ -13,8 +13,7 @@
     "lint": "biome lint .",
     "test": "vitest run --passWithNoTests",
     "test:watch": "vitest",
-    "e2e": "playwright test --config playwright.e2e.config.ts",
-    "e2e:audio-live": "playwright test --config playwright.live.config.ts"
+    "e2e": "playwright test --config playwright.e2e.config.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.5.0",

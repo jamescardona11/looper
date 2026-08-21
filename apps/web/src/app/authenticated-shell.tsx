@@ -20,7 +20,6 @@ import {
   WORKSPACE_DESTINATIONS,
 } from "@/app/navigation";
 import { cn } from "@/lib/cn";
-import { isDesktopHost } from "@/lib/desktop-host";
 import { CommandPalette } from "@/shared/components/command-palette";
 import { ConfirmProvider } from "@/shared/components/confirm-dialog";
 import { LooperMark } from "@/shared/components/looper-mark";
@@ -93,7 +92,7 @@ function AuthenticatedChrome() {
         <MobileHeader open={sidebarOpen} onOpen={openSidebar} buttonRef={openNavigationRef} />
         <section
           aria-label={t("common.pageContent")}
-          data-desktop-workspace
+          data-web-workspace
           className="min-h-0 flex-1 overflow-y-auto"
           // biome-ignore lint/a11y/noNoninteractiveTabindex: this is the shell's only scroll viewport
           tabIndex={0}
@@ -165,12 +164,7 @@ function AppSidebar({
       )}
     >
       <div className={cn("flex h-12 shrink-0 items-center gap-2 border-border border-b px-3")}>
-        <Link
-          to="/home"
-          viewTransition={isDesktopHost}
-          onClick={onClose}
-          className="flex min-w-0 flex-1 items-center gap-2"
-        >
+        <Link to="/home" onClick={onClose} className="flex min-w-0 flex-1 items-center gap-2">
           <span className="grid size-7 shrink-0 place-items-center rounded-lg border border-border bg-background text-primary">
             <LooperMark className="size-4" />
           </span>
@@ -238,7 +232,6 @@ function AppSidebar({
         {isAdmin ? (
           <Link
             to="/admin"
-            viewTransition={isDesktopHost}
             onClick={onClose}
             className={navItemClass}
             activeProps={{ className: activeNavItemClass }}
@@ -291,7 +284,6 @@ function NavSection({
           className={navItemClass}
           activeProps={{ className: activeNavItemClass }}
           activeOptions={{ exact: true }}
-          viewTransition={isDesktopHost}
         >
           <destination.icon className="size-4 shrink-0" aria-hidden />
           <span className="min-w-0 flex-1 truncate">{t(destination.labelKey)}</span>
@@ -359,15 +351,11 @@ function AccountMenu({ onNavigate }: { onNavigate: () => void }) {
             <MenuSeparator />
           </>
         ) : null}
-        <MenuItem
-          render={<Link to="/settings" viewTransition={isDesktopHost} onClick={onNavigate} />}
-        >
+        <MenuItem render={<Link to="/settings" onClick={onNavigate} />}>
           <IconSettings className="size-4" />
           {t("nav.settings")}
         </MenuItem>
-        <MenuItem
-          render={<Link to="/billing" viewTransition={isDesktopHost} onClick={onNavigate} />}
-        >
+        <MenuItem render={<Link to="/billing" onClick={onNavigate} />}>
           <IconCreditCard className="size-4" />
           {t("nav.billing")}
         </MenuItem>

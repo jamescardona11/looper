@@ -1,6 +1,4 @@
 import { createRequire } from "node:module";
-import { createReadStream, existsSync, statSync } from "node:fs";
-import type { IncomingMessage, ServerResponse } from "node:http";
 import path from "node:path";
 import { chromium } from "@playwright/test";
 import tailwindcss from "@tailwindcss/vite";
@@ -11,16 +9,6 @@ import { defineConfig } from "vite";
 const require = createRequire(import.meta.url);
 const vitePrerender =
   require("vite-plugin-prerender") as typeof import("vite-plugin-prerender").default;
-const repoRoot = path.resolve(__dirname, "../..");
-const namedAudioFixtures = new Map([
-  ["harvard.wav", path.resolve(repoRoot, "test-support/fixtures/audio/harvard.wav")],
-]);
-
-const configuredAudioFixture = process.env.LOOPER_AUDIO_FIXTURE ?? process.env.E2E_AUDIO_FIXTURE;
-if (configuredAudioFixture && !process.env.VITE_E2E_AUDIO_FIXTURE) {
-  process.env.VITE_E2E_AUDIO_FIXTURE = "env";
-}
-
 const PUBLIC_ROUTES = [
   "/",
   "/landing",
@@ -33,19 +21,8 @@ const PUBLIC_ROUTES = [
   "/terms",
 ];
 
-type ConnectNext = (error?: unknown) => void;
-type DevServerWithMiddleware = {
-  middlewares: {
-    use(
-      route: string,
-      handler: (request: IncomingMessage, response: ServerResponse, next: ConnectNext) => void,
-    ): void;
-  };
-};
-
 export default defineConfig({
   plugins: [
-    e2eAudioFixturePlugin(),
     tailwindcss(),
     tanstackRouter({ target: "react", autoCodeSplitting: true }),
     react({
@@ -130,34 +107,3 @@ export default defineConfig({
   },
   server: { port: 5173 },
 });
-
-function e2eAudioFixturePlugin() {
-  return {
-    name: "e2e-audio-fixtures",
-    configureServer(server: DevServerWithMiddleware) {
-      const serveFixture = (
-        request: IncomingMessage,
-        response: ServerResponse,
-        next: ConnectNext,
-      ) => {
-        const filename = request.url?.replace(/^\//, "").split("?")[0] ?? "";
-        const fixturePath =
-          filename === "env.wav" && configuredAudioFixture
-            ? path.resolve(configuredAudioFixture)
-            : namedAudioFixtures.get(filename);
-
-        if (!fixturePath || !existsSync(fixturePath)) {
-          next();
-          return;
-        }
-
-        const stat = statSync(fixturePath);
-        response.statusCode = 200;
-        response.setHeader("content-type", "audio/wav");
-        response.setHeader("content-length", String(stat.size));
-        createReadStream(fixturePath).pipe(response);
-      };
-      server.middlewares.use("/__e2e-audio-fixtures", serveFixture);
-    },
-  };
-}

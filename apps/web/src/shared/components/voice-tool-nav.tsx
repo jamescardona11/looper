@@ -3,7 +3,7 @@ import { Link, useRouterState } from "@tanstack/react-router";
 import { cn } from "@/lib/cn";
 
 const tools = [
-  { to: "/transcribe", labelKey: "nav.transcribe" },
+  { to: "/library", labelKey: "nav.library" },
   { to: "/dictation", labelKey: "nav.dictation" },
 ] as const;
 

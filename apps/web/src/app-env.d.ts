@@ -2,7 +2,6 @@
 
 type LooperWebEnvironment = {
   readonly VITE_CONVEX_URL: string;
-  readonly VITE_E2E_AUDIO_FIXTURE?: string;
   readonly VITE_E2E_WEB_CAPTURE_FIXTURE_SMOKE?: string;
   readonly VITE_E2E_WEB_CAPTURE_RECORD_MS?: string;
   readonly VITE_E2E_TRANSCRIBE_FIXTURE_SMOKE?: string;
