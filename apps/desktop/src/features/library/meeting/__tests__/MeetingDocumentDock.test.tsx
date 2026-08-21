@@ -22,7 +22,7 @@ vi.mock("../../queries", () => ({
   }),
 }));
 
-vi.mock("../../../settings/local-llm-queries", () => ({
+vi.mock("../../../settings/models/local-llm-queries", () => ({
   useMeetingAiStatus,
 }));
 

@@ -1,8 +1,8 @@
 import { lazy, Suspense, type ReactNode } from "react";
 
-import AneCompileOverlay from "../../features/settings/components/AneCompileOverlay";
-import ModelDownloadActivityBar from "../../features/settings/components/ModelDownloadActivityBar";
-import { ModelDownloadActivityProvider } from "../../features/settings/modelDownloadActivity";
+import AneCompileOverlay from "../../features/settings/models/AneCompileOverlay";
+import ModelDownloadActivityBar from "../../features/settings/models/ModelDownloadActivityBar";
+import { ModelDownloadActivityProvider } from "../../features/settings/models/modelDownloadActivity";
 import type { PreviewRoute } from "./window-route";
 
 const Home = lazy(() => import("../home/Home"));

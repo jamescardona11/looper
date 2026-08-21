@@ -9,7 +9,7 @@ import { HomePresentation } from "../home-presentation";
 import { createHomeState, type HomeState } from "../home-state";
 import { EMPTY_TODAY_DICTATION_STATS } from "../../../features/transcriptions/todayStats";
 
-vi.mock("../../../features/settings/components/SettingsRoute", () => ({
+vi.mock("../../../features/settings/shell/SettingsRoute", () => ({
   default: ({
     isOpen,
     initialTab,

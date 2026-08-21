@@ -26,7 +26,7 @@ vi.mock("../../../../shared/hooks/useCopyToClipboard", () => ({
   useCopyToClipboard: () => ({ copied: false, copy: mocks.copy }),
 }));
 
-vi.mock("../../../settings/models-queries", () => ({
+vi.mock("../../../settings/models/models-queries", () => ({
   resolveSpeechModelLabel: () => null,
   useSpeechModels: () => mocks.useSpeechModels(),
 }));

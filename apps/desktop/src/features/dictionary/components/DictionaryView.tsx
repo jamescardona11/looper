@@ -18,8 +18,8 @@ import {
 } from "../../../shared/lib/modelCapabilities";
 import WorkspacePage from "../../../shared/ui/WorkspacePage";
 import type { Replacement, UserSnippet } from "../../../types";
-import { useModelCatalog } from "../../settings/models-queries";
-import { settingsKeys, useSettings } from "../../settings/queries";
+import { useModelCatalog } from "../../settings/models/models-queries";
+import { settingsKeys, useSettings } from "../../settings/preferences/queries";
 import {
   setDictionaryEntriesCache,
   setDictionaryReplacementsCache,

@@ -2,7 +2,7 @@ import type { QueryClient } from "@tanstack/react-query";
 
 import type { SuggestedCorrection } from "../../data/corrections";
 import type { Replacement, StoredSettings, UserSnippet } from "../../types";
-import { settingsKeys } from "../settings/queries";
+import { settingsKeys } from "../settings/preferences/queries";
 import { dictionaryKeys } from "./dictionary-query-policy";
 
 type DictionarySettingsPatch = Partial<

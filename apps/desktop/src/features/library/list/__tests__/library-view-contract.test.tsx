@@ -69,11 +69,11 @@ vi.mock("../../queries", () => ({
   }),
 }));
 
-vi.mock("../../../settings/models-queries", () => ({
+vi.mock("../../../settings/models/models-queries", () => ({
   modelKeys: { speech: () => ["models", "speech"] },
   useSpeechModels: (...args: unknown[]) => mocks.useSpeechModels(...args),
 }));
-vi.mock("../../../settings/queries", () => ({
+vi.mock("../../../settings/preferences/queries", () => ({
   useSettings: (...args: unknown[]) => mocks.useSettings(...args),
 }));
 vi.mock("../../../../shared/hooks/useDebouncedValue", () => ({

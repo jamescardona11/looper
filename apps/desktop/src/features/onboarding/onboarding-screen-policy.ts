@@ -7,7 +7,7 @@ import type {
   StoredSettings,
 } from "../../types";
 import { LOCAL_LLM_MODEL_ID } from "../../data/local-llm";
-import { activityToDownloadEvent } from "../settings/modelDownloadActivity";
+import { activityToDownloadEvent } from "../settings/models/modelDownloadActivity";
 import {
   pickDefaultOnboardingModel,
   pickOnboardingModels,

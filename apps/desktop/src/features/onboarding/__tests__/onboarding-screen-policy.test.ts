@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import type { ModelInfo, ModelStatus, StoredSettings } from "../../../types";
-import type { ModelDownloadActivity } from "../../settings/modelDownloadActivity";
+import type { ModelDownloadActivity } from "../../settings/models/modelDownloadActivity";
 import {
   buildCompletedOnboardingSettings,
   buildModelDisplayStates,

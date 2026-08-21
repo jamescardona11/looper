@@ -48,7 +48,7 @@ vi.mock("../../../../data/library", () => ({
   getMeetingDetails: vi.fn(() => Promise.resolve(emptyDetails)),
 }));
 
-vi.mock("../../../settings/local-llm-queries", () => ({
+vi.mock("../../../settings/models/local-llm-queries", () => ({
   useMeetingAiStatus: () => ({ data: { state: "ready" } }),
 }));
 

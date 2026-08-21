@@ -14,7 +14,7 @@ vi.mock("../../../shared/hooks/useCopyToClipboard", () => ({
   useCopyToClipboard: () => ({ copied: false, copy: vi.fn() }),
 }));
 
-vi.mock("../../settings/models-queries", () => ({
+vi.mock("../../settings/models/models-queries", () => ({
   useSpeechModels: () => ({ data: [] }),
 }));
 

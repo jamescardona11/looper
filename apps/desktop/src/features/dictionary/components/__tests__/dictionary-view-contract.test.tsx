@@ -34,11 +34,11 @@ const mocks = vi.hoisted(() => ({
   cacheSuggestions: vi.fn(),
 }));
 
-vi.mock("../../../settings/queries", () => ({
+vi.mock("../../../settings/preferences/queries", () => ({
   settingsKeys: { detail: () => ["settings", "detail"] },
   useSettings: (...args: unknown[]) => mocks.settingsQuery(...args),
 }));
-vi.mock("../../../settings/models-queries", () => ({
+vi.mock("../../../settings/models/models-queries", () => ({
   useModelCatalog: (...args: unknown[]) => mocks.modelsQuery(...args),
 }));
 vi.mock("../../queries", () => ({

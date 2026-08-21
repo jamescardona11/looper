@@ -8,7 +8,7 @@ import {
   TextAlignLeft,
 } from "@phosphor-icons/react";
 import { useState } from "react";
-import { useMeetingAiStatus } from "../../settings/local-llm-queries";
+import { useMeetingAiStatus } from "../../settings/models/local-llm-queries";
 import { useAskMeeting } from "../queries";
 import { formatDuration } from "../shared/library-utils";
 

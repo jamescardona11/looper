@@ -45,7 +45,7 @@ import {
 } from "../shared/library-utils";
 import { useLibraryExport } from "../export/useLibraryExport";
 import { useLibraryPlayer } from "../player/useLibraryPlayer";
-import { resolveSpeechModelLabel } from "../../settings/models-queries";
+import { resolveSpeechModelLabel } from "../../settings/models/models-queries";
 import { useClickOutside } from "../../../shared/hooks/useClickOutside";
 import { useCopyToClipboard } from "../../../shared/hooks/useCopyToClipboard";
 import type {

@@ -83,13 +83,13 @@ vi.mock("../../queries", () => ({
   useAskMeeting: () => askMeetingMutation,
 }));
 
-vi.mock("../../../settings/queries", () => ({
+vi.mock("../../../settings/preferences/queries", () => ({
   useSettings: (select: (settings: typeof llmSettings) => unknown) => ({
     data: select(llmSettings),
   }),
 }));
 
-vi.mock("../../../settings/local-llm-queries", () => ({
+vi.mock("../../../settings/models/local-llm-queries", () => ({
   useMeetingAiStatus: () => ({
     data: {
       provider: "writing",

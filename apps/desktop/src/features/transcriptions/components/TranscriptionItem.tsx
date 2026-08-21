@@ -3,7 +3,7 @@ import { memo, useRef, useState, type MouseEvent } from "react";
 import type { TranscriptionRecord } from "../../../types";
 import { useCopyToClipboard as useItemClipboard } from "../../../shared/hooks/useCopyToClipboard";
 import { useClickOutside as useDismissItemMenu } from "../../../shared/hooks/useClickOutside";
-import { useSpeechModels } from "../../settings/models-queries";
+import { useSpeechModels } from "../../settings/models/models-queries";
 import {
   describeTranscriptionItem,
   selectedTranscriptText,

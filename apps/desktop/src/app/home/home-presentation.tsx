@@ -15,7 +15,7 @@ import {
 import { AnimatePresence, motion } from "framer-motion";
 import { lazy, Suspense, useRef, type Dispatch, type RefObject } from "react";
 
-import SettingsRoute from "../../features/settings/components/SettingsRoute";
+import SettingsRoute from "../../features/settings/shell/SettingsRoute";
 import type { FeatureDiagnostic } from "../../features/feature-lab/types";
 import { HomeMeetingActivity } from "../../features/library/meeting/HomeMeetingActivity";
 import LibraryView from "../../features/library/list/LibraryView";

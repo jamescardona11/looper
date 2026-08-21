@@ -30,7 +30,7 @@ vi.mock("../../queries", () => ({
   useGenerateMeetingSummary: () => ({ mutate: vi.fn(), isPending: false }),
 }));
 
-vi.mock("../../../settings/local-llm-queries", () => ({
+vi.mock("../../../settings/models/local-llm-queries", () => ({
   useMeetingAiStatus: () => ({ data: { state: "ready" } }),
 }));
 

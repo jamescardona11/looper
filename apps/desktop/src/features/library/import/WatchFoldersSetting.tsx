@@ -8,8 +8,8 @@ import {
   hasModelCapability,
   MODEL_CAPABILITY_TIMESTAMPS,
 } from "../../../shared/lib/modelCapabilities";
-import { useSettings } from "../../settings/queries";
-import { useSpeechModels } from "../../settings/models-queries";
+import { useSettings } from "../../settings/preferences/queries";
+import { useSpeechModels } from "../../settings/models/models-queries";
 import {
   useAddLibraryWatchFolder,
   useLibraryWatchFolders,

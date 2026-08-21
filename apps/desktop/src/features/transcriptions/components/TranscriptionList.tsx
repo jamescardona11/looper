@@ -1,7 +1,7 @@
 import { useLingui as useListTranslations } from "@lingui/react/macro";
 import { motion as Animated, useReducedMotion } from "framer-motion";
 import { memo, useCallback, useMemo, useState } from "react";
-import { useSettings } from "../../settings/queries";
+import { useSettings } from "../../settings/preferences/queries";
 import { useDebouncedValue } from "../../../shared/hooks/useDebouncedValue";
 import { useShiftHeld } from "../../../shared/hooks/useShiftHeld";
 import { formatShortcutForDisplay } from "../../../shared/lib/shortcuts";

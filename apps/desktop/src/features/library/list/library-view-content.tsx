@@ -11,8 +11,8 @@ import type { LibraryItem, LibraryItemPatch } from "../../../types";
 import {
   modelKeys as settingsModelKeys,
   useSpeechModels,
-} from "../../settings/models-queries";
-import { useSettings } from "../../settings/queries";
+} from "../../settings/models/models-queries";
+import { useSettings } from "../../settings/preferences/queries";
 import {
   libraryKeys,
   useCancelLibraryTranscription,

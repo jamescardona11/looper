@@ -3,7 +3,7 @@ import { ArrowUp, CaretDown, Sparkle, X } from "@phosphor-icons/react";
 import { useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import type { MeetingTranscriptSegment } from "../../../types";
-import { useMeetingAiStatus } from "../../settings/local-llm-queries";
+import { useMeetingAiStatus } from "../../settings/models/local-llm-queries";
 import { useAskMeeting } from "../queries";
 import { groupMeetingTranscriptSegments } from "./meeting-transcript";
 

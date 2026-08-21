@@ -1,7 +1,7 @@
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { useState } from "react";
 
-import { useSettings } from "../features/settings/queries";
+import { useSettings } from "../features/settings/preferences/queries";
 import { OverlayWindows } from "./windows/app-window-components";
 import { SettingsWindow } from "./windows/SettingsWindow";
 import { useDocumentAppearance } from "./useDocumentAppearance";

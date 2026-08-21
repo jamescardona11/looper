@@ -1,7 +1,7 @@
 import { QueryClient } from "@tanstack/react-query";
 import { describe, expect, test } from "vitest";
 
-import { settingsKeys } from "../../settings/queries";
+import { settingsKeys } from "../../settings/preferences/queries";
 import {
   setDictionaryEntriesCache,
   setDictionaryReplacementsCache,

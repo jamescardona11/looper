@@ -9,8 +9,8 @@ import {
   subscribeUpdateAvailable,
   subscribeUpdateCleared,
 } from "../../data/updates";
-import { modelKeys } from "../../features/settings/models-queries";
-import { settingsKeys } from "../../features/settings/queries";
+import { modelKeys } from "../../features/settings/models/models-queries";
+import { settingsKeys } from "../../features/settings/preferences/queries";
 import { transcriptionKeys } from "../../features/transcriptions/queries";
 import { updateKeys } from "../../features/updates/queries";
 import type { TranscriptionRecord } from "../../types";

@@ -3,7 +3,7 @@ import { useState } from "react";
 import { createPortal as renderInBody } from "react-dom";
 import { AnimatePresence as Presence, motion as Animated } from "framer-motion";
 import { DownloadSimple as DownloadIcon } from "@phosphor-icons/react";
-import ModelStatCard from "../../settings/components/ModelStatCard";
+import ModelStatCard from "../../settings/models/ModelStatCard";
 import { formatModelSize } from "../../../shared/lib/modelStats";
 import type { DownloadEvent, ModelInfo, ModelStatus } from "../../../types";
 import {
