@@ -1,12 +1,12 @@
 import { useReducedMotion } from "framer-motion";
 import { useReducer } from "react";
 
-import { useLicenseGate } from "./features/license/queries";
-import { useAppInfo, useSettings } from "./features/settings/queries";
-import { useTodayDictationStats } from "./features/transcriptions/queries";
-import { useTimeOfDayPeriodTick } from "./features/transcriptions/homeGreeting";
-import { EMPTY_TODAY_DICTATION_STATS } from "./features/transcriptions/todayStats";
-import { useUpdateStatus } from "./features/updates/queries";
+import { useLicenseGate } from "../../features/license/queries";
+import { useAppInfo, useSettings } from "../../features/settings/queries";
+import { useTodayDictationStats } from "../../features/transcriptions/queries";
+import { useTimeOfDayPeriodTick } from "../../features/transcriptions/homeGreeting";
+import { EMPTY_TODAY_DICTATION_STATS } from "../../features/transcriptions/todayStats";
+import { useUpdateStatus } from "../../features/updates/queries";
 import { createHomeDiagnostics } from "./home-diagnostics";
 import {
   HomeKeyboardBridge,
@@ -14,7 +14,7 @@ import {
 } from "./home-native-events";
 import { HomePresentation } from "./home-presentation";
 import { createHomeState, reduceHomeState } from "./home-state";
-import type { TranscriptionMode } from "./types";
+import type { TranscriptionMode } from "../../types";
 
 function Home() {
   const licenseGateActive = useLicenseGate();

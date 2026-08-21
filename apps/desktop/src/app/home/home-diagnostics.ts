@@ -1,8 +1,8 @@
-import { getMeetingCaptureState } from "./data/library";
-import { searchMemory } from "./data/memory";
-import { getLocalSnippets } from "./data/snippets-sync";
-import type { FeatureDiagnostic } from "./features/feature-lab/types";
-import type { StoredSettings } from "./types";
+import { getMeetingCaptureState } from "../../data/library";
+import { searchMemory } from "../../data/memory";
+import { getLocalSnippets } from "../../data/snippets-sync";
+import type { FeatureDiagnostic } from "../../features/feature-lab/types";
+import type { StoredSettings } from "../../types";
 
 type DiagnosticCollection = PromiseSettledResult<unknown[]>;
 

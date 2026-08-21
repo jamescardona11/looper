@@ -15,26 +15,26 @@ import {
 import { AnimatePresence, motion } from "framer-motion";
 import { lazy, Suspense, useRef, type Dispatch, type RefObject } from "react";
 
-import SettingsRoute from "./features/settings/components/SettingsRoute";
-import type { FeatureDiagnostic } from "./features/feature-lab/types";
-import { HomeMeetingActivity } from "./features/library/components/HomeMeetingActivity";
-import LibraryView from "./features/library/components/LibraryView";
-import MemoryView from "./features/memory/components/MemoryView";
-import CaptureStatusCard from "./features/transcriptions/components/CaptureStatusCard";
-import HomeAskBar from "./features/transcriptions/components/HomeAskBar";
-import HomeTodayHeader from "./features/transcriptions/components/HomeTodayHeader";
-import TranscriptionList from "./features/transcriptions/components/TranscriptionList";
-import VoiceView from "./features/voice/components/VoiceView";
+import SettingsRoute from "../../features/settings/components/SettingsRoute";
+import type { FeatureDiagnostic } from "../../features/feature-lab/types";
+import { HomeMeetingActivity } from "../../features/library/components/HomeMeetingActivity";
+import LibraryView from "../../features/library/components/LibraryView";
+import MemoryView from "../../features/memory/components/MemoryView";
+import CaptureStatusCard from "../../features/transcriptions/components/CaptureStatusCard";
+import HomeAskBar from "../../features/transcriptions/components/HomeAskBar";
+import HomeTodayHeader from "../../features/transcriptions/components/HomeTodayHeader";
+import TranscriptionList from "../../features/transcriptions/components/TranscriptionList";
+import VoiceView from "../../features/voice/components/VoiceView";
 import type { HomeAction, HomeState, HomeView } from "./home-state";
-import { useClickOutside } from "./shared/hooks/useClickOutside";
-import FAQModal from "./shared/ui/FAQModal";
-import { LooperLogo } from "./shared/ui/LooperLogo";
-import WindowControls from "./shared/ui/WindowControls";
-import WorkspaceRoute from "./shared/ui/WorkspaceRoute";
-import type { TodayDictationStats, TranscriptionMode } from "./types";
+import { useClickOutside } from "../../shared/hooks/useClickOutside";
+import FAQModal from "../../shared/ui/FAQModal";
+import { LooperLogo } from "../../shared/ui/LooperLogo";
+import WindowControls from "../../shared/ui/WindowControls";
+import WorkspaceRoute from "../../shared/ui/WorkspaceRoute";
+import type { TodayDictationStats, TranscriptionMode } from "../../types";
 
 const DevelopmentFeatureLab = import.meta.env.DEV
-  ? lazy(() => import("./features/feature-lab/components/FeatureLabView"))
+  ? lazy(() => import("../../features/feature-lab/components/FeatureLabView"))
   : null;
 
 type HomePresentationProps = {

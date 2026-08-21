@@ -1,5 +1,5 @@
-import type { AppPlatformId } from "../platform/service";
-import { parseTextSizeMode, resolveTextScale } from "../shared/lib/textSize";
+import type { AppPlatformId } from "../../platform/service";
+import { parseTextSizeMode, resolveTextScale } from "../../shared/lib/textSize";
 
 type InitialTextScaleOptions = {
   disabled: boolean;

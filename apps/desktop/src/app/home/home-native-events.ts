@@ -7,8 +7,8 @@ import {
   subscribeLibraryDragLeave,
   subscribeLibraryDragOver,
   subscribeLibraryOpenImport,
-} from "./data/library";
-import { subscribeLicenseCheckoutReturned } from "./data/license";
+} from "../../data/library";
+import { subscribeLicenseCheckoutReturned } from "../../data/license";
 import {
   subscribeNavigateCalendar,
   subscribeNavigateAbout,
@@ -17,21 +17,21 @@ import {
   subscribeNavigateHistory,
   subscribeNavigateModels,
   subscribeNavigateSettings,
-} from "./data/navigation";
+} from "../../data/navigation";
 import {
   subscribePillInserted,
   subscribePillMode,
   subscribePillState,
-} from "./data/overlay";
-import { notifySettingsRendererReady } from "./data/settings";
-import { requestUpdaterCheck } from "./data/updates";
+} from "../../data/overlay";
+import { notifySettingsRendererReady } from "../../data/settings";
+import { requestUpdaterCheck } from "../../data/updates";
 import {
   shouldShowInsertedStage,
   shouldShowWritingStage,
   signalStageFromPillState,
-} from "./features/transcriptions/home-signal-stage";
+} from "../../features/transcriptions/home-signal-stage";
 import type { HomeAction } from "./home-state";
-import { useMountEffect } from "./shared/hooks/useMountEffect";
+import { useMountEffect } from "../../shared/hooks/useMountEffect";
 
 type RemoveListener = () => void;
 

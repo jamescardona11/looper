@@ -4,12 +4,12 @@ import {
   getMeetingAwarenessState,
   subscribeMeetingAwareness,
   type MeetingAwarenessState,
-} from "../data/meeting-awareness";
-import MeetingAwarenessOverlay from "../features/library/components/MeetingAwarenessOverlay";
-import { useMeetingCapture } from "../features/library/queries";
-import PillOverlay from "../features/pill/PillOverlay";
-import { useOverlayPosition } from "../features/pill/useOverlayPosition";
-import ToastOverlay from "../features/toast/ToastOverlay";
+} from "../../data/meeting-awareness";
+import MeetingAwarenessOverlay from "../../features/library/components/MeetingAwarenessOverlay";
+import { useMeetingCapture } from "../../features/library/queries";
+import PillOverlay from "../../features/pill/PillOverlay";
+import { useOverlayPosition } from "../../features/pill/useOverlayPosition";
+import ToastOverlay from "../../features/toast/ToastOverlay";
 
 const centeredWindowClass =
   "flex h-screen w-screen items-center justify-center overflow-hidden";

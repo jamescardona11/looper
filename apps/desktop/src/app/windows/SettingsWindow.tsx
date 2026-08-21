@@ -1,26 +1,28 @@
 import { lazy, Suspense, type ReactNode } from "react";
 
-import AneCompileOverlay from "../features/settings/components/AneCompileOverlay";
-import ModelDownloadActivityBar from "../features/settings/components/ModelDownloadActivityBar";
-import { ModelDownloadActivityProvider } from "../features/settings/modelDownloadActivity";
+import AneCompileOverlay from "../../features/settings/components/AneCompileOverlay";
+import ModelDownloadActivityBar from "../../features/settings/components/ModelDownloadActivityBar";
+import { ModelDownloadActivityProvider } from "../../features/settings/modelDownloadActivity";
 import type { PreviewRoute } from "./window-route";
 
-const Home = lazy(() => import("../Home"));
+const Home = lazy(() => import("../home/Home"));
 const Onboarding = lazy(
-  () => import("../features/onboarding/OnboardingScreen"),
+  () => import("../../features/onboarding/OnboardingScreen"),
 );
 const PreviewDashboard = lazy(
-  () => import("../features/preview/SignalPreviewDashboard"),
+  () => import("../../features/preview/SignalPreviewDashboard"),
 );
 const PreviewFloating = lazy(
-  () => import("../features/preview/SignalPreviewFloating"),
+  () => import("../../features/preview/SignalPreviewFloating"),
 );
 const PreviewMotion = lazy(
-  () => import("../features/preview/SignalPreviewMotionLab"),
+  () => import("../../features/preview/SignalPreviewMotionLab"),
 );
-const PreviewPill = lazy(() => import("../features/preview/SignalPreviewPill"));
+const PreviewPill = lazy(
+  () => import("../../features/preview/SignalPreviewPill"),
+);
 const PreviewOnboarding = lazy(
-  () => import("../features/preview/SignalPreviewOnboarding"),
+  () => import("../../features/preview/SignalPreviewOnboarding"),
 );
 const previewMode = import.meta.env.VITE_SIGNAL_PREVIEW === "1";
 

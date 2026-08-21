@@ -1,5 +1,5 @@
-import type { MemorySearchResult } from "./data/memory";
-import type { SignalStage } from "./features/transcriptions/components/CaptureStatusCard";
+import type { MemorySearchResult } from "../../data/memory";
+import type { SignalStage } from "../../features/transcriptions/components/CaptureStatusCard";
 
 export type HomeView =
   "home" | "voice" | "library" | "memory" | "feature-lab" | "settings";

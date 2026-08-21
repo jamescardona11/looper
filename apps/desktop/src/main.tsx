@@ -4,12 +4,12 @@ import { createRoot } from "react-dom/client";
 
 import App from "./app/App";
 import { AppProviders } from "./app/providers";
-import { RootCrashBoundary } from "./bootstrap/RootCrashBoundary";
+import { RootCrashBoundary } from "./app/bootstrap/RootCrashBoundary";
 import {
   createFrontendCrashReporter,
   monitorGlobalCrashes,
-} from "./bootstrap/frontend-crash";
-import { initialTextScale } from "./bootstrap/initial-text-scale";
+} from "./app/bootstrap/frontend-crash";
+import { initialTextScale } from "./app/bootstrap/initial-text-scale";
 import { reportFrontendCrashEvent } from "./data/telemetry";
 import { installPillPreviewBridge } from "./features/preview/pillPreviewBridge";
 import { detectAppPlatform } from "./platform/service";

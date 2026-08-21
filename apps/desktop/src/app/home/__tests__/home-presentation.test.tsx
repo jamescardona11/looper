@@ -7,9 +7,9 @@ import { afterEach, describe, expect, test, vi } from "vitest";
 
 import { HomePresentation } from "../home-presentation";
 import { createHomeState, type HomeState } from "../home-state";
-import { EMPTY_TODAY_DICTATION_STATS } from "../features/transcriptions/todayStats";
+import { EMPTY_TODAY_DICTATION_STATS } from "../../../features/transcriptions/todayStats";
 
-vi.mock("../features/settings/components/SettingsRoute", () => ({
+vi.mock("../../../features/settings/components/SettingsRoute", () => ({
   default: ({
     isOpen,
     initialTab,
@@ -26,10 +26,10 @@ vi.mock("../features/settings/components/SettingsRoute", () => ({
     </div>
   ),
 }));
-vi.mock("../features/feature-lab/components/FeatureLabView", () => ({
+vi.mock("../../../features/feature-lab/components/FeatureLabView", () => ({
   default: () => <div data-testid="feature-lab" />,
 }));
-vi.mock("../features/library/components/HomeMeetingActivity", () => ({
+vi.mock("../../../features/library/components/HomeMeetingActivity", () => ({
   HomeMeetingActivity: ({
     onOpen,
   }: {
@@ -40,38 +40,44 @@ vi.mock("../features/library/components/HomeMeetingActivity", () => ({
     </button>
   ),
 }));
-vi.mock("../features/library/components/LibraryView", () => ({
+vi.mock("../../../features/library/components/LibraryView", () => ({
   default: () => <div data-testid="library-view" />,
 }));
-vi.mock("../features/memory/components/MemoryView", () => ({
+vi.mock("../../../features/memory/components/MemoryView", () => ({
   default: () => <div data-testid="memory-view" />,
 }));
-vi.mock("../features/transcriptions/components/CaptureStatusCard", () => ({
-  default: () => <div data-testid="capture-status" />,
-}));
-vi.mock("../features/transcriptions/components/HomeAskBar", () => ({
+vi.mock(
+  "../../../features/transcriptions/components/CaptureStatusCard",
+  () => ({
+    default: () => <div data-testid="capture-status" />,
+  }),
+);
+vi.mock("../../../features/transcriptions/components/HomeAskBar", () => ({
   default: ({ onAsk }: { onAsk: (query: string) => void }) => (
     <button onClick={() => onAsk("roadmap")}>Ask from composer</button>
   ),
 }));
-vi.mock("../features/transcriptions/components/HomeTodayHeader", () => ({
+vi.mock("../../../features/transcriptions/components/HomeTodayHeader", () => ({
   default: () => <div data-testid="today-header" />,
 }));
-vi.mock("../features/transcriptions/components/TranscriptionList", () => ({
-  default: () => <div data-testid="transcription-list" />,
-}));
-vi.mock("../features/voice/components/VoiceView", () => ({
+vi.mock(
+  "../../../features/transcriptions/components/TranscriptionList",
+  () => ({
+    default: () => <div data-testid="transcription-list" />,
+  }),
+);
+vi.mock("../../../features/voice/components/VoiceView", () => ({
   default: () => <div data-testid="voice-view" />,
 }));
-vi.mock("../shared/ui/FAQModal", () => ({
+vi.mock("../../../shared/ui/FAQModal", () => ({
   default: ({ isOpen }: { isOpen: boolean }) => (
     <div data-open={String(isOpen)} data-testid="faq" />
   ),
 }));
-vi.mock("../shared/ui/LooperLogo", () => ({
+vi.mock("../../../shared/ui/LooperLogo", () => ({
   LooperLogo: () => <div data-testid="looper-logo" />,
 }));
-vi.mock("../shared/ui/WindowControls", () => ({
+vi.mock("../../../shared/ui/WindowControls", () => ({
   default: () => <div data-testid="window-controls" />,
 }));
 

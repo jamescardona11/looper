@@ -2,10 +2,13 @@ import { getCurrentWindow } from "@tauri-apps/api/window";
 import { useState } from "react";
 
 import { useSettings } from "../features/settings/queries";
-import { OverlayWindows } from "./app-window-components";
-import { SettingsWindow } from "./SettingsWindow";
+import { OverlayWindows } from "./windows/app-window-components";
+import { SettingsWindow } from "./windows/SettingsWindow";
 import { useDocumentAppearance } from "./useDocumentAppearance";
-import { resolveDesktopWindowRoute, resolvePreviewRoute } from "./window-route";
+import {
+  resolveDesktopWindowRoute,
+  resolvePreviewRoute,
+} from "./windows/window-route";
 import "./App.css";
 
 const previewMode = import.meta.env.VITE_SIGNAL_PREVIEW === "1";

@@ -27,7 +27,7 @@ const bridge = vi.hoisted(() => {
   return { state, subscribe };
 });
 
-vi.mock("../data/library", () => ({
+vi.mock("../../../data/library", () => ({
   notifyLibraryRendererReady: async () => {
     bridge.state.libraryReadyCount += 1;
   },
@@ -42,11 +42,11 @@ vi.mock("../data/library", () => ({
   subscribeLibraryOpenImport: (handler: unknown) =>
     bridge.subscribe("open-import", handler),
 }));
-vi.mock("../data/license", () => ({
+vi.mock("../../../data/license", () => ({
   subscribeLicenseCheckoutReturned: (handler: unknown) =>
     bridge.subscribe("license-return", handler),
 }));
-vi.mock("../data/navigation", () => ({
+vi.mock("../../../data/navigation", () => ({
   subscribeNavigateCalendar: (handler: unknown) =>
     bridge.subscribe("navigate-calendar", handler),
   subscribeNavigateAbout: (handler: unknown) =>
@@ -62,7 +62,7 @@ vi.mock("../data/navigation", () => ({
   subscribeNavigateAppPrivacy: (handler: unknown) =>
     bridge.subscribe("navigate-app-privacy", handler),
 }));
-vi.mock("../data/overlay", () => ({
+vi.mock("../../../data/overlay", () => ({
   subscribePillInserted: (handler: unknown) =>
     bridge.subscribe("pill-inserted", handler),
   subscribePillMode: (handler: unknown) =>
@@ -70,12 +70,12 @@ vi.mock("../data/overlay", () => ({
   subscribePillState: (handler: unknown) =>
     bridge.subscribe("pill-state", handler),
 }));
-vi.mock("../data/settings", () => ({
+vi.mock("../../../data/settings", () => ({
   notifySettingsRendererReady: async () => {
     bridge.state.settingsReadyCount += 1;
   },
 }));
-vi.mock("../data/updates", () => ({
+vi.mock("../../../data/updates", () => ({
   requestUpdaterCheck: async () => {
     bridge.state.updateChecks += 1;
   },

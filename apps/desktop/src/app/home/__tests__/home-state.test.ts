@@ -1,6 +1,6 @@
 import { describe, expect, test } from "vitest";
 
-import type { MemorySearchResult } from "../data/memory";
+import type { MemorySearchResult } from "../../../data/memory";
 import { createHomeState, reduceHomeState } from "../home-state";
 
 function memoryResult(
