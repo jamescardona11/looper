@@ -7,7 +7,7 @@ import { describe, expect, it } from "vitest";
 const SRC = resolve(import.meta.dirname, "../../src");
 const TAURI_SRC = resolve(import.meta.dirname, "../../src-tauri/src");
 
-// Tope anti-monstruo, no criterio de diseño. apps/desktop/AGENTS.md manda
+// Tope anti-monstruo, no criterio de diseño. El AGENTS.md raíz manda
 // sobre dónde se corta un fichero ("if a file is large but cohesive, keep it
 // cohesive; split only on real responsibility boundaries"); este presupuesto
 // sólo existe para que nadie deje crecer un fichero sin límite. Está puesto
@@ -21,7 +21,7 @@ const LEGACY_BUDGET = 3000;
 const LEGACY = new Set([
   "src-tauri/src/library/meeting_capture.rs",
   "src-tauri/src/llm_cleanup.rs",
-  "src-tauri/src/pill.rs",
+  "src-tauri/src/pill/mod.rs",
   "src-tauri/src/transcribe.rs",
 ]);
 

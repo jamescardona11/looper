@@ -12,20 +12,20 @@ const SRC = resolve(import.meta.dirname, "../../src");
 const read = (path: string) => readFileSync(join(SRC, path), "utf8");
 
 // Ficheros donde vive el marcado real de cada superficie rediseñada. Los
-// wrappers que sólo delegan (Home.tsx, LibraryView.tsx) no contienen una sola
+// wrappers que sólo delegan (LibraryView.tsx) no contienen una sola
 // clase: leerlos hace que el barrido no pueda fallar.
 const REDESIGNED_INTERACTION_FILES = [
-  "home-presentation.tsx",
-  "features/library/components/library-view-content.tsx",
-  "features/library/components/library-view-list.tsx",
-  "features/library/components/library-view-toolbar.tsx",
-  "features/library/components/library-view-overlays.tsx",
-  "features/library/components/LibraryCard.tsx",
-  "features/library/components/library-card-body.tsx",
-  "features/library/components/library-card-actions.tsx",
-  "features/library/components/LibraryPlayerFooter.tsx",
-  "features/settings/components/SettingsRoute.tsx",
-  "features/settings/components/tabs/GeneralTab.tsx",
+  "app/home/home-presentation.tsx",
+  "features/library/list/library-view-content.tsx",
+  "features/library/list/library-view-list.tsx",
+  "features/library/list/library-view-toolbar.tsx",
+  "features/library/list/library-view-overlays.tsx",
+  "features/library/list/LibraryCard.tsx",
+  "features/library/list/library-card-body.tsx",
+  "features/library/list/library-card-actions.tsx",
+  "features/library/player/LibraryPlayerFooter.tsx",
+  "features/settings/shell/SettingsRoute.tsx",
+  "features/settings/general/GeneralTab.tsx",
   "features/transcriptions/components/HomeAskBar.tsx",
   "features/transcriptions/components/TranscriptionList.tsx",
   "features/voice/components/VoiceView.tsx",
@@ -34,9 +34,9 @@ const REDESIGNED_INTERACTION_FILES = [
 // Superficies persistentes: se pintan con la vista y siguen ahí. Una animación
 // de entrada las esconde en el primer paint, que es justo lo que no queremos.
 const PERSISTENT_SURFACE_FILES = [
-  "features/library/components/library-view-content.tsx",
-  "features/library/components/library-view-list.tsx",
-  "features/library/components/library-view-toolbar.tsx",
+  "features/library/list/library-view-content.tsx",
+  "features/library/list/library-view-list.tsx",
+  "features/library/list/library-view-toolbar.tsx",
 ] as const;
 
 describe("desktop redesign interaction contract", () => {
@@ -52,9 +52,7 @@ describe("desktop redesign interaction contract", () => {
   });
 
   test("keeps Settings as a route surface instead of a modal shell", () => {
-    const settingsRoute = read(
-      "features/settings/components/SettingsRoute.tsx",
-    );
+    const settingsRoute = read("features/settings/shell/SettingsRoute.tsx");
 
     expect(settingsRoute).toContain("data-settings-route");
     expect(settingsRoute).not.toContain("aria-modal");
@@ -64,8 +62,8 @@ describe("desktop redesign interaction contract", () => {
 
   test("guards every redesigned moving surface with reduced-motion", () => {
     const movingSurfaces = [
-      "Home.tsx",
-      "features/library/components/LibraryPlayerFooter.tsx",
+      "app/home/Home.tsx",
+      "features/library/player/LibraryPlayerFooter.tsx",
       "features/transcriptions/components/TranscriptionList.tsx",
       "features/voice/components/VoiceView.tsx",
     ];

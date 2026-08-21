@@ -16,13 +16,13 @@ const EXEMPT_DIRS = [join("features", "preview") + sep];
 // y escalan con --ui-text-scale (zoom de texto); un literal px/rem queda fuera
 // de ambas. No agregar entradas: migrar al rol más cercano y borrar la entrada.
 const LEGACY = new Set([
-  "features/library/components/MeetingAwarenessOverlay.tsx:text-[10px]",
-  "features/library/components/MeetingCaptureOverlay.tsx:text-[10px]",
-  "features/library/components/MeetingTranscriptPanel.tsx:text-[10px]",
-  "features/library/components/MeetingTranscriptPanel.tsx:text-[11px]",
-  "features/library/components/MeetingTranscriptPanel.tsx:text-[12px]",
-  "features/library/components/MeetingTranscriptPanel.tsx:text-[13px]",
-  "features/library/components/MeetingTranscriptPanel.tsx:text-[14px]",
+  "features/library/meeting/MeetingAwarenessOverlay.tsx:text-[10px]",
+  "features/library/meeting/MeetingCaptureOverlay.tsx:text-[10px]",
+  "features/library/meeting/MeetingTranscriptPanel.tsx:text-[10px]",
+  "features/library/meeting/MeetingTranscriptPanel.tsx:text-[11px]",
+  "features/library/meeting/MeetingTranscriptPanel.tsx:text-[12px]",
+  "features/library/meeting/MeetingTranscriptPanel.tsx:text-[13px]",
+  "features/library/meeting/MeetingTranscriptPanel.tsx:text-[14px]",
   "features/onboarding/steps/WelcomeStep.tsx:text-[1.2rem]",
   "features/onboarding/steps/WelcomeStep.tsx:text-[3.5rem]",
   "features/personalization/components/PersonalityModal.tsx:text-[9px]",
@@ -30,8 +30,8 @@ const LEGACY = new Set([
   "features/pill/PillOverlay.tsx:text-[11px]",
   "features/pill/SignalRail.tsx:text-[10px]",
   "features/pill/SignalRail.tsx:text-[12px]",
-  "features/settings/components/MeetingIntelligencePanel.tsx:text-[10px]",
-  "features/settings/components/MeetingIntelligencePanel.tsx:text-[11px]",
+  "features/settings/providers/MeetingIntelligencePanel.tsx:text-[10px]",
+  "features/settings/providers/MeetingIntelligencePanel.tsx:text-[11px]",
 ]);
 
 function sourceFiles(): string[] {

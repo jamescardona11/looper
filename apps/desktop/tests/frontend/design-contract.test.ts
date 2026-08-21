@@ -47,7 +47,7 @@ describe("desktop design contract", () => {
 
   it("keeps meeting and toast notifications at the same visible width", () => {
     const awareness = readFileSync(
-      join(SRC, "features/library/components/MeetingAwarenessOverlay.tsx"),
+      join(SRC, "features/library/meeting/MeetingAwarenessOverlay.tsx"),
       "utf8",
     );
     const toast = readFileSync(
