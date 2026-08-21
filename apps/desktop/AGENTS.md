@@ -72,7 +72,11 @@ query-string routing is limited to the browser-only signal preview.
   change.
 - Exercise the affected native flow when behavior depends on Tauri or the OS;
   unit tests alone are not native evidence.
-- Co-locate module tests under `src/`. Reserve `tests/frontend/` for
-  cross-cutting build, packaging, or brand contracts that have no module owner.
+- Put frontend unit tests in a sibling `__tests__/` directory under their
+  owning module. Keep `tests/frontend/` for cross-cutting build, packaging,
+  design, or brand contracts that have no single module owner.
+- Keep small Rust unit tests inline behind `#[cfg(test)]` when they need private
+  implementation access. Put public integration tests and their fixtures in
+  `src-tauri/tests/`.
 - Source-reading contract tests may enforce only product, accessibility, or
   architectural invariants that a rendered test, unit test, or type cannot.

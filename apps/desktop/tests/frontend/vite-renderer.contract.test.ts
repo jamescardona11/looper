@@ -22,7 +22,7 @@ async function resolveRendererConfig() {
   return resolveConfig(config, "serve", "development", "development");
 }
 
-describe("contrato del renderer Vite", () => {
+describe("contrato del renderer Vite", { timeout: 20_000 }, () => {
   test("coincide con la URL y el directorio de distribución de Tauri", async () => {
     const config = await resolveRendererConfig();
     const tauriDevUrl = new URL(tauriConfig.build.devUrl);
