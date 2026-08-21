@@ -14,6 +14,12 @@
 
 - Web is React/Vite; mobile is React Native/Expo; desktop is Tauri with a Rust
   backend and React frontend; the backend is Convex.
+- Applications never import another application. React code stays with the
+  runtime that owns its behavior; move code to `packages/ts` only after Web,
+  Desktop, or Mobile genuinely share the same interface and implementation.
+- Desktop owns native capture, local media, OS integration, and their React
+  presentation. Web is browser-only: it may read synchronized content but must
+  not use Tauri, microphone capture, or transcription commands.
 - Extend existing owners and shared packages before creating a parallel layer.
 - Web and mobile Convex client mechanics belong in
   `packages/ts/data/src/adapters/convex`; server mechanics belong in
@@ -34,6 +40,9 @@
 - Reuse `@looper/config`, `@looper/data`, `@looper/i18n`, and existing UI
   primitives. Check the workspace before adding a dependency or abstraction.
 - Keep Lingui locale keys in parity across every supported locale.
+- Keep TypeScript unit tests in the nearest `__tests__/` directory. Use an
+  application-level `tests/` directory for architecture/integration tests and
+  `e2e/` for end-to-end tests.
 - Edit colors in `packages/ts/config/src/palette.ts`, run `make tokens`, and
   never hand-edit generated token files.
 

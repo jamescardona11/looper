@@ -7,7 +7,7 @@ live in `AGENTS.md`; the public architecture overview lives in `README.md`.
 
 **Pill / Capture Pill** is the floating dictation overlay and the `main`
 Tauri window, not a screen inside the settings shell. Rust owns its lifecycle
-and geometry under `apps/desktop/src-tauri/src/pill*`; the frontend state and
+and geometry under `apps/desktop/src-tauri/src/pill/`; the frontend state and
 rendering live in `apps/desktop/src/features/pill/`.
 
 **Dictation** is a short capture transcribed and inserted into the currently
@@ -16,8 +16,8 @@ command/event clients live in `apps/desktop/src/data/`.
 
 **Selection Mode** applies an edit action or transform preset to text already
 selected in the frontmost app. Its native owner is
-`src-tauri/src/selection_actions.rs`; frontend types live in
-`src/types/pill.ts`.
+`apps/desktop/src-tauri/src/selection_actions.rs`; frontend contracts live in
+`apps/desktop/src/contracts/pill.ts`.
 
 ## Transcription, LibraryItem, and Memory
 
@@ -35,6 +35,11 @@ managed file. A dictation is not promoted into a LibraryItem.
 **Memory** is unified local search across dictations, library items, and
 meetings. It is a read model, not another store. Its owner is
 `src-tauri/src/memory.rs`.
+
+**Web Library** is a browser-only read model over content already synchronized
+to Convex. It currently contains text-only Transcriptions, Mobile Notes, and
+shared Meetings. It never records audio and does not imply that a local
+LibraryItem or its audio has been uploaded.
 
 ## Meeting
 
@@ -88,9 +93,10 @@ automatically, and synced.
 `apps/desktop/src/features/sync/` owns sign-in UI, session state, and the
 settings tab. It is not the synchronization engine.
 
-The **sync engine** lives under `apps/desktop/src/data/*-sync.ts` and is
-started once by `src/app/runtime/window-services.tsx`. It activates only for
-an identified account.
+The **sync engine** lives under `apps/desktop/src/data/sync/` and is started
+once by `apps/desktop/src/app/runtime/window-services.tsx`. It activates only
+for an identified account. Transcription history synchronization is opt-in and
+text-only; local audio paths never cross this seam.
 
 **Remote dictation** is the mobile-to-desktop paste channel. It also uses
 Convex but is independent of the sync engine.

@@ -36,8 +36,8 @@ how the final text is written.
   result.
 - Search dictations, recordings, and meetings from one local index.
 - Capture from mobile and send remote dictation to an authenticated desktop.
-- Use the web workspace for account, agent, dictation, usage, and billing
-  flows backed by Convex.
+- Use the browser workspace to review synchronized transcriptions, notes, and
+  meetings, ask the recording assistant, and manage account and billing.
 
 ### Repository surfaces
 
@@ -45,7 +45,7 @@ how the final text is written.
 | --- | --- | --- |
 | `apps/desktop` | Tauri, Rust, React | Native capture, local transcription, insertion, Library, Memory, meetings, and settings |
 | `apps/mobile` | React Native, Expo | Mobile capture, notes, meetings, Library, Android local STT, and the iOS keyboard extension |
-| `apps/web` | React, Vite | Browser workspace, authentication, agent, dictation, account, and billing |
+| `apps/web` | React, Vite | Browser-only workspace for synchronized Library views, agent, voice preferences, account, usage, and billing; never capture |
 | `backend` | Convex | Authentication, sync, meetings, notes, AI/provider calls, usage, and payments |
 | `packages/ts` | TypeScript | Shared configuration, i18n, domain types, and the web/mobile Convex client boundary |
 | `packages/rust` | Rust | Shared audio and transcription engines |
@@ -113,14 +113,14 @@ payment, or email-provider secrets in a client environment.
 ## Architecture
 
 ```text
-Web ─────┐
-         ├── @looper/data ────────────────┐
-Mobile ──┘                                │
-                                          ▼
-Desktop React ── src/data ──┬────────── Convex backend ── external providers
-                            │
-                            ▼
-                      Tauri commands/events
+Web workspace ──┐
+                ├── @looper/data ─────────────┐
+Mobile ─────────┘                             │
+                                               ▼
+Desktop React ── src/data ──┬────────────── Convex backend ── external providers
+                            │                  ▲
+                            ▼                  │ selected opt-in projections
+                      Tauri commands/events ───┘
                             │
                             ▼
                      Rust local core ── OS, storage, audio, local models
@@ -131,16 +131,25 @@ The boundaries that matter:
 - Rust owns desktop native behavior, privacy-sensitive local state, audio,
   transcription routing, storage, windows, hotkeys, and insertion. React owns
   presentation and local interaction state.
+- React follows runtime ownership: Desktop React stays in `apps/desktop`, Web
+  React stays in `apps/web`, and applications never import one another. Pure
+  contracts or presentation used by multiple applications belong in
+  `packages/ts`; a shared package is not a holding area for hypothetical reuse.
 - `apps/desktop/src/data` owns Tauri command/event names and the desktop's
   headless Convex clients. Desktop does not consume `@looper/data` because its
   workers run outside one shared React tree.
 - Web and mobile consume Convex through `@looper/data`; server implementation
   stays in `backend/convex`.
+- Web reads synchronized content and may update shared account and voice
+  preferences. Capture-derived writes stay with Desktop or Mobile; Web must
+  not use Tauri, `MediaRecorder`, microphone access, or browser STT.
 - The packaged desktop routes its four native windows by Tauri label, not URL.
 - AI and external-provider calls stay server-side unless the desktop feature is
   explicitly configured for a user-owned local or remote provider.
 - Colors originate in `packages/ts/config/src/palette.ts`. Run `make tokens`
   after changing the palette; generated targets must not be edited directly.
+- TypeScript unit tests live in the nearest `__tests__/`; application-wide
+  integration tests live in `tests/`, and browser end-to-end tests in `e2e/`.
 
 Directory-specific constraints live in the nearest `AGENTS.md`. Stable product
 vocabulary is defined in `CONTEXT.md`.
