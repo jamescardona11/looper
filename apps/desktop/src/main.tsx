@@ -10,7 +10,7 @@ import {
   monitorGlobalCrashes,
 } from "./app/bootstrap/frontend-crash";
 import { initialTextScale } from "./app/bootstrap/initial-text-scale";
-import { reportFrontendCrashEvent } from "./data/telemetry";
+import { reportFrontendCrashEvent } from "./data/system/telemetry";
 import { installPillPreviewBridge } from "./features/preview/pillPreviewBridge";
 import { detectAppPlatform } from "./platform/service";
 import { TEXT_SIZE_MODE_STORAGE_KEY } from "./shared/lib/textSize";

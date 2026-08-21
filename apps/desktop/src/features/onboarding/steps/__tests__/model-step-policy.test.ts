@@ -1,5 +1,9 @@
 import { describe, expect, test } from "vitest";
-import type { DownloadEvent, ModelInfo, ModelStatus } from "../../../../types";
+import type {
+  DownloadEvent,
+  ModelInfo,
+  ModelStatus,
+} from "../../../../contracts";
 import {
   modelContinueIntent,
   modelGridClassName,

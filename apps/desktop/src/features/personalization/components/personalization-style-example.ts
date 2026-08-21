@@ -1,4 +1,4 @@
-import type { Personality } from "../../../types";
+import type { Personality } from "../../../contracts";
 
 export type StyleExample = { say: string; writes: string };
 type Translate = (descriptor: { id: string; message: string }) => string;

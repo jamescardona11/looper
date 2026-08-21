@@ -9,7 +9,7 @@
 // src-tauri/src/platform/macos/audio_devices.rs.
 import { invoke } from "@tauri-apps/api/core";
 import { listen, type UnlistenFn } from "@tauri-apps/api/event";
-import type { AudioSpectrumPayload, DeviceInfo } from "../types";
+import type { AudioSpectrumPayload, DeviceInfo } from "../../contracts/index";
 
 export async function listInputDevices(): Promise<DeviceInfo[]> {
   return invoke<DeviceInfo[]>("list_input_devices");

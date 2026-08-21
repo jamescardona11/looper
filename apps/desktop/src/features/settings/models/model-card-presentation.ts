@@ -7,7 +7,7 @@ import type {
   DownloadEvent,
   ModelInfo,
   ModelStatus,
-} from "../../../types/index";
+} from "../../../contracts/index";
 import { WAVE_COLS, waveDots } from "./ModelCardShell";
 
 export type ModelCardAction = "cancel" | "delete" | "download" | null;

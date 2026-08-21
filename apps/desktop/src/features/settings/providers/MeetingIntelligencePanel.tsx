@@ -1,6 +1,6 @@
 import { useMemo, useSyncExternalStore } from "react";
-import type { MeetingAiProvider } from "../../../types";
-import { LOCAL_LLM_MODEL_ID } from "../../../data/local-llm";
+import type { MeetingAiProvider } from "../../../contracts";
+import { LOCAL_LLM_MODEL_ID } from "../../../data/models/local-llm";
 import SegmentedControl from "../../../shared/ui/SegmentedControl";
 import { createMeetingModelStore } from "../models/meeting-model-store";
 

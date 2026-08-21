@@ -46,7 +46,7 @@ vi.mock("../../../data/license", () => ({
   subscribeLicenseCheckoutReturned: (handler: unknown) =>
     bridge.subscribe("license-return", handler),
 }));
-vi.mock("../../../data/navigation", () => ({
+vi.mock("../../../data/system/navigation", () => ({
   subscribeNavigateCalendar: (handler: unknown) =>
     bridge.subscribe("navigate-calendar", handler),
   subscribeNavigateAbout: (handler: unknown) =>
@@ -62,7 +62,7 @@ vi.mock("../../../data/navigation", () => ({
   subscribeNavigateAppPrivacy: (handler: unknown) =>
     bridge.subscribe("navigate-app-privacy", handler),
 }));
-vi.mock("../../../data/overlay", () => ({
+vi.mock("../../../data/capture/overlay", () => ({
   subscribePillInserted: (handler: unknown) =>
     bridge.subscribe("pill-inserted", handler),
   subscribePillMode: (handler: unknown) =>
@@ -75,7 +75,7 @@ vi.mock("../../../data/settings", () => ({
     bridge.state.settingsReadyCount += 1;
   },
 }));
-vi.mock("../../../data/updates", () => ({
+vi.mock("../../../data/system/updates", () => ({
   requestUpdaterCheck: async () => {
     bridge.state.updateChecks += 1;
   },

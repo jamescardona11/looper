@@ -2,7 +2,7 @@ import type {
   LocalLlmDownloadProgress,
   LocalLlmModelInfo,
   LocalLlmModelStatus,
-} from "../../../types/index";
+} from "../../../contracts/index";
 import {
   cancelLocalLlmModelDownload,
   deleteLocalLlmModel,
@@ -10,7 +10,7 @@ import {
   getLocalLlmModelStatus,
   listLocalLlmModels,
   listenLocalLlmDownloads,
-} from "../../../data/local-llm";
+} from "../../../data/models/local-llm";
 
 export type MeetingModelSnapshot = {
   info: LocalLlmModelInfo | null;

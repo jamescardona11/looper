@@ -7,8 +7,8 @@ import type {
   RecordingPrunePolicy,
   TextSizeMode,
   ThemeMode,
-} from "../../../types/index";
-import type { CalendarAccessStatus } from "../../../data/meeting-awareness";
+} from "../../../contracts/index";
+import type { CalendarAccessStatus } from "../../../data/meeting/meeting-awareness";
 import type { AppTabProps } from "./AppTab.types";
 import { useAppTabOptions, type SelectOption } from "./useAppTabOptions";
 import { useCalendarAwarenessControls } from "./useCalendarAwarenessControls";

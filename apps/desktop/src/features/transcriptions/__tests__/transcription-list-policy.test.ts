@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { TranscriptionRecord } from "../../../types";
+import type { TranscriptionRecord } from "../../../contracts";
 import {
   buildTranscriptionListEntries,
   transcriptionEntryClassName,

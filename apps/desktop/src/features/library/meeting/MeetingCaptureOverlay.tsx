@@ -14,7 +14,7 @@ import {
   useRef,
   useState,
 } from "react";
-import type { MeetingCaptureState } from "../../../types";
+import type { MeetingCaptureState } from "../../../contracts";
 import { useMountEffect } from "../../../shared/hooks/useMountEffect";
 import { SignalRail } from "../../pill/SignalRail";
 import { useMeetingDetails, useStopMeetingCapture } from "../queries";
@@ -22,12 +22,12 @@ import {
   setMeetingOverlayPresentation,
   type MeetingTranscriptPlacement,
   type MeetingTranscriptSideAlignment,
-} from "../../../data/overlay";
+} from "../../../data/capture/overlay";
 import {
   checkShortcutPermission,
   openShortcutPermissionHelp,
   retryShortcuts,
-} from "../../../data/shortcuts";
+} from "../../../data/capture/shortcuts";
 import { formatDuration } from "../shared/library-utils";
 import { selectedDurationMs } from "./meeting-note-duration";
 import { MeetingTranscriptPanel } from "./MeetingTranscriptPanel";

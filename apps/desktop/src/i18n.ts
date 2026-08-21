@@ -5,7 +5,7 @@ import {
   DEFAULT_LOCALE,
   SUPPORTED_APP_LOCALES,
 } from "./shared/lib/appLocales";
-import type { AppLocaleSetting } from "./types";
+import type { AppLocaleSetting } from "./contracts";
 import {
   buildCatalogRegistry as buildRegistry,
   createLocaleController,

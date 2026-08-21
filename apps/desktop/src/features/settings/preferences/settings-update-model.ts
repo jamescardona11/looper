@@ -1,7 +1,7 @@
 import { resolvedLlmEndpoint } from "../../../shared/lib/llmProviders";
 import { resolvedSpeechEndpoint } from "../../../shared/lib/speechProviders";
 import { languageSupportedByModel } from "../../../shared/lib/transcriptionLanguages";
-import type { ModelInfo, ShortcutBindings } from "../../../types/index";
+import type { ModelInfo, ShortcutBindings } from "../../../contracts/index";
 import {
   getPrimaryShortcut,
   recoverInvalidShortcutDraft,

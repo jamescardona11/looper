@@ -15,7 +15,7 @@ import type {
   AppInfo,
   CliInstallStatus,
   TranscriptionMode,
-} from "../../../types/index";
+} from "../../../contracts/index";
 import { AboutOverview } from "./AboutOverview";
 import { AboutStorage } from "./AboutStorage";
 import { classifyCli, storageMetrics, type CliState } from "./about-tab-model";

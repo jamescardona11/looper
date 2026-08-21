@@ -4,7 +4,7 @@ import {
   installedModelCatalog,
   selectLocalModel,
 } from "../models-tab-model";
-import type { ModelInfo, ModelStatus } from "../../../../types/index";
+import type { ModelInfo, ModelStatus } from "../../../../contracts/index";
 
 const model = (key: string, overrides: Partial<ModelInfo> = {}): ModelInfo => ({
   key,

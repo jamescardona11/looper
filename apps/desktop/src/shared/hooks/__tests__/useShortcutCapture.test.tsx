@@ -17,7 +17,7 @@ const nativeCapture = vi.hoisted(() => ({
   unlisten: vi.fn(),
 }));
 
-vi.mock("../../../data/shortcuts", () => ({
+vi.mock("../../../data/capture/shortcuts", () => ({
   subscribeShortcutCapture: nativeCapture.subscribe,
 }));
 

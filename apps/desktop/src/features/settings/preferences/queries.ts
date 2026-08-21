@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import type { StoredSettings } from "../../../types/index";
+import type { StoredSettings } from "../../../contracts/index";
 import { settingsQueryOptions } from "./settings-query-contracts";
 
 export { settingsKeys } from "./settings-query-contracts";

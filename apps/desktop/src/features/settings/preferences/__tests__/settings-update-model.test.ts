@@ -4,7 +4,7 @@ import type {
   ModelInfo,
   ShortcutBindings,
   StoredSettings,
-} from "../../../../types/index";
+} from "../../../../contracts/index";
 import { createDefaultShortcutBindings } from "../settings-shortcut-model";
 import {
   buildSettingsUpdateArgs,

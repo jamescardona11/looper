@@ -4,7 +4,7 @@ import { setupI18n } from "@lingui/core";
 import { I18nProvider } from "@lingui/react";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
-import type { Personality } from "../../../../types";
+import type { Personality } from "../../../../contracts";
 
 const tauri = vi.hoisted(() => ({ convertFileSrc: vi.fn() }));
 vi.mock("@tauri-apps/api/core", () => ({

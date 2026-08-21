@@ -2,11 +2,11 @@ import { useLingui } from "@lingui/react/macro";
 import { CalendarDots, VideoCamera, X } from "@phosphor-icons/react";
 import { openUrl } from "@tauri-apps/plugin-opener";
 import { useEffect, useState } from "react";
-import type { MeetingAwarenessState } from "../../../data/meeting-awareness";
+import type { MeetingAwarenessState } from "../../../data/meeting/meeting-awareness";
 import {
   disableMeetingAwarenessNotifications,
   startPromptedMeetingCapture,
-} from "../../../data/meeting-awareness";
+} from "../../../data/meeting/meeting-awareness";
 
 export default function MeetingAwarenessOverlay({
   state,

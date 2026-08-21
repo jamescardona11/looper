@@ -1,4 +1,4 @@
-import * as updateGateway from "../../data/updates";
+import * as updateGateway from "../../data/system/updates";
 
 const UPDATE_CACHE_ROOT = ["updates"] as const;
 

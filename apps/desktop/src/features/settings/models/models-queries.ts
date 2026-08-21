@@ -4,7 +4,7 @@ import {
   useQuery,
   useQueryClient,
 } from "@tanstack/react-query";
-import * as cliData from "../../../data/cli";
+import * as cliData from "../../../data/system/cli";
 import * as transcriptionData from "../../../data/transcription";
 import {
   modelKeys,

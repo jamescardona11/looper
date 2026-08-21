@@ -1,4 +1,4 @@
-import type { SpeechModel, TranscriptionRecord } from "../../types";
+import type { SpeechModel, TranscriptionRecord } from "../../contracts";
 import { formatTranscriptionLlmModel } from "../../shared/lib/llmProviders";
 import { isRemoteTranscriptionSpeechModel } from "../../shared/lib/speechProviders";
 import { resolveSpeechModelLabel } from "../settings/models/model-query-contracts";

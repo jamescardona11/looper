@@ -1,6 +1,9 @@
 import { describe, expect, test } from "vitest";
 
-import type { ShortcutBindings, StoredSettings } from "../../../../types/index";
+import type {
+  ShortcutBindings,
+  StoredSettings,
+} from "../../../../contracts/index";
 import {
   createDefaultShortcutBindings,
   getPrimaryShortcut,

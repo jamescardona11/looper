@@ -1,6 +1,6 @@
 import { describe, expect, test } from "vitest";
 
-import type { TranscriptionRecord } from "../../../types";
+import type { TranscriptionRecord } from "../../../contracts";
 import { mergeTranscription } from "../QueryCacheBridge";
 
 const record = (id: string, timestamp: string): TranscriptionRecord =>

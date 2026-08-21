@@ -1,6 +1,6 @@
 import { describe, expect, test } from "vitest";
 
-import type { ModelInfo, StoredSettings } from "../../../../types/index";
+import type { ModelInfo, StoredSettings } from "../../../../contracts/index";
 import { deriveSettingsProviderState } from "../settings-provider-model";
 import { draftFromStoredSettings } from "../useSettingsDraft";
 

@@ -1,6 +1,6 @@
-import { listInputDevices } from "../../../data/audio";
+import { listInputDevices } from "../../../data/capture/audio";
 import * as settingsData from "../../../data/settings";
-import type { StoredSettings } from "../../../types/index";
+import type { StoredSettings } from "../../../contracts/index";
 
 const settingsKey = (...segments: string[]) =>
   ["settings", ...segments] as const;

@@ -5,8 +5,8 @@ import type {
   ModelInfo,
   ModelStatus,
   StoredSettings,
-} from "../../types";
-import { LOCAL_LLM_MODEL_ID } from "../../data/local-llm";
+} from "../../contracts";
+import { LOCAL_LLM_MODEL_ID } from "../../data/models/local-llm";
 import { activityToDownloadEvent } from "../settings/models/modelDownloadActivity";
 import {
   pickDefaultOnboardingModel,

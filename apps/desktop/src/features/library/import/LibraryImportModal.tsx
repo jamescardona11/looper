@@ -1,7 +1,7 @@
 import { useLingui } from "@lingui/react/macro";
 import { open } from "@tauri-apps/plugin-dialog";
 import { useState } from "react";
-import type { LibraryImportOptions, SpeechModel } from "../../../types";
+import type { LibraryImportOptions, SpeechModel } from "../../../contracts";
 import { useShiftHeld } from "../../../shared/hooks/useShiftHeld";
 import { SUPPORTED_EXTENSIONS, uniquePaths } from "../shared/library-utils";
 import { FileImportActions } from "./library-import-file-actions";

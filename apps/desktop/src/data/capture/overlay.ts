@@ -4,7 +4,7 @@ import type {
   PillHoverPayload,
   PillModePayload,
   PillStatePayload,
-} from "../types";
+} from "../../contracts/index";
 
 export type OverlayPosition = {
   x: number;

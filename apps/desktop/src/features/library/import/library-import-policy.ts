@@ -4,7 +4,7 @@ import {
   MODEL_CAPABILITY_DIARIZATION,
   MODEL_CAPABILITY_TIMESTAMPS,
 } from "../../../shared/lib/modelCapabilities";
-import type { LibraryImportOptions, SpeechModel } from "../../../types";
+import type { LibraryImportOptions, SpeechModel } from "../../../contracts";
 
 export type ImportPreferences = {
   storeOriginal: boolean;

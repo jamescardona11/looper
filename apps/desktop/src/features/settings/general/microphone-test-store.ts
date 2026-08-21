@@ -1,4 +1,4 @@
-import type { DeviceInfo } from "../../../types/index";
+import type { DeviceInfo } from "../../../contracts/index";
 
 export type MicrophoneTestStatus = "idle" | "starting" | "listening" | "error";
 export type MicrophoneTestError =

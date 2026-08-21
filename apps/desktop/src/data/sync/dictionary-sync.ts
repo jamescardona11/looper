@@ -20,7 +20,7 @@ import { invoke } from "@tauri-apps/api/core";
 import { api } from "@looper/backend/convex/_generated/api";
 import type { Id } from "@looper/backend/dataModel";
 import type { ConvexClient } from "convex/browser";
-import type { Replacement, StoredSettings } from "../types";
+import type { Replacement, StoredSettings } from "../../contracts/index";
 
 const DICTIONARY_IDS_KEY = "looper.sync.dictionaryIds";
 const REPLACEMENT_IDS_KEY = "looper.sync.replacementIds";

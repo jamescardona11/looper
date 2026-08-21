@@ -5,19 +5,19 @@ import { useCallback, useId, useMemo, useState } from "react";
 import {
   acceptSuggestedCorrection,
   dismissSuggestedCorrection,
-} from "../../../data/corrections";
+} from "../../../data/capture/corrections";
 import {
   setLocalDictionary,
   setLocalReplacements,
-} from "../../../data/dictionary-sync";
-import { setLocalSnippets } from "../../../data/snippets-sync";
+} from "../../../data/sync/dictionary-sync";
+import { setLocalSnippets } from "../../../data/sync/snippets-sync";
 import { useShiftHeld } from "../../../shared/hooks/useShiftHeld";
 import {
   hasModelCapability,
   MODEL_CAPABILITY_DICTIONARY,
 } from "../../../shared/lib/modelCapabilities";
 import WorkspacePage from "../../../shared/ui/WorkspacePage";
-import type { Replacement, UserSnippet } from "../../../types";
+import type { Replacement, UserSnippet } from "../../../contracts";
 import { useModelCatalog } from "../../settings/models/models-queries";
 import { settingsKeys, useSettings } from "../../settings/preferences/queries";
 import {

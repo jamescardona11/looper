@@ -1,4 +1,4 @@
-import type { LibraryItem, LibraryItemPatch } from "../../../types";
+import type { LibraryItem, LibraryItemPatch } from "../../../contracts";
 
 type RetranscriptionOptions = {
   model_key: string;

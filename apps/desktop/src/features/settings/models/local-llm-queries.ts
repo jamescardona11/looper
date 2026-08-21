@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
-import { getMeetingAiStatus } from "../../../data/local-llm";
-import type { LocalLlmModelState } from "../../../types/index";
+import { getMeetingAiStatus } from "../../../data/models/local-llm";
+import type { LocalLlmModelState } from "../../../contracts/index";
 
 export const meetingAiStatusKey = ["meeting-ai", "status"] as const;
 

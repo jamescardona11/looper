@@ -2,7 +2,7 @@ import { useLingui } from "@lingui/react/macro";
 import { FileText } from "@phosphor-icons/react";
 import SectionLabel from "../../../shared/ui/SectionLabel";
 import { UpdateChecker } from "../../updates/components/UpdateChecker";
-import type { TranscriptionMode } from "../../../types/index";
+import type { TranscriptionMode } from "../../../contracts/index";
 
 const supportActionClass =
   "group flex h-[52px] min-w-0 flex-col items-center justify-center gap-1 rounded-lg border border-border-primary bg-surface-surface outline-hidden transition-[transform,border-color,background-color] duration-100 ease-out hover:border-[var(--color-accent-30)] hover:bg-[var(--color-accent-10)] active:translate-y-[2px] focus-visible:ring-2 focus-visible:ring-border-hover";

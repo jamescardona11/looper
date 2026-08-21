@@ -32,7 +32,7 @@ vi.mock("../../queries", () => ({
   useUpdateStatus: () => ({ data: mocks.status }),
 }));
 
-vi.mock("../../../../data/updates", () => ({
+vi.mock("../../../../data/system/updates", () => ({
   checkForUpdates: mocks.check,
   downloadAndInstallUpdate: mocks.download,
   getInstalledVersion: mocks.getVersion,

@@ -2,7 +2,7 @@ import { useLingui } from "@lingui/react/macro";
 import { CaretRight as ChevronRight } from "@phosphor-icons/react";
 
 import SectionLabel from "../../../shared/ui/SectionLabel";
-import type { ModelInfo, ModelStatus } from "../../../types/index";
+import type { ModelInfo, ModelStatus } from "../../../contracts/index";
 import { InstalledModelRow } from "./InstalledModelRow";
 
 type InstalledModelsProps = Record<"installed", ModelInfo[]> &

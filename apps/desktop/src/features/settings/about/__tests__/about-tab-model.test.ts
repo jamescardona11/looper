@@ -1,6 +1,6 @@
 import { describe, expect, test } from "vitest";
 import { classifyCli, storageMetrics } from "../about-tab-model";
-import type { AppInfo, CliInstallStatus } from "../../../../types/index";
+import type { AppInfo, CliInstallStatus } from "../../../../contracts/index";
 
 const cliStatus = (
   overrides: Partial<CliInstallStatus> = {},

@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import type { ImportPreview } from "../../../../types";
+import type { ImportPreview } from "../../../../contracts";
 import {
   DEFAULT_IMPORT_SELECTIONS,
   availableImportCategories,

@@ -4,7 +4,7 @@ import { setupI18n } from "@lingui/core";
 import { I18nProvider } from "@lingui/react";
 import { cleanup, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, test, vi } from "vitest";
-import type { TranscriptionRecord } from "../../../types";
+import type { TranscriptionRecord } from "../../../contracts";
 import type { TranscriptionListEntry } from "../transcription-list-policy";
 
 const itemRender = vi.hoisted(() => vi.fn());

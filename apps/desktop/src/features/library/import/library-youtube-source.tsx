@@ -1,7 +1,7 @@
 import { useLingui } from "@lingui/react/macro";
 import { CircleNotch } from "@phosphor-icons/react";
 import type { KeyboardEvent } from "react";
-import type { YoutubeImportMetadata } from "../../../types";
+import type { YoutubeImportMetadata } from "../../../contracts";
 import { formatDuration } from "../shared/library-utils";
 
 type YoutubeSourceProps = {

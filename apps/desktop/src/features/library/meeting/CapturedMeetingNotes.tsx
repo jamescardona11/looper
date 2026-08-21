@@ -4,7 +4,7 @@ import type {
   MeetingNoteMarker,
   MeetingTranscriptSegment,
   TranscriptSegment,
-} from "../../../types";
+} from "../../../contracts";
 import {
   meetingNoteRangeLabel,
   meetingNoteTranscript,

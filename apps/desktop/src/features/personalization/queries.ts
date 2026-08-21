@@ -1,5 +1,5 @@
 import { type QueryClient, useQuery } from "@tanstack/react-query";
-import type { ModeRule, Personality } from "../../types";
+import type { ModeRule, Personality } from "../../contracts";
 import {
   installedAppsQuery,
   modeRulesQuery,

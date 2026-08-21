@@ -1,5 +1,5 @@
 import type { CSSProperties } from "react";
-import type { MeetingCaptureState } from "../../types";
+import type { MeetingCaptureState } from "../../contracts";
 import MeetingCaptureOverlay from "../library/meeting/MeetingCaptureOverlay";
 import { DictationPillOverlay } from "./pill-dictation-overlay";
 

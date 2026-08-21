@@ -18,7 +18,7 @@ import {
   getLibraryTranslations,
   translateLibraryItem,
 } from "../../../data/library";
-import type { LibraryTranslation } from "../../../types";
+import type { LibraryTranslation } from "../../../contracts";
 import { useSpeechPlayback } from "../../../shared/hooks/useSpeechPlayback";
 
 const TRANSLATION_LANGUAGES = [

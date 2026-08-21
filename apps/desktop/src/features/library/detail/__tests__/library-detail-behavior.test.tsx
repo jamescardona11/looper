@@ -6,7 +6,7 @@ import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 
-import type { LibraryItem, LibraryItemPatch } from "../../../../types";
+import type { LibraryItem, LibraryItemPatch } from "../../../../contracts";
 
 const mocks = vi.hoisted(() => ({
   copy: vi.fn(),

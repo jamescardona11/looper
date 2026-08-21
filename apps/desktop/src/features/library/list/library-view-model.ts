@@ -7,7 +7,7 @@ import type {
   LibraryItem,
   LibraryItemsPage,
   SpeechModel,
-} from "../../../types";
+} from "../../../contracts";
 import {
   getFileExtension,
   SUPPORTED_EXTENSIONS,

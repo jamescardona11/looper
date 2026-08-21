@@ -2,7 +2,7 @@
 
 import { cleanup, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, test, vi } from "vitest";
-import type { MeetingCaptureState } from "../../../types";
+import type { MeetingCaptureState } from "../../../contracts";
 import PillOverlay from "../PillOverlay";
 
 vi.mock("../../library/meeting/MeetingCaptureOverlay", () => ({

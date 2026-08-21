@@ -1,7 +1,7 @@
 import type {
   AutoDeleteTarget,
   RecordingPrunePolicy,
-} from "../../../types/index";
+} from "../../../contracts/index";
 
 const POLICY_SEVERITY: Record<RecordingPrunePolicy, number> = {
   never: 0,

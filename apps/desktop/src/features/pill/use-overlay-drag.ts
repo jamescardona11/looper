@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef } from "react";
-import { beginOverlayDrag, endOverlayDrag } from "../../data/dictation";
+import { beginOverlayDrag, endOverlayDrag } from "../../data/capture/dictation";
 
 // How far the pointer travels before a press turns into a drag. Below it the
 // press is still a click, so every control stays clickable.

@@ -7,7 +7,7 @@ import {
   getSpeechProviderPreset,
   supportsSpeechProviderModelDiscovery,
 } from "../../../shared/lib/speechProviders";
-import type { RemoteSpeechProvider } from "../../../types";
+import type { RemoteSpeechProvider } from "../../../contracts";
 import ProviderConfigurationPanel, {
   uniqueModelNames,
 } from "./ProviderConfigurationPanel";

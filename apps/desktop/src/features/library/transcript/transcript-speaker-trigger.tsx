@@ -1,6 +1,6 @@
 import type { MouseEventHandler } from "react";
 
-import type { Speaker } from "../../../types";
+import type { Speaker } from "../../../contracts";
 import {
   transcriptSpeakerDotClass,
   transcriptSpeakerTriggerClass,

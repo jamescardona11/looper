@@ -1,6 +1,6 @@
 import { describe, expect, test } from "vitest";
 
-import type { LibraryItem, SpeechModel } from "../../../../types";
+import type { LibraryItem, SpeechModel } from "../../../../contracts";
 import {
   confirmedRetranscriptionOptions,
   initialRetranscriptionState,

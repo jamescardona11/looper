@@ -5,7 +5,7 @@ import { act, renderHook, waitFor } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { afterEach, describe, expect, test, vi } from "vitest";
 
-import type { StoredSettings } from "../../../../types/index";
+import type { StoredSettings } from "../../../../contracts/index";
 
 const mocks = vi.hoisted(() => ({
   invoke: vi.fn(),

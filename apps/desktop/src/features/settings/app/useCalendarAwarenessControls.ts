@@ -3,7 +3,7 @@ import {
   getCalendarAccessStatus,
   requestCalendarAccess,
   type CalendarAccessStatus,
-} from "../../../data/meeting-awareness";
+} from "../../../data/meeting/meeting-awareness";
 
 const calendarAccessKey = ["calendar", "access"] as const;
 

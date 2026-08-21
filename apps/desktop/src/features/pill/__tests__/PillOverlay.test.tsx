@@ -52,16 +52,16 @@ vi.mock("../usePillState", () => ({
   usePillState: () => pillState,
 }));
 
-vi.mock("../../../data/overlay", () => ({
+vi.mock("../../../data/capture/overlay", () => ({
   setPillHitSize: overlayHitSize.report,
 }));
 
-vi.mock("../../../data/audio", () => ({
+vi.mock("../../../data/capture/audio", () => ({
   cancelRecording: actions.cancelRecording,
   finishRecording: actions.finishRecording,
 }));
 
-vi.mock("../../../data/dictation", () => ({
+vi.mock("../../../data/capture/dictation", () => ({
   beginOverlayDrag: actions.beginOverlayDrag,
   endOverlayDrag: actions.endOverlayDrag,
   getCapturePillPreferences: () =>
@@ -76,7 +76,7 @@ vi.mock("../../../data/dictation", () => ({
   startDictationFromDock: actions.startDictationFromDock,
 }));
 
-vi.mock("../../../data/notetaking", () => ({
+vi.mock("../../../data/meeting/notetaking", () => ({
   startNoteFromDock: actions.startNoteFromDock,
 }));
 
@@ -110,7 +110,7 @@ vi.mock("../../../data/transcription", () => ({
   retryTranscription: vi.fn(),
 }));
 
-vi.mock("../../../data/insertion", () => ({
+vi.mock("../../../data/capture/insertion", () => ({
   cancelEditAction: actions.cancelEditAction,
   cancelPendingInsertion: actions.cancelPendingInsertion,
   chooseEditAction: actions.chooseEditAction,

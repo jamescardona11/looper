@@ -1,6 +1,6 @@
 import { useLingui as useItemTranslations } from "@lingui/react/macro";
 import { memo, useRef, useState, type MouseEvent } from "react";
-import type { TranscriptionRecord } from "../../../types";
+import type { TranscriptionRecord } from "../../../contracts";
 import { useCopyToClipboard as useItemClipboard } from "../../../shared/hooks/useCopyToClipboard";
 import { useClickOutside as useDismissItemMenu } from "../../../shared/hooks/useClickOutside";
 import { useSpeechModels } from "../../settings/models/models-queries";

@@ -1,5 +1,9 @@
 import { SPEAKER_COLORS } from "./library-detail-metadata";
-import type { LibraryItem, Speaker, TranscriptSegment } from "../../../types";
+import type {
+  LibraryItem,
+  Speaker,
+  TranscriptSegment,
+} from "../../../contracts";
 import type { VisibleTranscriptSegment } from "../transcript/library-transcript-panel-types";
 
 const BUSY_STATES = new Set([

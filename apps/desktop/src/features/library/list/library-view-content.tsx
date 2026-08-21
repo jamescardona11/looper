@@ -7,7 +7,7 @@ import { showLibraryToast } from "../../../data/library";
 import { useDebouncedValue } from "../../../shared/hooks/useDebouncedValue";
 import { useModelDownloadEvents } from "../../../shared/hooks/useModelDownloadEvents";
 import { useShiftHeld } from "../../../shared/hooks/useShiftHeld";
-import type { LibraryItem, LibraryItemPatch } from "../../../types";
+import type { LibraryItem, LibraryItemPatch } from "../../../contracts";
 import {
   modelKeys as settingsModelKeys,
   useSpeechModels,

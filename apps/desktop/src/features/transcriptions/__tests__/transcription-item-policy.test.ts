@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 
 import { describe, expect, it } from "vitest";
-import type { SpeechModel, TranscriptionRecord } from "../../../types";
+import type { SpeechModel, TranscriptionRecord } from "../../../contracts";
 import {
   describeTranscriptionItem,
   selectedTranscriptText,

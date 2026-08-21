@@ -6,7 +6,7 @@ import type {
   ShortcutBinding,
   ShortcutBindings,
   StoredSettings,
-} from "../../../types/index";
+} from "../../../contracts/index";
 import {
   createDefaultShortcutBindings,
   getPrimaryShortcut,

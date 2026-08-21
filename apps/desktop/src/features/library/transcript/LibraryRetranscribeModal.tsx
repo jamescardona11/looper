@@ -3,7 +3,7 @@ import { useLingui } from "@lingui/react/macro";
 import { motion } from "framer-motion";
 import { useMemo, useState, type MouseEvent } from "react";
 
-import type { LibraryItem, SpeechModel } from "../../../types";
+import type { LibraryItem, SpeechModel } from "../../../contracts";
 import { LibraryRetranscribeActions } from "./library-retranscribe-actions";
 import { LibraryRetranscribeHeader } from "./library-retranscribe-header";
 import {

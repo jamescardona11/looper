@@ -1,4 +1,4 @@
-import type { TranscriptSegment } from "../../../types";
+import type { TranscriptSegment } from "../../../contracts";
 
 export type MiniWaveformBar = {
   height: number;

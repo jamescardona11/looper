@@ -3,7 +3,7 @@ import type {
   ShortcutBinding,
   ShortcutBindings,
   StoredSettings,
-} from "../../../types/index";
+} from "../../../contracts/index";
 
 export type ShortcutMode = "smart" | "hold" | "toggle";
 export type ShortcutTarget = { mode: ShortcutMode; index: number };

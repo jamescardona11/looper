@@ -13,7 +13,7 @@ import {
   type ModelCardAction,
   type ModelCardActivity,
 } from "./model-card-presentation";
-import type { DownloadEvent, ModelInfo, ModelStatus } from "../../../types";
+import type { DownloadEvent, ModelInfo, ModelStatus } from "../../../contracts";
 
 type ModelStatCardProps = {
   model: ModelInfo;

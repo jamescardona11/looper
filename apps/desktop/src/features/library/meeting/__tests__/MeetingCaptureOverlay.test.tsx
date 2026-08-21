@@ -10,7 +10,7 @@ import {
   screen,
 } from "@testing-library/react";
 import { afterEach, describe, expect, test, vi } from "vitest";
-import type { MeetingCaptureState } from "../../../../types";
+import type { MeetingCaptureState } from "../../../../contracts";
 import MeetingCaptureOverlay from "../MeetingCaptureOverlay";
 import { groupMeetingTranscriptSegments } from "../meeting-transcript";
 import {
@@ -106,7 +106,7 @@ vi.mock("../../../settings/models/local-llm-queries", () => ({
   }),
 }));
 
-vi.mock("../../../../data/overlay", () => ({
+vi.mock("../../../../data/capture/overlay", () => ({
   setMeetingOverlayPresentation: overlayPresentation,
 }));
 
@@ -114,7 +114,7 @@ vi.mock("@tauri-apps/api/window", () => ({
   getCurrentWindow: () => windowDrag,
 }));
 
-vi.mock("../../../../data/shortcuts", () => ({
+vi.mock("../../../../data/capture/shortcuts", () => ({
   checkShortcutPermission: shortcutPermission.check,
   retryShortcuts: shortcutPermission.retry,
   openShortcutPermissionSettings: shortcutPermission.open,

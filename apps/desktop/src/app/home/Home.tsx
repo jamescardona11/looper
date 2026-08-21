@@ -2,7 +2,10 @@ import { useReducedMotion } from "framer-motion";
 import { useReducer } from "react";
 
 import { useLicenseGate } from "../../features/license/queries";
-import { useAppInfo, useSettings } from "../../features/settings/preferences/queries";
+import {
+  useAppInfo,
+  useSettings,
+} from "../../features/settings/preferences/queries";
 import { useTodayDictationStats } from "../../features/transcriptions/queries";
 import { useTimeOfDayPeriodTick } from "../../features/transcriptions/homeGreeting";
 import { EMPTY_TODAY_DICTATION_STATS } from "../../features/transcriptions/todayStats";
@@ -14,7 +17,7 @@ import {
 } from "./home-native-events";
 import { HomePresentation } from "./home-presentation";
 import { createHomeState, reduceHomeState } from "./home-state";
-import type { TranscriptionMode } from "../../types";
+import type { TranscriptionMode } from "../../contracts";
 
 function Home() {
   const licenseGateActive = useLicenseGate();

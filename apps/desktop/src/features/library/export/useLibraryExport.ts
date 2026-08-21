@@ -1,7 +1,7 @@
 import { useLingui } from "@lingui/react/macro";
 import { useState } from "react";
 import { save } from "@tauri-apps/plugin-dialog";
-import type { ExportFormat } from "../../../types";
+import type { ExportFormat } from "../../../contracts";
 import { showLibraryErrorToast } from "../../../data/library";
 import {
   buildLibraryExportDialog,

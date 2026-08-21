@@ -5,7 +5,7 @@ import type {
   LibraryImportOptions,
   SpeechModel,
   YoutubeImportMetadata,
-} from "../../../types";
+} from "../../../contracts";
 import { YoutubeImportActions } from "./library-youtube-actions";
 import { YoutubeImportHeading } from "./library-import-headings";
 import { LibraryImportModalFrame } from "./library-import-modal-frame";

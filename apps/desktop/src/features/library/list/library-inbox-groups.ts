@@ -1,4 +1,4 @@
-import type { LibraryItem } from "../../../types";
+import type { LibraryItem } from "../../../contracts";
 
 export type LibraryInboxGroup = {
   key: "this-week" | "earlier";

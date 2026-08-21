@@ -1,4 +1,4 @@
-import type { Speaker, TranscriptSegment } from "../../../types";
+import type { Speaker, TranscriptSegment } from "../../../contracts";
 
 export type TranscriptSpeakerVariant = "dot" | "label";
 

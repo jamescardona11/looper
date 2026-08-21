@@ -6,7 +6,7 @@ import { useModelDownloadEvents } from "../../../shared/hooks/useModelDownloadEv
 import type {
   DownloadEvent,
   DownloadProgressPayload,
-} from "../../../types/index";
+} from "../../../contracts/index";
 import { modelKeys } from "./models-queries";
 
 type TransferState = Record<string, DownloadEvent>;

@@ -4,7 +4,7 @@ import { setupI18n } from "@lingui/core";
 import { I18nProvider } from "@lingui/react";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
-import type { TranscriptionRecord } from "../../../types";
+import type { TranscriptionRecord } from "../../../contracts";
 import TranscriptionItem from "../components/TranscriptionItem";
 import { TranscriptionListRow } from "../components/transcription-list-entry";
 import { TranscriptionListSearchControls } from "../components/transcription-list-search-controls";

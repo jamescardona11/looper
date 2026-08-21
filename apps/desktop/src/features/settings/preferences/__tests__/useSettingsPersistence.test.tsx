@@ -3,7 +3,7 @@
 import { act, renderHook } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 
-import type { StoredSettings } from "../../../../types/index";
+import type { StoredSettings } from "../../../../contracts/index";
 import { useSettingsPersistence } from "../useSettingsPersistence";
 
 const mocks = vi.hoisted(() => ({ updateSettings: vi.fn() }));

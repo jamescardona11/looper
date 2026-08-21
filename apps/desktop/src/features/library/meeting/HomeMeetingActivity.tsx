@@ -1,7 +1,7 @@
 import { useLingui } from "@lingui/react/macro";
 import { CalendarBlank, Waveform } from "@phosphor-icons/react";
 import { useMemo } from "react";
-import type { LibraryItem } from "../../../types";
+import type { LibraryItem } from "../../../contracts";
 import { useLibraryItems } from "../queries";
 import { isCaptureItem } from "../detail/library-detail-policy";
 import { formatDuration } from "../shared/library-utils";

@@ -7,7 +7,7 @@ import {
 import { useLingui } from "@lingui/react/macro";
 import { AnimatePresence, motion } from "framer-motion";
 import { useMemo, useRef, useState, type MouseEvent } from "react";
-import type { DownloadEvent, ModelInfo } from "../../types/models";
+import type { DownloadEvent, ModelInfo } from "../../contracts/models";
 import { useClickOutside } from "../hooks/useClickOutside";
 import { useShiftHeld } from "../hooks/useShiftHeld";
 import { ModelPickerRow } from "./ModelPickerRow";

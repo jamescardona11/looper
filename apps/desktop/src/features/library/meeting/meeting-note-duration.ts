@@ -1,4 +1,4 @@
-import type { MeetingNoteSelection } from "../../../types";
+import type { MeetingNoteSelection } from "../../../contracts";
 
 function heldDurationMs(selection: MeetingNoteSelection, nowMs: number) {
   const startedAtMs = Date.parse(selection.started_at);

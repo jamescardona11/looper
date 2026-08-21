@@ -2,7 +2,7 @@ import * as llmProviderRules from "../../../shared/lib/llmProviders";
 import * as speechProviderRules from "../../../shared/lib/speechProviders";
 import * as languageRules from "../../../shared/lib/transcriptionLanguages";
 import * as modelCapabilityRules from "../../../shared/lib/modelCapabilities";
-import type { ModelInfo } from "../../../types/index";
+import type { ModelInfo } from "../../../contracts/index";
 import type { SettingsDraft } from "./useSettingsDraft";
 
 export type LanguageGuidanceKind = "remote" | "auto" | "required";

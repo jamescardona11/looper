@@ -4,7 +4,7 @@ import { setupI18n } from "@lingui/core";
 import { I18nProvider } from "@lingui/react";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, test, vi } from "vitest";
-import type { LibraryItem } from "../../../../types";
+import type { LibraryItem } from "../../../../contracts";
 import { HomeMeetingActivity } from "../HomeMeetingActivity";
 
 const useLibraryItems = vi.fn();

@@ -6,7 +6,7 @@ import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, test, vi } from "vitest";
 import ModelStatCard from "../ModelStatCard";
 import { buildModelCardPresentation } from "../model-card-presentation";
-import type { ModelInfo, ModelStatus } from "../../../../types/index";
+import type { ModelInfo, ModelStatus } from "../../../../contracts/index";
 
 const i18n = setupI18n();
 i18n.loadAndActivate({ locale: "en", messages: {} });

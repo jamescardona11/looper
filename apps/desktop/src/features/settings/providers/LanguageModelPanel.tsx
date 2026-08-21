@@ -7,7 +7,7 @@ import {
   LOCAL_PROVIDERS,
   getProviderPreset,
 } from "../../../shared/lib/llmProviders";
-import type { LlmProvider } from "../../../types";
+import type { LlmProvider } from "../../../contracts";
 import ProviderConfigurationPanel, {
   uniqueModelNames,
 } from "./ProviderConfigurationPanel";

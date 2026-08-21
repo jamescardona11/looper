@@ -1,7 +1,7 @@
 import type { MessageDescriptor } from "@lingui/core";
 import { msg } from "@lingui/core/macro";
 
-import type { ExportFormat } from "../../../types";
+import type { ExportFormat } from "../../../contracts";
 import { sanitizeFileName } from "../shared/library-utils";
 
 export type LibraryExportFailureKind =

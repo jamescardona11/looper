@@ -1,7 +1,7 @@
 import { useLingui } from "@lingui/react/macro";
 import { Plus, X } from "@phosphor-icons/react";
 import { useState, type KeyboardEvent } from "react";
-import type { Personality } from "../../../types";
+import type { Personality } from "../../../contracts";
 import { isValidDomain, normalizeWebsite } from "./personalization-utils";
 import { WebsiteFavicon } from "./personality-modal-icons";
 import { classifyWebsite } from "./personality-modal-model";

@@ -4,7 +4,7 @@ import {
   getMeetingAwarenessState,
   subscribeMeetingAwareness,
   type MeetingAwarenessState,
-} from "../../data/meeting-awareness";
+} from "../../data/meeting/meeting-awareness";
 import MeetingAwarenessOverlay from "../../features/library/meeting/MeetingAwarenessOverlay";
 import { useMeetingCapture } from "../../features/library/queries";
 import PillOverlay from "../../features/pill/PillOverlay";

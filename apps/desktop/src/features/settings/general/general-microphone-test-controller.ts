@@ -1,6 +1,6 @@
 import { useLingui } from "@lingui/react/macro";
 import { useMemo, useSyncExternalStore } from "react";
-import type { DeviceInfo } from "../../../types/index";
+import type { DeviceInfo } from "../../../contracts/index";
 import {
   createMicrophoneTestStore,
   type MicrophoneTestError,

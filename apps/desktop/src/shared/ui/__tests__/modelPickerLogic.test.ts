@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import type { ModelInfo } from "../../../types/models";
+import type { ModelInfo } from "../../../contracts/models";
 import {
   filterModelGroups,
   groupModelCatalog,

@@ -10,7 +10,7 @@ import {
 } from "../../../data/settings";
 import { i18n } from "../../../i18n";
 import { TEXT_SIZE_MODE_STORAGE_KEY } from "../../../shared/lib/textSize";
-import type { TextSizeMode, ThemeMode } from "../../../types/index";
+import type { TextSizeMode, ThemeMode } from "../../../contracts/index";
 
 type SettingsAppActionsOptions = {
   dataDirectory?: string;

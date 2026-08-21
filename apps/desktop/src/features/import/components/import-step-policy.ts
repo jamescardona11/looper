@@ -3,7 +3,7 @@ import type {
   ImportPreview,
   ImportSelection,
   ImportSelections,
-} from "../../../types";
+} from "../../../contracts";
 
 export type ImportSelectionState = {
   sourceId: string | null;

@@ -30,7 +30,7 @@ export type ModelStatus = Fields<"installed" | "ane_installed", boolean> &
     missing_files: string[];
   };
 
-export type { DownloadProgressPayload } from "../data/model-downloads";
+export type { DownloadProgressPayload } from "../data/models/model-downloads";
 
 export type AneCompileEvent = Fields<"model" | "label", string> & {
   status: "start" | "done" | "error";

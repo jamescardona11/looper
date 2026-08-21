@@ -16,7 +16,7 @@ vi.mock("@tauri-apps/api/event", () => ({
   ),
 }));
 
-vi.mock("../convex-auth", () => ({
+vi.mock("../../sync/convex-auth", () => ({
   createConvexClient: () => client,
   ensureAnonymousSession: vi.fn(),
 }));

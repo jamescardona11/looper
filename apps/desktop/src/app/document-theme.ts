@@ -1,4 +1,4 @@
-import type { ThemeMode } from "../types";
+import type { ThemeMode } from "../contracts";
 
 export function parseThemePreference(value: string | null): ThemeMode {
   return value === "light" || value === "dark" || value === "system"

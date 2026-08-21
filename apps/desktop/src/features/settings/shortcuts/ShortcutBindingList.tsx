@@ -8,7 +8,7 @@ import {
 } from "@phosphor-icons/react";
 import { AnimatePresence, motion } from "framer-motion";
 import type { ComponentType, ReactNode } from "react";
-import type { ShortcutBinding } from "../../../types/index";
+import type { ShortcutBinding } from "../../../contracts/index";
 import {
   shortcutBindingView,
   type CaptureMode,

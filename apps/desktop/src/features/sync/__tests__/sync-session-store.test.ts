@@ -3,7 +3,7 @@
 import type { ConvexClient } from "convex/browser";
 import { beforeEach, describe, expect, test, vi } from "vitest";
 import { createSyncSessionStore } from "../sync-session-store";
-import type { Viewer } from "../../../data/convex-auth";
+import type { Viewer } from "../../../data/sync/convex-auth";
 
 function createDependencies() {
   const client = { close: vi.fn().mockResolvedValue(undefined) };

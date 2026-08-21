@@ -12,7 +12,7 @@ import {
   waitFor,
 } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
-import type { SpeechModel, YoutubeImportMetadata } from "../../../../types";
+import type { SpeechModel, YoutubeImportMetadata } from "../../../../contracts";
 import { SUPPORTED_EXTENSIONS } from "../../shared/library-utils";
 import LibraryImportModal from "../LibraryImportModal";
 import LibraryYoutubeImportModal from "../LibraryYoutubeImportModal";

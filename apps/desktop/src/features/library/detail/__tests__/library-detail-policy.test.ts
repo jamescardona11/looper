@@ -14,7 +14,7 @@ import {
   initialDetailState,
   synchronizeDetailState,
 } from "../library-detail-state";
-import type { LibraryItem, TranscriptSegment } from "../../../../types";
+import type { LibraryItem, TranscriptSegment } from "../../../../contracts";
 
 const segments: TranscriptSegment[] = [
   { start_ms: 0, end_ms: 900, text: "Hello world", speaker_id: "speaker-a" },

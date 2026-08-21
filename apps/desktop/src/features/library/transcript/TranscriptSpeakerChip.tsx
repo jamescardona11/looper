@@ -1,7 +1,7 @@
 import { useLingui } from "@lingui/react/macro";
 import { AnimatePresence } from "framer-motion";
 import type { Dispatch, RefObject, SetStateAction } from "react";
-import type { Speaker, TranscriptSegment } from "../../../types";
+import type { Speaker, TranscriptSegment } from "../../../contracts";
 import {
   selectedTranscriptSpeaker,
   type TranscriptSpeakerVariant,

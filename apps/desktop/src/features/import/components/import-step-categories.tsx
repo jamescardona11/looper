@@ -5,7 +5,7 @@ import type {
   ImportPreview,
   ImportSelection,
   ImportSelections,
-} from "../../../types";
+} from "../../../contracts";
 import { formatShortcutForDisplay } from "../../../shared/lib/shortcuts";
 
 const PREVIEW_SLOT_IDS = [

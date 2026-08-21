@@ -1,6 +1,6 @@
 import { AnimatePresence } from "framer-motion";
 import { useLingui } from "@lingui/react/macro";
-import type { Personality } from "../../../types";
+import type { Personality } from "../../../contracts";
 import type { InstalledApp } from "../../../data/personalization";
 import { voiceListAnatomy } from "../../voice/components/voice-list-anatomy";
 import PersonalityModal from "./PersonalityModal";

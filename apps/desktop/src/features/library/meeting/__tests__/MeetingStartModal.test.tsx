@@ -4,7 +4,7 @@ import { setupI18n } from "@lingui/core";
 import { I18nProvider } from "@lingui/react";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, test, vi } from "vitest";
-import type { SpeechModel } from "../../../../types";
+import type { SpeechModel } from "../../../../contracts";
 import MeetingStartModal from "../MeetingStartModal";
 
 const i18n = setupI18n();

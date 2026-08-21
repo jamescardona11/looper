@@ -3,7 +3,7 @@ import type {
   AppLocaleSetting,
   ModelInfo,
   ModelStatus,
-} from "../../../types/index";
+} from "../../../contracts/index";
 
 type ModelDeletionContext = {
   deletedModel: string;

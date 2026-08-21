@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import type { SpeechModel } from "../../../../types/index";
+import type { SpeechModel } from "../../../../contracts/index";
 import {
   modelKeys,
   normalizeModelKeys,

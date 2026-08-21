@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import type { TranscriptSegment } from "../../../types";
+import type { TranscriptSegment } from "../../../contracts";
 import {
   MeetingReviewPanel,
   type MeetingReviewView,

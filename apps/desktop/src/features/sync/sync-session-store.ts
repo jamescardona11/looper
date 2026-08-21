@@ -9,11 +9,11 @@ import {
   verifyEmailOtp,
   type AuthState,
   type Viewer,
-} from "../../data/convex-auth";
+} from "../../data/sync/convex-auth";
 import {
   isHistorySyncOptedIn,
   setHistorySyncOptedIn,
-} from "../../data/history-sync";
+} from "../../data/sync/history-sync";
 
 export type SyncSessionSnapshot = {
   available: boolean;

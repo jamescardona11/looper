@@ -7,7 +7,7 @@ import type {
   RecordingPrunePolicy,
   TextSizeMode,
   ThemeMode,
-} from "../../../types/index";
+} from "../../../contracts/index";
 
 export type SelectOption<T> = { value: T; label: string };
 

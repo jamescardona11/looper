@@ -4,7 +4,7 @@ import { act, renderHook } from "@testing-library/react";
 import { describe, expect, test } from "vitest";
 
 import { TEXT_SIZE_MODE_STORAGE_KEY } from "../../../../shared/lib/textSize";
-import type { StoredSettings } from "../../../../types/index";
+import type { StoredSettings } from "../../../../contracts/index";
 import { draftFromStoredSettings, useSettingsDraft } from "../useSettingsDraft";
 
 const storedSettings = {

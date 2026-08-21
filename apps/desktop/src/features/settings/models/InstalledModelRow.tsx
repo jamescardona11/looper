@@ -11,7 +11,7 @@ import {
   formatModelSize,
   formatQuantLabel,
 } from "../../../shared/lib/modelStats";
-import type { ModelInfo } from "../../../types/index";
+import type { ModelInfo } from "../../../contracts/index";
 
 export type InstalledModelRowProps = Record<"model", ModelInfo> &
   Record<"active" | "aneInstalled" | "revealDelete", boolean> &

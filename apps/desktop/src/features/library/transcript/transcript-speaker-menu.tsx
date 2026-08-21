@@ -2,7 +2,7 @@ import { UserPlus } from "@phosphor-icons/react";
 import { motion } from "framer-motion";
 import type { MouseEvent, RefObject } from "react";
 
-import type { Speaker } from "../../../types";
+import type { Speaker } from "../../../contracts";
 
 type TranscriptSpeakerMenuProps = {
   speakers: Speaker[];

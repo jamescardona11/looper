@@ -6,7 +6,7 @@ import type {
   StoredSettings,
   TextSizeMode,
   ThemeMode,
-} from "../types";
+} from "../contracts";
 
 export const getSettings = () => invoke<StoredSettings>("get_settings");
 

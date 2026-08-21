@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { LibraryItem } from "../../../../types";
+import type { LibraryItem } from "../../../../contracts";
 import { groupLibraryItemsByRecency } from "../library-inbox-groups";
 
 const item = (id: string, createdAt: string) =>

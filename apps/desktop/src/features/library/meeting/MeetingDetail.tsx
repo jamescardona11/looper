@@ -4,7 +4,7 @@ import { ArrowClockwise, ArrowUp, Sparkle } from "@phosphor-icons/react";
 import ReactMarkdown from "react-markdown";
 import { useMeetingAiStatus } from "../../settings/models/local-llm-queries";
 import { useMountEffect } from "../../../shared/hooks/useMountEffect";
-import type { MeetingDetails, TranscriptSegment } from "../../../types";
+import type { MeetingDetails, TranscriptSegment } from "../../../contracts";
 import { getMeetingDetails } from "../../../data/library";
 import {
   useAskMeeting,

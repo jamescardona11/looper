@@ -2,7 +2,7 @@ import { plural as pluralMessage } from "@lingui/core/macro";
 import { useLingui as useImportSourceTranslations } from "@lingui/react/macro";
 import SourceMark from "../../../shared/ui/DotMatrix";
 import SourcePicker from "../../../shared/ui/SegmentedControl";
-import type { DetectedApp } from "../../../types";
+import type { DetectedApp } from "../../../contracts";
 import { OnboardingHeader } from "../../onboarding/steps/shared";
 import { importSourceName, importSourceOptions } from "./import-step-policy";
 

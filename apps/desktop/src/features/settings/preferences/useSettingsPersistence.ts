@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef } from "react";
 
 import { updateSettings } from "../../../data/settings";
-import type { StoredSettings } from "../../../types/index";
+import type { StoredSettings } from "../../../contracts/index";
 import type { SettingsSaveOverrides } from "./settings-update-model";
 
 type SettingsPersistenceOptions<TArgs extends { localModel: string }> = {

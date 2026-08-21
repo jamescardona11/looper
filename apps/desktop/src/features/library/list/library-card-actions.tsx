@@ -8,7 +8,7 @@ import {
   X,
 } from "@phosphor-icons/react";
 import { useLingui } from "@lingui/react/macro";
-import type { LibraryItem } from "../../../types";
+import type { LibraryItem } from "../../../contracts";
 import { useClickOutside } from "../../../shared/hooks/useClickOutside";
 import {
   cardActionKind,

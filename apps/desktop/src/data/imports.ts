@@ -4,7 +4,7 @@ import type {
   ImportPreview,
   ImportResult,
   ImportSelections,
-} from "../types";
+} from "../contracts";
 
 export function detectImportableApps(): Promise<DetectedApp[]> {
   return invoke("detect_importable_apps");

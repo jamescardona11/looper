@@ -5,7 +5,7 @@ import { I18nProvider } from "@lingui/react";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { useState } from "react";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
-import type { TranscriptionRecord } from "../../../types";
+import type { TranscriptionRecord } from "../../../contracts";
 import { currentTimePreset, parseTranscriptionSearch } from "../searchQuery";
 import { TranscriptionListSearchControls } from "../components/transcription-list-search-controls";
 

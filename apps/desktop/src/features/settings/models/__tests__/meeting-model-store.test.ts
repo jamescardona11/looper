@@ -4,7 +4,7 @@ import type {
   LocalLlmDownloadProgress,
   LocalLlmModelInfo,
   LocalLlmModelStatus,
-} from "../../../../types/index";
+} from "../../../../contracts/index";
 
 type DownloadListeners = {
   progress?: (payload: LocalLlmDownloadProgress) => void;

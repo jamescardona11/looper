@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
-import type { MeetingNoteMarker, TranscriptSegment } from "../../../../types";
+import type {
+  MeetingNoteMarker,
+  TranscriptSegment,
+} from "../../../../contracts";
 import {
   meetingNoteRangeLabel,
   meetingNoteTranscript,

@@ -13,7 +13,7 @@ import {
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 
 import PersonalizationView from "../PersonalizationView";
-import type { Personality } from "../../../../types";
+import type { Personality } from "../../../../contracts";
 
 const mocks = vi.hoisted(() => ({
   invalidateQueries: vi.fn(),

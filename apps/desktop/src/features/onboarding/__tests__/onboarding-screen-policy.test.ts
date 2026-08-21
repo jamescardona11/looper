@@ -1,5 +1,9 @@
 import { describe, expect, it, vi } from "vitest";
-import type { ModelInfo, ModelStatus, StoredSettings } from "../../../types";
+import type {
+  ModelInfo,
+  ModelStatus,
+  StoredSettings,
+} from "../../../contracts";
 import type { ModelDownloadActivity } from "../../settings/models/modelDownloadActivity";
 import {
   buildCompletedOnboardingSettings,

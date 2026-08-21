@@ -4,7 +4,7 @@ import type {
   LibraryItem,
   LibraryWatchFolder,
   YoutubeImportMetadata,
-} from "../../types";
+} from "../../contracts";
 
 export const getLibraryWatchFolders = (): Promise<LibraryWatchFolder[]> =>
   invoke("get_library_watch_folders");

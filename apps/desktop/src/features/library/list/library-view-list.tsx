@@ -2,7 +2,7 @@ import { useLingui } from "@lingui/react/macro";
 import { CircleNotch as Loader2, FolderOpen } from "@phosphor-icons/react";
 
 import Shimmer from "../../../shared/ui/Shimmer";
-import type { LibraryItem } from "../../../types";
+import type { LibraryItem } from "../../../contracts";
 import LibraryCard from "./LibraryCard";
 import type { LibraryInboxGroup } from "./library-inbox-groups";
 

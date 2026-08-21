@@ -1,6 +1,6 @@
 import { describe, expect, test } from "vitest";
 
-import type { ModelInfo, ModelStatus } from "../../../../types/index";
+import type { ModelInfo, ModelStatus } from "../../../../contracts/index";
 import { resolveModelDeletionUpdate } from "../model-deletion-policy";
 
 const model = (key: string, options: Partial<ModelInfo> = {}): ModelInfo => ({

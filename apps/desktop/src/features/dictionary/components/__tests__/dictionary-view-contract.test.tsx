@@ -56,14 +56,14 @@ vi.mock("../../queries", () => ({
   setSuggestedCorrectionsCache: (...args: unknown[]) =>
     mocks.cacheSuggestions(...args),
 }));
-vi.mock("../../../../data/dictionary-sync", () => ({
+vi.mock("../../../../data/sync/dictionary-sync", () => ({
   setLocalDictionary: (value: string[]) => mocks.persistEntries(value),
   setLocalReplacements: (value: unknown[]) => mocks.persistReplacements(value),
 }));
-vi.mock("../../../../data/snippets-sync", () => ({
+vi.mock("../../../../data/sync/snippets-sync", () => ({
   setLocalSnippets: (value: unknown[]) => mocks.persistSnippets(value),
 }));
-vi.mock("../../../../data/corrections", () => ({
+vi.mock("../../../../data/capture/corrections", () => ({
   acceptSuggestedCorrection: (from: string, to: string) =>
     mocks.acceptSuggestion(from, to),
   dismissSuggestedCorrection: (from: string, to: string) =>

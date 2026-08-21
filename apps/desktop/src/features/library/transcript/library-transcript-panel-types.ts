@@ -1,7 +1,7 @@
 import type { VirtuosoHandle } from "react-virtuoso";
 import type { MutableRefObject, ReactNode, RefObject } from "react";
 
-import type { LibraryItem, TranscriptSegment } from "../../../types";
+import type { LibraryItem, TranscriptSegment } from "../../../contracts";
 
 export type VisibleTranscriptSegment = {
   segment: TranscriptSegment;

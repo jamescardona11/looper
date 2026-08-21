@@ -1,6 +1,6 @@
 import { Plus } from "@phosphor-icons/react";
 import { useLingui } from "@lingui/react/macro";
-import type { Personality } from "../../../types";
+import type { Personality } from "../../../contracts";
 import type { InstalledApp } from "../../../data/personalization";
 import DotMatrix from "../../../shared/ui/DotMatrix";
 import ScreenHeader from "../../../shared/ui/ScreenHeader";

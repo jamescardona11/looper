@@ -1,5 +1,5 @@
 import { convertFileSrc, invoke } from "@tauri-apps/api/core";
-import type * as LibraryContract from "../../types";
+import type * as LibraryContract from "../../contracts";
 
 const command = {
   create: "create_library_item",

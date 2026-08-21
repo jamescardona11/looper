@@ -1,7 +1,7 @@
 import { useLingui } from "@lingui/react/macro";
 import type { Dispatch, SetStateAction } from "react";
 
-import type { LibraryItemPatch } from "../../../types";
+import type { LibraryItemPatch } from "../../../contracts";
 import ToggleSwitch from "../../../shared/ui/ToggleSwitch";
 
 type LibraryPlayerTogglesProps = {

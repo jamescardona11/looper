@@ -14,7 +14,7 @@
 import { invoke } from "@tauri-apps/api/core";
 import { api } from "@looper/backend/convex/_generated/api";
 import type { ConvexClient } from "convex/browser";
-import type { ModeRule } from "../types";
+import type { ModeRule } from "../../contracts/index";
 
 const SETTINGS_VERSION_KEY = "looper.sync.settingsVersion";
 

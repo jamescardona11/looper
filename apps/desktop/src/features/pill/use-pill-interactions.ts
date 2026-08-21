@@ -1,17 +1,17 @@
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { useCallback, useEffect, useState } from "react";
-import { cancelRecording } from "../../data/audio";
+import { cancelRecording } from "../../data/capture/audio";
 import {
   cancelEditAction,
   cancelPendingInsertion,
   chooseEditAction,
   confirmPendingInsertion,
-} from "../../data/insertion";
+} from "../../data/capture/insertion";
 import {
   EDIT_ACTIONS,
   type PillStatus,
   type TransformPreset,
-} from "../../types";
+} from "../../contracts";
 
 type InteractionState = {
   status: PillStatus;

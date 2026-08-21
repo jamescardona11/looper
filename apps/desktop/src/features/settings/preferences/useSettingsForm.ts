@@ -17,7 +17,10 @@ import {
   useShortcutEditor,
   type ShortcutPersistencePort,
 } from "../shortcuts/useShortcutEditor";
-import type { TranscriptionMode, StoredSettings } from "../../../types/index";
+import type {
+  TranscriptionMode,
+  StoredSettings,
+} from "../../../contracts/index";
 
 type ActiveTab =
   "general" | "models" | "providers" | "about" | "account" | "sync" | "app";

@@ -10,7 +10,7 @@ import {
   waitFor,
 } from "@testing-library/react";
 import { afterEach, describe, expect, test, vi } from "vitest";
-import type { LibraryItem } from "../../../../types";
+import type { LibraryItem } from "../../../../contracts";
 import LibraryCard from "../LibraryCard";
 import type { LibraryCardProps } from "../library-card-model";
 

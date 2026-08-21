@@ -4,7 +4,7 @@ import {
   MODEL_CAPABILITY_DIARIZATION,
   MODEL_CAPABILITY_TIMESTAMPS,
 } from "../../../shared/lib/modelCapabilities";
-import type { LibraryItem, SpeechModel } from "../../../types";
+import type { LibraryItem, SpeechModel } from "../../../contracts";
 
 export type LibraryRetranscribeOptions = {
   model_key: string;

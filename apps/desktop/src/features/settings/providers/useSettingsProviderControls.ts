@@ -8,7 +8,7 @@ import type {
   LlmProvider,
   ModelInfo,
   RemoteSpeechProvider,
-} from "../../../types/index";
+} from "../../../contracts/index";
 import { useModelDiscoverySession } from "../models/useModelDiscoverySession";
 import {
   useFetchLlmModels,

@@ -17,14 +17,14 @@ import {
   subscribeNavigateHistory,
   subscribeNavigateModels,
   subscribeNavigateSettings,
-} from "../../data/navigation";
+} from "../../data/system/navigation";
 import {
   subscribePillInserted,
   subscribePillMode,
   subscribePillState,
-} from "../../data/overlay";
+} from "../../data/capture/overlay";
 import { notifySettingsRendererReady } from "../../data/settings";
-import { requestUpdaterCheck } from "../../data/updates";
+import { requestUpdaterCheck } from "../../data/system/updates";
 import {
   shouldShowInsertedStage,
   shouldShowWritingStage,

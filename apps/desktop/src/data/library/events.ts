@@ -5,7 +5,7 @@ import type {
   MeetingCaptureState,
   MeetingDetails,
   MeetingTranscriptUpdate,
-} from "../../types";
+} from "../../contracts";
 
 export type LibraryEventHandlers = {
   transcriptionProgress: (payload: LibraryProgressPayload) => void;

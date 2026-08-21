@@ -2,7 +2,7 @@ import type { InstalledApp } from "../../../data/personalization";
 import type {
   AppBinding as ApplicationBinding,
   Personality as WritingMode,
-} from "../../../types";
+} from "../../../contracts";
 import { PersonalityApplications } from "./personality-modal-applications";
 import { PersonalityModalHeader } from "./personality-modal-header";
 import { PersonalityInstructions } from "./personality-modal-instructions";

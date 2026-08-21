@@ -31,7 +31,7 @@ import FAQModal from "../../shared/ui/FAQModal";
 import { LooperLogo } from "../../shared/ui/LooperLogo";
 import WindowControls from "../../shared/ui/WindowControls";
 import WorkspaceRoute from "../../shared/ui/WorkspaceRoute";
-import type { TodayDictationStats, TranscriptionMode } from "../../types";
+import type { TodayDictationStats, TranscriptionMode } from "../../contracts";
 
 const DevelopmentFeatureLab = import.meta.env.DEV
   ? lazy(() => import("../../features/feature-lab/components/FeatureLabView"))

@@ -1,6 +1,6 @@
 import { useLingui } from "@lingui/react/macro";
 import { CaretDown, Check, Microphone, Plus } from "@phosphor-icons/react";
-import type { CapturePillDockPosition } from "../../data/dictation";
+import type { CapturePillDockPosition } from "../../data/capture/dictation";
 import type { TranscriptionLanguageOption } from "../../shared/lib/transcriptionLanguages";
 import { LooperLogo } from "../../shared/ui/LooperLogo";
 import {

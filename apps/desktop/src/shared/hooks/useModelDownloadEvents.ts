@@ -3,7 +3,7 @@ import {
   subscribeModelDownloadEvents,
   type DownloadProgressPayload,
   type ModelDownloadEventHandlers,
-} from "../../data/model-downloads";
+} from "../../data/models/model-downloads";
 import { safeUnlisten } from "../lib/safeUnlisten";
 import { useMountEffect } from "./useMountEffect";
 

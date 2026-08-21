@@ -13,7 +13,7 @@
 // src-tauri/src/lib.rs). The pill shows the editable transcript in the
 // meantime (pill:mode event, tone "preview").
 import { invoke } from "@tauri-apps/api/core";
-import type { EditAction, ModeRuleSuggestion, TransformPreset } from "../types";
+import type { EditAction, ModeRuleSuggestion, TransformPreset } from "../../contracts/index";
 
 /** Confirms the pending insertion, pasting `text` (edited or as-is). */
 export async function confirmPendingInsertion(text: string): Promise<void> {

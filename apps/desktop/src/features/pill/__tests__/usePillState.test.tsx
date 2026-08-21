@@ -24,7 +24,7 @@ vi.mock("@tauri-apps/api/event", () => ({
   ),
 }));
 
-vi.mock("../../../data/audio", () => ({
+vi.mock("../../../data/capture/audio", () => ({
   subscribeAudioSpectrum: vi.fn(
     async (handler: (payload: { bins: number[] }) => void) => {
       mocks.audioHandler = handler;
@@ -42,7 +42,7 @@ vi.mock("../../../data/transcription", () => ({
   ),
 }));
 
-vi.mock("../../../data/dictation", () => ({
+vi.mock("../../../data/capture/dictation", () => ({
   syncPillRendererState: mocks.sync,
 }));
 

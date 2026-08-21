@@ -11,11 +11,11 @@ import {
 } from "@phosphor-icons/react";
 import { Dropdown, type DropdownOption } from "../../../shared/ui/Dropdown";
 import ToggleSwitch from "../../../shared/ui/ToggleSwitch";
-import type { MeetingStartOptions, SpeechModel } from "../../../types";
+import type { MeetingStartOptions, SpeechModel } from "../../../contracts";
 import {
   isLiveMeetingSharingEnabled,
   setLiveMeetingSharingEnabled,
-} from "../../../data/live-meeting";
+} from "../../../data/meeting/live-meeting";
 
 type MeetingStartModalProps = {
   models: SpeechModel[];

@@ -4,7 +4,7 @@ import { setupI18n } from "@lingui/core";
 import { I18nProvider } from "@lingui/react";
 import { cleanup, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, test, vi } from "vitest";
-import type { ImportPreview, ImportSelections } from "../../../../types";
+import type { ImportPreview, ImportSelections } from "../../../../contracts";
 import { ImportStepCategories } from "../import-step-categories";
 import { ImportStepFeedback } from "../import-step-feedback";
 import { ImportStepFooter } from "../import-step-footer";

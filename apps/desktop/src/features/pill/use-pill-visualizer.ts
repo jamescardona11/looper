@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef } from "react";
-import type { PillStatus } from "../../types";
+import type { PillStatus } from "../../contracts";
 import {
   defaultDotPalette,
   DOT_GAP,

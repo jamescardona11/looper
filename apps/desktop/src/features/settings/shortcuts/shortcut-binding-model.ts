@@ -1,5 +1,5 @@
 import { formatShortcutForDisplay } from "../../../shared/lib/shortcuts";
-import type { ShortcutBinding } from "../../../types/index";
+import type { ShortcutBinding } from "../../../contracts/index";
 
 export type ShortcutMode = "smart" | "hold" | "toggle";
 export type CaptureMode = { mode: ShortcutMode; index: number } | null;

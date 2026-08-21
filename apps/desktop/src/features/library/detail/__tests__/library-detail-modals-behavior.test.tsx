@@ -11,7 +11,7 @@ import {
 } from "@testing-library/react";
 import { afterEach, describe, expect, test, vi } from "vitest";
 
-import type { LibraryItem } from "../../../../types";
+import type { LibraryItem } from "../../../../contracts";
 
 vi.mock("../../transcript/LibraryTranslationsModal", () => ({
   default: ({

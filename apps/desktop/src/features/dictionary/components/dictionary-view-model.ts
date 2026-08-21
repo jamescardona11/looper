@@ -1,4 +1,4 @@
-import type { Replacement, UserSnippet } from "../../../types";
+import type { Replacement, UserSnippet } from "../../../contracts";
 
 export const DICTIONARY_ENTRY_LIMIT = 200;
 

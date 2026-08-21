@@ -16,8 +16,8 @@ import type { ConvexClient } from "convex/browser";
 import {
   getTranscriptions,
   subscribeTranscriptionEvents,
-} from "./transcription";
-import type { TranscriptionRecord } from "../types";
+} from "../transcription";
+import type { TranscriptionRecord } from "../../contracts/index";
 
 const HISTORY_OPT_IN_KEY = "looper.sync.historyOptIn";
 // Bounds the one-time backlog push after signing in, so a long-time local

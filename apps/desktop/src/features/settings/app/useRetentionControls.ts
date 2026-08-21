@@ -8,7 +8,7 @@ import {
 import type {
   AutoDeleteTarget,
   RecordingPrunePolicy,
-} from "../../../types/index";
+} from "../../../contracts/index";
 import {
   audioBudgetNeedsPreview,
   retentionChangePlan,

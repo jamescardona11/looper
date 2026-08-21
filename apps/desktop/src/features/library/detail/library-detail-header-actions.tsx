@@ -13,7 +13,7 @@ import {
 import { isCaptureItem } from "./library-detail-policy";
 import { HeaderMenuSurface } from "./library-detail-header-menu";
 import type { LibraryDetailHeaderProps } from "./library-detail-header-types";
-import type { ExportFormat } from "../../../types";
+import type { ExportFormat } from "../../../contracts";
 
 type ActionsProps = Pick<
   LibraryDetailHeaderProps,

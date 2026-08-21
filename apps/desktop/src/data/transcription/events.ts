@@ -4,7 +4,7 @@ import type {
   DownloadProgressPayload,
   PillTransformStreamPayload,
   TranscriptionRecord,
-} from "../../types";
+} from "../../contracts";
 
 type DownloadEventHandlers = {
   onProgress?: (payload: DownloadProgressPayload) => void;

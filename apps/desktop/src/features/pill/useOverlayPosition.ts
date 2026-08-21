@@ -6,7 +6,7 @@ import {
   persistOverlayPosition,
   setOverlayPosition,
   type OverlayPosition,
-} from "../../data/overlay";
+} from "../../data/capture/overlay";
 import {
   isVisibleOverlayPosition,
   parseOverlayPosition,

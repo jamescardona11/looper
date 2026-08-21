@@ -8,7 +8,7 @@ import type {
   LibraryItem,
   LibraryItemPatch,
   SpeechModel,
-} from "../../../types";
+} from "../../../contracts";
 
 type LibraryDetailModalsProps = {
   item: LibraryItem;

@@ -5,7 +5,7 @@ import type {
   LocalLlmModelInfo,
   LocalLlmModelStatus,
   MeetingAiStatus,
-} from "../types";
+} from "../../contracts/index";
 
 export const LOCAL_LLM_MODEL_ID = "qwen3.5:4b-q3_k_m";
 

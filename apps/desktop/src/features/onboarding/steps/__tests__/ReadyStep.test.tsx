@@ -29,7 +29,7 @@ const mocks = vi.hoisted(() => ({
   setShortcutCaptureActive: vi.fn((_active: boolean) => Promise.resolve()),
 }));
 
-vi.mock("../../../../data/overlay", () => ({
+vi.mock("../../../../data/capture/overlay", () => ({
   subscribePillInserted: vi.fn(
     (handler: (payload: { chars: number; can_undo: boolean }) => void) => {
       mocks.inserted = ({ payload }) => handler(payload);

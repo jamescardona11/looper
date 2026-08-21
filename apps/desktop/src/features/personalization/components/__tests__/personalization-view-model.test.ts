@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import type { AppBinding, Personality } from "../../../../types";
+import type { AppBinding, Personality } from "../../../../contracts";
 import {
   appIconPath,
   blankPersonality,

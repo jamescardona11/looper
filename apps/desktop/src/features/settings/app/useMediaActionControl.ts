@@ -1,6 +1,6 @@
 import { useLingui } from "@lingui/react/macro";
 import type React from "react";
-import type { MediaAction } from "../../../types/index";
+import type { MediaAction } from "../../../contracts/index";
 
 type ScrubStartEvent =
   React.MouseEvent<HTMLSpanElement> | React.TouchEvent<HTMLSpanElement>;

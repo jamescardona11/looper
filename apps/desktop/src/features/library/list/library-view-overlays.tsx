@@ -11,7 +11,7 @@ import type {
   MeetingStartOptions,
   SpeechModel,
   YoutubeImportMetadata,
-} from "../../../types";
+} from "../../../contracts";
 import LibraryImportModal from "../import/LibraryImportModal";
 import LibraryYoutubeImportModal from "../import/LibraryYoutubeImportModal";
 import MeetingStartModal from "../meeting/MeetingStartModal";

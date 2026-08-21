@@ -15,7 +15,7 @@ vi.mock("../../../platform/service", () => ({
   }),
 }));
 
-vi.mock("../../../data/window", () => ({
+vi.mock("../../../data/system/window", () => ({
   performWindowAction: mocks.perform,
 }));
 

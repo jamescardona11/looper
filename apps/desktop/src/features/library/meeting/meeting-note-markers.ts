@@ -1,4 +1,4 @@
-import type { MeetingNoteMarker, TranscriptSegment } from "../../../types";
+import type { MeetingNoteMarker, TranscriptSegment } from "../../../contracts";
 import { formatTimestamp } from "../shared/format-timestamp";
 
 type TimedTranscriptSegment = Pick<

@@ -10,7 +10,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { cancelDownload, downloadModel } from "../../../data/transcription";
 import { useModelDownloadEvents } from "../../../shared/hooks/useModelDownloadEvents";
 import { modelKeys } from "./models-queries";
-import type { DownloadEvent } from "../../../types/index";
+import type { DownloadEvent } from "../../../contracts/index";
 
 export type ModelDownloadActivityStatus =
   "downloading" | "verifying" | "complete" | "cancelled" | "error";

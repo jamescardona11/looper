@@ -1,7 +1,7 @@
 // Delivers user-confirmed Markdown Companion exports.
 import { api } from "@looper/backend/convex/_generated/api";
 import { invoke } from "@tauri-apps/api/core";
-import { createConvexClient, ensureAnonymousSession } from "./convex-auth";
+import { createConvexClient, ensureAnonymousSession } from "../sync/convex-auth";
 
 const DELIVERY_INTERVAL_MS = 30_000;
 

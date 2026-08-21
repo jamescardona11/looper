@@ -2,18 +2,18 @@ import type { UnlistenFn } from "@tauri-apps/api/event";
 import type { QueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
 
-import { subscribeInputDevicesChanged } from "../../data/audio";
+import { subscribeInputDevicesChanged } from "../../data/capture/audio";
 import { subscribeSettingsChanged } from "../../data/settings";
 import { subscribeTranscriptionEvents } from "../../data/transcription";
 import {
   subscribeUpdateAvailable,
   subscribeUpdateCleared,
-} from "../../data/updates";
+} from "../../data/system/updates";
 import { modelKeys } from "../../features/settings/models/models-queries";
 import { settingsKeys } from "../../features/settings/preferences/queries";
 import { transcriptionKeys } from "../../features/transcriptions/queries";
 import { updateKeys } from "../../features/updates/queries";
-import type { TranscriptionRecord } from "../../types";
+import type { TranscriptionRecord } from "../../contracts";
 
 type AsyncSubscriptionScope = {
   track: (pending: Promise<UnlistenFn>) => void;

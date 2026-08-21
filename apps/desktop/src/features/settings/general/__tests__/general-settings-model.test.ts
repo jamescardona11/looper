@@ -4,7 +4,7 @@ import {
   isGeneralSectionVisible,
   shouldWarnMissingLocalModel,
 } from "../general-settings-model";
-import type { ModelStatus } from "../../../../types/index";
+import type { ModelStatus } from "../../../../contracts/index";
 
 const missingModel: ModelStatus = {
   key: "parakeet",

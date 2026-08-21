@@ -32,7 +32,7 @@ import type {
   Replacement,
   StoredSettings,
   UserSnippet,
-} from "../types";
+} from "../../contracts/index";
 
 const EVENT_SETTINGS_CHANGED = "settings:changed";
 

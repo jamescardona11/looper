@@ -5,7 +5,7 @@ import { act, cleanup, renderHook, waitFor } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { LibraryEventHandlers } from "../../../data/library";
-import type { LibraryItem } from "../../../types";
+import type { LibraryItem } from "../../../contracts";
 import { libraryKeys, useLibraryItems } from "../queries";
 
 const events = vi.hoisted(() => ({

@@ -11,7 +11,7 @@ import {
 } from "@testing-library/react";
 import { afterEach, describe, expect, test, vi } from "vitest";
 
-import type { LibraryItem, SpeechModel } from "../../../../types";
+import type { LibraryItem, SpeechModel } from "../../../../contracts";
 import LibraryRetranscribeModal from "../LibraryRetranscribeModal";
 
 const i18n = setupI18n();

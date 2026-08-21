@@ -15,7 +15,7 @@ const invoke = vi.hoisted(() => vi.fn());
 
 vi.mock("@looper/backend/convex/_generated/api", () => ({ api: backendApi }));
 vi.mock("@tauri-apps/api/core", () => ({ invoke }));
-vi.mock("../convex-auth", () => ({
+vi.mock("../../sync/convex-auth", () => ({
   createConvexClient: () => client,
   ensureAnonymousSession: vi.fn(),
 }));

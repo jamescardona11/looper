@@ -1,7 +1,7 @@
 import type {
   CapturePillDockPosition,
   CapturePillPresentation,
-} from "../../data/dictation";
+} from "../../data/capture/dictation";
 
 // `shellPlacement` decides where the expanded pill lands, and the native hover
 // hit-test reproduces that anchor in `capture_pill.rs::expanded_rect`. Moving a

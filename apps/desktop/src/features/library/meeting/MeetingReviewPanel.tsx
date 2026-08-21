@@ -7,7 +7,7 @@ import {
   UsersThree,
 } from "@phosphor-icons/react";
 import type { ReactNode } from "react";
-import type { TranscriptSegment } from "../../../types";
+import type { TranscriptSegment } from "../../../contracts";
 import { formatDuration } from "../shared/library-utils";
 import MeetingDetail from "./MeetingDetail";
 

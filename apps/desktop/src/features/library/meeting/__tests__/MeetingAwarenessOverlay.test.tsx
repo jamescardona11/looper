@@ -10,7 +10,7 @@ import {
   waitFor,
 } from "@testing-library/react";
 import { afterEach, describe, expect, test, vi } from "vitest";
-import type { MeetingAwarenessState } from "../../../../data/meeting-awareness";
+import type { MeetingAwarenessState } from "../../../../data/meeting/meeting-awareness";
 import MeetingAwarenessOverlay from "../MeetingAwarenessOverlay";
 
 const meetingActions = vi.hoisted(() => ({
@@ -18,7 +18,7 @@ const meetingActions = vi.hoisted(() => ({
   startCapture: vi.fn(),
   openUrl: vi.fn(),
 }));
-vi.mock("../../../../data/meeting-awareness", () => ({
+vi.mock("../../../../data/meeting/meeting-awareness", () => ({
   disableMeetingAwarenessNotifications: meetingActions.disableNotifications,
   startPromptedMeetingCapture: meetingActions.startCapture,
 }));

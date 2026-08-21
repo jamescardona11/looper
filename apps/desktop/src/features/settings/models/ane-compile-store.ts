@@ -1,4 +1,4 @@
-import type { AneCompileEvent } from "../../../types/index";
+import type { AneCompileEvent } from "../../../contracts/index";
 import { subscribeAneCompile } from "../../../data/transcription";
 
 type AneCompileDependencies = {

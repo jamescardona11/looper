@@ -20,7 +20,7 @@ const subscribeTranscriptionEvents = vi.hoisted(() => vi.fn());
 
 vi.mock("@looper/backend/convex/_generated/api", () => ({ api: backendApi }));
 vi.mock("@tauri-apps/api/core", () => ({ invoke }));
-vi.mock("../transcription", () => ({
+vi.mock("../../transcription", () => ({
   getTranscriptions,
   subscribeTranscriptionEvents,
 }));
@@ -32,7 +32,7 @@ import {
   startHistorySync,
 } from "../history-sync";
 import { pullModeRules, pushModeRules } from "../settings-sync";
-import type { ModeRule, TranscriptionRecord } from "../../types";
+import type { ModeRule, TranscriptionRecord } from "../../../contracts/index";
 
 function fakeClient() {
   return {

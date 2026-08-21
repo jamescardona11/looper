@@ -14,7 +14,7 @@ const windowEvents = vi.hoisted(() => ({
   dispose: vi.fn(),
 }));
 
-vi.mock("../../../data/overlay", () => ({
+vi.mock("../../../data/capture/overlay", () => ({
   OVERLAY_POSITION_AUTOMATIC_MOVE_EVENT: "looper:overlay-automatic-move",
   OVERLAY_USER_DRAG_EVENT: "looper:overlay-user-drag",
   persistOverlayPosition: overlayActions.persist,

@@ -1,4 +1,4 @@
-import type { MeetingDetails, MeetingTranscriptUpdate } from "../../types";
+import type { MeetingDetails, MeetingTranscriptUpdate } from "../../contracts";
 
 export function appendFinalTranscript(
   details: MeetingDetails | undefined,

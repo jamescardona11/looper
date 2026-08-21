@@ -17,7 +17,7 @@ vi.mock("../../../updates/components/UpdateChecker", () => ({
 }));
 
 import AboutTab from "../AboutTab";
-import type { AppInfo, CliInstallStatus } from "../../../../types/index";
+import type { AppInfo, CliInstallStatus } from "../../../../contracts/index";
 
 const i18n = setupI18n();
 i18n.loadAndActivate({ locale: "en", messages: {} });

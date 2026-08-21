@@ -1,7 +1,7 @@
 import type { Dispatch, SetStateAction } from "react";
 
 import type { MeetingReviewView } from "../meeting/MeetingReviewPanel";
-import type { LibraryItem } from "../../../types";
+import type { LibraryItem } from "../../../contracts";
 
 export type DetailState = {
   sourceName: string;

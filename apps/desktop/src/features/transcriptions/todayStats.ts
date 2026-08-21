@@ -1,4 +1,4 @@
-import type { TodayDictationStats, TranscriptionRecord } from "../../types";
+import type { TodayDictationStats, TranscriptionRecord } from "../../contracts";
 import { pickStableForCurrentPeriod } from "./homeGreeting";
 
 export const EMPTY_TODAY_DICTATION_STATS: TodayDictationStats = {
@@ -52,9 +52,7 @@ export type TodayStatSlide =
   | "pace_wpm"
   | "llm_cleaned";
 
-function getTodayStatSlides(
-  stats: TodayDictationStats,
-): TodayStatSlide[] {
+function getTodayStatSlides(stats: TodayDictationStats): TodayStatSlide[] {
   const slides: TodayStatSlide[] = ["dictations_words", "minutes_spoken"];
 
   if (stats.count > 0) {

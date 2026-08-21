@@ -52,7 +52,7 @@ import type {
   LibraryItemPatch,
   Speaker,
   TranscriptSegment,
-} from "../../../types";
+} from "../../../contracts";
 
 export function LibraryDetailSession(props: LibraryDetailProps) {
   const { item } = props;

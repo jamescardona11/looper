@@ -5,7 +5,7 @@ import { AnimatePresence as Presence, motion as Animated } from "framer-motion";
 import { DownloadSimple as DownloadIcon } from "@phosphor-icons/react";
 import ModelStatCard from "../../settings/models/ModelStatCard";
 import { formatModelSize } from "../../../shared/lib/modelStats";
-import type { DownloadEvent, ModelInfo, ModelStatus } from "../../../types";
+import type { DownloadEvent, ModelInfo, ModelStatus } from "../../../contracts";
 import {
   OnboardingHeader as StepHeading,
   OnboardingStep as StepFrame,

@@ -8,7 +8,7 @@ import type {
   MeetingCaptureState,
   MeetingDetails,
   MeetingTranscriptUpdate,
-} from "../../../types";
+} from "../../../contracts";
 import { libraryKeys, useMeetingCapture, useMeetingDetails } from "../queries";
 
 const listeners = vi.hoisted(

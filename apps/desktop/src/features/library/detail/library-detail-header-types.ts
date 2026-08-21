@@ -1,6 +1,6 @@
 import type { Dispatch, RefObject, SetStateAction } from "react";
 
-import type { ExportFormat, LibraryItem, Speaker } from "../../../types";
+import type { ExportFormat, LibraryItem, Speaker } from "../../../contracts";
 
 export type LibraryDetailHeaderProps = {
   item: LibraryItem;

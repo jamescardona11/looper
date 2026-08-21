@@ -8,8 +8,8 @@ import {
   startDictationFromDock,
   type CapturePillDockPosition,
   type CapturePillPresentation,
-} from "../../data/dictation";
-import { startNoteFromDock } from "../../data/notetaking";
+} from "../../data/capture/dictation";
+import { startNoteFromDock } from "../../data/meeting/notetaking";
 import { getSettings } from "../../data/settings";
 import { listModels } from "../../data/transcription";
 import {

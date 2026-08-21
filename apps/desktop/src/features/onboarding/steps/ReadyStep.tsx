@@ -15,7 +15,7 @@ import {
 import { formatShortcutForDisplay as displayShortcut } from "../../../shared/lib/shortcuts";
 import { useShortcutCapture as useNativeShortcutCapture } from "../../../shared/hooks/useShortcutCapture";
 import { useMountEffect } from "../../../shared/hooks/useMountEffect";
-import { subscribePillInserted } from "../../../data/overlay";
+import { subscribePillInserted } from "../../../data/capture/overlay";
 import { setShortcutCaptureActive } from "../../../data/settings";
 import {
   OnboardingHeader as StepHeading,

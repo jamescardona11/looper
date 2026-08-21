@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import type { LibraryItem } from "../../../../types";
+import type { LibraryItem } from "../../../../contracts";
 import {
   cardActionKind,
   cardStatus,

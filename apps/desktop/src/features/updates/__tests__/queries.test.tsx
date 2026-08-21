@@ -6,7 +6,7 @@ import type { ReactNode } from "react";
 import { beforeEach, describe, expect, test, vi } from "vitest";
 
 const updatesApi = vi.hoisted(() => ({ getUpdateStatus: vi.fn() }));
-vi.mock("../../../data/updates", () => updatesApi);
+vi.mock("../../../data/system/updates", () => updatesApi);
 
 import { updateKeys, useUpdateStatus } from "../queries";
 

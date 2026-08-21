@@ -5,7 +5,7 @@ import type {
   DownloadEvent,
   ModelInfo,
   ModelStatus,
-} from "../../../types/index";
+} from "../../../contracts/index";
 
 export function ModelBrowser({
   catalog,

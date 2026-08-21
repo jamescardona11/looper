@@ -8,7 +8,7 @@ import type {
   ModelStatus,
   RemoteSpeechProvider,
   TranscriptionMode,
-} from "../../../types/index";
+} from "../../../contracts/index";
 
 export function selectLocalModel(
   catalog: ModelInfo[],

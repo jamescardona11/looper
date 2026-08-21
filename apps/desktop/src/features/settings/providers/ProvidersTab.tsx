@@ -9,7 +9,7 @@ import type {
   LlmProvider,
   MeetingAiProvider,
   RemoteSpeechProvider,
-} from "../../../types/index";
+} from "../../../contracts/index";
 
 export type WritingProviderSettings = {
   enabled: boolean;

@@ -1,4 +1,4 @@
-import type { ModelInfo } from "../../types";
+import type { ModelInfo } from "../../contracts";
 
 const ONBOARDING_MODEL_ORDER = [
   "parakeet_tdt_int8",

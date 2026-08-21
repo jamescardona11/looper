@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useState, type SetStateAction } from "react";
 
-import { LOCAL_LLM_MODEL_ID } from "../../../data/local-llm";
+import { LOCAL_LLM_MODEL_ID } from "../../../data/models/local-llm";
 import {
   parseTextSizeMode,
   TEXT_SIZE_MODE_STORAGE_KEY,
@@ -17,7 +17,7 @@ import type {
   TextSizeMode,
   ThemeMode,
   TranscriptionMode,
-} from "../../../types/index";
+} from "../../../contracts/index";
 
 export type SettingsDraft = {
   transcriptionMode: TranscriptionMode;

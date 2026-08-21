@@ -7,7 +7,7 @@ import type {
   ModelStatus,
   RemoteSpeechProvider,
   TranscriptionMode,
-} from "../../../types/index";
+} from "../../../contracts/index";
 import { ModelBrowser } from "./ModelBrowser";
 import { ModelsOverview } from "./ModelsOverview";
 

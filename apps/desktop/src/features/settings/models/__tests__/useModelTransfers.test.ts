@@ -5,7 +5,7 @@ import { act, renderHook } from "@testing-library/react";
 import { createElement, type ReactNode } from "react";
 import { beforeEach, describe, expect, test, vi } from "vitest";
 
-import type { ModelDownloadEventHandlers } from "../../../../data/model-downloads";
+import type { ModelDownloadEventHandlers } from "../../../../data/models/model-downloads";
 
 const mocks = vi.hoisted(() => ({
   downloadModel: vi.fn(),

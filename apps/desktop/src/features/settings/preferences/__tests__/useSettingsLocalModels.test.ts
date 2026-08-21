@@ -3,7 +3,7 @@
 import { act, renderHook } from "@testing-library/react";
 import { beforeEach, describe, expect, test, vi } from "vitest";
 
-import type { AppLocaleSetting, ModelInfo } from "../../../../types/index";
+import type { AppLocaleSetting, ModelInfo } from "../../../../contracts/index";
 
 const mocks = vi.hoisted(() => ({ useModelTransfers: vi.fn() }));
 

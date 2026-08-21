@@ -5,7 +5,7 @@ import type {
   TouchEventHandler,
 } from "react";
 import { useReducedMotion } from "framer-motion";
-import type { LibraryItemPatch } from "../../../types";
+import type { LibraryItemPatch } from "../../../contracts";
 import { LibraryPlayerRate } from "./library-player-footer-rate";
 import { LibraryPlayerToggles } from "./library-player-footer-toggles";
 import { LibraryPlayerTransport } from "./library-player-footer-transport";

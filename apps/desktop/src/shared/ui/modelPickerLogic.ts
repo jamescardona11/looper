@@ -1,5 +1,5 @@
 import { deriveModelStats } from "../lib/modelStats";
-import type { ModelInfo } from "../../types/models";
+import type { ModelInfo } from "../../contracts/models";
 
 export const MODEL_CATEGORY_ORDER = [
   "standard",

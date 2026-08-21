@@ -3,7 +3,7 @@
 import { act, renderHook } from "@testing-library/react";
 import { beforeEach, describe, expect, test, vi } from "vitest";
 
-import type { StoredSettings } from "../../../../types/index";
+import type { StoredSettings } from "../../../../contracts/index";
 import type { SettingsSaveOverrides } from "../../preferences/settings-update-model";
 import type { ShortcutPersistencePort } from "../useShortcutEditor";
 import { useShortcutEditor } from "../useShortcutEditor";

@@ -17,7 +17,7 @@ import type {
   ImportPreview,
   ImportResult,
   ImportSelections,
-} from "../../../../types";
+} from "../../../../contracts";
 import type { StepMotionProps } from "../../../onboarding/steps/shared";
 
 const importGateway = vi.hoisted(() => ({

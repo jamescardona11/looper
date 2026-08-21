@@ -10,7 +10,7 @@ import type {
   AppLocaleSetting,
   ModelInfo,
   ModelStatus,
-} from "../../../types/index";
+} from "../../../contracts/index";
 import {
   resolveExplicitLanguage,
   resolveModelDeletionUpdate,

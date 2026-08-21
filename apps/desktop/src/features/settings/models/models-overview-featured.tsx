@@ -7,7 +7,7 @@ import type {
   DownloadEvent,
   ModelInfo,
   ModelStatus,
-} from "../../../types/index";
+} from "../../../contracts/index";
 import type { CloudModelSelection } from "./models-tab-model";
 
 const PAIRED_CARD_WIDTH = 280;

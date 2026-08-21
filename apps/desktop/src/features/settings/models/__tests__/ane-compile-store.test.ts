@@ -1,6 +1,6 @@
 import { describe, expect, test, vi } from "vitest";
 import { createAneCompileStore } from "../ane-compile-store";
-import type { AneCompileEvent } from "../../../../types/index";
+import type { AneCompileEvent } from "../../../../contracts/index";
 
 describe("ANE compile store", () => {
   test("publishes start and finish events through one native subscription", async () => {

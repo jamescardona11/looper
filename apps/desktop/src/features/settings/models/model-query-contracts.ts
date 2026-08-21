@@ -1,7 +1,7 @@
-import * as cliData from "../../../data/cli";
+import * as cliData from "../../../data/system/cli";
 import * as transcriptionData from "../../../data/transcription";
 import { formatTranscriptionSpeechModel } from "../../../shared/lib/speechProviders";
-import type { ModelStatus, SpeechModel } from "../../../types/index";
+import type { ModelStatus, SpeechModel } from "../../../contracts/index";
 
 const modelKey = (...segments: string[]) => ["models", ...segments] as const;
 

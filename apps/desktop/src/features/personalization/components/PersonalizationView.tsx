@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { useLingui } from "@lingui/react/macro";
 import { useQueryClient } from "@tanstack/react-query";
-import type { Personality } from "../../../types";
+import type { Personality } from "../../../contracts";
 import type { InstalledApp } from "../../../data/personalization";
 import { useShiftHeld } from "../../../shared/hooks/useShiftHeld";
 import {

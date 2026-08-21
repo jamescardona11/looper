@@ -6,7 +6,7 @@ import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { createRef } from "react";
 import type { VirtuosoHandle } from "react-virtuoso";
 import { afterEach, describe, expect, test, vi } from "vitest";
-import type { LibraryItem, TranscriptSegment } from "../../../../types";
+import type { LibraryItem, TranscriptSegment } from "../../../../contracts";
 
 const openFfmpegInstallHelp = vi.hoisted(() => vi.fn());
 

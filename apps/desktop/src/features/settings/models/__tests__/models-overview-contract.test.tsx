@@ -11,7 +11,7 @@ import {
 } from "@testing-library/react";
 import { afterEach, describe, expect, test, vi } from "vitest";
 
-import type { ModelInfo, ModelStatus } from "../../../../types/index";
+import type { ModelInfo, ModelStatus } from "../../../../contracts/index";
 import { ModelsOverview } from "../ModelsOverview";
 
 const i18n = setupI18n();

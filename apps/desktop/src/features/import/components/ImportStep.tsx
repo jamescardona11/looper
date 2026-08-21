@@ -8,7 +8,7 @@ import type {
   DetectedApp as ImportSource,
   ImportResult as AppliedImport,
   ImportSelection as ImportCategory,
-} from "../../../types";
+} from "../../../contracts";
 import {
   OnboardingStep as StepFrame,
   type StepMotionProps as ImportMotion,

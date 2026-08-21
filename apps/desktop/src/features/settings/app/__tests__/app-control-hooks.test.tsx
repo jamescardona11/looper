@@ -12,7 +12,7 @@ const calendarMocks = vi.hoisted(() => ({
   requestAccess: vi.fn(),
 }));
 
-vi.mock("../../../../data/meeting-awareness", () => ({
+vi.mock("../../../../data/meeting/meeting-awareness", () => ({
   getCalendarAccessStatus: calendarMocks.getAccess,
   requestCalendarAccess: calendarMocks.requestAccess,
 }));

@@ -1,4 +1,4 @@
-import type * as LibraryTypes from "../../../types";
+import type * as LibraryTypes from "../../../contracts";
 
 type FollowTimestampContract = Record<"followTimestamps", boolean> & {
   onFollowTimestampsChange: (

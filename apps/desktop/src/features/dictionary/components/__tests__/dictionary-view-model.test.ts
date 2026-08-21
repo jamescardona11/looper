@@ -1,6 +1,6 @@
 import { describe, expect, test } from "vitest";
 
-import type { Replacement, UserSnippet } from "../../../../types";
+import type { Replacement, UserSnippet } from "../../../../contracts";
 import {
   addDictionaryEntry,
   addDictionaryReplacement,

@@ -4,7 +4,7 @@ import { setupI18n } from "@lingui/core";
 import { I18nProvider } from "@lingui/react";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, test, vi } from "vitest";
-import type { CliInstallStatus } from "../../../../types/index";
+import type { CliInstallStatus } from "../../../../contracts/index";
 import { AboutCli } from "../AboutTab";
 
 const i18n = setupI18n();

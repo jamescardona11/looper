@@ -14,7 +14,7 @@ import type {
   LibraryItemsPage,
   LibraryItemPatch,
   YoutubeImportMetadata,
-} from "../../types";
+} from "../../contracts";
 import { libraryKeys } from "./library-query-keys";
 import { useLibraryEventSync } from "./use-library-event-sync";
 

@@ -10,7 +10,7 @@ import {
   screen,
 } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
-import type { ToastPayload } from "../../../types";
+import type { ToastPayload } from "../../../contracts";
 import ToastOverlay from "../ToastOverlay";
 
 const mocks = vi.hoisted(() => ({
@@ -19,7 +19,7 @@ const mocks = vi.hoisted(() => ({
   hide: vi.fn(() => Promise.resolve()),
 }));
 
-vi.mock("../../../data/toast", () => ({
+vi.mock("../../../data/capture/toast", () => ({
   subscribeToastShow: vi.fn((handler: (payload: ToastPayload) => void) => {
     mocks.listeners.set("toast:show", ({ payload }) => handler(payload));
     return Promise.resolve(() => mocks.listeners.delete("toast:show"));
@@ -32,13 +32,13 @@ vi.mock("../../../data/toast", () => ({
   hideToastWindow: mocks.hide,
   runToastAction: mocks.invoke,
 }));
-vi.mock("../../../data/audio", () => ({
+vi.mock("../../../data/capture/audio", () => ({
   subscribeRecordingStart: vi.fn(() => Promise.resolve(() => {})),
 }));
 vi.mock("../../../data/transcription", () => ({
   retryTranscription: vi.fn(() => Promise.resolve()),
 }));
-vi.mock("../../../data/insertion", () => ({
+vi.mock("../../../data/capture/insertion", () => ({
   undoLastInsertion: vi.fn(() => Promise.resolve()),
 }));
 

@@ -5,7 +5,7 @@
 // stops writes at both the client and Convex layers.
 import { api } from "@looper/backend/convex/_generated/api";
 import { listen } from "@tauri-apps/api/event";
-import { createConvexClient, ensureAnonymousSession } from "./convex-auth";
+import { createConvexClient, ensureAnonymousSession } from "../sync/convex-auth";
 
 const SHARING_STORAGE_KEY = "looper.liveMeeting.shareTranscript";
 const DEVICE_ID_STORAGE_KEY = "looper.liveMeeting.desktopDeviceId";

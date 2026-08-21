@@ -9,7 +9,7 @@ import {
 
 import { HeaderMenuSurface } from "./library-detail-header-menu";
 import type { LibraryDetailHeaderProps } from "./library-detail-header-types";
-import type { Speaker } from "../../../types";
+import type { Speaker } from "../../../contracts";
 
 type SpeakersProps = Pick<
   LibraryDetailHeaderProps,

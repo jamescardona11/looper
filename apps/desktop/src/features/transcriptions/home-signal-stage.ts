@@ -1,5 +1,5 @@
-import type { PillInsertedPayload } from "../../data/overlay";
-import type { PillModePayload, PillStatePayload } from "../../types/pill";
+import type { PillInsertedPayload } from "../../data/capture/overlay";
+import type { PillModePayload, PillStatePayload } from "../../contracts/pill";
 import type { SignalStage } from "./components/CaptureStatusCard";
 
 export const signalStageFromPillState = (

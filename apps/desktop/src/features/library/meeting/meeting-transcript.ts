@@ -1,7 +1,7 @@
 import type {
   MeetingTranscriptSegment,
   MeetingTranscriptSource,
-} from "../../../types";
+} from "../../../contracts";
 
 type MeetingTranscriptGroup = {
   id: string;

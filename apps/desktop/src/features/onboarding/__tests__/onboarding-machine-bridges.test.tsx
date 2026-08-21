@@ -3,7 +3,7 @@
 import { act, cleanup, render, screen, waitFor } from "@testing-library/react";
 import { useState } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import type { DetectedApp } from "../../../types";
+import type { DetectedApp } from "../../../contracts";
 import type { OnboardingEvent } from "../machine";
 import { OnboardingMachineBridges } from "../onboarding-machine-bridges";
 
@@ -20,7 +20,7 @@ const mocks = vi.hoisted(() => ({
   trackStep: vi.fn(() => Promise.resolve()),
 }));
 
-vi.mock("../../../data/local-llm", () => ({
+vi.mock("../../../data/models/local-llm", () => ({
   listenLocalLlmDownloads: vi.fn((listeners: LlmListeners) => {
     mocks.llmListeners = listeners;
     return Promise.resolve(mocks.cleanupLlmListener);

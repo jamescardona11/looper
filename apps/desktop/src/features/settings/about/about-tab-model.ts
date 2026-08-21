@@ -1,4 +1,4 @@
-import type { AppInfo, CliInstallStatus } from "../../../types/index";
+import type { AppInfo, CliInstallStatus } from "../../../contracts/index";
 
 export type StorageMetricKey =
   "recordings" | "library" | "models" | "database" | "total";

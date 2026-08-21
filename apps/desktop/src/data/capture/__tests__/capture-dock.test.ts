@@ -16,7 +16,7 @@ import {
   setDictationLanguage,
   startDictationFromDock,
 } from "../dictation";
-import { startNoteFromDock } from "../notetaking";
+import { startNoteFromDock } from "../../meeting/notetaking";
 
 describe("capture dock native gateway", () => {
   beforeEach(() => {

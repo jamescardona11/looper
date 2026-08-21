@@ -1,6 +1,6 @@
 import { useLingui } from "@lingui/react/macro";
 import type { KeyboardEvent } from "react";
-import type { LibraryItem } from "../../../types";
+import type { LibraryItem } from "../../../contracts";
 import { IntelligencePixel } from "../../../shared/ui/IntelligencePixel";
 import { formatDuration, formatLibraryName } from "../shared/library-utils";
 import { buildMiniWaveform } from "../player/library-waveform";

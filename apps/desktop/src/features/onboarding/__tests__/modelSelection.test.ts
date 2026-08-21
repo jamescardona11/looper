@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import type { ModelInfo } from "../../../types";
+import type { ModelInfo } from "../../../contracts";
 import {
   pickOnboardingModels,
   resolveOnboardingLanguage,

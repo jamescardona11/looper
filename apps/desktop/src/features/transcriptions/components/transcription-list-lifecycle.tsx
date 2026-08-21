@@ -1,6 +1,6 @@
 import { useMemo, useRef, type RefObject } from "react";
 import { useMountEffect } from "../../../shared/hooks/useMountEffect";
-import type { TranscriptionRecord } from "../../../types";
+import type { TranscriptionRecord } from "../../../contracts";
 
 const dataIds = new WeakMap<TranscriptionRecord[], number>();
 let nextDataId = 1;

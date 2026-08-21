@@ -18,7 +18,7 @@ import {
   ModelDownloadActivityProvider,
   useModelDownloadActivity,
 } from "../modelDownloadActivity";
-import type { DownloadProgressPayload } from "../../../../types/index";
+import type { DownloadProgressPayload } from "../../../../contracts/index";
 
 type DownloadHandlers = {
   onProgress?: (payload: DownloadProgressPayload) => void;

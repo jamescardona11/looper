@@ -1,7 +1,7 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useRef } from "react";
 
-import type { TranscriptionRecord } from "../../types";
+import type { TranscriptionRecord } from "../../contracts";
 import { deriveTodayStats } from "./todayStats";
 import {
   transcriptionKeys,
