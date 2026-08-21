@@ -25,7 +25,7 @@ const MAX_WEBSITE_CHARS: usize = 120;
 // stops parsing or goes non-positive. Runtime therefore degrades to the frozen
 // default instead of panicking — a settings screen that enforces a stale limit
 // is recoverable, a process that aborts on startup is not.
-const PERSONALIZATION_LIMITS_WIRE: &str = include_str!("../../personalization-limits.json");
+const PERSONALIZATION_LIMITS_WIRE: &str = include_str!("../../../personalization-limits.json");
 const DEFAULT_MAX_INSTRUCTION_CHARS: usize = 3_000;
 static MAX_INSTRUCTION_CHARS: OnceLock<usize> = OnceLock::new();
 

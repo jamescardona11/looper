@@ -616,11 +616,11 @@ fn is_meeting_url(value: &str) -> bool {
 }
 
 #[cfg(target_os = "macos")]
-#[path = "meeting_awareness/calendar_macos.rs"]
+#[path = "calendar_macos.rs"]
 mod platform;
 
 #[cfg(not(target_os = "macos"))]
-#[path = "meeting_awareness/calendar_unsupported.rs"]
+#[path = "calendar_unsupported.rs"]
 mod platform;
 
 #[cfg(test)]

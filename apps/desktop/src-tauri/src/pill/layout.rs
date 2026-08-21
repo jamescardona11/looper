@@ -6,7 +6,7 @@ use super::{
     MEETING_TRANSCRIPT_ABOVE_HEIGHT, MEETING_TRANSCRIPT_ABOVE_WIDTH, MEETING_TRANSCRIPT_HEIGHT,
     MEETING_TRANSCRIPT_SIDE_HEIGHT, MEETING_TRANSCRIPT_SIDE_WIDTH, MEETING_TRANSCRIPT_WIDTH,
 };
-use crate::capture_pill::{clamp_coordinates as clamp_overlay_coordinates, logical_pixels};
+use super::capture::{clamp_coordinates as clamp_overlay_coordinates, logical_pixels};
 
 /// Converts the visible pill anchor into the larger dictation window origin.
 pub(super) fn dictation_origin_from_canonical(canonical: (i32, i32), scale: f64) -> (i32, i32) {

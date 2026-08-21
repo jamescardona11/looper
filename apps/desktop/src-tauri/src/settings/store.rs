@@ -7,8 +7,8 @@ use serde::{de::DeserializeOwned, Serialize};
 use tauri::{AppHandle, Manager};
 
 use super::{
-    settings_model::{MediaAction, RecordingPrunePolicy, UserSettings},
-    settings_policy,
+    model::{MediaAction, RecordingPrunePolicy, UserSettings},
+    policy,
 };
 
 const DATABASE_FILE: &str = "settings.db";
@@ -418,7 +418,7 @@ impl SettingsStore {
         let remote_key = self
             .remote_speech_secret
             .prepare_for_storage(&settings.remote_speech_api_key, SecretKind::RemoteSpeech)?;
-        let locale = settings_policy::canonicalize_app_locale_or_default(&settings.app_locale);
+        let locale = policy::canonicalize_app_locale_or_default(&settings.app_locale);
         let connection = self.conn.lock();
         let writer = Writer::new(self, &connection);
         write_fields!(writer, settings;
@@ -612,7 +612,7 @@ impl MigrationState {
         let recording = reader.value_named(LEGACY_RECORDING_PRUNE, RecordingPrunePolicy::Never)?;
         let transcription =
             reader.value_named(LEGACY_TRANSCRIPTION_PRUNE, RecordingPrunePolicy::Never)?;
-        settings_policy::migrate_auto_delete_from_legacy(settings, recording, transcription);
+        policy::migrate_auto_delete_from_legacy(settings, recording, transcription);
         self.should_persist = true;
         Ok(())
     }
@@ -624,7 +624,7 @@ impl MigrationState {
             self.should_persist = true;
         }
         if !settings.personalities_notes_seeded {
-            settings_policy::seed_personality_notes(&mut settings.personalities);
+            policy::seed_personality_notes(&mut settings.personalities);
             settings.personalities_notes_seeded = true;
             self.should_persist = true;
         }
@@ -650,23 +650,23 @@ impl MigrationState {
             settings.cleanup_enabled = false;
             self.should_persist = true;
         }
-        settings_policy::sync_legacy_shortcuts_from_bindings(settings);
+        policy::sync_legacy_shortcuts_from_bindings(settings);
 
         if crate::model_manager::definition(&settings.local_model).is_none() {
-            settings.local_model = settings_policy::default_local_model();
+            settings.local_model = policy::default_local_model();
             self.should_persist = true;
         }
         if !crate::local_llm::is_known_model(&settings.local_llm_model) {
-            settings.local_llm_model = settings_policy::default_local_llm_model();
+            settings.local_llm_model = policy::default_local_llm_model();
             self.should_persist = true;
         }
         let duration =
-            settings_policy::canonicalize_recording_prune_policy(settings.auto_delete_duration);
+            policy::canonicalize_recording_prune_policy(settings.auto_delete_duration);
         if duration != settings.auto_delete_duration {
             settings.auto_delete_duration = duration;
             self.should_persist = true;
         }
-        let locale = settings_policy::canonicalize_app_locale_or_default(&settings.app_locale);
+        let locale = policy::canonicalize_app_locale_or_default(&settings.app_locale);
         if locale != settings.app_locale {
             settings.app_locale = locale;
             self.should_persist = true;
@@ -748,9 +748,9 @@ mod tests {
         let store = test_store();
         let mut settings = UserSettings::default();
         settings.calendar_meeting_awareness_enabled = true;
-        settings.capture_pill_presentation = crate::capture_pill::CapturePillPresentation::Floating;
+        settings.capture_pill_presentation = crate::pill::capture::CapturePillPresentation::Floating;
         settings.capture_pill_dock_position =
-            crate::capture_pill::CapturePillDockPosition::LeftCenter;
+            crate::pill::capture::CapturePillDockPosition::LeftCenter;
         settings.app_locale = " EN ".to_owned();
         store.save(&settings).unwrap();
         let loaded = store.load().unwrap();

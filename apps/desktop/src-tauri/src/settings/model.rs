@@ -189,42 +189,42 @@ pub struct ShortcutBindings {
 pub struct UserSettings {
     #[serde(default)]
     pub onboarding_completed: bool,
-    #[serde(default = "super::settings_policy::default_smart_shortcut")]
+    #[serde(default = "super::policy::default_smart_shortcut")]
     pub smart_shortcut: String,
-    #[serde(default = "super::settings_policy::default_true")]
+    #[serde(default = "super::policy::default_true")]
     pub smart_enabled: bool,
-    #[serde(default = "super::settings_policy::default_hold_shortcut")]
+    #[serde(default = "super::policy::default_hold_shortcut")]
     pub hold_shortcut: String,
     #[serde(default)]
     pub hold_enabled: bool,
-    #[serde(default = "super::settings_policy::default_toggle_shortcut")]
+    #[serde(default = "super::policy::default_toggle_shortcut")]
     pub toggle_shortcut: String,
     #[serde(default)]
     pub toggle_enabled: bool,
-    #[serde(default = "super::settings_policy::default_shortcut_bindings")]
+    #[serde(default = "super::policy::default_shortcut_bindings")]
     pub shortcut_bindings: ShortcutBindings,
-    #[serde(default = "super::settings_policy::default_transcription_mode")]
+    #[serde(default = "super::policy::default_transcription_mode")]
     pub transcription_mode: TranscriptionMode,
-    #[serde(default = "super::settings_policy::default_local_model")]
+    #[serde(default = "super::policy::default_local_model")]
     pub local_model: String,
     #[serde(default)]
     pub remote_speech_enabled: bool,
-    #[serde(default = "super::settings_policy::default_remote_speech_provider")]
+    #[serde(default = "super::policy::default_remote_speech_provider")]
     pub remote_speech_provider: String,
-    #[serde(default = "super::settings_policy::default_remote_speech_endpoint")]
+    #[serde(default = "super::policy::default_remote_speech_endpoint")]
     pub remote_speech_endpoint: String,
     #[serde(default)]
     pub remote_speech_api_key: String,
-    #[serde(default = "super::settings_policy::default_remote_speech_model")]
+    #[serde(default = "super::policy::default_remote_speech_model")]
     pub remote_speech_model: String,
     pub microphone_device: Option<String>,
-    #[serde(default = "super::settings_policy::default_language")]
+    #[serde(default = "super::policy::default_language")]
     pub language: String,
     #[serde(default)]
-    pub capture_pill_presentation: crate::capture_pill::CapturePillPresentation,
+    pub capture_pill_presentation: crate::pill::capture::CapturePillPresentation,
     #[serde(default)]
-    pub capture_pill_dock_position: crate::capture_pill::CapturePillDockPosition,
-    #[serde(default = "super::settings_policy::default_app_locale")]
+    pub capture_pill_dock_position: crate::pill::capture::CapturePillDockPosition,
+    #[serde(default = "super::policy::default_app_locale")]
     pub app_locale: String,
     #[serde(default)]
     pub theme_mode: ThemeMode,
@@ -232,7 +232,7 @@ pub struct UserSettings {
     pub llm_enabled: bool,
     #[serde(default)]
     pub cleanup_enabled: bool,
-    #[serde(default = "super::settings_policy::default_llm_provider")]
+    #[serde(default = "super::policy::default_llm_provider")]
     pub llm_provider: String,
     #[serde(default)]
     pub llm_endpoint: String,
@@ -240,9 +240,9 @@ pub struct UserSettings {
     pub llm_api_key: String,
     #[serde(default)]
     pub llm_model: String,
-    #[serde(default = "super::settings_policy::default_meeting_ai_provider")]
+    #[serde(default = "super::policy::default_meeting_ai_provider")]
     pub meeting_ai_provider: String,
-    #[serde(default = "super::settings_policy::default_local_llm_model")]
+    #[serde(default = "super::policy::default_local_llm_model")]
     pub local_llm_model: String,
     #[serde(default)]
     pub personalities_notes_seeded: bool,
@@ -256,7 +256,7 @@ pub struct UserSettings {
     pub replacements: Vec<Replacement>,
     #[serde(default)]
     pub user_snippets: Vec<UserSnippet>,
-    #[serde(default = "super::settings_policy::default_personalities")]
+    #[serde(default = "super::policy::default_personalities")]
     pub personalities: Vec<Personality>,
     #[serde(default)]
     pub mode_rules: Vec<ModeRule>,
@@ -266,7 +266,7 @@ pub struct UserSettings {
     pub edit_mode_enabled: bool,
     #[serde(default)]
     pub preview_before_insert_enabled: bool,
-    #[serde(default = "super::settings_policy::default_true")]
+    #[serde(default = "super::policy::default_true")]
     pub preview_before_insert_selection_enabled: bool,
     #[serde(default)]
     pub use_screen_context: bool,
@@ -280,9 +280,9 @@ pub struct UserSettings {
     pub start_in_background: bool,
     #[serde(default)]
     pub calendar_meeting_awareness_enabled: bool,
-    #[serde(default = "super::settings_policy::default_auto_delete_target")]
+    #[serde(default = "super::policy::default_auto_delete_target")]
     pub auto_delete_target: AutoDeleteTarget,
-    #[serde(default = "super::settings_policy::default_auto_delete_duration")]
+    #[serde(default = "super::policy::default_auto_delete_duration")]
     pub auto_delete_duration: RecordingPrunePolicy,
     #[serde(default)]
     pub audio_storage_budget_mb: u32,
@@ -292,7 +292,7 @@ pub struct UserSettings {
     pub markdown_mirror_enabled: bool,
     #[serde(default)]
     pub markdown_mirror_path: String,
-    #[serde(default = "super::settings_policy::default_true")]
+    #[serde(default = "super::policy::default_true")]
     pub analytics_enabled: bool,
     #[serde(default)]
     pub analytics_install_id: String,

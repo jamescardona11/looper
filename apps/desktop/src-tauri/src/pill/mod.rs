@@ -1,19 +1,19 @@
 #[cfg(target_os = "macos")]
-use crate::hover_intent::{HoverDecision, HoverIntent};
+use self::hover_intent::{HoverDecision, HoverIntent};
 use crate::permissions;
 use crate::{
     accessibility_context, assistive,
-    capture_pill::{
-        self, clamp_coordinates as clamp_overlay_coordinates, closest_monitor_index,
-        logical_pixels, physical_size as physical_overlay_size, points_share_closest_monitor,
-        CapturePillDockPosition, CapturePillPresentation,
-    },
     core::hotkeys::{self, HotkeyState},
     emit_event, model_manager, music, platform,
     recorder::RecorderManager,
     screen_vocabulary,
     settings::{MediaAction, Personality, TranscriptionMode, UserSettings},
     toast, AppRuntime, AppState, AudioSpectrumPayload, EVENT_AUDIO_SPECTRUM, MAIN_WINDOW_LABEL,
+};
+use capture::{
+    clamp_coordinates as clamp_overlay_coordinates, closest_monitor_index, logical_pixels,
+    physical_size as physical_overlay_size, points_share_closest_monitor,
+    CapturePillDockPosition, CapturePillPresentation,
 };
 use chrono::{DateTime, Local};
 use parking_lot::Mutex;
@@ -26,12 +26,12 @@ use std::sync::{
 use std::time::{Duration, Instant};
 use tauri::{AppHandle, Emitter, LogicalSize, Manager, Rect, WebviewWindow};
 
-#[path = "pill_controller_state.rs"]
-mod pill_controller_state;
-#[path = "pill_layout.rs"]
-mod pill_layout;
+pub(crate) mod capture;
+mod controller_state;
+mod hover_intent;
+mod layout;
 
-use pill_layout::{
+use layout::{
     canonical_from_dictation_origin, canonical_meeting_overlay_origin,
     dictation_origin_from_canonical, meeting_overlay_geometry,
 };
@@ -392,7 +392,7 @@ fn overlay_geometry_in_points(window: &WebviewWindow<AppRuntime>) -> Option<Over
     let cursor = window.cursor_position().ok()?;
     let origin = window.outer_position().ok()?;
     let size = window.outer_size().ok()?;
-    let (cursor, origin, size) = capture_pill::to_shared_points(
+    let (cursor, origin, size) = capture::to_shared_points(
         (cursor.x, cursor.y),
         primary_scale_factor(window),
         (f64::from(origin.x), f64::from(origin.y)),
@@ -467,7 +467,7 @@ fn cursor_over_pill_window(app: &AppHandle<AppRuntime>) -> Option<(bool, (f64, f
             ));
         }
         return Some((
-            capture_pill::hit_test(
+            capture::hit_test(
             (cursor.0 - pos.0, cursor.1 - pos.1),
             size,
             scale,
@@ -2199,14 +2199,14 @@ pub fn show_idle_sticky(app: &AppHandle<AppRuntime>) -> Result<(), String> {
                 let work_area = monitor.work_area();
                 let monitor_scale = monitor.scale_factor();
                 let base_size = physical_overlay_size(
-                    (capture_pill::WINDOW_WIDTH, capture_pill::WINDOW_HEIGHT),
+                    (capture::WINDOW_WIDTH, capture::WINDOW_HEIGHT),
                     monitor_scale,
                 );
-                let base_origin = capture_pill::dock_origin(
+                let base_origin = capture::dock_origin(
                     (work_area.position.x, work_area.position.y),
                     (work_area.size.width, work_area.size.height),
                     base_size,
-                    logical_pixels(capture_pill::EDGE_MARGIN, monitor_scale),
+                    logical_pixels(capture::EDGE_MARGIN, monitor_scale),
                     settings.capture_pill_dock_position,
                 );
                 let dock_menu_inset =
@@ -2248,10 +2248,10 @@ pub fn show_idle_sticky(app: &AppHandle<AppRuntime>) -> Result<(), String> {
                 let work_area = monitor.work_area();
                 let monitor_scale = monitor.scale_factor();
                 let base_size = physical_overlay_size(
-                    (capture_pill::WINDOW_WIDTH, capture_pill::WINDOW_HEIGHT),
+                    (capture::WINDOW_WIDTH, capture::WINDOW_HEIGHT),
                     monitor_scale,
                 );
-                Some(capture_pill::dock_origin(
+                Some(capture::dock_origin(
                     (work_area.position.x, work_area.position.y),
                     (work_area.size.width, work_area.size.height),
                     base_size,

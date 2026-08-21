@@ -1,4 +1,4 @@
-use crate::capture_pill::{CapturePillDockPosition, CapturePillPresentation};
+use crate::pill::capture::{CapturePillDockPosition, CapturePillPresentation};
 use crate::library::meeting_commands::{
     join_calendar_meeting_from_menu, meeting_toggle_label, toggle_meeting_from_menu,
     MENU_ID_MEETING_TOGGLE,
@@ -765,7 +765,7 @@ pub fn build_tray(app: &AppHandle<AppRuntime>) -> tauri::Result<TrayIcon<AppRunt
 
     #[cfg(target_os = "macos")]
     let builder = {
-        let icon_bytes = include_bytes!("../icons/tray.png");
+        let icon_bytes = include_bytes!("../../icons/tray.png");
         let icon = tauri::image::Image::from_bytes(icon_bytes)?.to_owned();
         builder.icon(icon).icon_as_template(true)
     };

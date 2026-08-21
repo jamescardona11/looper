@@ -2,7 +2,7 @@ use std::{collections::HashSet, sync::OnceLock};
 
 use chrono::{DateTime, Days, Local, Months};
 
-use super::settings_model::{
+use super::model::{
     AppBinding, AutoDeleteTarget, MediaAction, Personality, RecordingPrunePolicy, ShortcutBinding,
     ShortcutBindings, ThemeMode, TranscriptionMode, UserSettings,
 };
@@ -375,7 +375,7 @@ pub(super) fn default_app_locale() -> String {
     "system".to_owned()
 }
 
-const SUPPORTED_LOCALES_WIRE: &str = include_str!("../../supported-app-locales.json");
+const SUPPORTED_LOCALES_WIRE: &str = include_str!("../../../supported-app-locales.json");
 static SUPPORTED_LOCALES: OnceLock<Vec<String>> = OnceLock::new();
 
 fn supported_app_locales() -> &'static [String] {
