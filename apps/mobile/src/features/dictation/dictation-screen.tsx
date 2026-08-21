@@ -1,4 +1,4 @@
-import { useDictationHistory, useDictationSettings, useNotes } from "@looper/data";
+import { useDictationSettings, useNoteCommands, useRecordDictation } from "@looper/data";
 import { type Href, useRouter } from "expo-router";
 import { useMemo, useRef, useState } from "react";
 import {
@@ -35,8 +35,8 @@ export function DictationScreen() {
   const router = useRouter();
   const recorder = useAudioRecorder();
   const localStt = useLocalStt();
-  const notes = useNotes({ loadList: false });
-  const history = useDictationHistory({ loadList: false });
+  const notes = useNoteCommands();
+  const history = useRecordDictation();
   const studio = useDictationSettings();
   const [transcript, setTranscript] = useState<string | null>(null);
   const [isTranscribing, setIsTranscribing] = useState(false);

@@ -1,4 +1,4 @@
-import { useMeetingSessions } from "@looper/data";
+import { useMeetingCommands } from "@looper/data";
 import { useCallback, useRef, useState } from "react";
 import { type RecordedAudio, useAudioRecorder, useLocalStt } from "@/features/dictation";
 import { addMarkedMoment, createMeetingIdentity } from "./meeting-capture-logic";
@@ -17,7 +17,7 @@ type ActiveMeeting = { meetingId: string; title: string; nextSequence: number };
 export function useMeetingCapture() {
   const recorder = useAudioRecorder();
   const localStt = useLocalStt();
-  const meetings = useMeetingSessions({ limit: 1 });
+  const meetings = useMeetingCommands();
   const [identity] = useState(() =>
     createMeetingIdentity(Date.now(), Math.random().toString(36).slice(2, 10)),
   );

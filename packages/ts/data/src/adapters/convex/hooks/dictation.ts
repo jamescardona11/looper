@@ -3,11 +3,11 @@ import type { Id } from "@looper/backend/convex/_generated/dataModel";
 import { useMutation, useQuery } from "convex/react";
 import { useCallback } from "react";
 import type {
+  DictationHistoryItem,
   DictationSettingsDoc,
   DictionaryEntry,
   ReplacementRule,
   UserSnippet,
-  DictationHistoryItem,
 } from "../../../types";
 import {
   dictationSettingsFromRow,
@@ -16,9 +16,27 @@ import {
   userSnippetFromRow,
 } from "../dictation-mappers";
 
-export function useDictationHistory({ loadList = true }: { loadList?: boolean } = {}): {
+export function useDictationHistory(): {
   items: DictationHistoryItem[];
   isLoading: boolean;
+} {
+  const rows = useQuery(api.dictation.transcriptions.list, {});
+  return {
+    items: Array.isArray(rows)
+      ? rows.map((row) => ({
+          id: String(row._id),
+          text: row.text,
+          source: row.source,
+          sourceId: row.sourceId ?? null,
+          occurredAt: row.occurredAt ?? row.createdAt,
+          createdAt: row.createdAt,
+        }))
+      : [],
+    isLoading: rows === undefined,
+  };
+}
+
+export function useRecordDictation(): {
   record: (input: {
     text: string;
     source?: "local" | "remote";
@@ -26,7 +44,6 @@ export function useDictationHistory({ loadList = true }: { loadList?: boolean } 
     occurredAt?: number;
   }) => Promise<string>;
 } {
-  const rows = useQuery(api.dictation.transcriptions.list, loadList ? {} : "skip");
   const recordMutation = useMutation(api.dictation.transcriptions.record);
   const record = useCallback(
     async ({
@@ -51,17 +68,6 @@ export function useDictationHistory({ loadList = true }: { loadList?: boolean } 
     [recordMutation],
   );
   return {
-    items: Array.isArray(rows)
-      ? rows.map((row) => ({
-          id: String(row._id),
-          text: row.text,
-          source: row.source,
-          sourceId: row.sourceId ?? null,
-          occurredAt: row.occurredAt ?? row.createdAt,
-          createdAt: row.createdAt,
-        }))
-      : [],
-    isLoading: loadList && rows === undefined,
     record,
   };
 }

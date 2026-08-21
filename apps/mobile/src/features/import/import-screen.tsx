@@ -1,9 +1,9 @@
 import {
   useDictationDictionary,
-  useDictationHistory,
   useDictationReplacements,
   useDictationSettings,
-  useNotes,
+  useNoteCommands,
+  useRecordDictation,
 } from "@looper/data";
 import * as DocumentPicker from "expo-document-picker";
 import { File } from "expo-file-system";
@@ -59,8 +59,8 @@ export function ImportScreen() {
   const dictionary = useDictationDictionary();
   const replacements = useDictationReplacements();
   const settings = useDictationSettings();
-  const notes = useNotes({ loadList: false });
-  const history = useDictationHistory({ loadList: false });
+  const notes = useNoteCommands();
+  const history = useRecordDictation();
   const [file, setFile] = useState<PickedFile | null>(null);
   const [bundle, setBundle] = useState<MobileImportBundle | null>(null);
   const [selected, setSelected] = useState<Set<ImportSection>>(
