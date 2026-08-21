@@ -30,6 +30,28 @@ const tauriBoundaryRules = [
       "Namespace imports can bypass the listen() boundary. Import the specific allowed type or add a typed wrapper in src/data/**.",
   },
   {
+    selector:
+      "ExportNamedDeclaration[source.value='@tauri-apps/api/core'] ExportSpecifier[local.name='invoke']",
+    message:
+      "Do not re-export invoke() outside src/data/**. Expose a typed data wrapper instead.",
+  },
+  {
+    selector:
+      "ExportNamedDeclaration[source.value='@tauri-apps/api/event'] ExportSpecifier[local.name='listen']",
+    message:
+      "Do not re-export listen() outside src/data/**. Expose a typed data wrapper instead.",
+  },
+  {
+    selector: "ExportAllDeclaration[source.value='@tauri-apps/api/core']",
+    message:
+      "Wildcard exports can bypass the invoke() boundary. Export a typed data wrapper from src/data/** instead.",
+  },
+  {
+    selector: "ExportAllDeclaration[source.value='@tauri-apps/api/event']",
+    message:
+      "Wildcard exports can bypass the listen() boundary. Export a typed data wrapper from src/data/** instead.",
+  },
+  {
     selector: "ImportExpression[source.value='@tauri-apps/api/core']",
     message:
       "Dynamic imports can bypass the invoke() boundary. Add a typed wrapper in src/data/**.",
@@ -42,12 +64,7 @@ const tauriBoundaryRules = [
 ];
 
 export default defineConfig(
-  globalIgnores([
-    "dist/",
-    "src-tauri/",
-    "node_modules/",
-    "*.config.*",
-  ]),
+  globalIgnores(["dist/", "src-tauri/", "node_modules/", "*.config.*"]),
 
   js.configs.recommended,
   ...tseslint.configs.recommended,
@@ -56,6 +73,7 @@ export default defineConfig(
     files: sourceFiles,
     linterOptions: {
       reportUnusedDisableDirectives: "error",
+      reportUnusedInlineConfigs: "error",
     },
     rules: {
       "no-unused-vars": "off",
@@ -71,8 +89,8 @@ export default defineConfig(
     },
   },
 
-  // Cross-feature dependencies and the complete Tauri allowlist are enforced by
-  // architecture.config.ts. ESLint owns only the invoke/listen hard boundary.
+  // invoke() and listen() are the privileged Tauri boundary. Other Tauri APIs,
+  // such as emit(), convertFileSrc(), and type-only imports, remain allowed.
   {
     files: sourceFiles,
     ignores: ["src/data/**"],
