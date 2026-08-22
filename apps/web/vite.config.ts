@@ -1,25 +1,8 @@
-import { createRequire } from "node:module";
 import path from "node:path";
-import { chromium } from "@playwright/test";
 import tailwindcss from "@tailwindcss/vite";
 import { tanstackRouter } from "@tanstack/router-plugin/vite";
 import react from "@vitejs/plugin-react";
 import { defineConfig } from "vite";
-
-const require = createRequire(import.meta.url);
-const vitePrerender =
-  require("vite-plugin-prerender") as typeof import("vite-plugin-prerender").default;
-const PUBLIC_ROUTES = [
-  "/",
-  "/landing",
-  "/pricing",
-  "/roadmap",
-  "/changelog",
-  "/contact",
-  "/waitlist",
-  "/privacy",
-  "/terms",
-];
 
 export default defineConfig({
   plugins: [
@@ -30,26 +13,6 @@ export default defineConfig({
         plugins: [["babel-plugin-react-compiler", { target: "19" }]],
       },
     }),
-    ...(process.env.PRERENDER !== "false"
-      ? [
-          vitePrerender({
-            staticDir: path.resolve(__dirname, "dist"),
-            routes: PUBLIC_ROUTES,
-            renderer: new vitePrerender.PuppeteerRenderer({
-              executablePath: process.env.CHROME_PATH ?? chromium.executablePath(),
-              headless: true,
-              maxConcurrentRoutes: 2,
-              renderAfterElementExists: "main h1",
-              skipThirdPartyRequests: true,
-            }),
-            postProcess(renderedRoute) {
-              renderedRoute.route = renderedRoute.originalRoute;
-              renderedRoute.html = renderedRoute.html.replace(/\sdata-mounted="true"/, "");
-              return renderedRoute;
-            },
-          }),
-        ]
-      : []),
   ],
   build: {
     target: "es2022",
