@@ -33,13 +33,13 @@ const i18n = setupI18n();
 i18n.loadAndActivate({
   locale: "en",
   messages: {
-    "voice.title": "Voice",
+    "voice.title": "Shape how Looper writes.",
     "voice.description": "Everything you teach Looper.",
-    "voice.step.vocabulary": "Vocabulary",
-    "voice.step.styles": "Styles",
-    "voice.step.rules": "Rules",
-    "voice.step.snippets": "Snippets",
-    "voice.step.automations": "Automations",
+    "voice.step.vocabulary": "Words",
+    "voice.step.styles": "Writing",
+    "voice.step.rules": "Corrections",
+    "voice.step.snippets": "Building blocks",
+    "voice.step.automations": "Flows",
   },
 });
 
@@ -55,7 +55,7 @@ const renderVoice = () =>
 const step = (name: string) => screen.getByRole("tab", { name });
 
 describe("VoiceView", () => {
-  test("opens on Vocabulary so the first thing shown is what Looper mishears", () => {
+  test("opens on Words so the first thing shown is what Looper mishears", () => {
     renderVoice();
 
     expect(screen.getByTestId("dictionary").dataset.section).toBe("vocabulary");
@@ -64,25 +64,25 @@ describe("VoiceView", () => {
   test("each step mounts its own surface", () => {
     renderVoice();
 
-    fireEvent.click(step("Rules"));
+    fireEvent.click(step("Corrections"));
     expect(screen.getByTestId("dictionary").dataset.section).toBe("rules");
 
-    fireEvent.click(step("Snippets"));
+    fireEvent.click(step("Building blocks"));
     expect(screen.getByTestId("dictionary").dataset.section).toBe("snippets");
 
-    fireEvent.click(step("Styles"));
+    fireEvent.click(step("Writing"));
     expect(screen.getByTestId("styles")).toBeTruthy();
     expect(screen.queryByTestId("dictionary")).toBeNull();
 
-    fireEvent.click(step("Automations"));
+    fireEvent.click(step("Flows"));
     expect(screen.getByTestId("automations")).toBeTruthy();
     expect(screen.queryByTestId("styles")).toBeNull();
   });
 
-  test("Smart Modes stay out of Styles — they are their own step", () => {
+  test("Smart Modes stay out of Writing — they are their own step", () => {
     renderVoice();
 
-    fireEvent.click(step("Styles"));
+    fireEvent.click(step("Writing"));
     expect(screen.getByTestId("styles").dataset.modeRules).toBe("false");
   });
 
@@ -91,11 +91,11 @@ describe("VoiceView", () => {
 
     expect(screen.getByRole("tablist")).toBeTruthy();
     expect(screen.getAllByRole("tab")).toHaveLength(5);
-    expect(step("Vocabulary").getAttribute("aria-selected")).toBe("true");
+    expect(step("Words").getAttribute("aria-selected")).toBe("true");
 
-    fireEvent.click(step("Rules"));
-    expect(step("Rules").getAttribute("aria-selected")).toBe("true");
-    expect(step("Vocabulary").getAttribute("aria-selected")).toBe("false");
+    fireEvent.click(step("Corrections"));
+    expect(step("Corrections").getAttribute("aria-selected")).toBe("true");
+    expect(step("Words").getAttribute("aria-selected")).toBe("false");
     expect(screen.getByRole("tabpanel").getAttribute("aria-labelledby")).toBe(
       "voice-tab-rules",
     );
@@ -108,33 +108,39 @@ describe("VoiceView", () => {
     const indicatorIn = (label: string) =>
       step(label).querySelector('[aria-hidden="true"]');
 
-    expect(indicatorIn("Vocabulary")).not.toBeNull();
-    expect(indicatorIn("Rules")).toBeNull();
+    expect(indicatorIn("Words")).not.toBeNull();
+    expect(indicatorIn("Corrections")).toBeNull();
 
-    fireEvent.click(step("Rules"));
+    fireEvent.click(step("Corrections"));
 
-    expect(indicatorIn("Rules")).not.toBeNull();
-    expect(indicatorIn("Vocabulary")).toBeNull();
+    expect(indicatorIn("Corrections")).not.toBeNull();
+    expect(indicatorIn("Words")).toBeNull();
   });
 
   test("moves and activates tabs with left and right arrows", () => {
     renderVoice();
-    const vocabulary = step("Vocabulary");
+    const vocabulary = step("Words");
     vocabulary.focus();
 
     fireEvent.keyDown(vocabulary, { key: "ArrowRight" });
-    expect(step("Styles").getAttribute("aria-selected")).toBe("true");
-    expect(document.activeElement).toBe(step("Styles"));
+    expect(step("Writing").getAttribute("aria-selected")).toBe("true");
+    expect(document.activeElement).toBe(step("Writing"));
 
-    fireEvent.keyDown(step("Styles"), { key: "ArrowLeft" });
-    expect(step("Vocabulary").getAttribute("aria-selected")).toBe("true");
+    fireEvent.keyDown(step("Writing"), { key: "ArrowLeft" });
+    expect(step("Words").getAttribute("aria-selected")).toBe("true");
     expect(document.activeElement).toBe(vocabulary);
   });
 
-  test("the five steps are ordered from how Looper hears you to how it writes", () => {
+  test("the five Studio areas keep the actual writing controls distinct", () => {
     renderVoice();
 
-    const labels = ["Vocabulary", "Styles", "Rules", "Snippets", "Automations"];
+    const labels = [
+      "Words",
+      "Writing",
+      "Corrections",
+      "Building blocks",
+      "Flows",
+    ];
     const positions = labels.map((label) =>
       screen
         .getAllByRole("tab")

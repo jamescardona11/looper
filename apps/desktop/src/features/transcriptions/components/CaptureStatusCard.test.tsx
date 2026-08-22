@@ -3,31 +3,18 @@
 import { setupI18n } from "@lingui/core";
 import { I18nProvider } from "@lingui/react";
 import { cleanup, render, screen } from "@testing-library/react";
-import { afterEach, describe, expect, test, vi } from "vitest";
+import { afterEach, describe, expect, test } from "vitest";
 import CaptureStatusCard, { type SignalStage } from "./CaptureStatusCard";
-
-vi.mock("../../../shared/ui/AnimatedCount", () => ({
-  default: ({ value }: { value: number }) => <>{value}</>,
-}));
 
 const i18n = setupI18n();
 i18n.loadAndActivate({ locale: "en", messages: {} });
-
-const stats = {
-  count: 12,
-  words: 1840,
-  audioSeconds: 1380,
-  longestWords: 320,
-  longestAudioSeconds: 240,
-  llmCleanedCount: 4,
-};
 
 afterEach(cleanup);
 
 const renderStage = (stage: SignalStage) =>
   render(
     <I18nProvider i18n={i18n}>
-      <CaptureStatusCard stats={stats} stage={stage} />
+      <CaptureStatusCard stage={stage} />
     </I18nProvider>,
   );
 
@@ -35,7 +22,7 @@ describe("CaptureStatusCard", () => {
   test("keeps the signal journey hidden while ready", () => {
     renderStage("ready");
 
-    expect(screen.getByText("Ready to write anywhere")).toBeTruthy();
+    expect(screen.getByText("Dictation is ready")).toBeTruthy();
     expect(
       screen.queryByRole("list", { name: "Dictation progress" }),
     ).toBeNull();
@@ -74,11 +61,11 @@ describe("CaptureStatusCard", () => {
     ).toHaveLength(1);
   });
 
-  test("keeps today's numeric context in the ink surface", () => {
+  test("keeps the ready state focused on the shortcut, not dashboard metrics", () => {
     renderStage("ready");
 
-    expect(screen.getByText("12")).toBeTruthy();
-    expect(screen.getByText("1840")).toBeTruthy();
-    expect(screen.getByText("23")).toBeTruthy();
+    expect(screen.getByText("Fn")).toBeTruthy();
+    expect(screen.queryByText("dictations")).toBeNull();
+    expect(screen.queryByText("words today")).toBeNull();
   });
 });

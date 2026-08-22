@@ -2,7 +2,7 @@
 
 import { setupI18n } from "@lingui/core";
 import { I18nProvider } from "@lingui/react";
-import { cleanup, render, screen } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 
 import type { LibraryItem, MeetingDetails } from "../../../types";
@@ -126,26 +126,29 @@ beforeEach(() => i18n.loadAndActivate({ locale: "en", messages: {} }));
 afterEach(cleanup);
 
 describe("LibraryDetail for a recorded note", () => {
-  test("opens the same review document and chat as a meeting", () => {
+  test("opens the note first and keeps summary available on demand", () => {
     renderDetail("recording");
 
     expect(screen.getAllByRole("tab").map((tab) => tab.textContent)).toEqual([
-      "My notes",
-      "Enhanced",
-      "Transcript",
+      "Note",
       "Moments",
+      "Transcript",
     ]);
-    expect(screen.getByText("Tres decisiones y un pendiente.")).toBeTruthy();
     expect(
-      screen.getByPlaceholderText("Ask this recording…").isConnected,
+      screen.getByPlaceholderText(
+        "Write notes, decisions, and follow-ups while you listen...",
+      ).isConnected,
     ).toBe(true);
+
+    fireEvent.click(screen.getByRole("button", { name: "Summarize" }));
+
+    expect(screen.getByText("Tres decisiones y un pendiente.")).toBeTruthy();
   });
 
   test("leaves an imported file with the plain transcript", () => {
     renderDetail("import");
 
     expect(screen.queryAllByRole("tab")).toHaveLength(0);
-    expect(screen.queryByPlaceholderText("Ask this recording…")).toBeNull();
     expect(screen.getByTestId("transcript-panel").isConnected).toBe(true);
   });
 });

@@ -18,7 +18,7 @@ i18n.loadAndActivate({ locale: "en", messages: {} });
 
 afterEach(cleanup);
 
-const renderPanel = (view: MeetingReviewView = "enhanced") => {
+const renderPanel = (view: MeetingReviewView = "notes") => {
   const onViewChange = vi.fn();
   render(
     <I18nProvider i18n={i18n}>
@@ -43,19 +43,18 @@ const renderPanel = (view: MeetingReviewView = "enhanced") => {
 };
 
 describe("MeetingReviewPanel", () => {
-  test("keeps the Granola document anatomy with all four modes", () => {
+  test("opens the note as the primary document and keeps sources as modes", () => {
     renderPanel();
 
     expect(
       screen.getByRole("heading", { name: "Design review" }).isConnected,
     ).toBe(true);
     expect(screen.getAllByRole("tab").map((tab) => tab.textContent)).toEqual([
-      "My notes",
-      "Enhanced",
-      "Transcript",
+      "Note",
       "Moments",
+      "Transcript",
     ]);
-    expect(screen.getByText("Meeting detail: summary").isConnected).toBe(true);
+    expect(screen.getByText("Meeting detail: notes").isConnected).toBe(true);
   });
 
   test("renders transcript in the same document instead of a side panel", () => {
@@ -79,5 +78,13 @@ describe("MeetingReviewPanel", () => {
     fireEvent.click(screen.getByRole("tab", { name: "Moments" }));
 
     expect(onViewChange).toHaveBeenCalledWith("moments");
+  });
+
+  test("keeps summary as an on-demand review action", () => {
+    const onViewChange = renderPanel("notes");
+
+    fireEvent.click(screen.getByRole("button", { name: "Summarize" }));
+
+    expect(onViewChange).toHaveBeenCalledWith("enhanced");
   });
 });

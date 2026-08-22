@@ -120,7 +120,7 @@ describe("Home presentation contract", () => {
     expect(shell?.firstElementChild?.getAttribute("data-testid")).toBe(
       "window-controls",
     );
-    expect(sidebar?.className).toContain("w-[68px]");
+    expect(sidebar?.className).toContain("w-[196px]");
     expect(sidebar?.className).toContain("backdrop-blur-2xl");
     expect(workspace?.className).toContain("ui-canvas");
     expect(screen.getByRole("navigation", { name: "Main navigation" })).toBe(
@@ -147,7 +147,7 @@ describe("Home presentation contract", () => {
   test("dispatches navigation, Memory, meeting and support actions", () => {
     const { dispatch } = renderHomePresentation({ supportMenuOpen: true });
 
-    fireEvent.click(screen.getByRole("button", { name: "Meetings" }));
+    fireEvent.click(screen.getByRole("button", { name: "Notes" }));
     fireEvent.click(screen.getByRole("button", { name: /^Ask Memory/ }));
     fireEvent.click(screen.getByRole("button", { name: "Open meeting" }));
     fireEvent.click(screen.getByRole("button", { name: /^FAQ/ }));
@@ -174,14 +174,14 @@ describe("Home presentation contract", () => {
 
   test("disables licensed navigation without changing its DOM contract", () => {
     renderHomePresentation({}, false);
-    const meetings = screen.getByRole("button", { name: "Meetings" });
+    const notes = screen.getByRole("button", { name: "Notes" });
     const memory = screen.getByRole("button", { name: "Memory" });
-    const voice = screen.getByRole("button", { name: "Voice" });
+    const studio = screen.getByRole("button", { name: "Studio" });
 
-    expect(meetings.hasAttribute("disabled")).toBe(true);
+    expect(notes.hasAttribute("disabled")).toBe(true);
     expect(memory.hasAttribute("disabled")).toBe(true);
-    expect(voice.hasAttribute("disabled")).toBe(true);
-    expect(meetings.className).toContain("disabled:pointer-events-none");
+    expect(studio.hasAttribute("disabled")).toBe(true);
+    expect(notes.className).toContain("disabled:pointer-events-none");
     expect(
       screen
         .getByRole("button", { name: /^Ask Memory/ })

@@ -7,9 +7,8 @@ import PersonalizationView from "../../personalization/components/Personalizatio
 import ModeRulesSection from "../../personalization/components/ModeRulesSection";
 import { useInstalledApps } from "../../personalization/queries";
 
-// Voice reúne todo lo que el usuario le enseña a Looper, en el orden en que
-// ocurre: primero te oye (Vocabulary), luego decide cómo escribirlo (Styles),
-// y al final aplica reglas mecánicas (Rules, Snippets).
+// Studio reúne lo que la persona puede enseñar explícitamente a Looper. Los
+// nombres describen el resultado, no la implementación interna de cada lista.
 type VoiceStep = "vocabulary" | "styles" | "rules" | "snippets" | "automations";
 
 const STEPS: VoiceStep[] = [
@@ -30,15 +29,15 @@ const VoiceView = ({ isActive = true }: { isActive?: boolean }) => {
   const stepLabel = (voiceStep: VoiceStep) => {
     switch (voiceStep) {
       case "vocabulary":
-        return t({ id: "voice.step.vocabulary", message: "Vocabulary" });
+        return t({ id: "studio.step.words", message: "Words" });
       case "styles":
-        return t({ id: "voice.step.styles", message: "Styles" });
+        return t({ id: "studio.step.writing", message: "Writing" });
       case "rules":
-        return t({ id: "voice.step.rules", message: "Rules" });
+        return t({ id: "studio.step.corrections", message: "Corrections" });
       case "snippets":
-        return t({ id: "voice.step.snippets", message: "Snippets" });
+        return t({ id: "studio.step.blocks", message: "Building blocks" });
       case "automations":
-        return t({ id: "voice.step.automations", message: "Automations" });
+        return t({ id: "studio.step.flows", message: "Flows" });
     }
   };
 
@@ -46,20 +45,20 @@ const VoiceView = ({ isActive = true }: { isActive?: boolean }) => {
     <div className="mx-auto flex h-full w-full min-w-0 max-w-[760px] flex-col px-0 pt-8 text-left">
       <header className="shrink-0">
         <h1 className="ui-text-display ui-color-primary">
-          {t({ id: "voice.title", message: "Teach Looper how you sound" })}
+          {t({ id: "studio.title", message: "Shape how Looper writes." })}
         </h1>
         <p className="mt-1.5 max-w-xl ui-text-body ui-color-muted">
           {t({
-            id: "voice.description",
+            id: "studio.description",
             message:
-              "Five lists, one consistent place to shape what Looper hears and how it writes.",
+              "Words, writing rules, reusable building blocks, and context-aware flows — all in one place.",
           })}
         </p>
 
         <nav
           role="tablist"
           className="mt-5 flex items-center gap-1 border-b border-border-primary"
-          aria-label={t({ id: "voice.steps", message: "Voice sections" })}
+          aria-label={t({ id: "studio.sections", message: "Studio sections" })}
         >
           {STEPS.map((id, index) => (
             <div key={id} className="relative flex items-center">

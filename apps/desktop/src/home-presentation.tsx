@@ -61,8 +61,8 @@ type RailItemProps = {
 };
 
 const railButtonClass = [
-  "ui-nav-item group mb-1 h-10 w-11",
-  "justify-center p-0 disabled:pointer-events-none disabled:opacity-45",
+  "ui-nav-item group mb-1 h-10 w-full gap-2.5 px-3 ui-text-body-sm after:!hidden",
+  "disabled:pointer-events-none disabled:opacity-45",
 ].join(" ");
 
 function RailItem({
@@ -78,12 +78,14 @@ function RailItem({
       aria-label={label}
       className={railButtonClass}
       data-active={active ? "true" : "false"}
+      data-label={label}
       disabled={disabled}
       onClick={onClick}
     >
-      <div className="flex items-center justify-center shrink-0">
+      <div className="flex shrink-0 items-center justify-center">
         <Icon size={18} weight="regular" />
       </div>
+      <span className="truncate">{label}</span>
     </button>
   );
 }
@@ -135,7 +137,7 @@ function HomeSidebar({
       activeView: "library",
       disabled: !licenseGateActive,
       icon: Books,
-      label: t({ id: "home.sidebar.library", message: "Meetings" }),
+      label: t({ id: "home.sidebar.notes", message: "Notes" }),
       visible: true,
     },
     {
@@ -149,7 +151,7 @@ function HomeSidebar({
       activeView: "voice",
       disabled: !licenseGateActive,
       icon: CardsThree,
-      label: t({ id: "home.sidebar.voice", message: "Voice" }),
+      label: t({ id: "home.sidebar.studio", message: "Studio" }),
       visible: true,
     },
     {
@@ -167,13 +169,14 @@ function HomeSidebar({
 
   return (
     <aside
-      className="relative z-30 flex w-[68px] shrink-0 flex-col items-center bg-[var(--color-bg-primary)]/85 backdrop-blur-2xl after:absolute after:inset-y-0 after:left-full after:top-12 after:w-px after:bg-[var(--color-border-primary)]"
+      className="relative z-30 flex w-[196px] shrink-0 flex-col bg-[var(--color-bg-primary)]/85 px-3 backdrop-blur-2xl after:absolute after:inset-y-0 after:left-full after:top-12 after:w-px after:bg-[var(--color-border-primary)]"
       data-app-sidebar
     >
       <div className="h-12 w-full shrink-0" data-tauri-drag-region />
-      <div className="pb-6 pt-1">
-        <div className="flex h-6 items-center justify-center">
+      <div className="px-2 pb-7 pt-1">
+        <div className="flex h-6 items-center gap-2.5 ui-text-title-strong ui-color-primary">
           <LooperLogo size="sm" />
+          <span>Looper</span>
         </div>
       </div>
 
@@ -182,7 +185,7 @@ function HomeSidebar({
           id: "home.navigation.main",
           message: "Main navigation",
         })}
-        className="flex flex-1 flex-col items-center"
+        className="flex flex-1 flex-col"
       >
         <div>
           {navigationEntries.map((entry) =>
@@ -203,7 +206,7 @@ function HomeSidebar({
       </nav>
 
       <div className="w-full shrink-0">
-        <div className="flex flex-col items-center gap-1 border-t border-border-primary py-2">
+        <div className="flex flex-col gap-1 border-t border-border-primary py-3">
           <SupportMenu
             appVersion={appVersion}
             dispatch={dispatch}
@@ -218,7 +221,7 @@ function HomeSidebar({
                 id: "home.update_available",
                 message: "Update available",
               })}
-              className="group flex h-10 w-10 items-center justify-center rounded-lg transition-colors hover:bg-surface-elevated"
+              className="group flex h-10 w-full items-center gap-2.5 rounded-lg px-3 ui-text-body-sm transition-colors hover:bg-surface-elevated"
               onClick={() => dispatch({ type: "open-settings", tab: "about" })}
               style={{ color: "var(--color-accent)" }}
               title={t({
@@ -226,9 +229,15 @@ function HomeSidebar({
                 message: "Update available",
               })}
             >
-              <div className="flex items-center justify-center shrink-0">
+              <div className="flex shrink-0 items-center justify-center">
                 <ArrowCircleUp size={16} weight="regular" />
               </div>
+              <span className="truncate">
+                {t({
+                  id: "home.update_available",
+                  message: "Update available",
+                })}
+              </span>
             </button>
           ) : null}
           <RailItem
@@ -473,7 +482,6 @@ function HomeWorkspace({
           <CaptureStatusCard
             shortcut={settingsShortcut}
             stage={state.signalStage}
-            stats={todayStats}
           />
           <HomeMeetingActivity
             isActive={homeActive && licenseGateActive}

@@ -46,7 +46,7 @@ export function createLibraryDetailFooter({
           transcriptOpen: meetingView === "transcript",
           onTranscriptToggle: () =>
             setMeetingView((current) =>
-              current === "transcript" ? "enhanced" : "transcript",
+              current === "transcript" ? "notes" : "transcript",
             ),
         }
       : undefined,

@@ -48,19 +48,15 @@ export const MeetingReviewPanel = ({
   const tabs: Array<{ view: MeetingReviewView; label: string }> = [
     {
       view: "notes",
-      label: t({ id: "meeting.detail.my_notes", message: "My notes" }),
-    },
-    {
-      view: "enhanced",
-      label: t({ id: "meeting.detail.enhanced", message: "Enhanced" }),
-    },
-    {
-      view: "transcript",
-      label: t({ id: "meeting.detail.transcript", message: "Transcript" }),
+      label: t({ id: "meeting.detail.note", message: "Note" }),
     },
     {
       view: "moments",
       label: t({ id: "meeting.detail.moments", message: "Moments" }),
+    },
+    {
+      view: "transcript",
+      label: t({ id: "meeting.detail.transcript", message: "Transcript" }),
     },
   ];
 
@@ -80,31 +76,28 @@ export const MeetingReviewPanel = ({
       >
         <header className="shrink-0">
           <h1 className="ui-text-display text-content-primary">{title}</h1>
-          <div className="mt-3 flex flex-wrap items-center gap-2 ui-text-micro text-content-muted">
+          <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1.5 ui-text-micro text-content-muted">
             {createdAtLabel ? (
-              <span className="inline-flex items-center gap-1.5 rounded-full border border-border-primary px-2.5 py-1">
+              <span className="inline-flex items-center gap-1.5">
                 <CalendarBlank size={12} />
                 {createdAtLabel}
               </span>
             ) : null}
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-border-primary px-2.5 py-1">
+            <span className="inline-flex items-center gap-1.5">
               {formatDuration(durationSeconds)}
             </span>
             {speakerCount > 0 ? (
-              <span className="inline-flex items-center gap-1.5 rounded-full border border-border-primary px-2.5 py-1">
+              <span className="inline-flex items-center gap-1.5">
                 <UsersThree size={12} />
                 {speakerCount}
               </span>
             ) : null}
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-border-primary px-2.5 py-1">
+            <span className="inline-flex items-center gap-1.5">
               <Cpu size={12} />
               {modelLabel}
             </span>
             {tags.slice(0, 2).map((tag) => (
-              <span
-                key={tag}
-                className="inline-flex items-center gap-1.5 rounded-full border border-border-primary px-2.5 py-1"
-              >
+              <span key={tag} className="inline-flex items-center gap-1.5">
                 <Tag size={12} />
                 {tag}
               </span>
@@ -112,40 +105,55 @@ export const MeetingReviewPanel = ({
           </div>
         </header>
 
-        <nav
-          role="tablist"
-          className="mt-7 inline-flex w-fit max-w-full items-center gap-1 rounded-2xl bg-surface-secondary p-1"
-          aria-label={t({
-            id: "meeting.detail.document_modes",
-            message: "Recording document modes",
-          })}
-        >
-          {tabs.map((tab) => (
-            <button
-              key={tab.view}
-              type="button"
-              role="tab"
-              id={`meeting-document-tab-${tab.view}`}
-              aria-selected={view === tab.view}
-              aria-controls="meeting-document-panel"
-              onClick={() => onViewChange(tab.view)}
-              className={`inline-flex h-10 items-center gap-2 rounded-xl px-3.5 ui-text-body-sm-strong outline-none transition-colors duration-150 motion-reduce:transition-none ${
-                view === tab.view
-                  ? "border border-border-hover bg-surface-elevated text-content-primary shadow-sm"
-                  : "border border-transparent text-content-muted hover:bg-surface-surface hover:text-content-primary"
-              }`}
-            >
-              {tab.view === "enhanced" ? <Sparkle size={15} /> : null}
-              {tab.label}
-            </button>
-          ))}
-        </nav>
+        <div className="mt-7 flex items-center justify-between gap-3 border-b border-border-primary">
+          <nav
+            role="tablist"
+            className="flex min-w-0 items-center gap-1"
+            aria-label={t({
+              id: "meeting.detail.document_modes",
+              message: "Recording document modes",
+            })}
+          >
+            {tabs.map((tab) => (
+              <button
+                key={tab.view}
+                type="button"
+                role="tab"
+                id={`meeting-document-tab-${tab.view}`}
+                aria-selected={view === tab.view}
+                aria-controls="meeting-document-panel"
+                onClick={() => onViewChange(tab.view)}
+                className={`relative inline-flex h-10 items-center gap-2 px-3 ui-text-body-sm-strong outline-none transition-colors duration-150 motion-reduce:transition-none ${
+                  view === tab.view
+                    ? "text-content-primary after:absolute after:inset-x-3 after:bottom-0 after:h-0.5 after:rounded-full after:bg-[var(--color-accent)]"
+                    : "text-content-muted hover:text-content-primary"
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </nav>
+          <button
+            id="meeting-document-summary"
+            type="button"
+            aria-pressed={view === "enhanced"}
+            onClick={() => onViewChange("enhanced")}
+            className="mb-1 inline-flex h-8 shrink-0 items-center gap-1.5 rounded-lg border border-border-secondary bg-surface-secondary px-2.5 ui-text-body-sm text-content-secondary transition-colors hover:border-border-hover hover:bg-surface-elevated hover:text-content-primary"
+          >
+            <Sparkle size={13} />
+            {t({ id: "meeting.detail.summarize", message: "Summarize" })}
+          </button>
+        </div>
 
         <section
           key={view}
           id="meeting-document-panel"
           role="tabpanel"
-          aria-labelledby={`meeting-document-tab-${view}`}
+          aria-labelledby={
+            view === "enhanced"
+              ? "meeting-document-summary"
+              : `meeting-document-tab-${view}`
+          }
           className="meeting-panel-enter mt-4 flex min-h-[420px] flex-1 flex-col overflow-hidden"
         >
           {view === "transcript" ? (

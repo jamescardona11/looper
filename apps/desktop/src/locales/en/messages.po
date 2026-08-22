@@ -14,6 +14,71 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. js-lingui-explicit-id
+#: src/home-presentation.tsx
+msgid "home.sidebar.notes"
+msgstr "Notes"
+
+#. js-lingui-explicit-id
+#: src/home-presentation.tsx
+msgid "home.sidebar.studio"
+msgstr "Studio"
+
+#. js-lingui-explicit-id
+#: src/features/transcriptions/components/CaptureStatusCard.tsx
+msgid "home.capture.ready_daily"
+msgstr "Dictation is ready"
+
+#. js-lingui-explicit-id
+#: src/features/library/components/MeetingReviewPanel.tsx
+msgid "meeting.detail.note"
+msgstr "Note"
+
+#. js-lingui-explicit-id
+#: src/features/library/components/MeetingReviewPanel.tsx
+msgid "meeting.detail.summarize"
+msgstr "Summarize"
+
+#. js-lingui-explicit-id
+#: src/features/voice/components/VoiceView.tsx
+msgid "studio.title"
+msgstr "Shape how Looper writes."
+
+#. js-lingui-explicit-id
+#: src/features/voice/components/VoiceView.tsx
+msgid "studio.description"
+msgstr "Words, writing rules, reusable building blocks, and context-aware flows — all in one place."
+
+#. js-lingui-explicit-id
+#: src/features/voice/components/VoiceView.tsx
+msgid "studio.sections"
+msgstr "Studio sections"
+
+#. js-lingui-explicit-id
+#: src/features/voice/components/VoiceView.tsx
+msgid "studio.step.words"
+msgstr "Words"
+
+#. js-lingui-explicit-id
+#: src/features/voice/components/VoiceView.tsx
+msgid "studio.step.writing"
+msgstr "Writing"
+
+#. js-lingui-explicit-id
+#: src/features/voice/components/VoiceView.tsx
+msgid "studio.step.corrections"
+msgstr "Corrections"
+
+#. js-lingui-explicit-id
+#: src/features/voice/components/VoiceView.tsx
+msgid "studio.step.blocks"
+msgstr "Building blocks"
+
+#. js-lingui-explicit-id
+#: src/features/voice/components/VoiceView.tsx
+msgid "studio.step.flows"
+msgstr "Flows"
+
+#. js-lingui-explicit-id
 #: src/i18n.test.ts
 msgid "meeting.capture.shortcut_enable_hint"
 msgstr "Accessibility needed"
