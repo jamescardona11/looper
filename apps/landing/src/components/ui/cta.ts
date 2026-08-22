@@ -1,8 +1,8 @@
 /**
  * Call-to-action surfaces.
  *
- * Four Download controls exist on the page and, before assembly, four different
- * implementations of the same button did too: three hand-rolled hover/active
+ * Several call-to-action controls exist on the page and, before assembly,
+ * multiple implementations of the same button did too: hand-rolled hover/active
  * stacks that had already drifted (12px, 11px and 14px radii where the artboards
  * say 12, 11 and 12) plus a fourth in the header. The interaction is identical in
  * every artboard, so it lives once in `.lp-cta` in src/styles/index.css.
