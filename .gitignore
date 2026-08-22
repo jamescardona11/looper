@@ -101,6 +101,7 @@ packages/rust/audio/**/data/outputs/*
 # AI agent tooling
 .agent
 .augment
+.claude/launch.json
 .claude/skills/
 .claude/launch.json
 .claude/settings.local.json
@@ -114,6 +115,8 @@ packages/rust/audio/**/data/outputs/*
 .windsurf
 .vercel
 .env*.local
+.mcp.json
+skills-lock.json
 
 # Agent tooling is local. The Tact design contract is versioned with the product.
 .agents/

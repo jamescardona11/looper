@@ -9,6 +9,9 @@
     "./react": "./src/react.tsx",
     "./locales/*": "./src/locales/*"
   },
+  "scripts": {
+    "test": "vitest run"
+  },
   "dependencies": {
     "@lingui/core": "^6.1.0",
     "@lingui/message-utils": "^6.1.0",
@@ -16,5 +19,8 @@
   },
   "peerDependencies": {
     "react": ">=18"
+  },
+  "devDependencies": {
+    "vitest": "^3.2.4"
   }
 }
