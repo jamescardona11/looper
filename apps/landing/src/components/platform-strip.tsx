@@ -12,17 +12,20 @@ const PLATFORMS = ["macOS", "Windows", "Linux"];
 
 export function PlatformStrip() {
   return (
-    <section aria-label="Availability" className="border-border border-y bg-muted">
+    <section aria-label="Availability" className="border-border border-y bg-[var(--lp-lavender)]">
       <div
-        className={`${containerClass} flex flex-col items-center gap-2.5 py-[22px] md:flex-row md:justify-center md:gap-11 md:py-[26px]`}
+        data-reveal
+        className={`${containerClass} grid gap-4 py-6 md:grid-cols-[1fr_auto_auto] md:items-center md:gap-10 md:py-7`}
       >
-        <p className="text-[12px] text-ink-muted md:text-[13px]">Available for</p>
-        <ul className="flex list-none items-center gap-[22px] p-0 text-[15px] text-ink-secondary md:gap-8">
+        <p className="font-display font-semibold text-[18px] tracking-[-0.035em] md:text-[20px]">
+          Built for the computer where the work happens.
+        </p>
+        <ul className="flex list-none items-center gap-[22px] p-0 text-[14px] text-ink-secondary md:gap-7">
           {PLATFORMS.map((platform) => (
             <li key={platform}>{platform}</li>
           ))}
         </ul>
-        <p className="text-[12px] text-ink-muted md:text-[13px]">iPhone and Android are next</p>
+        <p className="text-[12px] text-ink-muted md:text-[13px]">Mobile comes next</p>
       </div>
     </section>
   );

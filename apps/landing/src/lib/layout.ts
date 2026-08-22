@@ -3,7 +3,7 @@
  *
  * The artboards give two widths: 20px gutters at 390 and 140px gutters at 1440.
  * Written in parallel, the section chunks landed on two incompatible readings of
- * the gap between them — `md:px-[140px]` (jump to the full desktop gutter at
+ * the gap between them. `md:px-[140px]` would jump to the full desktop gutter at
  * 768px, leaving 488px of content) and `md:px-10 xl:px-[140px]` (an intermediate
  * 40px step, full gutter only from 1280 up). The second is the one that holds at
  * 834 and 1024, so it is the one every section uses now.
@@ -14,4 +14,4 @@
  * background on the <section> and this class on an inner element, so the colour
  * still runs edge to edge.
  */
-export const containerClass = "mx-auto w-full max-w-[1440px] px-5 md:px-10 xl:px-[140px]";
+export const containerClass = "mx-auto w-full max-w-[1520px] px-5 md:px-8 xl:px-14";

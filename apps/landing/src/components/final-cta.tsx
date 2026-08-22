@@ -1,50 +1,35 @@
 import { containerClass } from "../lib/layout";
-import { ctaPrimaryClass } from "./ui/cta";
-import { DownloadIcon } from "./ui/icons";
-
-/*
- * Closing call to action. One tinted card, centred, with the only download button
- * below the fold. The button on mobile is a full-width 52px bar with no icon, which
- * is what the mobile artboard asks for and what a thumb wants.
- *
- * [DOWNLOAD SIZE] is a deliberate hole left by the design for a human to fill.
- * href="#download" is the artboard's own placeholder: there is no release URL yet.
- */
-
-/*
- * The reveal is `.lp-reveal` in src/styles/index.css, including its mobile
- * variant. All three files in this chunk used to ship the same stylesheet string
- * in a hoisted <style> tag.
- */
+import { ctaInkClass } from "./ui/cta";
 
 export function FinalCta() {
   return (
     <section
       aria-labelledby="final-cta-title"
-      className={`${containerClass} pb-12 md:pb-[112px]`}
+      className={`${containerClass} pb-16 md:pb-28`}
       id="download"
     >
-      <div className="lp-reveal flex flex-col items-center gap-[18px] rounded-[18px] border border-border bg-muted px-6 py-11 text-center md:gap-6 md:rounded-[20px] md:px-12 md:py-[78px]">
-        <h2
-          className="text-[31px] leading-[1.05] tracking-[-0.045em] md:max-w-[600px] md:text-[52px] md:leading-[1.02] md:tracking-tighter"
-          id="final-cta-title"
-        >
-          Say it once. Keep the useful part.
-        </h2>
-        <p className="text-[15px] text-ink-secondary leading-[1.55] md:max-w-[440px] md:text-[18px]">
-          Install it, hold the key, and see what your own words look like when they land finished.
-        </p>
+      <div
+        data-reveal
+        className="grid gap-8 rounded-[24px] bg-[var(--lp-lavender)] p-6 md:grid-cols-[1fr_auto] md:items-end md:gap-14 md:rounded-[30px] md:p-10 lg:p-14"
+      >
+        <div className="flex max-w-[820px] flex-col gap-4">
+          <h2
+            className="text-[42px] leading-[0.96] tracking-[-0.055em] md:text-[66px]"
+            id="final-cta-title"
+          >
+            Keep your voice close. Put it to work.
+          </h2>
+          <p className="max-w-[560px] text-[16px] text-ink-secondary leading-[1.65] md:text-[18px]">
+            Looper is open source and built local first for macOS, Windows and Linux.
+          </p>
+        </div>
         <a
-          className={`${ctaPrimaryClass} h-[52px] w-full gap-2.5 rounded-[12px] text-[16px] md:mt-1 md:w-auto md:px-[30px]`}
-          href="#download"
+          className={`${ctaInkClass} h-[52px] rounded-[12px] px-6 text-[15px]`}
+          href="https://github.com/jamescardona11/looper"
+          rel="noreferrer"
         >
-          <DownloadIcon size={17} className="hidden md:block" />
-          Download Looper
+          View Looper on GitHub
         </a>
-        <p className="text-[12px] text-ink-muted md:text-[13px]">
-          Free on macOS, Windows and Linux
-          <span className="hidden md:inline">. [DOWNLOAD SIZE]</span>
-        </p>
       </div>
     </section>
   );

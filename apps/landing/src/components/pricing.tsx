@@ -1,106 +1,63 @@
 import { containerClass } from "../lib/layout";
-import { ctaPrimaryClass } from "./ui/cta";
-
-/*
- * Pricing. Three columns on desktop, one stack on mobile. Local is the only tier
- * that is buyable today, so it is the only one with an accent border and a button;
- * the other two carry a price of "Later" and a plain note instead of a control.
- *
- * The artboards give 390 and 1440 only. Between 768 and 1024 three columns of
- * 233px with 34px of padding read as cramped, so the row splits into three at lg
- * and stays a stack below it. That band is an interpolation, not a design fact.
- *
- * The three cards are written out rather than mapped because they differ in border,
- * background, price colour, footer element and copy. A data array plus four flags
- * would be longer than the markup it replaced.
- */
-
-/*
- * The reveal is `.lp-reveal` in src/styles/index.css, including its mobile
- * variant. All three files in this chunk used to ship the same stylesheet string
- * in a hoisted <style> tag.
- */
-
-const ctaClass = `${ctaPrimaryClass} mt-auto h-12 w-full gap-[9px] rounded-[11px] text-[15px]`;
-
-/* 18px, not `rounded-2xl`: index.css rebuilds that step from --radius to 18px by
-   coincidence today, but the design says 18 and the coincidence is not a contract. */
-const cardClass =
-  "flex flex-col gap-3 rounded-[18px] border px-[22px] py-6 lg:gap-4 lg:px-8 lg:py-[34px]";
-const tierClass = "font-sans text-[13px] font-normal text-muted-foreground md:text-sm";
-const priceClass =
-  "font-display text-[36px] font-semibold leading-none tracking-tighter md:text-[44px]";
-const proseClass = "text-[14px] leading-[1.6] text-muted-foreground";
-const noteClass = "mt-auto hidden text-[13px] text-ink-muted md:block";
 
 export function Pricing() {
   return (
     <section
       aria-labelledby="pricing-title"
-      className={`${containerClass} flex flex-col gap-3.5 pb-12 md:block md:pb-[104px]`}
+      className={`${containerClass} pb-16 md:pb-28`}
       id="pricing"
     >
-      <div className="lp-rise flex flex-col gap-3.5 md:mb-9 md:max-w-[620px] md:gap-4">
-        <span className="font-mono text-[11px] text-primary tracking-[0.06em] md:text-xs">
+      <div data-reveal className="flex max-w-[720px] flex-col gap-4">
+        <p className="font-mono text-[11px] text-primary tracking-[0.08em] md:text-[12px]">
           PRICING
-        </span>
+        </p>
         <h2
-          className="text-[31px] leading-[1.06] tracking-[-0.045em] md:text-[44px] md:leading-[1.04] md:tracking-tighter"
+          className="text-[42px] leading-[0.96] tracking-[-0.055em] md:text-[66px]"
           id="pricing-title"
         >
-          Free where it runs on your own hardware.
+          Free where your own hardware does the work.
         </h2>
-        <p className="text-[15px] text-ink-secondary leading-[1.6] md:text-[17px]">
-          <span className="md:hidden">No</span>
-          <span className="hidden md:inline">There is no</span> word cap on the local model, because
-          there is no server counting.
-          <span className="hidden md:inline">
-            {" "}
-            You pay only for the things that genuinely cost us a machine somewhere.
-          </span>
-        </p>
       </div>
 
-      <ul className="lp-stagger mt-2.5 flex flex-col gap-3 md:mt-0 lg:grid lg:grid-cols-3 lg:items-stretch lg:gap-5">
-        <li className={`${cardClass} border-primary`}>
-          <h3 className={tierClass}>Local</h3>
-          <p className={priceClass}>Free</p>
-          <p className={proseClass}>
-            Unlimited dictation<span className="hidden md:inline"> on the local model</span>,
-            recording notes, dictionary<span className="hidden md:inline">, snippets</span> and
-            cleanup. On macOS, Windows and Linux.
+      <div
+        data-reveal
+        className="mt-9 grid gap-4 lg:mt-12 lg:grid-cols-[1.14fr_0.86fr] lg:gap-5"
+      >
+        <article className="flex min-h-[380px] flex-col rounded-[24px] bg-[var(--lp-ink)] p-6 text-[var(--lp-paper)] md:rounded-[30px] md:p-9">
+          <p className="text-[#bfc0c7] text-[14px]">Local</p>
+          <p className="mt-4 font-display font-semibold text-[70px] leading-none tracking-[-0.065em] md:text-[94px]">
+            Free
           </p>
-          <a className={ctaClass} href="#download">
-            Download Looper
-          </a>
-        </li>
+          <p className="mt-5 max-w-[620px] text-[#c1c3ca] text-[15px] leading-[1.65] md:text-[17px]">
+            Unlimited local dictation, recording notes, dictionary, cleanup and searchable history.
+            No server is counting your words.
+          </p>
+          <p className="mt-auto pt-10 font-mono text-[11px] text-[var(--lp-lavender-strong)] tracking-[0.05em]">
+            macOS, Windows and Linux
+          </p>
+        </article>
 
-        <li className={`${cardClass} border-border bg-muted`}>
-          <h3 className={tierClass}>Cloud model</h3>
-          <p className={`${priceClass} text-ink-secondary`}>Later</p>
-          <p className={`${proseClass} md:hidden`}>
-            A paid switch for long or difficult recordings. Not part of the launch.
+        <aside className="flex flex-col rounded-[24px] bg-[var(--lp-lavender)] p-6 md:rounded-[30px] md:p-9">
+          <h3 className="text-[27px] tracking-[-0.045em] md:text-[34px]">What may cost later</h3>
+          <p className="mt-3 text-[14px] text-ink-secondary leading-[1.6] md:text-[15px]">
+            Only the work that genuinely needs infrastructure beyond your machine.
           </p>
-          <p className={`${proseClass} hidden md:block`}>
-            A paid switch for long or difficult recordings and the sharper cleanup models. Off by
-            default, and off is a perfectly good place to leave it.
-          </p>
-          <p className={noteClass}>Not part of the launch.</p>
-        </li>
-
-        <li className={`${cardClass} border-border bg-muted`}>
-          <h3 className={tierClass}>Sync across devices</h3>
-          <p className={`${priceClass} text-ink-secondary`}>Later</p>
-          <p className={`${proseClass} md:hidden`}>
-            Paid, once phones arrive. It is the part that genuinely needs a server.
-          </p>
-          <p className={`${proseClass} hidden md:block`}>
-            Paid, once phones arrive. Keeping your dictations and notes on every device is the one
-            feature that genuinely needs a server, so it is the one we will charge for.
-          </p>
-          <p className={noteClass}>Ships with mobile.</p>
-        </li>
-      </ul>
+          <dl className="mt-8 border-foreground/20 border-t">
+            <div className="border-foreground/20 border-b py-5">
+              <dt className="font-medium text-[15px]">Cloud model</dt>
+              <dd className="mt-1 text-[13px] text-ink-secondary leading-[1.55]">
+                An explicit switch for long or difficult recordings.
+              </dd>
+            </div>
+            <div className="py-5">
+              <dt className="font-medium text-[15px]">Sync across devices</dt>
+              <dd className="mt-1 text-[13px] text-ink-secondary leading-[1.55]">
+                Paid once mobile arrives and a server has real work to do.
+              </dd>
+            </div>
+          </dl>
+        </aside>
+      </div>
     </section>
   );
 }

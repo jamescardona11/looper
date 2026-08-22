@@ -1,9 +1,11 @@
-<!-- The wordmark glyph from the header and footer: five bars, a waveform frozen
-     mid-utterance. Same paths as WaveformMark in src/components/ui/icons.tsx. -->
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#5853fa" stroke-width="2.4" stroke-linecap="round">
-  <path d="M4 12v-1" />
-  <path d="M8 16V8" />
-  <path d="M12 20V4" />
-  <path d="M16 16V8" />
-  <path d="M20 13v-2" />
+<!-- Exact app icon geometry from assets/brand/looper-app-icon.svg. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
+  <rect width="1024" height="1024" rx="224" fill="#F7F5F2" />
+  <g transform="translate(112 112) scale(10)">
+    <path
+      fill="#111111"
+      d="M10 27c0-9.389 7.611-17 17-17h19v22h22v21c0 9.389-7.611 17-17 17H27c-9.389 0-17-7.611-17-17V27Z"
+    />
+    <rect width="20" height="20" x="52" y="4" fill="#111111" rx="3" />
+  </g>
 </svg>

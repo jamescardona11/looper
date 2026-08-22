@@ -7,6 +7,7 @@ import { LocalModel } from "./components/local-model";
 import { PlatformStrip } from "./components/platform-strip";
 import { Pricing } from "./components/pricing";
 import { Roadmap } from "./components/roadmap";
+import { ScrollMotionController } from "./components/scroll-motion-controller";
 import { SiteFooter } from "./components/site-footer";
 import { SiteHeader } from "./components/site-header";
 import { SmallPrint } from "./components/small-print";
@@ -27,8 +28,15 @@ import { SmallPrint } from "./components/small-print";
 export function App() {
   return (
     <>
+      <a
+        href="#main-content"
+        className="fixed top-3 left-3 z-30 -translate-y-20 rounded-lg bg-foreground px-4 py-3 text-background focus:translate-y-0"
+      >
+        Skip to content
+      </a>
+      <ScrollMotionController />
       <SiteHeader />
-      <main>
+      <main id="main-content">
         <Hero />
         <PlatformStrip />
         <HowItWorks />

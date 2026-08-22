@@ -1,126 +1,57 @@
-import type { ReactNode } from "react";
 import { containerClass } from "../lib/layout";
-
-/*
- * "Everything that ships on day one": a 2x2 board of four feature clusters on
- * desktop, a single stack on mobile, with cards 2 and 3 tinted so the board
- * reads as a checkerboard rather than four identical boxes.
- *
- * COLOR and MOTION are both fully shared now: the greys are the --ink-* roles in
- * src/styles/index.css and .lp-reveal / .lp-lift live there too. This file
- * previously carried its own copy of the keyframe, byte-identical to the one in
- * local-model.tsx.
- */
-
-/* Card surface. The hover lift is `.lp-lift`, shared with the destination rows in
-   beat one and the small-print cards; this file used to re-implement it inline.
-   Radii are explicit px rather than the rounded-* scale: index.css rebuilds
-   that scale from --radius, so rounded-xl is 14px and rounded-2xl is 18px. The
-   design asks for 14px and 16px here, so a named step would be quietly wrong. */
-const cardClass =
-  "lp-lift flex flex-col gap-3.5 rounded-[14px] border border-border p-5.5 md:gap-5 md:rounded-[16px] md:p-8";
 
 type FeatureCluster = {
   readonly title: string;
-  readonly icon: ReactNode;
+  readonly summary: string;
   readonly points: readonly string[];
-  /* Cards 2 and 3 carry the subtle surface. Stored rather than derived from the
-     index so the checkerboard survives anyone reordering the array. */
-  readonly tinted: boolean;
+  readonly className: string;
+  readonly dark?: boolean;
 };
 
-/* One <svg> definition, four sets of paths. The icon repeats the h3 next to
-   it, so it is decorative and hidden from assistive tech. Mobile drops it
-   entirely, matching the Mobile artboard. */
-function ClusterIcon({ children }: { children: ReactNode }) {
-  return (
-    <svg
-      width="19"
-      height="19"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={2}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-      focusable="false"
-      className="hidden shrink-0 text-accent md:block"
-    >
-      {children}
-    </svg>
-  );
-}
-
-const clusters: readonly FeatureCluster[] = [
+const CLUSTERS: readonly FeatureCluster[] = [
   {
     title: "Dictation",
-    icon: (
-      <ClusterIcon>
-        <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z" />
-        <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
-        <path d="M12 19v3" />
-      </ClusterIcon>
-    ),
+    summary: "Speak into the work that is already open.",
     points: [
-      "Push to talk, or double tap for hands free",
-      "Writes into whatever app has focus",
-      "A floating bar you can put wherever you like",
-      "Cleanup that you can undo per dictation",
-      "Searchable history of everything you said",
+      "Push to talk or double tap for hands free",
+      "Writes into whichever app has focus",
+      "Cleanup can be undone per dictation",
+      "Searchable history of what you said",
     ],
-    tinted: false,
+    className: "bg-[var(--lp-lavender)] md:col-span-7",
   },
   {
     title: "Recording notes",
-    icon: (
-      <ClusterIcon>
-        <circle cx="12" cy="12" r="9" />
-        <circle cx="12" cy="12" r="3" />
-      </ClusterIcon>
-    ),
+    summary: "Keep the meeting, its useful moments and the audio together.",
     points: [
-      "Capture a meeting from your own audio",
-      "A heads up before a scheduled call starts",
-      "Import a file you already have, or a YouTube link",
-      "Moments with timestamps, next to the player",
-      "Retranscribe or translate a recording later",
+      "Capture from your own computer audio",
+      "Import an existing file or a YouTube link",
+      "Moments stay linked to timestamps",
+      "Retranscribe or translate later",
     ],
-    tinted: true,
+    className: "bg-[var(--lp-ink)] text-[var(--lp-paper)] md:col-span-5",
+    dark: true,
   },
   {
     title: "Your words",
-    icon: (
-      <ClusterIcon>
-        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
-        <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
-      </ClusterIcon>
-    ),
+    summary: "Teach Looper the language you actually use.",
     points: [
-      "A dictionary for names, jargon and product terms",
-      "Corrections that stick after you make them once",
-      "Tell it how you write, and it writes that way",
-      "Ask what you already said, across everything",
+      "Dictionary for names, jargon and product terms",
+      "Corrections stick after you make them once",
+      "Your writing style stays recognizable",
     ],
-    tinted: true,
+    className: "border border-border bg-card md:col-span-4",
   },
   {
     title: "Your machine",
-    icon: (
-      <ClusterIcon>
-        <rect x="3" y="4" width="18" height="12" rx="2" />
-        <path d="M8 20h8" />
-        <path d="M12 16v4" />
-      </ClusterIcon>
-    ),
+    summary: "Local is the default architecture, not a privacy toggle.",
     points: [
-      "A speech model that runs locally",
-      "Or your own provider, if you would rather",
-      "Downloads that resume instead of restarting",
-      "Microphone, shortcuts and storage in your hands",
-      "Privacy settings that default to keeping things in",
+      "Speech model runs on your hardware",
+      "Bring your own provider when a job needs it",
+      "Downloads resume instead of restarting",
+      "Microphone, shortcuts and storage stay in your hands",
     ],
-    tinted: false,
+    className: "bg-muted md:col-span-8",
   },
 ];
 
@@ -129,33 +60,42 @@ export function Features() {
     <section
       id="features"
       aria-labelledby="features-title"
-      className={`${containerClass} flex flex-col gap-3.5 pb-12 md:block md:pb-[104px]`}
+      className={`${containerClass} py-16 md:py-28`}
     >
-      <div className="lp-rise flex flex-col gap-3.5 md:mb-9 md:max-w-[600px] md:gap-4">
+      <div data-reveal className="flex max-w-[760px] flex-col gap-4">
         <h2
           id="features-title"
-          className="text-[31px] leading-[1.06] tracking-[-0.045em] md:text-[44px] md:leading-[1.04] md:tracking-tighter"
+          className="text-[39px] leading-[0.98] tracking-[-0.05em] md:text-[58px]"
         >
-          Everything that ships on day one.
+          One system from the first word to the useful artifact.
         </h2>
-        <p className="text-[15px] text-ink-secondary leading-[1.6] md:text-[17px]">
-          Four groups, and each one is finished software rather than a promise on a roadmap.
+        <p className="max-w-[620px] text-[16px] text-ink-secondary leading-[1.65] md:text-[18px]">
+          Dictation and recording notes are different jobs. They share the same memory, source and
+          recovery model.
         </p>
       </div>
 
-      <div className="lp-stagger mt-2.5 flex flex-col gap-3 md:mt-0 md:grid md:grid-cols-2 md:gap-5">
-        {clusters.map((cluster) => (
+      <div data-reveal className="mt-9 grid gap-4 md:mt-12 md:grid-cols-12 md:gap-5">
+        {CLUSTERS.map((cluster) => (
           <article
             key={cluster.title}
-            className={cluster.tinted ? `${cardClass} bg-muted` : cardClass}
+            className={`lp-lift flex min-h-[300px] flex-col rounded-[22px] p-6 md:min-h-[340px] md:rounded-[28px] md:p-8 ${cluster.className}`}
           >
-            <div className="flex items-center gap-[11px]">
-              {cluster.icon}
-              <h3 className="text-[19px] leading-[1.2] tracking-[-0.045em] md:text-[21px] md:tracking-tighter">
-                {cluster.title}
-              </h3>
-            </div>
-            <ul className="grid gap-2.5 text-[14px] text-ink-secondary leading-[1.5] md:gap-[13px] md:text-[15px]">
+            <h3 className="text-[27px] leading-none tracking-[-0.045em] md:text-[34px]">
+              {cluster.title}
+            </h3>
+            <p
+              className={`mt-3 max-w-[520px] text-[15px] leading-[1.55] md:text-[16px] ${
+                cluster.dark ? "text-[#c1c3ca]" : "text-ink-secondary"
+              }`}
+            >
+              {cluster.summary}
+            </p>
+            <ul
+              className={`mt-auto grid gap-2.5 pt-8 text-[13px] leading-[1.55] md:text-[14px] ${
+                cluster.dark ? "text-[#c1c3ca]" : "text-ink-secondary"
+              }`}
+            >
               {cluster.points.map((point) => (
                 <li key={point}>{point}</li>
               ))}

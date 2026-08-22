@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" class="light">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
@@ -25,14 +25,17 @@
       crossorigin
     />
 
-    <title>Looper: your voice never leaves your computer</title>
+    <title>Looper: your voice becomes work</title>
     <meta
       name="description"
-      content="Speech becomes finished text and recording notes, with the model running on your own hardware. Nothing is uploaded to be transcribed. Free on macOS, Windows and Linux."
+      content="Dictate anywhere, capture meetings, and keep original audio beside the finished note. Looper runs locally by default on macOS, Windows and Linux."
     />
+    <meta name="application-name" content="Looper" />
+    <meta name="apple-mobile-web-app-title" content="Looper" />
     <link rel="canonical" href="https://looper.app/" />
-    <meta name="theme-color" content="#ffffff" />
-    <meta name="color-scheme" content="light" />
+    <meta name="theme-color" content="#fbfaf5" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#15161a" media="(prefers-color-scheme: dark)" />
+    <meta name="color-scheme" content="light dark" />
     <meta name="format-detection" content="telephone=no" />
 
     <!-- Open Graph -->
@@ -40,35 +43,31 @@
     <meta property="og:site_name" content="Looper" />
     <meta property="og:locale" content="en" />
     <meta property="og:url" content="https://looper.app/" />
-    <meta property="og:title" content="Looper: your voice never leaves your computer" />
+    <meta property="og:title" content="Looper: your voice becomes work" />
     <meta
       property="og:description"
-      content="Dictation and recording notes that run on your own machine. Turn the network off and it keeps working."
+      content="Dictate anywhere, capture meetings, and keep original audio beside the finished note. Local by default."
+    />
+    <meta property="og:image" content="https://looper.app/looper-workspace-purple.png" />
+    <meta property="og:image:width" content="1350" />
+    <meta property="og:image:height" content="830" />
+    <meta
+      property="og:image:alt"
+      content="Looper desktop workspace with dictation history, local model status and meeting notes"
     />
 
     <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="Looper: your voice never leaves your computer" />
+    <meta name="twitter:title" content="Looper: your voice becomes work" />
     <meta
       name="twitter:description"
-      content="Dictation and recording notes that run on your own machine. Turn the network off and it keeps working."
+      content="Dictate anywhere, capture meetings, and keep original audio beside the finished note. Local by default."
     />
-
-    <!--
-      TODO(assets): og:image / twitter:image are deliberately absent. No share card
-      exists yet and pointing at a file that is not there is worse than pointing at
-      nothing: crawlers cache the 404. Add public/og-cover.png at 1200x630 and then
-      add, next to the tags above:
-
-        <meta property="og:image" content="https://looper.app/og-cover.png" />
-        <meta property="og:image:width" content="1200" />
-        <meta property="og:image:height" content="630" />
-        <meta property="og:image:alt" content="..." />
-        <meta name="twitter:image" content="https://looper.app/og-cover.png" />
-
-      Until then the twitter:card above degrades to a text-only card, which is the
-      correct fallback.
-    -->
+    <meta name="twitter:image" content="https://looper.app/looper-workspace-purple.png" />
+    <meta
+      name="twitter:image:alt"
+      content="Looper desktop workspace with dictation history, local model status and meeting notes"
+    />
 
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
   </head>

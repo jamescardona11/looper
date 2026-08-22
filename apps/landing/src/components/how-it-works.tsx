@@ -1,4 +1,5 @@
 import { MeetingCapture } from "./how-it-works/meeting-capture";
+import { ScrollStory } from "./how-it-works/scroll-story";
 import { SourceBehindTheText } from "./how-it-works/source-behind-the-text";
 import { SpeakAnywhere } from "./how-it-works/speak-anywhere";
 
@@ -14,10 +15,13 @@ export { SpeakAnywhere } from "./how-it-works/speak-anywhere";
  */
 export function HowItWorks() {
   return (
-    <>
-      <SpeakAnywhere />
-      <MeetingCapture />
-      <SourceBehindTheText />
-    </>
+    <div id="how" className="scroll-mt-[82px]">
+      <div className="lg:hidden">
+        <SpeakAnywhere />
+        <MeetingCapture />
+        <SourceBehindTheText />
+      </div>
+      <ScrollStory />
+    </div>
   );
 }

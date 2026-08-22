@@ -1,72 +1,54 @@
-import type { ReactNode } from "react";
 import { containerClass } from "../../lib/layout";
 
-type DestinationProps = {
-  /** The app or surface the dictation lands in. */
-  readonly surface: string;
-  /** How Looper writes for that surface. */
-  readonly treatment: ReactNode;
-  /** The Mobile artboard shows three destinations, the desktop one shows four. */
-  readonly desktopOnly?: boolean;
-};
+const CONTEXTS = [
+  { surface: "Editor", treatment: "Technical language stays technical" },
+  { surface: "Chat with a model", treatment: "Your thought lands as a prompt" },
+  { surface: "Message to a colleague", treatment: "The tone stays plain and warm" },
+] as const;
 
-function Destination({ surface, treatment, desktopOnly = false }: DestinationProps) {
-  return (
-    <div
-      className={`lp-lift flex items-center justify-between gap-4 rounded-[11px] border px-[15px] py-[13px] md:rounded-[12px] md:px-[18px] md:py-[15px] ${
-        desktopOnly ? "hidden md:flex" : "flex"
-      }`}
-    >
-      <dt className="text-[14px] md:text-[15px]">{surface}</dt>
-      <dd className="text-right font-mono text-[11px] text-muted-foreground tracking-normal md:text-[12px]">
-        {treatment}
-      </dd>
-    </div>
-  );
-}
-
-/**
- * Beat one: a split. Copy on the left, the list of destinations on the right.
- * Collapses to one column below md, where the design drops the fourth row and
- * shortens the first treatment.
- */
 export function SpeakAnywhere() {
   return (
     <section
-      id="how"
       aria-labelledby="speak-anywhere-title"
-      className={`${containerClass} grid gap-[14px] pt-12 pb-8 md:grid-cols-2 md:items-center md:gap-[76px] md:pt-[104px] md:pb-14`}
+      className={`${containerClass} grid gap-9 py-16 md:grid-cols-[0.84fr_1.16fr] md:items-center md:gap-16 md:py-28 xl:gap-24`}
     >
-      <div className="lp-reveal flex flex-col gap-[14px] md:gap-[18px]">
+      <div data-reveal className="flex flex-col gap-5">
         <h2
           id="speak-anywhere-title"
-          className="text-[31px] leading-[1.06] tracking-[-0.045em] md:text-[44px] md:leading-[1.04] md:tracking-tighter"
+          className="max-w-[620px] text-[39px] leading-[0.98] tracking-[-0.05em] md:text-[58px]"
         >
-          Speak anywhere you already type.
+          Speak where your cursor already is.
         </h2>
-        <p className="text-[15px] text-ink-secondary leading-[1.6] md:max-w-[430px] md:text-[17px]">
-          Hold{" "}
-          <kbd className="rounded-[5px] border bg-secondary px-1.5 py-px font-mono text-[13px] tracking-normal md:rounded-[6px] md:px-[7px] md:text-[15px]">
-            fn
-          </kbd>{" "}
-          and talk. Looper writes into whatever has focus, and it knows that a prompt is not an
-          email.
+        <p className="max-w-[500px] text-[16px] text-ink-secondary leading-[1.65] md:text-[18px]">
+          Dictation is not another inbox. Hold the shortcut, speak, and Looper writes into the app
+          that already has your attention.
         </p>
       </div>
 
-      <dl className="lp-reveal mt-2 flex flex-col gap-2 md:mt-0 md:gap-2.5">
-        <Destination
-          surface="Editor"
-          treatment={
-            <>
-              code voice<span className="hidden md:inline">, no filler</span>
-            </>
-          }
-        />
-        <Destination surface="Chat with a model" treatment="kept as a prompt" />
-        <Destination surface="Pull request" treatment="tidy and punctuated" desktopOnly />
-        <Destination surface="Message to a colleague" treatment="plain and warm" />
-      </dl>
+      <div
+        data-reveal
+        className="rounded-[24px] bg-[var(--lp-ink)] p-6 text-[var(--lp-paper)] md:rounded-[30px] md:p-9"
+      >
+        <p className="font-mono text-[11px] text-[var(--lp-lavender-strong)] tracking-[0.08em]">
+          ONE SHORTCUT, THE RIGHT CONTEXT
+        </p>
+        <p className="mt-4 max-w-[520px] font-display font-semibold text-[30px] leading-[1.02] tracking-[-0.045em] md:text-[42px]">
+          Hold fn. Talk. Let go.
+        </p>
+        <dl className="mt-8">
+          {CONTEXTS.map((context) => (
+            <div
+              key={context.surface}
+              className="grid gap-1 border-[var(--lp-paper)]/15 border-b py-4 last:border-b-0 md:grid-cols-[0.72fr_1.28fr] md:gap-6"
+            >
+              <dt className="font-medium text-[14px]">{context.surface}</dt>
+              <dd className="text-[#b9bbc3] text-[13px] leading-[1.55] md:text-[14px]">
+                {context.treatment}
+              </dd>
+            </div>
+          ))}
+        </dl>
+      </div>
     </section>
   );
 }

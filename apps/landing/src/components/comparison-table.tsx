@@ -9,54 +9,35 @@ import {
 } from "./comparison-data";
 import { mutedLinkClass } from "./ui/link";
 
-/*
- * The reveal is `.lp-reveal` in src/styles/index.css, shared with every other
- * section. This file used to carry a private `compare-reveal` copy of it.
- */
-
 /**
- * The design derives the tinted Looper column from the accent, so we do too
- * rather than pasting a second literal: rgb(88 83 250) at 4.5% alpha.
+ * The Looper column uses the same lavender surface as the rest of the Purple
+ * direction, in both color schemes.
  */
 const TINT_STYLE = {
-  "--compare-tint": "color-mix(in srgb, var(--brand) 4.5%, transparent)",
+  "--compare-tint": "var(--lp-lavender)",
 } as CSSProperties;
 
 type MarkProps = { readonly className: string };
 
 function CheckMark({ className }: MarkProps) {
   return (
-    <svg
-      className={className}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2.4"
-      strokeLinecap="round"
-      strokeLinejoin="round"
+    <span
+      className={`${className} inline-flex items-center justify-center font-mono font-semibold leading-none`}
       aria-hidden="true"
-      focusable="false"
     >
-      <path d="M20 6 9 17l-5-5" />
-    </svg>
+      ✓
+    </span>
   );
 }
 
 function CrossMark({ className }: MarkProps) {
   return (
-    <svg
-      className={className}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2.4"
-      strokeLinecap="round"
+    <span
+      className={`${className} inline-flex items-center justify-center font-mono font-semibold leading-none`}
       aria-hidden="true"
-      focusable="false"
     >
-      <path d="M18 6 6 18" />
-      <path d="m6 6 12 12" />
-    </svg>
+      ×
+    </span>
   );
 }
 
@@ -109,25 +90,21 @@ function VerdictMark({
  */
 export function ComparisonTable() {
   return (
-    <section id="compare" style={TINT_STYLE} className={`${containerClass} py-12 md:py-[104px]`}>
-      <div className="lp-reveal flex flex-col gap-3.5 md:mb-10 md:max-w-[640px] md:gap-4">
-        <h2 className="text-[31px] leading-[1.06] tracking-[-0.045em] md:hidden">
-          Where Looper sits among the tools you are weighing.
+    <section id="compare" style={TINT_STYLE} className={`${containerClass} py-16 md:py-28`}>
+      <div data-reveal className="flex max-w-[760px] flex-col gap-4 md:mb-12">
+        <h2 className="text-[39px] leading-[0.98] tracking-[-0.05em] md:text-[58px]">
+          A comparison that does not hide the rows we lose.
         </h2>
-        <h2 className="hidden tracking-tighter md:block md:text-[44px] md:leading-[1.04]">
-          Where Looper sits among the tools you are probably weighing.
-        </h2>
-        <p className="text-[15px] text-ink-secondary leading-[1.6] md:hidden">
-          Two rows go against us, and they stay in. A comparison that wins everything is an
-          advertisement.
-        </p>
-        <p className="hidden text-ink-secondary md:block md:text-[17px] md:leading-[1.6]">
-          Two rows go against us, and they stay in. A comparison that wins everything is not a
-          comparison, it is an advertisement.
+        <p className="max-w-[620px] text-[15px] text-ink-secondary leading-[1.65] md:text-[17px]">
+          Mobile and broad integrations are not here yet. The local model, source retention and open
+          code are.
         </p>
       </div>
 
-      <div className="lp-reveal mt-2.5 overflow-hidden md:mt-0 md:rounded-[18px] md:border md:border-border">
+      <div
+        data-reveal
+        className="mt-8 overflow-hidden md:mt-0 md:rounded-[24px] md:border md:border-border"
+      >
         <table className="w-full max-md:block md:table-fixed">
           <caption className="sr-only">
             Looper compared with Wispr Flow, Granola, Humla and Meetily. Competitor entries reflect
@@ -178,7 +155,7 @@ export function ComparisonTable() {
             {COMPARISON_ROWS.map((row) => (
               <tr
                 key={row.capability}
-                className="lp-row max-md:grid max-md:grid-cols-4 max-md:overflow-hidden max-md:rounded-[12px] max-md:border max-md:border-border md:border-b md:border-b-[#f0f0f0]"
+                className="max-md:grid max-md:grid-cols-4 max-md:overflow-hidden max-md:rounded-[12px] max-md:border max-md:border-border md:border-b md:border-b-border"
               >
                 <th
                   scope="row"
