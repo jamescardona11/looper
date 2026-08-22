@@ -1,5 +1,8 @@
 import { invoke } from "@tauri-apps/api/core";
-import type { RecordingPrunePolicy, TranscriptionRecord } from "../../types";
+import type {
+  RecordingPrunePolicy,
+  TranscriptionRecord,
+} from "../../contracts";
 
 export async function getTranscriptions(): Promise<TranscriptionRecord[]> {
   const records = await invoke<TranscriptionRecord[] | null>(

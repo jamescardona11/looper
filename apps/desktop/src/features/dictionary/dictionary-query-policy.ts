@@ -1,9 +1,9 @@
-import { getSuggestedCorrections } from "../../data/corrections";
+import { getSuggestedCorrections } from "../../data/capture/corrections";
 import {
   getDictionaryUsage,
   getLocalReplacements,
-} from "../../data/dictionary-sync";
-import { getLocalSnippets } from "../../data/snippets-sync";
+} from "../../data/sync/dictionary-sync";
+import { getLocalSnippets } from "../../data/sync/snippets-sync";
 
 const DICTIONARY_CACHE_ROOT = ["dictionary"] as const;
 const USAGE_STALE_TIME = 60_000;

@@ -1,7 +1,7 @@
 import { useLingui } from "@lingui/react/macro";
 import { ArrowRight, Check, X } from "@phosphor-icons/react";
 
-import type { SuggestedCorrection } from "../../../data/corrections";
+import type { SuggestedCorrection } from "../../../data/capture/corrections";
 
 type DictionarySuggestionsProps = {
   suggestions: SuggestedCorrection[];

@@ -3197,11 +3197,9 @@ name = "looper-audio-capture"
 version = "0.1.0"
 dependencies = [
  "anyhow",
- "bytes",
  "cidre",
  "cpal 0.17.3",
  "dasp",
- "futures-channel",
  "futures-util",
  "looper-aec",
  "looper-audio-core",
@@ -3212,9 +3210,6 @@ dependencies = [
  "pin-project",
  "ringbuf",
  "rodio",
- "serde",
- "serde_json",
- "thiserror 2.0.19",
  "tokio",
  "tokio-stream",
  "tokio-util",
@@ -3295,7 +3290,6 @@ dependencies = [
 name = "looper-ts"
 version = "0.1.0"
 dependencies = [
- "futures-util",
  "libc",
  "ndarray",
  "ort",

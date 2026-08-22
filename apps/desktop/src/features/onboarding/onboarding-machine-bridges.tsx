@@ -1,8 +1,8 @@
 import { useMountEffect } from "../../shared/hooks/useMountEffect";
-import { listenLocalLlmDownloads } from "../../data/local-llm";
+import { listenLocalLlmDownloads } from "../../data/models/local-llm";
 import { trackOnboardingStepViewed } from "../../data/settings";
 import type { Dispatch as ReactDispatch, SetStateAction } from "react";
-import type { DetectedApp } from "../../types";
+import type { DetectedApp } from "../../contracts";
 import type { OnboardingEvent } from "./machine";
 
 type MachineDispatch = (event: OnboardingEvent) => void;

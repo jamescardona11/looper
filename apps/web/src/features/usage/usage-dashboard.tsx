@@ -193,10 +193,10 @@ function UsageEmpty() {
         {t("usage.emptyAudioHint")}
       </p>
       <Link
-        to="/transcribe"
+        to="/library"
         className="mt-6 inline-flex h-10 items-center rounded-full bg-primary px-5 font-medium text-primary-foreground text-sm"
       >
-        {t("usage.transcribeAudio")}
+        {t("usage.viewLibrary")}
       </Link>
     </Card>
   );

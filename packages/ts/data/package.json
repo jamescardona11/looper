@@ -16,16 +16,17 @@
     "test": "vitest run --passWithNoTests"
   },
   "dependencies": {
+    "@auth/core": "^0.41.1",
+    "@convex-dev/auth": "^0.0.94",
     "@looper/backend": "workspace:*",
-    "@looper/config": "workspace:*"
+    "@looper/config": "workspace:*",
+    "convex": "^1.38.0"
   },
   "devDependencies": {
     "@types/react": "^19.0.0",
     "vitest": "^3.2.4"
   },
   "peerDependencies": {
-    "@convex-dev/auth": "*",
-    "convex": "*",
     "react": "*"
   }
 }

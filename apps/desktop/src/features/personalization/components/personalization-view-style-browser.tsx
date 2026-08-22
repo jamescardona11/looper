@@ -1,5 +1,5 @@
 import { useLingui } from "@lingui/react/macro";
-import type { Personality } from "../../../types";
+import type { Personality } from "../../../contracts";
 import ToggleSwitch from "../../../shared/ui/ToggleSwitch";
 import { AppIconBadge, WebsiteFavicon } from "./PersonalityModal";
 import {

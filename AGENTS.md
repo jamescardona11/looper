@@ -5,20 +5,26 @@
 
 ## Sources of truth
 
-- Use accepted ADRs in `docs/adr/` for architecture and package manifests for
-  commands and dependencies.
-- If an instruction conflicts with code, tests, or an ADR, surface the conflict
-  and reconcile it. Do not silently choose one source.
+- Use the architecture section in `README.md`, the nearest `AGENTS.md`, and
+  package manifests for commands and dependencies.
+- If an instruction conflicts with code or tests, surface and reconcile the
+  conflict. Do not silently choose one source.
 
 ## Architecture
 
 - Web is React/Vite; mobile is React Native/Expo; desktop is Tauri with a Rust
   backend and React frontend; the backend is Convex.
+- Applications never import another application. React code stays with the
+  runtime that owns its behavior; move code to `packages/ts` only after Web,
+  Desktop, or Mobile genuinely share the same interface and implementation.
+- Desktop owns native capture, local media, OS integration, and their React
+  presentation. Web is browser-only: it may read synchronized content but must
+  not use Tauri, microphone capture, or transcription commands.
 - Extend existing owners and shared packages before creating a parallel layer.
 - Web and mobile Convex client mechanics belong in
   `packages/ts/data/src/adapters/convex`; server mechanics belong in
-  `backend/convex`. Desktop headless Convex orchestration is the documented
-  exception and stays in `apps/desktop/src/data` (ADR 0004).
+  `backend/convex`. Desktop headless Convex orchestration is the sole exception
+  and stays in `apps/desktop/src/data`.
 - AI and external-provider calls stay server-side. Use AI SDK adapters, never
   raw provider `fetch` calls or client-side secrets.
 
@@ -34,6 +40,20 @@
 - Reuse `@looper/config`, `@looper/data`, `@looper/i18n`, and existing UI
   primitives. Check the workspace before adding a dependency or abstraction.
 - Keep Lingui locale keys in parity across every supported locale.
+- Keep TypeScript unit tests in the nearest `__tests__/` directory. Use an
+  application-level `tests/` directory for architecture/integration tests and
+  `e2e/` for end-to-end tests.
+- Edit colors in `packages/ts/config/src/palette.ts`, run `make tokens`, and
+  never hand-edit generated token files.
+
+## Environment files
+
+- Only deployable units (`apps/desktop`, `apps/mobile`, `apps/web`, and
+  `backend`) may own one `.env.example` describing their variables.
+- Keep secrets in ignored local environment files. Never commit real keys.
+- A tracked `.env.production` may contain public client configuration only.
+- Packages, tools, tests, and fixtures must receive configuration from their
+  caller and must not add their own environment files.
 
 ## Safety boundaries
 

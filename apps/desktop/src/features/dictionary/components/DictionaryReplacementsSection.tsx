@@ -1,7 +1,7 @@
 import { useLingui } from "@lingui/react/macro";
 import type { CSSProperties } from "react";
 
-import type { Replacement } from "../../../types";
+import type { Replacement } from "../../../contracts";
 import { DictionaryPairForm } from "./dictionary-pair-form";
 import { DictionaryPairList } from "./dictionary-pair-list";
 

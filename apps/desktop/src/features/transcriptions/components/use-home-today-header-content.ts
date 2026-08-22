@@ -1,7 +1,7 @@
 import { useLingui } from "@lingui/react/macro";
 import { useMemo } from "react";
 
-import type { TodayDictationStats } from "../../../types";
+import type { TodayDictationStats } from "../../../contracts";
 import { labelForTodayStatSlide } from "../homeHeaderStats";
 import {
   getHomeGreetingVariant,

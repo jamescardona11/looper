@@ -10,7 +10,7 @@ type ScreenHeaderProps = {
 };
 
 const SCREEN_TITLE = [
-  "font-satoshi",
+  "font-display",
   "ui-text-screen-title",
   "ui-color-primary",
   "font-semibold",

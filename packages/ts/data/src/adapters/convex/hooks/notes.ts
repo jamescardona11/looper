@@ -24,15 +24,23 @@ function noteFromRow(row: NoteRow): Note {
   };
 }
 
-export function useNotes({ loadList = true }: { loadList?: boolean } = {}): {
+export function useNotes(): {
   notes: Note[];
   isLoading: boolean;
+} {
+  const rows = useQuery(api.notes.notes.list, {});
+  return {
+    notes: Array.isArray(rows) ? (rows as NoteRow[]).map(noteFromRow) : [],
+    isLoading: rows === undefined,
+  };
+}
+
+export function useNoteCommands(): {
   create: (input: { title: string; body: string; kind?: "note" | "dictation" }) => Promise<string>;
   upsertFromDevice: (input: Note & { sourceId: string }) => Promise<string>;
   update: (input: { id: string; title: string; body: string }) => Promise<void>;
   remove: (id: string) => Promise<void>;
 } {
-  const rows = useQuery(api.notes.notes.list, loadList ? {} : "skip");
   const createMutation = useMutation(api.notes.notes.create);
   const updateMutation = useMutation(api.notes.notes.update);
   const removeMutation = useMutation(api.notes.notes.remove);
@@ -71,8 +79,6 @@ export function useNotes({ loadList = true }: { loadList?: boolean } = {}): {
   );
 
   return {
-    notes: Array.isArray(rows) ? (rows as NoteRow[]).map(noteFromRow) : [],
-    isLoading: loadList && rows === undefined,
     create,
     upsertFromDevice,
     update,

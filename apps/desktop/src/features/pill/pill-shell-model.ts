@@ -1,4 +1,4 @@
-import type { PillStatus } from "../../types";
+import type { PillStatus } from "../../contracts";
 import {
   SIGNAL_RAIL_COLLAPSED_WIDTH,
   SIGNAL_RAIL_COMPACT_HEIGHT,

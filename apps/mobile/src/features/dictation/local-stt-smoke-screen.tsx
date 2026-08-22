@@ -2,7 +2,7 @@ import * as Device from "expo-device";
 import { File, Paths } from "expo-file-system";
 import { useState } from "react";
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from "react-native";
-import { Screen, colors } from "@/shared/components/screen";
+import { colors, Screen } from "@/shared/components/screen";
 import { getLocalSttMemoryTier } from "./local-stt-model";
 import {
   installLocalSttModel,

@@ -19,12 +19,10 @@ jobs:
       - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22.18.0
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - name: Publish functions, typecheck, and test
-        env:
-          CONVEX_AGENT_MODE: anonymous
+      - name: Typecheck and test
         run: pnpm run convex:verify
 
   verify:
@@ -35,7 +33,7 @@ jobs:
       - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22.18.0
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm run verify
@@ -57,7 +55,7 @@ jobs:
       - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22.18.0
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm run qa:mobile
@@ -70,7 +68,7 @@ jobs:
       - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22.18.0
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm --filter @looper/web build
@@ -84,7 +82,7 @@ jobs:
       - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22.18.0
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm --filter @looper/web exec playwright install --with-deps chromium
@@ -116,7 +114,7 @@ jobs:
       - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22.18.0
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - name: Run remote dictation local pairing QA
@@ -141,7 +139,7 @@ jobs:
       - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22.18.0
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm run qa:desktop-native
@@ -162,12 +160,15 @@ jobs:
   desktop-windows:
     name: Verify desktop Windows
     runs-on: windows-latest
+    env:
+      # Keep nested llama.cpp CMake paths below Windows path limits.
+      CARGO_TARGET_DIR: D:\t
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22.18.0
           cache: pnpm
       - uses: dtolnay/rust-toolchain@stable
       - run: pnpm install --frozen-lockfile
@@ -200,7 +201,16 @@ jobs:
           $sdk = "C:\VulkanSDK\1.4.350.0"
           "VULKAN_SDK=$sdk" >> $env:GITHUB_ENV
           "$sdk\Bin" >> $env:GITHUB_PATH
-      - run: cargo check --tests --locked --manifest-path apps/desktop/src-tauri/Cargo.toml
-      - run: cargo test --locked --lib --manifest-path apps/desktop/src-tauri/Cargo.toml
-      - run: cargo test --locked --workspace --manifest-path packages/rust/audio/Cargo.toml
-      - run: cargo test --locked --lib --manifest-path packages/rust/looper-ts/Cargo.toml
+      - name: Verify desktop Rust
+        shell: cmd
+        run: |
+          for /f "usebackq tokens=*" %%i in (`"%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vswhere.exe" -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath`) do set "VSINSTALL=%%i"
+          if not defined VSINSTALL exit /b 1
+          call "%VSINSTALL%\Common7\Tools\VsDevCmd.bat" -arch=x64 -host_arch=x64
+          set "CMAKE_GENERATOR=NMake Makefiles"
+          cargo test --locked --lib --manifest-path apps/desktop/src-tauri/Cargo.toml
+          if errorlevel 1 exit /b 1
+          cargo test --locked --workspace --manifest-path packages/rust/audio/Cargo.toml
+          if errorlevel 1 exit /b 1
+          cargo test --locked --lib --manifest-path packages/rust/looper-ts/Cargo.toml
+          if errorlevel 1 exit /b 1

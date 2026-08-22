@@ -1,4 +1,4 @@
-import type { DetectedApp, TranscriptionMode } from "../../types";
+import type { DetectedApp, TranscriptionMode } from "../../contracts";
 import type { OnboardingPlatform, OnboardingStep } from "./platform";
 
 export type OnboardingModelPriority = "quality" | "balanced" | "compact";

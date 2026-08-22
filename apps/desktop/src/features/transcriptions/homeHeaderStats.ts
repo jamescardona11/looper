@@ -6,7 +6,7 @@ import {
   type TodayStatSlide,
   wordsPerMinute,
 } from "./todayStats";
-import type { TodayDictationStats } from "../../types";
+import type { TodayDictationStats } from "../../contracts";
 
 const TODAY_STAT_MESSAGES = {
   dictationsWords: msg({

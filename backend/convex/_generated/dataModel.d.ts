@@ -161,11 +161,7 @@ export type DataModel = {
       _creationTime: number;
     };
     fieldPaths:
-      | "_creationTime"
-      | "_id"
-      | "anonymousUserId"
-      | "expiresAt"
-      | "nonce";
+      "_creationTime" | "_id" | "anonymousUserId" | "expiresAt" | "nonce";
     indexes: {
       by_id: ["_id"];
       by_creation_time: ["_creationTime"];

@@ -1,4 +1,4 @@
-import type { PillInsertedPayload } from "../../../data/overlay";
+import type { PillInsertedPayload } from "../../../data/capture/overlay";
 
 export const insertionEvidenceIsValid = (
   event: PillInsertedPayload,

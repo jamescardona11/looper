@@ -7,7 +7,7 @@ Shared packages are platform-agnostic. Global rules are in the root
 
 - `@looper/data` is the Convex data layer for web and mobile: domain hooks,
   normalized types, auth, and provider mounting. Desktop headless orchestration
-  is the documented exception in ADR 0004.
+  is the sole exception and remains in `apps/desktop/src/data`.
 - `@looper/config` owns shared product configuration. Search for an existing
   owner before adding a constant, catalog, or feature flag; keep it free of
   server-only and platform-specific code.

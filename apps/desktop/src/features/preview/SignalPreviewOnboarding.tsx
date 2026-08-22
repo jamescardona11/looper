@@ -439,7 +439,7 @@ export default function SignalPreviewOnboarding() {
           <span className="onboarding-preview-logo">
             <LooperLogo size="sm" />
           </span>
-          <span className="font-satoshi text-[15px] font-bold tracking-[-0.04em] text-content-primary">
+          <span className="font-display text-[15px] font-bold tracking-[-0.04em] text-content-primary">
             Looper
           </span>
           <span className="onboarding-preview-prototype">Prototype</span>

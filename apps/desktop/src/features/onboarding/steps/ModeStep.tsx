@@ -1,6 +1,6 @@
 import { useLingui } from "@lingui/react/macro";
 import { Cloud, LockKey } from "@phosphor-icons/react";
-import type { TranscriptionMode } from "../../../types";
+import type { TranscriptionMode } from "../../../contracts";
 import {
   OnboardingHeader,
   OnboardingStep,

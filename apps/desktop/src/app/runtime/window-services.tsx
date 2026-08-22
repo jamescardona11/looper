@@ -1,9 +1,9 @@
 import { useEffect } from "react";
 
-import { startLiveMeetingPublisher } from "../../data/live-meeting";
-import { startConfirmedMeetingOutputDelivery } from "../../data/meeting-output-delivery";
-import { startRemoteDictationConsumer } from "../../data/remote-dictation";
-import { startSyncEngine } from "../../data/sync-engine";
+import { startLiveMeetingPublisher } from "../../data/meeting/live-meeting";
+import { startConfirmedMeetingOutputDelivery } from "../../data/meeting/meeting-output-delivery";
+import { startRemoteDictationConsumer } from "../../data/sync/remote-dictation";
+import { startSyncEngine } from "../../data/sync/sync-engine";
 
 type RuntimeService = () => () => void;
 

@@ -8,12 +8,12 @@ import type {
   DetectedApp as ImportSource,
   ImportResult as AppliedImport,
   ImportSelection as ImportCategory,
-} from "../../../types";
+} from "../../../contracts";
 import {
   OnboardingStep as StepFrame,
   type StepMotionProps as ImportMotion,
 } from "../../onboarding/steps/shared";
-import { settingsKeys as settingQueryKeys } from "../../settings/queries";
+import { settingsKeys as settingQueryKeys } from "../../settings/preferences/queries";
 import { transcriptionKeys as transcriptQueryKeys } from "../../transcriptions/queries";
 import { useImportPreview as useSelectedImportPreview } from "../queries";
 import { ImportStepCategories } from "./import-step-categories";

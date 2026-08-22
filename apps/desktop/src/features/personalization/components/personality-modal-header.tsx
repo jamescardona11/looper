@@ -6,7 +6,7 @@ import {
   X,
 } from "@phosphor-icons/react";
 import { useRef, useState } from "react";
-import type { Personality } from "../../../types";
+import type { Personality } from "../../../contracts";
 import DotMatrix from "../../../shared/ui/DotMatrix";
 import { normalizeEntry } from "./personalization-utils";
 

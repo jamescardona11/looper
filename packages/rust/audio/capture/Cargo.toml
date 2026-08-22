@@ -3,7 +3,7 @@ name = "looper-audio-capture"
 version = "0.1.0"
 edition = "2024"
 publish = false
-license = "MIT"
+license = "AGPL-3.0-or-later"
 
 [dependencies]
 looper-aec = { path = "../aec" }
@@ -14,14 +14,8 @@ looper-audio-utils = { path = "../utils" }
 looper-resampler = { path = "../resampler" }
 
 anyhow = "1"
-thiserror = "2"
 tracing = "0.1"
 
-bytes = "1.11"
-serde = { version = "1", features = ["derive"] }
-serde_json = "1"
-
-futures-channel = "0.3.31"
 futures-util = "0.3.31"
 pin-project = "1"
 tokio = { version = "1", features = ["rt", "macros", "sync", "time"] }
@@ -41,7 +35,5 @@ cidre = { version = "0.15", features = ["av"] }
 wasapi = "0.23.0"
 
 [dev-dependencies]
-approx = "0.5.1"
-hound = "3.5.1"
 serial_test = "3"
 tokio = { version = "1", features = ["full"] }

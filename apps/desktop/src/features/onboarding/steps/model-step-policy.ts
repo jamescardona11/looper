@@ -1,4 +1,4 @@
-import type { DownloadEvent, ModelInfo, ModelStatus } from "../../../types";
+import type { DownloadEvent, ModelInfo, ModelStatus } from "../../../contracts";
 
 export type ModelCardProjection = {
   model: ModelInfo;

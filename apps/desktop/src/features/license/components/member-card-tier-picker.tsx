@@ -1,6 +1,6 @@
 import { useLingui } from "@lingui/react/macro";
 import { ArrowUpRight, CircleNotch as Loader2 } from "@phosphor-icons/react";
-import { tierInfo, type PurchaseTier } from "../../license/purchaseConfig";
+import { tierInfo, type PurchaseTier } from "../purchaseConfig";
 import { TIER_COLORS, useMemberCardPalette } from "./memberCardShared";
 
 type MemberCardTierPickerProps = {

@@ -1,11 +1,9 @@
-import { convexCapabilities, useTranscribe } from "@looper/data";
+import { convexCapabilities } from "@looper/data";
 import { useTranslation } from "@looper/i18n/react";
 import { IconArrowUp, IconPlayerStopFilled } from "@tabler/icons-react";
 import { Link } from "@tanstack/react-router";
 import { type KeyboardEvent, useRef, useState } from "react";
-import type { AudioRecorderResult } from "@/hooks/use-audio-recorder";
 import { cn } from "@/lib/cn";
-import { AudioRecorderButton } from "@/shared/components/audio-recorder";
 import { Tooltip } from "@/shared/components/ui/tooltip";
 import { quotaBlocksSend } from "../quota";
 import { hasDisplayableQuota } from "../quota-presentation";
@@ -37,41 +35,12 @@ export function ChatComposer({
 }: ChatComposerProps) {
   const { t } = useTranslation();
   const [text, setText] = useState(initialText);
-  const [transcribing, setTranscribing] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-
-  const { transcribe, isAvailable: sttAvailable } = useTranscribe();
 
   // Quota gate: a metered user with no messages left can't send — the button
   // disables instead of firing a request the backend will reject.
   const atLimit = quotaBlocksSend(byok, creditsRemaining);
   const canSend = text.trim().length > 0 && !disabled && !busy && !atLimit;
-
-  const handleRecordingComplete = async (result: AudioRecorderResult) => {
-    if (!sttAvailable) {
-      return;
-    }
-
-    setTranscribing(true);
-    try {
-      const response = await fetch(result.uri);
-      const blob = await response.blob();
-      const { text: transcript } = await transcribe({
-        blob,
-        type: result.mimeType,
-        provider: "deepgram",
-        durationMs: result.durationMs,
-      });
-      if (transcript) {
-        setText((prev) => (prev ? `${prev} ${transcript}` : transcript));
-        textareaRef.current?.focus();
-      }
-    } catch {
-      // Transcription failed — leave the input untouched
-    } finally {
-      setTranscribing(false);
-    }
-  };
 
   const submit = async () => {
     if (!canSend) return;
@@ -94,8 +63,7 @@ export function ChatComposer({
     ta.style.height = `${Math.min(ta.scrollHeight, 180)}px`;
   };
 
-  let composerPlaceholder = busy ? t("ai.generating") : t("chat.askAnything");
-  if (transcribing) composerPlaceholder = t("ai.transcribing");
+  const composerPlaceholder = busy ? t("ai.generating") : t("chat.askAnything");
 
   return (
     <div data-testid="chat-composer" className="bg-background">
@@ -121,11 +89,6 @@ export function ChatComposer({
                 "min-h-9 flex-1 resize-none self-center bg-transparent px-1.5 py-2 text-sm leading-relaxed outline-none placeholder:text-muted-foreground",
                 "max-h-[180px]",
               )}
-            />
-
-            <AudioRecorderButton
-              onRecordingComplete={(r) => void handleRecordingComplete(r)}
-              disabled={disabled || busy || !sttAvailable}
             />
 
             {busy && onStop && convexCapabilities.streamingChat ? (

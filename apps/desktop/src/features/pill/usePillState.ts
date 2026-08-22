@@ -1,18 +1,18 @@
 import type { UnlistenFn } from "@tauri-apps/api/event";
 import { useCallback, useReducer, useRef, useState } from "react";
-import { subscribeAudioSpectrum } from "../../data/audio";
-import { syncPillRendererState } from "../../data/dictation";
+import { subscribeAudioSpectrum } from "../../data/capture/audio";
+import { syncPillRendererState } from "../../data/capture/dictation";
 import {
   subscribePillError,
   subscribePillHover,
   subscribePillInserted,
   subscribePillMode,
   subscribePillState,
-} from "../../data/overlay";
+} from "../../data/capture/overlay";
 import { subscribeTransformStream } from "../../data/transcription";
 import { useMountEffect } from "../../shared/hooks/useMountEffect";
 import { safeUnlisten } from "../../shared/lib/safeUnlisten";
-import type { PillStatus, PillTone } from "../../types";
+import type { PillStatus, PillTone } from "../../contracts";
 
 const insertedVisibilityMs = 4_000;
 const spectrumBinCount = 256;

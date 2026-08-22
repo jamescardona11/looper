@@ -13,4 +13,3 @@ export * from "./billing";
 export * from "./dictation";
 export * from "./meetings";
 export * from "./notes";
-export * from "./voice";

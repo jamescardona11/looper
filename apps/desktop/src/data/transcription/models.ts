@@ -1,5 +1,5 @@
 import { invoke } from "@tauri-apps/api/core";
-import type { ModelInfo, ModelStatus, SpeechModel } from "../../types";
+import type { ModelInfo, ModelStatus, SpeechModel } from "../../contracts";
 
 export const listModels = (): Promise<ModelInfo[]> => invoke("list_models");
 

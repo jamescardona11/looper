@@ -5,7 +5,7 @@ import {
   useState,
   type PointerEvent as ReactPointerEvent,
 } from "react";
-import type { Personality } from "../../../types";
+import type { Personality } from "../../../contracts";
 import { useMountEffect } from "../../../shared/hooks/useMountEffect";
 import {
   clampInstructionsHeight,

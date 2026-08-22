@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import * as libraryApi from "../../data/library";
-import type { LibraryFilter } from "../../types";
+import type { LibraryFilter } from "../../contracts";
 import {
   applyImportProgress,
   applyTranscriptionProgress,

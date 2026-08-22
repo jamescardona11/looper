@@ -1,6 +1,6 @@
 import { useRef } from "react";
 import type { QueryClient } from "@tanstack/react-query";
-import type { Personality } from "../../../types";
+import type { Personality } from "../../../contracts";
 import type { InstalledApp } from "../../../data/personalization";
 import { useMountEffect } from "../../../shared/hooks/useMountEffect";
 import { personalizationKeys } from "../queries";

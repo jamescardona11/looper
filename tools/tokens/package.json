@@ -7,6 +7,6 @@
   "description": "Generates the color tokens for web, desktop and mobile from @looper/config.",
   "scripts": {
     "generate": "node generate.mjs",
-    "test": "node --test *.test.mjs"
+    "test": "node --test __tests__/*.test.mjs"
   }
 }

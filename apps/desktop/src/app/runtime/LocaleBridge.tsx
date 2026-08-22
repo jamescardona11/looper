@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 
-import { useSettings } from "../../features/settings/queries";
+import { useSettings } from "../../features/settings/preferences/queries";
 import { activateLocale } from "../../i18n";
 
 export function LocaleBridge() {

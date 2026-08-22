@@ -1,4 +1,4 @@
-import type { ModelInfo } from "../../types";
+import type { ModelInfo } from "../../contracts";
 
 type LanguageIdentity = Record<"code" | "name", string>;
 type LanguageOptionFlags = Partial<

@@ -1,7 +1,7 @@
 import type { QueryClient } from "@tanstack/react-query";
 
 import { getTranscriptions } from "../../data/transcription";
-import type { TranscriptionRecord } from "../../types";
+import type { TranscriptionRecord } from "../../contracts";
 
 const TRANSCRIPTION_CACHE_ROOT = ["transcriptions"] as const;
 

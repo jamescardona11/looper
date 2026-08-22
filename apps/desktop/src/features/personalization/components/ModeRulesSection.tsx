@@ -11,8 +11,8 @@ import type {
   WorkflowEngine,
   WorkflowField,
   WorkflowInput,
-} from "../../../types";
-import { TRANSFORM_PRESETS, type TransformPreset } from "../../../types";
+} from "../../../contracts";
+import { TRANSFORM_PRESETS, type TransformPreset } from "../../../contracts";
 import * as personalizationApi from "../../../data/personalization";
 import type { InstalledApp } from "../../../data/personalization";
 import {

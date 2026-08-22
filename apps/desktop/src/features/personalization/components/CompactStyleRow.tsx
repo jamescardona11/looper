@@ -1,7 +1,7 @@
 import { useLingui } from "@lingui/react/macro";
 import { motion } from "framer-motion";
 import ToggleSwitch from "../../../shared/ui/ToggleSwitch";
-import type { Personality } from "../../../types";
+import type { Personality } from "../../../contracts";
 import { voiceListAnatomy } from "../../voice/components/voice-list-anatomy";
 import { formatWebsitePreview } from "./personalization-utils";
 

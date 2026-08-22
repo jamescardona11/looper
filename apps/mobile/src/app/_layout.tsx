@@ -3,11 +3,11 @@ import { Stack } from "expo-router";
 import { type ReactNode, useEffect, useRef, useState } from "react";
 import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
+import { LocalSttSmokeScreen } from "@/features/dictation/local-stt-smoke-screen";
+import { KeyboardContentSync } from "@/features/keyboard/keyboard-content-sync";
+import { LocalContentSync } from "@/features/library/local-content-sync";
 import { secureStorage } from "@/lib/secure-storage";
 import { colors } from "@/shared/components/screen";
-import { LocalSttSmokeScreen } from "@/features/dictation/local-stt-smoke-screen";
-import { LocalContentSync } from "@/features/library/local-content-sync";
-import { KeyboardContentSync } from "@/features/keyboard/keyboard-content-sync";
 
 const convexUrl = process.env.EXPO_PUBLIC_CONVEX_URL;
 

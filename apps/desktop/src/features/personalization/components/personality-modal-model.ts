@@ -1,4 +1,4 @@
-import type { AppBinding, Personality } from "../../../types";
+import type { AppBinding, Personality } from "../../../contracts";
 import type { InstalledApp } from "../../../data/personalization";
 import { appBindingKey, normalizeWebsite } from "./personalization-utils";
 

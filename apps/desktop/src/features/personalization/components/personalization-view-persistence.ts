@@ -1,6 +1,6 @@
 import { useCallback, useRef, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import type { Personality } from "../../../types";
+import type { Personality } from "../../../contracts";
 import { useMountEffect } from "../../../shared/hooks/useMountEffect";
 import * as personalizationApi from "../../../data/personalization";
 import { personalizationKeys, setPersonalitiesCache } from "../queries";

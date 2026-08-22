@@ -2,7 +2,7 @@ import { useCallback, useRef, useSyncExternalStore } from "react";
 import {
   subscribeShortcutCapture,
   type ShortcutCapturePayload,
-} from "../../data/shortcuts";
+} from "../../data/capture/shortcuts";
 import { formatShortcutForDisplay } from "../lib/shortcuts";
 
 type RequiredCaptureCallbacks = {

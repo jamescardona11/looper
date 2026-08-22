@@ -91,15 +91,7 @@ function Capsule({ index }: { index: number }) {
   return <Animated.View style={[styles.capsule, style]} />;
 }
 
-function TabItem({
-  slot,
-  active,
-  onPress,
-}: {
-  slot: Slot;
-  active: boolean;
-  onPress: () => void;
-}) {
+function TabItem({ slot, active, onPress }: { slot: Slot; active: boolean; onPress: () => void }) {
   const scale = useSharedValue(1);
 
   useEffect(() => {

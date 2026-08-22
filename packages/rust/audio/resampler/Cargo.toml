@@ -3,7 +3,7 @@ name = "looper-resampler"
 version = "0.1.0"
 edition = "2024"
 publish = false
-license = "MIT"
+license = "AGPL-3.0-or-later"
 
 [features]
 default = ["async-source"]
@@ -26,6 +26,4 @@ tracing = "0.1"
 
 [dev-dependencies]
 futures-util = "0.3.31"
-hound = "3.5.1"
-rodio = { version = "0.22", features = ["symphonia-all"] }
 tokio = { version = "1", features = ["full"] }

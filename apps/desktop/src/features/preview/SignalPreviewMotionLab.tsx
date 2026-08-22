@@ -104,7 +104,7 @@ export default function SignalPreviewMotionLab() {
     <div className="h-screen w-screen overflow-y-auto bg-surface-secondary text-content-primary">
       <div className="mx-auto max-w-[860px] px-10 py-12">
         <p className="ui-text-uppercase-micro ui-color-muted">Motion lab</p>
-        <h1 className="font-satoshi mt-1 text-[26px] font-medium tracking-[-0.04em]">
+        <h1 className="font-display mt-1 text-[26px] font-medium tracking-[-0.04em]">
           Micro-interacciones compartidas
         </h1>
 
@@ -139,7 +139,7 @@ export default function SignalPreviewMotionLab() {
               </p>
               <AnimatedCount
                 value={words}
-                className="font-satoshi mt-1 block text-[34px] font-medium tracking-[-0.03em]"
+                className="font-display mt-1 block text-[34px] font-medium tracking-[-0.03em]"
               />
               <p className="mt-3 ui-text-uppercase-micro ui-color-muted">
                 Recording

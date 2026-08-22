@@ -1,11 +1,11 @@
-import { useDictationHistory, useNotes } from "@looper/data";
+import { useNoteCommands, useRecordDictation } from "@looper/data";
 import { type ReactNode, useEffect, useRef } from "react";
 import { loadLocalNotes } from "@/features/notes/local-notes-storage";
 
 /** Migrates the previous RN device store without duplicating rows on later launches. */
 export function LocalContentSync({ children }: { children: ReactNode }) {
-  const notes = useNotes({ loadList: false });
-  const dictations = useDictationHistory({ loadList: false });
+  const notes = useNoteCommands();
+  const dictations = useRecordDictation();
   const started = useRef(false);
 
   useEffect(() => {

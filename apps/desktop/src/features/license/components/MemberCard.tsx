@@ -2,7 +2,7 @@ import { useLingui } from "@lingui/react/macro";
 import { useState } from "react";
 import type { LicenseState } from "../../../data/license";
 import { useDictationStats } from "../queries";
-import type { PurchaseTier } from "../../license/purchaseConfig";
+import type { PurchaseTier } from "../purchaseConfig";
 import {
   getCardShellStyle,
   getMemberCardHeight,

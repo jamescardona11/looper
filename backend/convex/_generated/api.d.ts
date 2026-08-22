@@ -161,14 +161,6 @@ export declare const api: {
       userUsageThisMonth: FunctionReference<"query", "public", {}, any>;
     };
   };
-  analytics: {
-    trackEvent: FunctionReference<
-      "mutation",
-      "public",
-      { event: string; properties?: any },
-      any
-    >;
-  };
   auth: {
     isAuthenticated: FunctionReference<"query", "public", {}, any>;
     signIn: FunctionReference<
@@ -506,9 +498,6 @@ export declare const api: {
         { returnUrl?: string },
         any
       >;
-      listAllSubscriptions: FunctionReference<"query", "public", {}, any>;
-      listProducts: FunctionReference<"query", "public", {}, any>;
-      myPolarSubscription: FunctionReference<"query", "public", {}, any>;
     };
     revenueCat: {
       syncRevenueCatPurchase: FunctionReference<
@@ -743,12 +732,6 @@ export declare const internal: {
       >;
     };
     tools: {
-      _searchDictationHistory: FunctionReference<
-        "query",
-        "internal",
-        { limit?: number; query: string; userId: Id<"users"> },
-        any
-      >;
       _searchLooperMemory: FunctionReference<
         "query",
         "internal",

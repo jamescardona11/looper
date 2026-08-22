@@ -18,16 +18,19 @@ import {
 import {
   downloadLocalLlmModel,
   LOCAL_LLM_MODEL_ID,
-} from "../../data/local-llm";
+} from "../../data/models/local-llm";
 import { checkoutUrlFor, type PurchaseTier } from "../license/purchaseConfig";
 import {
   useActivateLicense as useLicenseActivation,
   useLicenseState as useCurrentLicense,
 } from "../license/queries";
 import { useImportableApps as useDetectedImportApps } from "../import/queries";
-import { useModelCatalog, useModelStatuses } from "../settings/models-queries";
-import { useModelDownloadActivity } from "../settings/modelDownloadActivity";
-import { useSettings as useStoredOnboardingSettings } from "../settings/queries";
+import {
+  useModelCatalog,
+  useModelStatuses,
+} from "../settings/models/models-queries";
+import { useModelDownloadActivity } from "../settings/models/modelDownloadActivity";
+import { useSettings as useStoredOnboardingSettings } from "../settings/preferences/queries";
 import { onboardingMachine, getSteps } from "./machine";
 import { OnboardingMachineBridges } from "./onboarding-machine-bridges";
 import {

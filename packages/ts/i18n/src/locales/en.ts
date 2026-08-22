@@ -45,7 +45,7 @@ export const en = {
   // App nav
   "nav.chat": "Recording assistant",
   "nav.speech": "Speech",
-  "nav.transcribe": "Transcribe",
+  "nav.library": "Library",
   "nav.dictation": "Dictation",
   "nav.admin": "Admin",
   "nav.home": "Home",
@@ -63,7 +63,7 @@ export const en = {
   "home.workspace": "Your workspace",
   "home.greeting": "Welcome back, {name}.",
   "home.greetingGeneric": "Ready when you are.",
-  "home.subtitle": "Transcribe audio, refine dictation, or ask about your synced recordings.",
+  "home.subtitle": "Review synced transcriptions or ask about your recordings.",
   "home.newConversation": "New recording question",
   "home.quickStart": "Ask about a recording",
   "home.quickStartPlaceholder": "What do you want to know about your recordings?",
@@ -72,8 +72,7 @@ export const en = {
   "home.startFailed": "We couldn't start the recording question. Please try again.",
   "home.startSomething": "Start something",
   "home.chooseOutcome": "Choose an outcome",
-  "home.startVoice": "Transcribe audio",
-  "home.startVoiceHint": "Upload a recording or capture speech live.",
+  "home.reviewLibraryHint": "Review content synced from your Looper devices.",
   "home.continue": "Continue",
   "home.recentConversations": "Recent recording questions",
   "home.openChat": "Open Recording Assistant",
@@ -320,32 +319,32 @@ export const en = {
   "agent.messagesPerDay": "{remaining} / {limit} messages today",
   "agent.addKey": "Add key",
 
-  // Transcribe
-  "transcribe.title": "Transcribe",
-  "transcribe.subtitle": "Turn recordings or live speech into clean, copy-ready text.",
-  "transcribe.source": "Audio source",
-  "transcribe.sourceHint": "Choose a file or speak live, then select the transcription model.",
-  "transcribe.modeFile": "File",
-  "transcribe.modeLive": "Live",
-  "transcribe.liveStart": "Start listening",
-  "transcribe.liveStop": "Stop",
-  "transcribe.liveListening": "Listening…",
-  "transcribe.liveConnecting": "Connecting…",
-  "transcribe.liveHint": "Speak and the transcript appears live, word by word. Stop to save it.",
-  "transcribe.livePlaceholder": "Your words will appear here…",
-  "transcribe.dropAudioHint": "Drop an audio file here, or",
-  "transcribe.dropAudioClick": "click to browse",
-  "transcribe.transcribe": "Transcribe",
-  "transcribe.transcribing": "Transcribing…",
-  "transcribe.recentTranscriptions": "Recent Transcriptions",
-  "transcribe.noTranscriptions": "No transcriptions yet",
-  "transcribe.noTranscriptionsHint":
-    "Record a voice note or upload an audio file to see the transcript here.",
-  "transcribe.copied": "Copied!",
-  "transcribe.copy": "Copy",
-  "transcribe.emptyTranscript": "(empty transcript)",
-  "transcribe.failed": "Transcription failed",
-  "transcribe.useAudioFixture": "Use audio fixture",
+  // Library
+  "library.title": "Library",
+  "library.subtitle": "Review transcriptions, notes, and meetings synced from your devices.",
+  "library.transcriptions": "Transcriptions",
+  "library.notes": "Notes",
+  "library.meetings": "Meetings",
+  "library.emptyTranscriptions": "No synced transcriptions yet",
+  "library.emptyTranscriptionsHint":
+    "Enable text history sync on Desktop or save a dictation on Mobile to see it here.",
+  "library.emptyNotes": "No synced notes yet",
+  "library.emptyNotesHint": "Notes saved on Mobile will appear here.",
+  "library.emptyMeetings": "No synced meetings yet",
+  "library.emptyMeetingsHint": "Shared meetings from your Looper devices will appear here.",
+  "library.sourceDesktop": "Desktop",
+  "library.sourceRemote": "Mobile",
+  "library.copied": "Copied!",
+  "library.copy": "Copy",
+  "library.note": "Note",
+  "library.dictationNote": "Dictation",
+  "library.untitled": "Untitled",
+  "library.meeting": "Meeting",
+  "library.transcript": "Transcript",
+  "library.emptyTranscript": "No transcript has been synced for this meeting.",
+  "library.decisions": "Decisions",
+  "library.tasks": "Tasks",
+  "library.questions": "Open questions",
 
   // Dictation
   "dictation.title": "Dictation",
@@ -477,9 +476,8 @@ export const en = {
   "usage.localExcluded":
     "Local desktop transcription never leaves your device and is intentionally excluded. This page only reports cloud processing tied to your account.",
   "usage.emptyAudioTitle": "No cloud audio activity yet",
-  "usage.emptyAudioHint":
-    "Transcribe an audio file or a voice note to start building an accurate activity history.",
-  "usage.transcribeAudio": "Transcribe audio",
+  "usage.emptyAudioHint": "Cloud audio activity appears here when another Looper app uses it.",
+  "usage.viewLibrary": "View Library",
 
   // Legal
   "legal.privacy": "Privacy Policy",
@@ -602,7 +600,6 @@ export const en = {
   "settings.seePlansUpgrade": "See plans & upgrade",
   "settings.subscriptionStatus": "Status: {status}",
   "settings.testKey": "Test",
-  "transcribe.recordVoiceNote": "Record a voice note",
   "usage.cost": "Cost",
   "usage.msgs": "Msgs",
   // --- mobile i18n (batch) ---
@@ -894,18 +891,19 @@ export const en = {
   "roadmap.subtitle": "What's shipped and what's coming next.",
   "roadmap.title": "Roadmap",
   "terms.intro":
-    'Please read these Terms of Service ("Terms") carefully before using Looper. By accessing or using our service, you agree to be bound by these Terms.',
-  "terms.lastUpdatedDate": "June 7, 2026",
+    'These Terms of Service ("Terms") govern Looper accounts, paid features, and services we host. Looper software is separately governed by the open-source license included with its distribution.',
+  "terms.lastUpdatedDate": "August 20, 2026",
   "terms.s1Body":
-    "By creating an account or using any part of Looper, you confirm that you are at least 16 years old and agree to these Terms and our Privacy Policy. If you are using Looper on behalf of an organization, you represent that you have the authority to bind that organization to these Terms.",
+    "By creating an account or using a Looper-hosted service, you confirm that you are at least 16 years old and agree to these Terms and our Privacy Policy. If you use the hosted service on behalf of an organization, you represent that you have authority to bind that organization to these Terms.",
   "terms.s1Title": "1. Acceptance of Terms",
   "terms.s2Intro":
-    "We grant you a limited, non-exclusive, non-transferable, revocable license to access and use Looper for your personal or internal business purposes. You may not:",
-  "terms.s2Li1": "Reproduce, distribute, or resell any part of the service.",
-  "terms.s2Li2": "Reverse-engineer, decompile, or extract source code from the service.",
-  "terms.s2Li3": "Use the service to build a competing product.",
+    "These Terms govern access to the hosted service, accounts, paid features, and Looper trademarks. They do not restrict rights granted by an open-source license. You may not:",
+  "terms.s2Li1": "Resell or provide unauthorized access to the hosted service.",
+  "terms.s2Li2":
+    "Interfere with, probe, or bypass the hosted service's security or access controls.",
+  "terms.s2Li3": "Use Looper trademarks in a way that implies endorsement or affiliation.",
   "terms.s2Li4": "Use the service for any illegal or unauthorized purpose.",
-  "terms.s2Title": "2. Use License",
+  "terms.s2Title": "2. Hosted Service Use",
   "terms.s3Body":
     "You are responsible for maintaining the confidentiality of your account credentials and for all activity under your account. If you suspect unauthorized access, notify us through our",
   "terms.s3BodySuffix": "We reserve the right to terminate accounts that violate these Terms.",
@@ -914,7 +912,7 @@ export const en = {
     "Paid plans are billed in advance on a monthly or annual basis. All fees are non-refundable except as required by law or as explicitly stated in a refund policy we provide. We may change pricing with at least 30 days' notice. Failure to pay may result in suspension or termination of your account.",
   "terms.s4Title": "4. Payment Terms",
   "terms.s5Body":
-    "Looper and its original content, features, and functionality are owned by us and protected by copyright, trademark, and other applicable laws. You retain ownership of any content you submit through the service. By submitting content, you grant us a limited license to use it solely to provide the service.",
+    "Looper trademarks, hosted-service content, and original materials are owned by their respective rights holders. Software source code is licensed under the open-source license identified in its distribution, and these Terms do not override that license. You retain ownership of content you submit through the service and grant us a limited license to use it solely to provide the service.",
   "terms.s5Title": "5. Intellectual Property",
   "terms.s6Body":
     'To the maximum extent permitted by law, Looper is provided "as is" without warranties of any kind. We shall not be liable for any indirect, incidental, special, or consequential damages arising from your use of the service, including loss of data, revenue, or profits, even if we have been advised of the possibility of such damages. Our total liability to you for any claim shall not exceed the amount you paid us in the 12 months preceding the claim.',

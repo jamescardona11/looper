@@ -13,7 +13,6 @@ export const convexCapabilities = { streamingChat: true } as const;
 export { configFromEnv } from "./config-from-env";
 // Domain hooks assembled by the selected capabilities.
 export * from "./hooks";
-export { SKIP, type Skip } from "./query-control";
 export { queryCacheKey, usePersistedQuery } from "./persisted-query";
 // Provider + auth seam. The contract names ConvexProvider / useConvexBackend /
 // useAuth; the Convex implementations are surfaced under those names here.
@@ -24,3 +23,4 @@ export {
   useConvexAuth,
   useConvexBackend,
 } from "./provider";
+export { SKIP, type Skip } from "./query-control";

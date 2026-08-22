@@ -8,22 +8,22 @@ import {
   X,
 } from "@phosphor-icons/react";
 import React, { useRef, useEffect, useMemo, useState } from "react";
-import { finishRecording } from "../../data/audio";
+import { finishRecording } from "../../data/capture/audio";
 import {
   cancelPendingInsertion,
   chooseEditAction,
   confirmPendingInsertion,
   getActiveModeRuleSuggestion,
   undoLastInsertion,
-} from "../../data/insertion";
-import { setPillHitSize } from "../../data/overlay";
+} from "../../data/capture/insertion";
+import { setPillHitSize } from "../../data/capture/overlay";
 import { retryTranscription } from "../../data/transcription";
 import { usePillState } from "./usePillState";
 import {
   EDIT_ACTIONS,
   TRANSFORM_PRESETS,
   type TransformPreset,
-} from "../../types";
+} from "../../contracts";
 import { useCopyToClipboard } from "../../shared/hooks/useCopyToClipboard";
 import { useMountEffect } from "../../shared/hooks/useMountEffect";
 import { SIGNAL_RAIL_SHELL_CLASS, SignalRailContent } from "./SignalRail";

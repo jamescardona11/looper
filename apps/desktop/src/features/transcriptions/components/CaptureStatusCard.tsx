@@ -1,6 +1,6 @@
 import { useLingui } from "@lingui/react/macro";
 import AnimatedCount from "../../../shared/ui/AnimatedCount";
-import type { TodayDictationStats } from "../../../types";
+import type { TodayDictationStats } from "../../../contracts";
 import { formatShortcutForDisplay } from "../../../shared/lib/shortcuts";
 
 type CaptureStatusCardProps = {

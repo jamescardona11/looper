@@ -52,7 +52,7 @@ test-results-*/
 .playwright-cli/
 
 # Editor
-.vscode/!(extensions.json)
+.vscode/
 .idea
 *.swp
 *.swo
@@ -80,10 +80,6 @@ pnpm-debug.log*
 # time is tracked: a clone that cannot produce a bundle is not a release.
 # Marketing and design sources that no build reads stay local.
 apps/desktop/assets/
-apps/desktop/public/fonts/*
-!apps/desktop/public/fonts/
-!apps/desktop/public/fonts/NOTICE.md
-!apps/desktop/public/fonts/*.woff2
 apps/desktop/src-tauri/macos/*.png
 /tact-design/
 
@@ -102,16 +98,12 @@ packages/rust/audio/**/data/outputs/*
 # Worktrunk worktree container — per-machine worktrees, never tracked.
 .claude/worktrees/
 
-# AI agent skills
+# AI agent tooling
 .agent
-.agents/*
-!.agents/
-!.agents/README.md
-!.agents/skills/
-!.agents/skills/**
-.agents/**/.DS_Store
 .augment
+.claude/launch.json
 .claude/skills/
+.claude/launch.json
 .claude/settings.local.json
 .cline
 .github/copilot*
@@ -123,6 +115,8 @@ packages/rust/audio/**/data/outputs/*
 .windsurf
 .vercel
 .env*.local
+.mcp.json
+skills-lock.json
 
 # Agent tooling is local. The Tact design contract is versioned with the product.
 .agents/

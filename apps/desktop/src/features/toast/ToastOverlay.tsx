@@ -1,8 +1,8 @@
 import { useLingui } from "@lingui/react/macro";
 import { Check, Copy } from "@phosphor-icons/react";
 import React, { useEffect, useRef, useState } from "react";
-import { subscribeRecordingStart } from "../../data/audio";
-import { undoLastInsertion } from "../../data/insertion";
+import { subscribeRecordingStart } from "../../data/capture/audio";
+import { undoLastInsertion } from "../../data/capture/insertion";
 import { retryTranscription } from "../../data/transcription";
 import {
   hideToastWindow,
@@ -10,11 +10,11 @@ import {
   setToastInteractive,
   subscribeToastHide,
   subscribeToastShow,
-} from "../../data/toast";
+} from "../../data/capture/toast";
 import { useCopyToClipboard } from "../../shared/hooks/useCopyToClipboard";
 import { useMountEffect } from "../../shared/hooks/useMountEffect";
 import DotMatrix from "../../shared/ui/DotMatrix";
-import type { ToastPayload, ToastType } from "../../types";
+import type { ToastPayload, ToastType } from "../../contracts";
 
 const MAX_VISIBLE_TOASTS = 3;
 const RESUME_DISMISS_MS = 2_500;

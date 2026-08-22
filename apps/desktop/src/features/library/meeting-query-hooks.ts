@@ -6,7 +6,7 @@ import type {
   MeetingDetails,
   MeetingNotesUpdate,
   MeetingStartOptions,
-} from "../../types";
+} from "../../contracts";
 import { isLibraryListKey, libraryKeys } from "./library-query-keys";
 import { appendFinalTranscript } from "./meeting-query-cache";
 

@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import type { HTMLMotionProps } from "framer-motion";
 import type { ReactNode } from "react";
 import type { LicenseEdition } from "../../../shared/lib/licenseEdition";
-import { tierInfo, type PurchaseTier } from "../../license/purchaseConfig";
+import { tierInfo, type PurchaseTier } from "../purchaseConfig";
 import {
   CardHeaderRow,
   EDITION_STAMP_COLORS,

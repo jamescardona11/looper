@@ -1,6 +1,6 @@
 import type { CSSProperties } from "react";
-import type { MeetingCaptureState } from "../../types";
-import MeetingCaptureOverlay from "../library/components/MeetingCaptureOverlay";
+import type { MeetingCaptureState } from "../../contracts";
+import MeetingCaptureOverlay from "../library/meeting/MeetingCaptureOverlay";
 import { DictationPillOverlay } from "./pill-dictation-overlay";
 
 // Tailwind source markers for the exact compact overlay typography classes:

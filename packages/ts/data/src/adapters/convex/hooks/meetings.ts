@@ -38,6 +38,15 @@ function meetingContextFromRow(row: MeetingContextRow): MeetingContext {
 export function useMeetingSessions({ limit = 50 }: { limit?: number } = {}): {
   sessions: MeetingSession[];
   isLoading: boolean;
+} {
+  const rows = useQuery(api.meetings.sessions.listSessions, { limit });
+  return {
+    sessions: Array.isArray(rows) ? (rows as MeetingSessionRow[]).map(meetingSessionFromRow) : [],
+    isLoading: rows === undefined,
+  };
+}
+
+export function useMeetingCommands(): {
   start: (input: {
     meetingId: string;
     title: string;
@@ -64,7 +73,6 @@ export function useMeetingSessions({ limit = 50 }: { limit?: number } = {}): {
     sourceUrl?: string;
   }) => Promise<string>;
 } {
-  const rows = useQuery(api.meetings.sessions.listSessions, { limit });
   const startMutation = useMutation(api.meetings.sessions.startSession);
   const setStateMutation = useMutation(api.meetings.sessions.setSessionState);
   const appendTranscriptMutation = useMutation(api.meetings.sessions.appendTranscript);
@@ -104,8 +112,6 @@ export function useMeetingSessions({ limit = 50 }: { limit?: number } = {}): {
   );
 
   return {
-    sessions: Array.isArray(rows) ? (rows as MeetingSessionRow[]).map(meetingSessionFromRow) : [],
-    isLoading: rows === undefined,
     start,
     setState,
     appendTranscript,

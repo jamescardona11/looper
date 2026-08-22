@@ -2,7 +2,7 @@ import { useLingui } from "@lingui/react/macro";
 import { CaretDown as ChevronDown, X } from "@phosphor-icons/react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useMemo, useRef, useState, type KeyboardEvent } from "react";
-import type { AppBinding, Personality } from "../../../types";
+import type { AppBinding, Personality } from "../../../contracts";
 import type { InstalledApp } from "../../../data/personalization";
 import { useClickOutside } from "../../../shared/hooks/useClickOutside";
 import { appBindingKey } from "./personalization-utils";

@@ -6,7 +6,7 @@ import {
   setCloudAuthToken,
   subscribeAccessToken,
   subscribeViewer,
-} from "../../data/convex-auth";
+} from "../../data/sync/convex-auth";
 
 export function CloudSessionBridge() {
   useEffect(() => {

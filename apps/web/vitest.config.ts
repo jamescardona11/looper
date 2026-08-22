@@ -24,7 +24,7 @@ export default defineConfig({
     environment: "jsdom",
     globals: true,
     setupFiles: ["./src/test-setup.ts"],
-    include: ["src/**/*.{test,spec}.{ts,tsx}"],
+    include: ["src/**/__tests__/*.{test,spec}.{ts,tsx}", "tests/**/*.{test,spec}.{ts,tsx}"],
     exclude: ["node_modules", "dist", "e2e/**", "**/*.generated.*"],
     // Inline the node_modules packages that render React (@lingui/react via the
     // I18nProvider, @base-ui/react via the shared UI primitives) so vite transforms

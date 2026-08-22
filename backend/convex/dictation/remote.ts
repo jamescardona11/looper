@@ -15,7 +15,7 @@
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { v } from "convex/values";
 import type { Doc, Id } from "../_generated/dataModel";
-import { mutation, query, type QueryCtx } from "../_generated/server";
+import { mutation, type QueryCtx, query } from "../_generated/server";
 
 const ACTIVE_SESSION_WINDOW_MS = 20 * 60 * 1000;
 

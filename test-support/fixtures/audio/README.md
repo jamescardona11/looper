@@ -9,8 +9,10 @@ STT release gates; generated or mocked transcripts are not accepted.
 | `es-voxforge.wav` | Spanish | `parras artificiales`, `hojas`, `terciopelo` | VoxForge `AGOs-20100831-jdm`, utterance `es-0015` |
 | `pt-voxforge.wav` | Portuguese | `festa`, `mundo`, `contente` | VoxForge `waldyrious-20140912-dbi`, utterance `072` |
 
-The Spanish and Portuguese recordings come from the public VoxForge 16 kHz,
-16-bit speech repository and retain its GPL corpus license:
+The Spanish and Portuguese recordings come from the public VoxForge speech
+repository and retain the archive's GPLv3-or-later terms. Exact paths, hashes,
+copyright notices, source archives, and the complete license are in
+[`THIRD_PARTY_NOTICES.md`](../../../THIRD_PARTY_NOTICES.md).
 
-- Spanish archive: `http://www.repository.voxforge1.org/downloads/es/Trunk/Audio/Main/16kHz_16bit/AGOs-20100831-jdm.tgz`
-- Portuguese archive: `http://www.repository.voxforge1.org/downloads/pt/Trunk/Audio/Main/16kHz_16bit/waldyrious-20140912-dbi.tgz`
+The source and license of `harvard.wav` remain unresolved; do not redistribute
+that fixture until its provenance is verified or it is replaced.

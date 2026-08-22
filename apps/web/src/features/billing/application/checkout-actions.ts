@@ -12,7 +12,6 @@
 // state + real data hooks are bound in hooks/use-billing-actions.ts.
 
 import type { OneTimePack, Tier } from "@looper/config/billing";
-import { openExternal } from "@/lib/desktop-host";
 
 export type PaymentProvider = "stripe" | "polar";
 export type BillingInterval = "monthly" | "yearly";
@@ -53,12 +52,9 @@ export interface PolarCheckoutGateway {
   openPortal: (input: { returnUrl: string }) => Promise<CheckoutSession>;
 }
 
-// Send the user to an external billing URL. On desktop (Tauri) this opens the
-// system browser; on web it navigates the tab. Navigating the Tauri webview
-// directly to Stripe/Polar would hang on a blank page — every billing redirect
-// (upgrade, portal, credits) MUST go through here.
+// Send the browser to the hosted billing page.
 export async function goToBillingUrl(url: string): Promise<void> {
-  if (!(await openExternal(url))) window.location.href = url;
+  window.location.href = url;
 }
 
 export function buildCheckoutAdapters(gateways: {

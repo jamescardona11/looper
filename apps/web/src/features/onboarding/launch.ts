@@ -1,11 +1,11 @@
 export type OnboardingIntent = "chat" | "voice";
 export type OnboardingAccess = "free" | "byok";
-export type LaunchTarget = "/agent" | "/transcribe" | "/settings";
+export type LaunchTarget = "/agent" | "/library" | "/settings";
 
-const LAUNCH_TARGETS = new Set<LaunchTarget>(["/agent", "/transcribe", "/settings"]);
+const LAUNCH_TARGETS = new Set<LaunchTarget>(["/agent", "/library", "/settings"]);
 
 export type OnboardingDestination =
-  | { to: "/agent" | "/transcribe" }
+  | { to: "/agent" | "/library" }
   | { to: "/settings"; search: { tab: "keys" } };
 
 export function isLaunchTarget(value: unknown): value is LaunchTarget {
@@ -22,7 +22,7 @@ export function onboardingDestination(
 
   const routes: Record<OnboardingIntent, OnboardingDestination> = {
     chat: { to: "/agent" },
-    voice: { to: "/transcribe" },
+    voice: { to: "/library" },
   };
   return routes[intent];
 }

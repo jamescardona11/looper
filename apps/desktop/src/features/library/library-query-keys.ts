@@ -1,4 +1,4 @@
-import type { LibraryFilter } from "../../types";
+import type { LibraryFilter } from "../../contracts";
 
 const root = ["library"] as const;
 

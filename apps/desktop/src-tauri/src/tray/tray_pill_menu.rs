@@ -1,4 +1,4 @@
-use crate::capture_pill::{CapturePillDockPosition, CapturePillPresentation};
+use crate::pill::capture::{CapturePillDockPosition, CapturePillPresentation};
 use crate::settings::UserSettings;
 use crate::AppRuntime;
 use tauri::menu::{CheckMenuItemBuilder, Submenu, SubmenuBuilder};

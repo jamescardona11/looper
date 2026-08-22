@@ -5,7 +5,7 @@ import type {
   MeetingNoteMarker,
   MeetingNotesUpdate,
   MeetingStartOptions,
-} from "../../types";
+} from "../../contracts";
 
 export const startMeetingCapture = (
   options: MeetingStartOptions,

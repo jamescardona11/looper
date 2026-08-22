@@ -1,6 +1,6 @@
 // Adapted from transcribe-rs 0.3.11 at revision
 // 343768c100d566b135fbb7a2441e61fa8aa177f2.
-// Copyright (c) 2025 Ilya Stupakov. Licensed under MIT; see THIRD_PARTY_NOTICES.md.
+// Copyright (c) 2025 Ilya Stupakov. Licensed under MIT; see the root THIRD_PARTY_NOTICES.md.
 
 use std::fs;
 use std::path::Path;

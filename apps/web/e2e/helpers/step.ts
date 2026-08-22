@@ -1,4 +1,4 @@
-import { test, type Page, type TestInfo } from "@playwright/test";
+import { type Page, type TestInfo, test } from "@playwright/test";
 
 export async function stepWithShot(
   page: Page,

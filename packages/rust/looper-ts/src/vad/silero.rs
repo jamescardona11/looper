@@ -2,7 +2,7 @@
 //!
 //! The tensor names, window geometry and state shape below are the model's own
 //! interface contract, not tunables: the graph rejects anything else. See
-//! THIRD_PARTY_NOTICES.md for the model's provenance and license.
+//! the root THIRD_PARTY_NOTICES.md for the model's provenance and license.
 
 use std::sync::{Mutex, OnceLock};
 

@@ -1,4 +1,4 @@
-import type { OverlayPosition } from "../../data/overlay";
+import type { OverlayPosition } from "../../data/capture/overlay";
 
 const OFFSCREEN_SENTINEL_LIMIT = -5_000;
 

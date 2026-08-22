@@ -81,11 +81,16 @@ export function rerootModules(
   rawModules: Record<string, () => Promise<unknown>>,
   subdir: string,
 ): Record<string, () => Promise<unknown>> {
+  const nestedTestFolder = Object.keys(rawModules).some((path) => path.startsWith("../../"));
   return Object.fromEntries(
     Object.entries(rawModules).map(([path, loader]) => {
-      const rerooted = path.startsWith("../")
-        ? `./${path.slice(3)}`
-        : `./${subdir}/${path.slice(2)}`;
+      const rerooted = nestedTestFolder
+        ? path.startsWith("../../")
+          ? `./${path.slice(6)}`
+          : `./${subdir}/${path.slice(3)}`
+        : path.startsWith("../")
+          ? `./${path.slice(3)}`
+          : `./${subdir}/${path.slice(2)}`;
       return [rerooted, loader];
     }),
   );

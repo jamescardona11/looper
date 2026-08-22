@@ -1,4 +1,4 @@
-import type { TranscriptionRecord } from "../../types";
+import type { TranscriptionRecord } from "../../contracts";
 import { matchesDateRange, type TranscriptionSort } from "./searchQuery";
 
 export type TranscriptionListEntry =

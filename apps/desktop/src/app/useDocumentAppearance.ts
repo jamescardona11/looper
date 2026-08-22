@@ -5,13 +5,13 @@ import {
   subscribeThemeChanged,
 } from "../data/settings";
 import { detectAppPlatform } from "../platform/service";
-import { setWindowBackgroundColor } from "../data/window";
+import { setWindowBackgroundColor } from "../data/system/window";
 import {
   parseTextSizeMode,
   resolveTextScale,
   TEXT_SIZE_MODE_STORAGE_KEY,
 } from "../shared/lib/textSize";
-import type { ThemeMode } from "../types";
+import type { ThemeMode } from "../contracts";
 import { parseThemePreference, themeForDocument } from "./document-theme";
 
 type DocumentAppearanceOptions = {

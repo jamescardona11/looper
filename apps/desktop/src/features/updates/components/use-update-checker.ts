@@ -9,7 +9,7 @@ import {
   subscribeUpdaterCheck,
   type UnlistenFn,
   type UpdateDownloadProgress,
-} from "../../../data/updates";
+} from "../../../data/system/updates";
 import { updateKeys, useUpdateStatus } from "../queries";
 
 const PENDING_RESTART_KEY = "looper_update_pending_restart";

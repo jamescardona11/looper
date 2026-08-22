@@ -1,7 +1,7 @@
 import { useLingui } from "@lingui/react/macro";
 import type { KeyboardEvent } from "react";
 
-import type { SuggestedCorrection } from "../../../data/corrections";
+import type { SuggestedCorrection } from "../../../data/capture/corrections";
 import { DictionarySuggestions } from "./dictionary-suggestions";
 
 type DictionaryVocabularyControlsProps = {

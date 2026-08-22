@@ -14,7 +14,8 @@ Global rules are in the root `AGENTS.md`.
   and desktop-only headless Convex orchestration.
 - Extend the current owner. Do not create a second router, store, query wrapper,
   service layer, or design system beside an existing one. A genuinely new
-  architectural layer requires an ADR and migration path, not duplication.
+  architectural layer requires updating the root architecture overview and a
+  migration path, not duplication.
 - Keep macOS and Windows behavior behind `platform/{macos,windows}/` and
   `#[cfg]` boundaries.
 - `src/file-size-contract.test.ts` is a growth ceiling, not a reason to split a
@@ -25,7 +26,8 @@ Global rules are in the root `AGENTS.md`.
 The labels are `main`, `toast`, `meeting-awareness`, and `settings`. Keep their
 configuration and behavior aligned across `tauri.conf.json`,
 `capabilities/*.json`, `src-tauri/src/lib.rs`, `src-tauri/src/platform/**`, and
-`src/app/App.tsx`.
+`src/app/App.tsx`. The packaged app routes by window label, never by URL;
+query-string routing is limited to the browser-only signal preview.
 
 ## Owners
 
@@ -70,5 +72,11 @@ configuration and behavior aligned across `tauri.conf.json`,
   change.
 - Exercise the affected native flow when behavior depends on Tauri or the OS;
   unit tests alone are not native evidence.
-- Co-locate module tests under `src/`. Reserve `tests/frontend/` for
-  cross-cutting build, packaging, or brand contracts that have no module owner.
+- Put frontend unit tests in a sibling `__tests__/` directory under their
+  owning module. Keep `tests/frontend/` for cross-cutting build, packaging,
+  design, or brand contracts that have no single module owner.
+- Keep small Rust unit tests inline behind `#[cfg(test)]` when they need private
+  implementation access. Put public integration tests and their fixtures in
+  `src-tauri/tests/`.
+- Source-reading contract tests may enforce only product, accessibility, or
+  architectural invariants that a rendered test, unit test, or type cannot.

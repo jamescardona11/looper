@@ -1,5 +1,5 @@
 import { invoke } from "@tauri-apps/api/core";
-import type { ModeRule, Personality } from "../types";
+import type { ModeRule, Personality } from "../contracts";
 
 export type InstalledApp = {
   name: string;

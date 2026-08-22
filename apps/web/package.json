@@ -13,8 +13,7 @@
     "lint": "biome lint .",
     "test": "vitest run --passWithNoTests",
     "test:watch": "vitest",
-    "e2e": "playwright test --config playwright.e2e.config.ts",
-    "e2e:audio-live": "playwright test --config playwright.live.config.ts"
+    "e2e": "playwright test --config playwright.e2e.config.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.5.0",
@@ -43,7 +42,6 @@
     "zod": "^4.3.5"
   },
   "devDependencies": {
-    "@looper/architecture-check": "workspace:*",
     "@playwright/test": "^1.60.0",
     "@tailwindcss/vite": "^4.3.0",
     "@tanstack/router-generator": "^1.167.0",
@@ -58,7 +56,6 @@
     "tailwindcss": "^4.3.0",
     "typescript": "^5.9.3",
     "vite": "^8.0.14",
-    "vite-plugin-prerender": "^1.0.8",
     "vitest": "^3.2.4"
   }
 }

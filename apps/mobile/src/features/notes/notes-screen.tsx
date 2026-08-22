@@ -1,4 +1,4 @@
-import { type Note, useNotes } from "@looper/data";
+import { type Note, useNoteCommands, useNotes } from "@looper/data";
 import { type Href, useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
@@ -32,7 +32,8 @@ type SaveState = "saved" | "saving" | "error";
 export function NotesScreen() {
   const router = useRouter();
   const params = useLocalSearchParams<{ id?: string }>();
-  const { notes, isLoading, create, update, remove } = useNotes();
+  const { notes, isLoading } = useNotes();
+  const { create, update, remove } = useNoteCommands();
   const [openedId, setOpenedId] = useState<string | null>(null);
 
   const ordered = useMemo(() => sortNotesByUpdatedAt(notes), [notes]);

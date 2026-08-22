@@ -1,4 +1,4 @@
-import type { ModelInfo } from "../../types";
+import type { ModelInfo } from "../../contracts";
 
 export type ModelStats = {
   languagesLabel: string;
@@ -17,7 +17,8 @@ export function formatModelSize(megabytes: number): string {
 
 export function sortInstalledModels(models: ModelInfo[]): ModelInfo[] {
   return [...models].sort((left, right) => {
-    const availabilityOrder = Number(left.downloadable) - Number(right.downloadable);
+    const availabilityOrder =
+      Number(left.downloadable) - Number(right.downloadable);
 
     return availabilityOrder || left.label.localeCompare(right.label);
   });

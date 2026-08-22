@@ -4,15 +4,6 @@
 
 <!-- One or two sentences. What does this change and what problem does it solve? -->
 
-## Scope
-
-- [ ] Backend (`backend/convex`)
-- [ ] Web (`apps/web`)
-- [ ] Mobile (`apps/mobile`)
-- [ ] Desktop (`apps/desktop`)
-- [ ] Packages / config
-- [ ] Docs only
-
 ## How to test
 
 <!-- Steps a reviewer can follow to verify the change locally. -->
@@ -29,9 +20,9 @@ browser, native Rust, audio, and Windows-specific jobs where applicable.
 - [ ] Env vars: declared in the relevant `.env.example` and configured in the intended deployment; values are never committed
 - [ ] No secrets, API keys, or `.env*` files in the diff
 
-## Screenshots / recordings
+## Evidence
 
-<!-- For any UI change. Delete if not applicable. -->
+<!-- Add screenshots, recordings, logs, or explicitly state what remains unverified. -->
 
 ## Related
 

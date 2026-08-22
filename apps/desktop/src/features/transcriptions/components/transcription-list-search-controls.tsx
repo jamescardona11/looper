@@ -8,7 +8,7 @@ import {
 import { AnimatePresence as Presence, motion as Animated } from "framer-motion";
 import { useRef, useState } from "react";
 import { useClickOutside as useDismissOnOutside } from "../../../shared/hooks/useClickOutside";
-import type { TranscriptionRecord } from "../../../types";
+import type { TranscriptionRecord } from "../../../contracts";
 import {
   withSortToken,
   withTimePreset,

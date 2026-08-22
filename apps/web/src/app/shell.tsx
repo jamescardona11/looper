@@ -8,13 +8,13 @@ import { publicHomePath } from "@/app/public-routes";
 import { captureError } from "@/lib/analytics";
 import { cn } from "@/lib/cn";
 import { CookieConsent } from "@/shared/components/cookie-consent";
-import { LooperMark } from "@/shared/components/looper-mark";
 import {
   COOKIE_CONSENT_EVENT,
   getCookieConsentChoice,
 } from "@/shared/components/cookie-consent-state";
-import { RouteLoadingState } from "@/shared/components/route-loading-state";
+import { LooperMark } from "@/shared/components/looper-mark";
 import { PageSurface } from "@/shared/components/page-surface";
+import { RouteLoadingState } from "@/shared/components/route-loading-state";
 import { buttonVariants } from "@/shared/components/ui/button";
 
 const loadAuthenticatedShell = () => import("@/app/authenticated-shell");

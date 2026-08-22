@@ -5,7 +5,7 @@ import type {
   LibraryItem,
   LibraryItemsPage,
   LibraryProgressPayload,
-} from "../../types";
+} from "../../contracts";
 import { libraryKeys } from "./library-query-keys";
 
 const progressableStates = new Set([

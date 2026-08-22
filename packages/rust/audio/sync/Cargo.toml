@@ -3,14 +3,7 @@ name = "looper-audio-sync"
 version = "0.1.0"
 edition = "2024"
 publish = false
-license = "MIT"
+license = "AGPL-3.0-or-later"
 
 [dependencies]
 realfft = "3.5.0"
-
-[dev-dependencies]
-approx = "0.5.1"
-dasp = { version = "0.11.0", features = ["interpolate", "interpolate-linear"] }
-rodio = "0.22"
-serde = { version = "1", features = ["derive"] }
-serde_json = "1"

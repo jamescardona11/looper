@@ -88,18 +88,6 @@ export interface OnboardingState {
   isComplete: boolean;
 }
 
-export type SttProvider = "deepgram" | "assemblyai" | "elevenlabs" | "openai";
-export interface TranscriptionItem {
-  _id: string;
-  provider: string;
-  status: "transcribing" | "done" | "error";
-  text?: string;
-  error?: string;
-}
-export interface TranscribeResult {
-  text: string;
-}
-
 export interface DictionaryEntry {
   id: string;
   term: string;
@@ -196,12 +184,6 @@ export interface MeetingEvidence {
 export interface MeetingAnswer {
   answer: string;
   evidence: MeetingEvidence[];
-}
-
-export type StreamProvider = SttProvider;
-export interface StreamSttSession {
-  mock: boolean;
-  token: string;
 }
 
 export interface AudioUsageTotals {

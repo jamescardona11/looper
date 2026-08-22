@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useLingui } from "@lingui/react/macro";
-import type { Personality } from "../../../types";
+import type { Personality } from "../../../contracts";
 import Shimmer from "../../../shared/ui/Shimmer";
 import { useMountEffect } from "../../../shared/hooks/useMountEffect";
 import * as personalizationApi from "../../../data/personalization";
