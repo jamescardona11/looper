@@ -17,9 +17,3 @@ looper-onnx = { path = "../onnx", optional = true }
 realfft = "3.5.0"
 serde = { version = "1", features = ["derive"] }
 thiserror = "2"
-
-[dev-dependencies]
-approx = "0.5.1"
-dasp = { version = "0.11.0", features = ["interpolate", "interpolate-linear"] }
-hound = "3.5.1"
-rodio = "0.22"

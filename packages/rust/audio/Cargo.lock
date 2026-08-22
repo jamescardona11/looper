@@ -41,15 +41,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "approx"
-version = "0.5.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cab112f0a86d568ea0e627cc1d6be74a1e9cd55214684db5561995f6dad897c6"
-dependencies = [
- "num-traits",
-]
-
-[[package]]
 name = "arrayvec"
 version = "0.7.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -497,15 +488,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "00b0228411908ca8685dba7fc2cdd70ec9990a6e753e89b6ac91a84c40fbaf4b"
 
 [[package]]
-name = "futures-channel"
-version = "0.3.33"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "262590f4fe6afeb0bc83be1daa64e52657fe185690a958af7f3ad0e92085c5ae"
-dependencies = [
- "futures-core",
-]
-
-[[package]]
 name = "futures-core"
 version = "0.3.33"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -729,12 +711,8 @@ checksum = "0ceec5bc11778974d1bcb055b18002eba7f4b3518b6a0081b3af5f21666da9ad"
 name = "looper-aec"
 version = "0.1.0"
 dependencies = [
- "approx",
- "dasp",
- "hound",
  "looper-onnx",
  "realfft",
- "rodio",
  "serde",
  "thiserror 2.0.19",
 ]
@@ -744,14 +722,10 @@ name = "looper-audio-capture"
 version = "0.1.0"
 dependencies = [
  "anyhow",
- "approx",
- "bytes",
  "cidre",
  "cpal",
  "dasp",
- "futures-channel",
  "futures-util",
- "hound",
  "looper-aec",
  "looper-audio-core",
  "looper-audio-interface",
@@ -761,10 +735,7 @@ dependencies = [
  "pin-project",
  "ringbuf",
  "rodio",
- "serde",
- "serde_json",
  "serial_test",
- "thiserror 2.0.19",
  "tokio",
  "tokio-stream",
  "tokio-util",
@@ -797,12 +768,7 @@ version = "0.1.0"
 name = "looper-audio-sync"
 version = "0.1.0"
 dependencies = [
- "approx",
- "dasp",
  "realfft",
- "rodio",
- "serde",
- "serde_json",
 ]
 
 [[package]]
@@ -839,10 +805,8 @@ dependencies = [
  "audioadapter-buffers",
  "dasp",
  "futures-util",
- "hound",
  "looper-audio-interface",
  "pin-project",
- "rodio",
  "rubato",
  "thiserror 2.0.19",
  "tokio",
@@ -1549,19 +1513,6 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn 3.0.3",
-]
-
-[[package]]
-name = "serde_json"
-version = "1.0.151"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c841b55ecdae098c80dcae9cf767f6f8a0c2cdb3416bbef72181df4d0fe73f14"
-dependencies = [
- "itoa",
- "memchr",
- "serde",
- "serde_core",
- "zmij",
 ]
 
 [[package]]
@@ -2487,9 +2438,3 @@ name = "zeroize"
 version = "1.9.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e13c156562582aa81c60cb29407084cdb54c4164760106ab78e6c5b0858cf64e"
-
-[[package]]
-name = "zmij"
-version = "1.0.23"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "29666d0abbfad1e3dc4dcf6144730dd3a3ab225bbbdac83319345b1b44ccfc1b"

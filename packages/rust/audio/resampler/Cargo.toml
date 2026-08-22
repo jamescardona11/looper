@@ -26,6 +26,4 @@ tracing = "0.1"
 
 [dev-dependencies]
 futures-util = "0.3.31"
-hound = "3.5.1"
-rodio = { version = "0.22", features = ["symphonia-all"] }
 tokio = { version = "1", features = ["full"] }
