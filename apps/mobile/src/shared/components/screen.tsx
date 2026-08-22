@@ -1,8 +1,8 @@
 import type { PropsWithChildren, ReactNode } from "react";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { LooperBrand } from "./looper-brand";
 import { colors } from "../theme/colors";
+import { LooperBrand } from "./looper-brand";
 
 export { colors } from "../theme/colors";
 

@@ -1,7 +1,7 @@
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { v } from "convex/values";
 import type { Doc, Id } from "../_generated/dataModel";
-import { mutation, query, type QueryCtx } from "../_generated/server";
+import { mutation, type QueryCtx, query } from "../_generated/server";
 import { assertOwned } from "../lib/ownership";
 
 const MAX_TEXT_LENGTH = 20_000;

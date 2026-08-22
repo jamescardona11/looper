@@ -1,5 +1,5 @@
-import { File, Paths } from "expo-file-system";
 import type { Note } from "@looper/data";
+import { File, Paths } from "expo-file-system";
 import { normalizeStoredNotes, sortNotesByUpdatedAt } from "./local-notes-logic";
 
 const notesFile = new File(Paths.document, "looper-notes-v1.json");

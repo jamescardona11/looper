@@ -4,11 +4,12 @@
 
 import { tool } from "ai";
 import { v } from "convex/values";
+import { z } from "zod";
 import { internal } from "../_generated/api";
 import type { Id } from "../_generated/dataModel";
 import type { ActionCtx } from "../_generated/server";
 import { internalQuery } from "../_generated/server";
-import { z } from "zod";
+
 const DEFAULT_MEMORY_LIMIT = 8;
 const MAX_MEMORY_LIMIT = 20;
 const MAX_MEMORY_QUERY_CHARS = 256;

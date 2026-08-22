@@ -27,8 +27,8 @@ import type {
   ThreadPreview,
   Tier,
 } from "../../../types";
-import { SKIP } from "../query-control";
 import { usePersistedQuery } from "../persisted-query";
+import { SKIP } from "../query-control";
 
 // ── useMessages ─────────────────────────────────────────────────────────────
 // Core assistant hook. Voice notes are transcribed by the client before this

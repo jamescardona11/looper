@@ -18,8 +18,8 @@ import type {
   WaitlistJoinResult,
   WaitlistStatus,
 } from "../../../types";
-import { SKIP } from "../query-control";
 import { useAuth, useConvexBackend } from "../provider";
+import { SKIP } from "../query-control";
 
 // ── auth / account ──────────────────────────────────────────────────────────
 
