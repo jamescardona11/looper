@@ -160,6 +160,9 @@ jobs:
   desktop-windows:
     name: Verify desktop Windows
     runs-on: windows-latest
+    env:
+      # Keep nested llama.cpp CMake paths below Windows path limits.
+      CARGO_TARGET_DIR: D:\t
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -198,8 +201,7 @@ jobs:
           $sdk = "C:\VulkanSDK\1.4.350.0"
           "VULKAN_SDK=$sdk" >> $env:GITHUB_ENV
           "$sdk\Bin" >> $env:GITHUB_PATH
-      # llama.cpp's Vulkan shader project races under parallel MSBuild.
-      - run: cargo check --jobs 1 --tests --locked --manifest-path apps/desktop/src-tauri/Cargo.toml
+      - run: cargo check --tests --locked --manifest-path apps/desktop/src-tauri/Cargo.toml
       - run: cargo test --locked --lib --manifest-path apps/desktop/src-tauri/Cargo.toml
       - run: cargo test --locked --workspace --manifest-path packages/rust/audio/Cargo.toml
       - run: cargo test --locked --lib --manifest-path packages/rust/looper-ts/Cargo.toml
