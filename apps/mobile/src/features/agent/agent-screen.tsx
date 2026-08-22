@@ -40,6 +40,7 @@ export function AgentScreen({ meetingId }: { meetingId?: string }) {
   const agent = useMobileAgent(meetingId);
   const [draft, setDraft] = useState("");
   const [hiddenThrough, setHiddenThrough] = useState<string | null>(null);
+  const [suggestionsOpen, setSuggestionsOpen] = useState(false);
   const listRef = useRef<FlatList<ChatMessage>>(null);
 
   // Una conversación nueva se pide sin borrar el hilo: se corta por el último
@@ -106,13 +107,29 @@ export function AgentScreen({ meetingId }: { meetingId?: string }) {
               <EmptyState
                 action={
                   <View style={styles.suggestions}>
-                    {SUGGESTIONS.map((suggestion) => (
-                      <Suggestion
-                        key={suggestion}
-                        onPress={() => void submit(suggestion)}
-                        text={suggestion}
+                    <Pressable
+                      accessibilityRole="button"
+                      onPress={() => setSuggestionsOpen((current) => !current)}
+                      style={styles.suggestionToggle}
+                    >
+                      <Text style={styles.suggestionToggleText}>
+                        {suggestionsOpen ? "Ocultar ideas" : "Ver ideas para empezar"}
+                      </Text>
+                      <Icon
+                        color={colors.accent}
+                        name={suggestionsOpen ? "chevronDown" : "chevronRight"}
+                        size={16}
                       />
-                    ))}
+                    </Pressable>
+                    {suggestionsOpen
+                      ? SUGGESTIONS.map((suggestion) => (
+                          <Suggestion
+                            key={suggestion}
+                            onPress={() => void submit(suggestion)}
+                            text={suggestion}
+                          />
+                        ))
+                      : null}
                   </View>
                 }
                 body="Nada de internet, nada inventado. Cada respuesta viene con la grabación o la nota de la que sale."
@@ -426,6 +443,8 @@ const styles = StyleSheet.create({
     minHeight: 58,
     paddingHorizontal: space.lg,
   },
+  suggestionToggle: { alignItems: "center", flexDirection: "row", gap: space.xs },
+  suggestionToggleText: { ...typography.meta, color: colors.accent, fontWeight: "700" },
   suggestionPressed: { backgroundColor: colors.surface },
   suggestionText: { ...typography.body, color: colors.textSecondary, flex: 1 },
   suggestions: { gap: 9 },

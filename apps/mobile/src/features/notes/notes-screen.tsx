@@ -35,6 +35,7 @@ export function NotesScreen() {
   const { notes, isLoading } = useNotes();
   const { create, update, remove } = useNoteCommands();
   const [openedId, setOpenedId] = useState<string | null>(null);
+  const [showArchive, setShowArchive] = useState(false);
 
   const ordered = useMemo(() => sortNotesByUpdatedAt(notes), [notes]);
   const wantedId = openedId ?? params.id ?? null;
@@ -50,6 +51,19 @@ export function NotesScreen() {
       Alert.alert("No se pudo crear la nota", "Revisa la conexión e inténtalo de nuevo.");
     }
   };
+
+  if (!params.id && !openedId) {
+    return (
+      <NotesLibrary
+        isLoading={isLoading}
+        notes={ordered}
+        onCreate={() => void createNote()}
+        onOpen={setOpenedId}
+        onToggleArchive={() => setShowArchive((current) => !current)}
+        showArchive={showArchive}
+      />
+    );
+  }
 
   const deleteNote = async (id: string) => {
     try {
@@ -106,6 +120,83 @@ export function NotesScreen() {
       onNew={() => void createNote()}
       onSave={update}
     />
+  );
+}
+
+function NotesLibrary({
+  isLoading,
+  notes,
+  onCreate,
+  onOpen,
+  onToggleArchive,
+  showArchive,
+}: {
+  isLoading: boolean;
+  notes: Note[];
+  onCreate: () => void;
+  onOpen: (id: string) => void;
+  onToggleArchive: () => void;
+  showArchive: boolean;
+}) {
+  const visibleNotes = showArchive ? notes : notes.slice(0, 3);
+  return (
+    <SafeAreaView style={styles.safeArea}>
+      <View style={styles.notesIndexHeader}>
+        <View>
+          <Text style={styles.notesIndexKicker}>TUS NOTAS</Text>
+          <Text style={styles.notesIndexTitle}>Ideas que{`\n`}sí vuelven.</Text>
+        </View>
+        <Pressable
+          accessibilityLabel="Nueva nota"
+          accessibilityRole="button"
+          onPress={onCreate}
+          style={styles.newNote}
+        >
+          <Icon color={colors.onAccent} name="plus" size={19} strokeWidth={2.5} />
+        </Pressable>
+      </View>
+      <ScrollView contentContainerStyle={styles.notesIndexContent}>
+        {isLoading ? <EditorSkeleton /> : null}
+        {!isLoading && notes.length === 0 ? (
+          <View style={styles.notesEmpty}>
+            <Text style={styles.notesEmptyTitle}>Todavía no hay notas.</Text>
+            <Text style={styles.notesEmptyBody}>
+              Escribe una idea o captúrala como nota de voz.
+            </Text>
+          </View>
+        ) : null}
+        {visibleNotes.map((item) => (
+          <Pressable
+            accessibilityLabel={`Abrir ${persistedNoteTitle(item.title)}`}
+            accessibilityRole="button"
+            key={item.id}
+            onPress={() => onOpen(item.id)}
+            style={({ pressed }) => [styles.noteRow, pressed && styles.noteRowPressed]}
+          >
+            <View style={styles.noteRowCopy}>
+              <Text numberOfLines={1} style={styles.noteRowTitle}>
+                {persistedNoteTitle(item.title)}
+              </Text>
+              <Text numberOfLines={1} style={styles.noteRowMeta}>
+                {noteMeta(item.updatedAt, item.body)}
+              </Text>
+            </View>
+            <Icon color={colors.muted} name="chevronRight" size={17} />
+          </Pressable>
+        ))}
+        {notes.length > 3 ? (
+          <Pressable
+            accessibilityRole="button"
+            onPress={onToggleArchive}
+            style={styles.archiveToggle}
+          >
+            <Text style={styles.archiveToggleText}>
+              {showArchive ? "Ver menos" : "Ver archivo"}
+            </Text>
+          </Pressable>
+        ) : null}
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
@@ -372,6 +463,8 @@ const GLYPHS = {
 const ACCESSORY_BAR_HEIGHT = 56;
 
 const styles = StyleSheet.create({
+  archiveToggle: { alignSelf: "flex-start", paddingTop: space.sm },
+  archiveToggleText: { ...typography.meta, color: colors.accent, fontWeight: "700" },
   accessories: {
     alignItems: "center",
     backgroundColor: colors.surfaceMuted,
@@ -414,6 +507,40 @@ const styles = StyleSheet.create({
     width: hitTarget,
   },
   meta: { ...typography.meta, color: colors.muted, marginTop: -space.sm },
+  newNote: {
+    alignItems: "center",
+    backgroundColor: colors.accent,
+    borderRadius: radius.pill,
+    height: 44,
+    justifyContent: "center",
+    width: 44,
+  },
+  noteRow: {
+    alignItems: "center",
+    borderBottomColor: colors.border,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    flexDirection: "row",
+    gap: space.md,
+    minHeight: 64,
+  },
+  noteRowCopy: { flex: 1, gap: 3 },
+  noteRowMeta: { ...typography.meta, color: colors.muted },
+  noteRowPressed: { opacity: 0.62 },
+  noteRowTitle: { ...typography.item, color: colors.text },
+  notesEmpty: { gap: space.xs, paddingTop: space.xl },
+  notesEmptyBody: { ...typography.body, color: colors.muted },
+  notesEmptyTitle: { ...typography.item, color: colors.text },
+  notesIndexContent: { gap: 2, paddingBottom: space.xxl, paddingHorizontal: space.xl },
+  notesIndexHeader: {
+    alignItems: "flex-start",
+    flexDirection: "row",
+    justifyContent: "space-between",
+    paddingBottom: space.xl,
+    paddingHorizontal: space.xl,
+    paddingTop: space.sm,
+  },
+  notesIndexKicker: { ...typography.label, color: colors.muted, letterSpacing: 1.1 },
+  notesIndexTitle: { ...typography.display, color: colors.text, marginTop: 2 },
   pressed: { backgroundColor: colors.surface },
   safeArea: { backgroundColor: colors.background, flex: 1 },
   saveFailure: {

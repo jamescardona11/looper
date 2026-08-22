@@ -4,11 +4,11 @@ import { CaptureSheet } from "@/shared/components/capture-sheet";
 import { TabBar } from "@/shared/components/tab-bar";
 
 /**
- * Dos tabs y una hoja. Capturar no es un destino que se visite: es una acción
- * que abre tres, así que vive en el botón central y no en la barra. Studio sale
- * de la barra y se abre desde la cabecera de Library.
+ * Cuatro destinos cotidianos y una hoja de captura. Capturar sigue siendo una
+ * acción, no una pantalla: queda en el centro para estar disponible sin
+ * competir con el contenido de cada sección.
  */
-const TAB_ROUTES = ["index", "ask"];
+const TAB_ROUTES = ["index", "notes", "ask", "studio"];
 
 export default function AppLayout() {
   const [captureOpen, setCaptureOpen] = useState(false);
@@ -18,9 +18,8 @@ export default function AppLayout() {
       <Tabs
         screenOptions={{ headerShown: false }}
         tabBar={({ state, navigation }) => {
-          // Las rutas con href:null siguen viviendo dentro del navegador de
-          // tabs, así que sin esto la barra se cuela en pantallas empujadas
-          // como Studio o Teclado, que el diseño quiere a pantalla completa.
+          // Las rutas de detalle siguen dentro del navegador de tabs. Sólo los
+          // cuatro destinos principales conservan el dock persistente.
           const route = state.routes[state.index].name;
           if (!TAB_ROUTES.includes(route)) return null;
 
@@ -34,11 +33,11 @@ export default function AppLayout() {
           );
         }}
       >
-        <Tabs.Screen name="index" options={{ title: "Library" }} />
+        <Tabs.Screen name="index" options={{ title: "Inicio" }} />
         <Tabs.Screen name="ask" options={{ title: "Ask" }} />
+        <Tabs.Screen name="notes" options={{ title: "Notas" }} />
         <Tabs.Screen name="capture" options={{ href: null }} />
-        <Tabs.Screen name="studio" options={{ href: null }} />
-        <Tabs.Screen name="notes" options={{ href: null }} />
+        <Tabs.Screen name="studio" options={{ title: "Studio" }} />
         <Tabs.Screen name="dictation" options={{ href: null }} />
         <Tabs.Screen name="keyboard" options={{ href: null }} />
         <Tabs.Screen name="import" options={{ href: null }} />

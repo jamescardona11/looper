@@ -52,6 +52,7 @@ export function LibraryScreen() {
   const meetings = useMeetingSessions();
   const [searching, setSearching] = useState(false);
   const [query, setQuery] = useState("");
+  const [showArchive, setShowArchive] = useState(false);
 
   const items = useMemo(
     () => buildLibraryItems(notes.notes, meetings.sessions, "all"),
@@ -63,16 +64,20 @@ export function LibraryScreen() {
       const hits = searchLibraryItems(items, needle);
       return [{ key: "results", label: resultsLabel(hits.length, needle), data: hits }];
     }
-    return groupLibraryItemsByDay(items, Date.now()).map((group) => ({
-      key: group.key,
-      label: group.label,
-      data: group.items,
-    }));
-  }, [items, needle]);
+    return groupLibraryItemsByDay(showArchive ? items : items.slice(0, 3), Date.now()).map(
+      (group) => ({
+        key: group.key,
+        label: group.label,
+        data: group.items,
+      }),
+    );
+  }, [items, needle, showArchive]);
 
   const openItem = useCallback(
     (item: LibraryItem) => {
-      router.push((item.kind === "meeting" ? `/meeting/${item.id}` : "/notes") as Href);
+      router.push(
+        (item.kind === "meeting" ? `/meeting/${item.id}` : `/notes?id=${item.id}`) as Href,
+      );
     },
     [router],
   );
@@ -140,8 +145,10 @@ export function LibraryScreen() {
         <SearchHeader onCancel={closeSearch} onChange={setQuery} query={query} />
       ) : (
         <BrowseHeader
+          itemCount={items.length}
+          showingArchive={showArchive}
+          onToggleArchive={() => setShowArchive((current) => !current)}
           onOpenSearch={() => setSearching(true)}
-          onOpenStudio={() => router.push("/studio" as Href)}
         />
       )}
       {body}
@@ -150,19 +157,37 @@ export function LibraryScreen() {
 }
 
 function BrowseHeader({
+  itemCount,
   onOpenSearch,
-  onOpenStudio,
+  onToggleArchive,
+  showingArchive,
 }: {
+  itemCount: number;
   onOpenSearch: () => void;
-  onOpenStudio: () => void;
+  onToggleArchive: () => void;
+  showingArchive: boolean;
 }) {
   return (
-    <View style={styles.header}>
-      <Text style={styles.title}>Library</Text>
-      <View style={styles.headerActions}>
+    <View style={styles.headerBlock}>
+      <View style={styles.header}>
+        <View>
+          <Text style={styles.kicker}>LOOPER</Text>
+          <Text style={styles.title}>¿Qué quieres{`\n`}recordar?</Text>
+        </View>
         <HeaderIcon icon="search" label="Buscar en Library" onPress={onOpenSearch} />
-        <HeaderIcon icon="studio" label="Abrir Studio" onPress={onOpenStudio} />
       </View>
+      <Pressable
+        accessibilityLabel={showingArchive ? "Ocultar archivo" : "Mostrar archivo"}
+        accessibilityRole="button"
+        onPress={onToggleArchive}
+        style={({ pressed }) => [styles.signal, pressed && styles.signalPressed]}
+      >
+        <View>
+          <Text style={styles.signalValue}>{itemCount}</Text>
+          <Text style={styles.signalLabel}>recuerdos guardados</Text>
+        </View>
+        <Text style={styles.signalAction}>{showingArchive ? "Ver menos" : "Ver archivo"}</Text>
+      </Pressable>
     </View>
   );
 }
@@ -319,7 +344,7 @@ const styles = StyleSheet.create({
     paddingRight: 10,
     paddingTop: space.xs,
   },
-  headerActions: { alignItems: "center", flexDirection: "row", gap: 2 },
+  headerBlock: { gap: space.md, paddingBottom: space.sm },
   headerIcon: {
     alignItems: "center",
     borderRadius: radius.md,
@@ -328,6 +353,7 @@ const styles = StyleSheet.create({
     width: hitTarget,
   },
   headerIconPressed: { backgroundColor: colors.surfaceMuted },
+  kicker: { ...typography.label, color: colors.muted, letterSpacing: 1.2 },
   list: { paddingBottom: space.xxl, paddingHorizontal: LIST_GUTTER },
   row: {
     alignItems: "center",
@@ -351,6 +377,20 @@ const styles = StyleSheet.create({
   },
   rowTitle: { ...typography.item, color: colors.text },
   safeArea: { backgroundColor: colors.background, flex: 1 },
+  signal: {
+    alignItems: "center",
+    backgroundColor: colors.accentLight,
+    borderRadius: radius.xl,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginHorizontal: space.xl,
+    paddingHorizontal: space.lg,
+    paddingVertical: space.md,
+  },
+  signalAction: { ...typography.meta, color: colors.accentDark, fontWeight: "700" },
+  signalLabel: { ...typography.meta, color: colors.accentDark },
+  signalPressed: { opacity: 0.72 },
+  signalValue: { ...typography.section, color: colors.text },
   searchClear: {
     alignItems: "center",
     backgroundColor: colors.borderStrong,
@@ -404,5 +444,5 @@ const styles = StyleSheet.create({
   starterTitle: { ...typography.item, color: colors.text },
   starters: { gap: 9 },
   sunk: relief.pressed,
-  title: { ...typography.title, color: colors.text },
+  title: { ...typography.display, color: colors.text, marginTop: 2 },
 });

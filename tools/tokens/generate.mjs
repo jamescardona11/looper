@@ -16,6 +16,7 @@ import { dirname, join } from "node:path";
 import {
   ACCENT_ALPHAS,
   BRAND_MARK,
+  MOBILE_MINIMAL,
   PALETTE,
   alpha,
   hexToRgbChannels,
@@ -346,40 +347,38 @@ function renderWebCss() {
 
 /** React Native no lee variables CSS: recibe el mismo mapa como objeto. */
 function renderMobileTs() {
-  const dark = PALETTE.dark;
+  const light = PALETTE.light;
   const hex = (c) => oklchToHex(c);
   const n = Object.fromEntries(
-    Object.entries(dark.neutrals).map(([k, v]) => [k, hex(v)]),
+    Object.entries(light.neutrals).map(([k, v]) => [k, hex(v)]),
   );
-  const accent = hex(dark.accent.base);
+  const accent = MOBILE_MINIMAL.accent;
   const entries = [
-    ["background", n.bgPrimary],
-    ["backgroundSecondary", n.bgSecondary],
-    ["surfaceMuted", n.bgTertiary],
-    ["surface", n.bgSurface],
+    ["background", MOBILE_MINIMAL.canvas],
+    ["backgroundSecondary", MOBILE_MINIMAL.paper],
+    ["surfaceMuted", MOBILE_MINIMAL.soft],
+    ["surface", MOBILE_MINIMAL.paper],
     ["surfaceElevated", n.bgElevated],
-    ["border", n.borderPrimary],
+    ["border", MOBILE_MINIMAL.line],
     ["borderStrong", n.borderSecondary],
-    ["text", n.textPrimary],
-    ["textSecondary", n.textSecondary],
-    ["muted", n.textMuted],
-    ["disabled", n.textDisabled],
+    ["text", MOBILE_MINIMAL.ink],
+    ["textSecondary", MOBILE_MINIMAL.secondary],
+    ["muted", MOBILE_MINIMAL.muted],
+    ["disabled", MOBILE_MINIMAL.disabled],
     ["accent", accent],
-    ["accentLight", hex(dark.accent.light)],
-    ["accentDark", hex(dark.accent.dark)],
-    // Sobre negro puro el relieve de un control primario es un borde inferior,
-    // no una sombra: necesita un morado más oscuro que el propio acento.
-    ["accentSubtle", alpha(accent, 0.1)],
+    ["accentLight", MOBILE_MINIMAL.accentLight],
+    ["accentDark", MOBILE_MINIMAL.accentDark],
+    ["accentSubtle", alpha(accent, 0.12)],
     ["overlay", "rgba(0, 0, 0, 0.68)"],
     ["shadow", "#000000"],
-    ["pillShell", n.bgPrimary],
-    ["pillBorder", n.borderPrimary],
-    ["pillDotBase", n.bgSurface],
+    ["pillShell", MOBILE_MINIMAL.ink],
+    ["pillBorder", "rgba(255, 255, 255, 0.14)"],
+    ["pillDotBase", "#37363d"],
     ["pillDotHighlight", "#ffffff"],
     ["brandPaper", BRAND_MARK.paper],
-    ["danger", dark.semantic.error],
-    ["onDanger", dark.semantic.onError],
-    ["onAccent", n.bgPrimary],
+    ["danger", MOBILE_MINIMAL.coral],
+    ["onDanger", "#ffffff"],
+    ["onAccent", "#ffffff"],
   ];
   return [
     "/**",

@@ -13,16 +13,15 @@ const OPTIONS: CaptureOption[] = [
   {
     icon: "meeting",
     title: "Meeting",
-    note: "Graba y transcribe en el dispositivo",
+    note: "Graba y transcribe localmente",
     href: "/capture",
   },
   {
     icon: "dictado",
-    title: "Dictar",
-    note: "Una idea suelta, sin abrir el teclado",
+    title: "Nota de voz",
+    note: "Captura una idea sin abrir el teclado",
     href: "/dictation",
   },
-  { icon: "nota", title: "Nota", note: "Escribir en blanco", href: "/notes" },
 ];
 
 /** Radio propio de la hoja: más generoso que la escala, para que flote. */
@@ -121,7 +120,7 @@ const styles = StyleSheet.create({
   },
   optionPressed: { backgroundColor: colors.surfaceElevated },
   sheet: {
-    backgroundColor: colors.surface,
+    backgroundColor: colors.backgroundSecondary,
     borderRadius: SHEET_RADIUS,
     gap: space.xs,
     marginHorizontal: space.md,
