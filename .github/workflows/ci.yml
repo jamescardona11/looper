@@ -201,8 +201,14 @@ jobs:
           $sdk = "C:\VulkanSDK\1.4.350.0"
           "VULKAN_SDK=$sdk" >> $env:GITHUB_ENV
           "$sdk\Bin" >> $env:GITHUB_PATH
-      # The nested Vulkan shader project also requires serial MSBuild targets.
-      - run: cargo check --jobs 1 --tests --locked --manifest-path apps/desktop/src-tauri/Cargo.toml
+      - name: Check desktop Rust
+        shell: cmd
+        run: |
+          for /f "usebackq tokens=*" %%i in (`"%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vswhere.exe" -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath`) do set "VSINSTALL=%%i"
+          if not defined VSINSTALL exit /b 1
+          call "%VSINSTALL%\Common7\Tools\VsDevCmd.bat" -arch=x64 -host_arch=x64
+          set "CMAKE_GENERATOR=NMake Makefiles"
+          cargo check --tests --locked --manifest-path apps/desktop/src-tauri/Cargo.toml
       - run: cargo test --locked --lib --manifest-path apps/desktop/src-tauri/Cargo.toml
       - run: cargo test --locked --workspace --manifest-path packages/rust/audio/Cargo.toml
       - run: cargo test --locked --lib --manifest-path packages/rust/looper-ts/Cargo.toml
