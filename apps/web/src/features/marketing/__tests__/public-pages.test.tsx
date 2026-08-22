@@ -108,7 +108,7 @@ describe("public Web pages", () => {
       });
     });
 
-    expect(screen.getByRole("heading", { name: /You're in/ })).toBeVisible();
-    expect(screen.getByDisplayValue(/\/waitlist\?ref=ada7$/)).toBeVisible();
+    expect(await screen.findByRole("heading", { name: /You're in/ })).toBeVisible();
+    expect(await screen.findByDisplayValue(/\/waitlist\?ref=ada7$/)).toBeVisible();
   });
 });
