@@ -27,6 +27,14 @@ transcripts, speakers, markers, exports, and a unified local Memory. Voice
 profiles, dictionary entries, replacements, snippets, and workflows control
 how the final text is written.
 
+<p align="center">
+  <img src="assets/product/desktop-workspace.png" alt="Looper desktop workspace showing local dictation activity, recoverable history, and the next meeting" width="100%">
+</p>
+
+<p align="center">
+  <sub>Desktop product direction: local dictation, recoverable history, and meeting context in one workspace.</sub>
+</p>
+
 ### What you can do
 
 - Dictate into any desktop app with global shortcuts and text insertion.
@@ -38,6 +46,28 @@ how the final text is written.
 - Capture from mobile and send remote dictation to an authenticated desktop.
 - Use the browser workspace to review synchronized transcriptions, notes, and
   meetings, ask the recording assistant, and manage account and billing.
+
+### Meetings stay reviewable
+
+Looper keeps the source audio, transcript, decisions, moments, and assistant in
+one note. Generated summaries remain connected to the recording they came
+from, so the useful output never replaces the original.
+
+<p align="center">
+  <img src="assets/product/desktop-note-detail.png" alt="Looper desktop meeting note with retained source audio, decisions, transcript tabs, and an assistant input" width="100%">
+</p>
+
+### Mobile capture
+
+Mobile covers the same lifecycle at phone scale: dictate, follow a live
+recording, and return to a structured meeting note.
+
+| Dictation | Live capture | Meeting note |
+| --- | --- | --- |
+| ![Looper mobile dictation history and weekly local activity](assets/product/mobile-dictation.png) | ![Looper mobile live meeting capture with transcript and recording controls](assets/product/mobile-capture.png) | ![Looper mobile meeting note with summary, actions, moments, and source audio](assets/product/mobile-meeting.png) |
+
+_These previews are rendered from the maintained Desktop and Mobile design
+artifacts. Availability can vary by platform and release._
 
 ### Repository surfaces
 
