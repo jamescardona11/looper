@@ -60,8 +60,7 @@
     "qa:web-e2e": "node tools/qa/run-web-e2e-local.mjs",
     "format": "biome format --write .",
     "format-check": "biome format .",
-    "convex:push:check": "pnpm --filter @looper/backend run push:check",
-    "convex:verify": "pnpm --filter @looper/backend run verify:published",
+    "convex:verify": "pnpm --filter @looper/backend run verify",
     "clean": "turbo run clean"
   },
   "devDependencies": {

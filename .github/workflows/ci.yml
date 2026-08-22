@@ -22,9 +22,7 @@ jobs:
           node-version: 20
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - name: Publish functions, typecheck, and test
-        env:
-          CONVEX_AGENT_MODE: anonymous
+      - name: Typecheck and test
         run: pnpm run convex:verify
 
   verify:

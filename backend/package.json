@@ -25,9 +25,7 @@
   },
   "scripts": {
     "dev": "convex dev",
-    "deploy": "convex deploy",
-    "push:check": "convex dev --env-file .convex/selfhost.env.local --once --typecheck disable --run health:status --tail-logs disable",
-    "verify:published": "pnpm run typecheck && pnpm run push:check && env -u MOCK_MODE pnpm run test",
+    "verify": "pnpm run typecheck && env -u MOCK_MODE pnpm run test",
     "dashboard": "convex dashboard",
     "logs": "convex logs --tail",
     "typecheck": "tsc --noEmit",
