@@ -1,0 +1,9 @@
+<!-- The wordmark glyph from the header and footer: five bars, a waveform frozen
+     mid-utterance. Same paths as WaveformMark in src/components/ui/icons.tsx. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#5853fa" stroke-width="2.4" stroke-linecap="round">
+  <path d="M4 12v-1" />
+  <path d="M8 16V8" />
+  <path d="M12 20V4" />
+  <path d="M16 16V8" />
+  <path d="M20 13v-2" />
+</svg>

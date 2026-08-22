@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en" class="light">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+
+    <!-- Self-hosted, so they are same-origin and preloadable. Vite rewrites both
+         hrefs to the hashed files in /assets at build time. The design links
+         Bricolage, Inter and JetBrains Mono from Google Fonts; Inter is not
+         installed anywhere in this repo, so --font-sans falls through to SF Pro
+         and the system stack exactly as apps/web does. A render-blocking request
+         to a third party would defeat the point of prerendering this page. -->
+    <link
+      rel="preload"
+      href="../../node_modules/@fontsource-variable/bricolage-grotesque/files/bricolage-grotesque-latin-opsz-normal.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <link
+      rel="preload"
+      href="../../node_modules/@fontsource-variable/jetbrains-mono/files/jetbrains-mono-latin-wght-normal.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+
+    <title>Looper: your voice never leaves your computer</title>
+    <meta
+      name="description"
+      content="Speech becomes finished text and recording notes, with the model running on your own hardware. Nothing is uploaded to be transcribed. Free on macOS, Windows and Linux."
+    />
+    <link rel="canonical" href="https://looper.app/" />
+    <meta name="theme-color" content="#ffffff" />
+    <meta name="color-scheme" content="light" />
+    <meta name="format-detection" content="telephone=no" />
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Looper" />
+    <meta property="og:locale" content="en" />
+    <meta property="og:url" content="https://looper.app/" />
+    <meta property="og:title" content="Looper: your voice never leaves your computer" />
+    <meta
+      property="og:description"
+      content="Dictation and recording notes that run on your own machine. Turn the network off and it keeps working."
+    />
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Looper: your voice never leaves your computer" />
+    <meta
+      name="twitter:description"
+      content="Dictation and recording notes that run on your own machine. Turn the network off and it keeps working."
+    />
+
+    <!--
+      TODO(assets): og:image / twitter:image are deliberately absent. No share card
+      exists yet and pointing at a file that is not there is worse than pointing at
+      nothing: crawlers cache the 404. Add public/og-cover.png at 1200x630 and then
+      add, next to the tags above:
+
+        <meta property="og:image" content="https://looper.app/og-cover.png" />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
+        <meta property="og:image:alt" content="..." />
+        <meta name="twitter:image" content="https://looper.app/og-cover.png" />
+
+      Until then the twitter:card above degrades to a text-only card, which is the
+      correct fallback.
+    -->
+
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  </head>
+  <body>
+    <div id="root"></div>
+    <noscript>You need to enable JavaScript to run Looper.</noscript>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
