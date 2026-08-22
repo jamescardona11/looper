@@ -56,7 +56,7 @@ how the final text is written.
 
 ### Requirements
 
-- Node.js 20.11 or newer
+- Node.js 22.18 or newer
 - pnpm 10 or newer
 - Rust 1.88 or newer for desktop and local transcription
 - macOS 14 or newer when building the macOS desktop target
