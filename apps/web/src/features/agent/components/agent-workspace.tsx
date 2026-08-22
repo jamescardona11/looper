@@ -24,7 +24,7 @@ export function AgentWorkspace({ activeThreadId }: { activeThreadId: string | nu
   }
 
   return (
-    <PageSurface className="relative flex h-full w-full min-w-0 overflow-hidden">
+    <PageSurface className="web-product-workspace relative flex h-full w-full min-w-0 overflow-hidden">
       <section className="flex h-full min-w-0 flex-1 flex-col">
         <ChatHeader activeThreadId={activeThreadId} />
         {activeThreadId ? (
@@ -59,7 +59,7 @@ function ChatHeader({ activeThreadId }: { activeThreadId: string | null }) {
   };
 
   return (
-    <header className="flex min-h-14 items-center justify-between gap-3 border-border/80 border-b bg-background px-4 sm:px-5">
+    <header className="flex min-h-14 items-center justify-between gap-3 border-border border-b bg-card px-4 sm:px-5">
       <div className="flex min-w-0 items-center gap-3">
         <span className="grid size-8 shrink-0 place-items-center rounded-lg border border-border bg-card text-primary">
           <IconMessageCircle className="size-4" aria-hidden />

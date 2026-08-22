@@ -23,12 +23,12 @@ export function ProductPageLayout({
   compactTop?: boolean;
 }) {
   return (
-    <PageSurface className="min-h-full">
+    <PageSurface className="web-product-workspace min-h-full">
       <div
         className={cn(
           "mx-auto w-full px-5 sm:px-8",
           WIDTH_CLASS[width],
-          compactTop ? "py-6 md:py-12" : "py-8 sm:py-12",
+          compactTop ? "py-6 md:py-8" : "py-8 sm:py-10",
         )}
       >
         {children}

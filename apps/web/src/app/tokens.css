@@ -30,10 +30,41 @@
 }
 
 .light {
-  /* Colors come from ./tokens.generated.css. Web-only tokens below. */
+  /*
+   * Web is the one Looper surface that uses the paper workspace direction.
+   * The shared palette stays generated for Desktop and Mobile; these semantic
+   * aliases intentionally stay local to the browser app.
+   */
+  --web-canvas: #dfe3dc;
+  --web-workspace: #efede7;
+  --web-paper: #fbfaf5;
+  --web-raised: #ffffff;
+  --web-ink: #15161a;
+  --web-ink-muted: #62656d;
+  --web-line: #dfddd5;
+  --web-line-strong: #c9c6bd;
+  --web-highlight: #d9d0ff;
+
+  --background: var(--web-canvas);
+  --foreground: var(--web-ink);
+  --card: var(--web-paper);
+  --card-foreground: var(--web-ink);
+  --popover: var(--web-raised);
+  --popover-foreground: var(--web-ink);
+  --secondary: #e9e8e4;
+  --secondary-foreground: var(--web-ink);
+  --muted: #f4f2ed;
+  --muted-foreground: var(--web-ink-muted);
+  --border: var(--web-line);
+  --input: var(--web-line-strong);
+  --success-subtle: rgba(8, 122, 93, 0.1);
+  --success-foreground: #087a5d;
+  --warning-subtle: rgba(164, 104, 31, 0.12);
+  --warning-foreground: #8a5718;
+
   --hero-start: oklch(0.86 0.07 276.5);
   --hero-mid: oklch(0.93 0.025 276.5);
-  --hero-end: var(--background);
+  --hero-end: var(--web-workspace);
 }
 
 @theme inline {
@@ -105,6 +136,22 @@
   button:not(:disabled),
   [role="button"]:not(:disabled) {
     cursor: pointer;
+  }
+}
+
+@layer components {
+  .web-product-workspace {
+    background: var(--web-workspace);
+  }
+
+  .web-product-highlight {
+    border: 1px solid var(--web-line-strong);
+    background: var(--web-highlight);
+  }
+
+  .web-product-panel {
+    border: 1px solid var(--web-line);
+    background: var(--web-paper);
   }
 }
 

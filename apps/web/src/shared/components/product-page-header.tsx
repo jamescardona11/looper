@@ -15,7 +15,7 @@ export function ProductPageHeader({
   children,
 }: ProductPageHeaderProps) {
   return (
-    <header className="mb-8">
+    <header className="mb-7">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <HeaderCopy eyebrow={eyebrow} title={title} description={detail} />
         {actions ? <div className="shrink-0 self-start sm:self-auto">{actions}</div> : null}
@@ -29,7 +29,7 @@ function HeaderCopy({ eyebrow, title, description: detail }: HeaderCopyProps) {
   return (
     <div className="min-w-0">
       <Eyebrow>{eyebrow}</Eyebrow>
-      <h1 className="mt-3 font-medium text-3xl tracking-tight sm:text-4xl">{title}</h1>
+      <h1 className="mt-2 font-semibold text-2xl tracking-tight sm:text-3xl">{title}</h1>
       {detail ? (
         <p className="mt-2 max-w-2xl text-muted-foreground text-sm leading-relaxed sm:text-base">
           {detail}

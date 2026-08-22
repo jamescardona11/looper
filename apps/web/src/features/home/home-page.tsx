@@ -48,7 +48,10 @@ export function HomePage() {
       />
 
       {capabilities.length > 0 ? (
-        <section aria-labelledby="home-capabilities">
+        <section
+          aria-labelledby="home-capabilities"
+          className="web-product-highlight rounded-xl p-4 sm:p-5"
+        >
           <Eyebrow>{t("home.startSomething")}</Eyebrow>
           <h2 id="home-capabilities" className="mt-2 font-medium text-xl tracking-tight">
             {t("home.chooseOutcome")}
@@ -58,7 +61,7 @@ export function HomePage() {
               <Link
                 key={to}
                 to={to}
-                className={`group flex items-center gap-4 px-4 py-4 transition-colors hover:bg-secondary/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset sm:px-5 ${
+                className={`group flex items-center gap-4 px-4 py-4 transition-colors hover:bg-secondary/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset sm:px-5 ${
                   index > 0 ? "border-border border-t" : ""
                 }`}
               >

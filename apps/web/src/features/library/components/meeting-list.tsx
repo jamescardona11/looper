@@ -22,7 +22,7 @@ export function MeetingList({ sessions }: { sessions: MeetingSession[] }) {
               type="button"
               onClick={() => setSelectedId(session.meetingId)}
               className={cn(
-                "w-full rounded-xl border border-border bg-card p-4 text-left transition-colors hover:bg-secondary/50",
+                "w-full rounded-lg border border-border bg-card p-4 text-left transition-colors hover:bg-secondary/70",
                 activeId === session.meetingId && "border-primary/40 bg-secondary/60",
               )}
             >

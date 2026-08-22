@@ -10,11 +10,11 @@ import { buttonVariants } from "@/shared/components/ui/button";
 
 // "Buy" stays in-app (/pricing) so the landing page enters the real checkout
 // flow (Stripe/Polar).
-// The marketing surface keeps a dark campaign treatment while reusing the
-// product's semantic tokens, typography, controls, and radius scale.
+// The marketing surface shares the paper workspace direction with the product
+// while reusing its semantic tokens, typography, controls, and radius scale.
 export function LandingPage() {
   return (
-    <div className="dark relative min-h-screen overflow-x-clip bg-background text-foreground">
+    <div className="relative min-h-screen overflow-x-clip bg-background text-foreground">
       <GrainOverlay />
       <Nav />
       <PageSurface>

@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" class="dark">
+<html lang="en" class="light">
   <head>
     <link
       rel="preload"
@@ -20,7 +20,7 @@
     <script>
       (function () {
         try {
-          var t = localStorage.getItem("looper-theme") || "system";
+          var t = localStorage.getItem("looper-theme") || "light";
           var dark =
             t === "dark" ||
             (t === "system" && matchMedia("(prefers-color-scheme: dark)").matches);
@@ -44,7 +44,7 @@
       name="description"
       content="Looper turns voice into useful text for dictation, recordings, and meetings."
     />
-    <meta name="theme-color" content="#000000" />
+    <meta name="theme-color" content="#efede7" />
 
     <!-- OpenGraph -->
     <meta property="og:type" content="website" />

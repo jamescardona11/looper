@@ -10,7 +10,7 @@ export function NoteList({ notes }: { notes: Note[] }) {
     <ol className="grid gap-3 md:grid-cols-2">
       {notes.map((note) => (
         <li key={note.id}>
-          <Card className="h-full p-5">
+          <Card className="h-full p-4 sm:p-5">
             <div className="mb-4 flex items-center justify-between gap-3">
               <Badge variant="outline">
                 {note.kind === "dictation" ? t("library.dictationNote") : t("library.note")}
@@ -22,10 +22,10 @@ export function NoteList({ notes }: { notes: Note[] }) {
                 {formatter.format(note.updatedAt)}
               </time>
             </div>
-            <h2 className="font-medium text-lg tracking-tight">
+            <h2 className="font-semibold text-base tracking-tight">
               {note.title || t("library.untitled")}
             </h2>
-            <p className="mt-3 whitespace-pre-wrap text-muted-foreground text-sm leading-6">
+            <p className="mt-2 whitespace-pre-wrap text-muted-foreground text-sm leading-6">
               {note.body}
             </p>
           </Card>

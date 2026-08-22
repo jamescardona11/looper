@@ -10,15 +10,15 @@ export function PublicPageNav({ purchaseRequest = false }: { purchaseRequest?: b
   const { isAuthenticated } = useAuth();
   const brand = (
     <>
-      <span className="grid size-7 place-items-center rounded-lg border border-border bg-card text-primary">
+      <span className="grid size-7 place-items-center rounded-lg bg-primary text-primary-foreground">
         <LooperMark className="size-4" />
       </span>
-      <span className="font-medium text-sm tracking-tight">Looper</span>
+      <span className="font-semibold text-sm tracking-tight">Looper</span>
     </>
   );
 
   return (
-    <header className="border-border border-b bg-background">
+    <header className="border-border border-b bg-card/90 backdrop-blur">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-5 sm:px-8">
         <Link to={publicHomePath()} className="flex items-center gap-2.5">
           {brand}

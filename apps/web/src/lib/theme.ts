@@ -9,9 +9,9 @@ export type Theme = "light" | "dark" | "system";
 const STORAGE_KEY = "looper-theme";
 
 function getStoredTheme(): Theme {
-  if (typeof localStorage === "undefined") return "system";
+  if (typeof localStorage === "undefined") return "light";
   const v = localStorage.getItem(STORAGE_KEY);
-  return v === "light" || v === "dark" || v === "system" ? v : "system";
+  return v === "light" || v === "dark" || v === "system" ? v : "light";
 }
 
 function resolveTheme(theme: Theme): "light" | "dark" {

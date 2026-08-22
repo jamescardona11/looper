@@ -19,7 +19,7 @@ describe("ProductPageHeader", () => {
 
     const header = container.firstElementChild;
     expect(header).toHaveProperty("tagName", "HEADER");
-    expect(header).toHaveClass("mb-8");
+    expect(header).toHaveClass("mb-7");
     expect(header?.children).toHaveLength(2);
 
     const layout = header?.children.item(0);
@@ -44,11 +44,11 @@ describe("ProductPageHeader", () => {
       "tracking-wide",
     );
     expect(copy?.children.item(1)).toHaveClass(
-      "mt-3",
-      "font-medium",
-      "text-3xl",
+      "mt-2",
+      "font-semibold",
+      "text-2xl",
       "tracking-tight",
-      "sm:text-4xl",
+      "sm:text-3xl",
     );
     expect(copy?.children.item(2)).toHaveClass(
       "mt-2",

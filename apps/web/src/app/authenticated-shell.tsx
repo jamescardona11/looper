@@ -93,7 +93,7 @@ function AuthenticatedChrome() {
         <section
           aria-label={t("common.pageContent")}
           data-web-workspace
-          className="min-h-0 flex-1 overflow-y-auto"
+          className="web-product-workspace min-h-0 flex-1 overflow-y-auto"
           // biome-ignore lint/a11y/noNoninteractiveTabindex: this is the shell's only scroll viewport
           tabIndex={0}
         >
@@ -159,16 +159,16 @@ function AppSidebar({
       aria-label={open ? t("nav.workspace") : undefined}
       onKeyDown={handleKeyDown}
       className={cn(
-        "fixed inset-y-0 left-0 z-40 flex w-64 shrink-0 flex-col border-border border-r bg-card transition-transform duration-200 ease-out lg:static lg:translate-x-0",
+        "fixed inset-y-0 left-0 z-40 flex w-56 shrink-0 flex-col border-border border-r bg-card transition-transform duration-200 ease-out lg:static lg:translate-x-0",
         open ? "visible translate-x-0 shadow-2xl" : "invisible -translate-x-full lg:visible",
       )}
     >
-      <div className={cn("flex h-12 shrink-0 items-center gap-2 border-border border-b px-3")}>
-        <Link to="/home" onClick={onClose} className="flex min-w-0 flex-1 items-center gap-2">
-          <span className="grid size-7 shrink-0 place-items-center rounded-lg border border-border bg-background text-primary">
-            <LooperMark className="size-4" />
+      <div className={cn("flex h-18 shrink-0 items-center gap-2 px-4 pt-3")}>
+        <Link to="/home" onClick={onClose} className="flex min-w-0 flex-1 items-center gap-2.5">
+          <span className="grid size-8 shrink-0 place-items-center rounded-lg bg-primary text-primary-foreground">
+            <LooperMark className="size-4.5" />
           </span>
-          <span className="truncate font-medium text-sm tracking-tight">Looper</span>
+          <span className="truncate font-semibold text-base tracking-tight">Looper</span>
         </Link>
         <button
           ref={closeButtonRef}
@@ -181,12 +181,12 @@ function AppSidebar({
         </button>
       </div>
 
-      <div className="shrink-0 space-y-4 px-2 py-3">
+      <div className="shrink-0 space-y-5 px-3 py-4">
         <CommandPalette
           trigger={
             <button
               type="button"
-              className="flex h-8 w-full items-center gap-2 rounded-md border border-border bg-background px-2.5 text-muted-foreground text-xs transition-colors hover:border-ring hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="flex h-9 w-full items-center gap-2 rounded-lg border border-border bg-background px-2.5 text-muted-foreground text-xs transition-colors hover:border-ring hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               <IconSearch className="size-3.5" aria-hidden />
               <span className="flex-1 text-left">{t("cmd.searchPlaceholder")}</span>
@@ -215,7 +215,7 @@ function AppSidebar({
           <ThreadSidebar onNavigate={onClose} />
         </Suspense>
       ) : null}
-      <div className={cn("min-h-0 flex-1 overflow-y-auto px-2", isAgent && "hidden")}>
+      <div className={cn("min-h-0 flex-1 overflow-y-auto px-3", isAgent && "hidden")}>
         <NavSection
           label={t("nav.manage")}
           destinations={MANAGE_DESTINATIONS}
@@ -223,7 +223,7 @@ function AppSidebar({
         />
       </div>
 
-      <div className="shrink-0 border-border border-t p-2">
+      <div className="shrink-0 border-border border-t p-3">
         {isAgent ? (
           <div className="mb-2">
             <NavSection destinations={MANAGE_DESTINATIONS} onNavigate={onClose} compact />
@@ -252,8 +252,8 @@ type Destination =
   | (typeof MANAGE_DESTINATIONS)[number];
 
 const navItemClass =
-  "flex h-8 items-center gap-2.5 rounded-md px-2.5 text-muted-foreground text-xs transition-colors hover:bg-secondary hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
-const activeNavItemClass = "bg-primary text-primary-foreground shadow-sm";
+  "flex h-9 items-center gap-2.5 rounded-lg px-2.5 text-muted-foreground text-xs transition-colors hover:bg-secondary hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
+const activeNavItemClass = "bg-secondary text-foreground";
 
 function NavSection({
   label,
@@ -272,7 +272,7 @@ function NavSection({
   return (
     <nav aria-label={label} className={cn(!compact && "space-y-1")}>
       {label ? (
-        <p className="px-2.5 pb-1 font-mono text-[9px] text-muted-foreground uppercase tracking-[0.16em]">
+        <p className="px-2.5 pb-1 font-mono text-[9px] text-muted-foreground uppercase tracking-[0.14em]">
           {label}
         </p>
       ) : null}
@@ -308,7 +308,7 @@ function MobileHeader({
   const label = destination ? t(destination.labelKey) : "Looper";
 
   return (
-    <header className="flex h-12 shrink-0 items-center gap-3 border-border border-b bg-card px-3 lg:hidden">
+    <header className="flex h-14 shrink-0 items-center gap-3 border-border border-b bg-card px-3 lg:hidden">
       <button
         ref={buttonRef}
         type="button"
