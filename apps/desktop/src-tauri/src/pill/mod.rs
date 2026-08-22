@@ -1,4 +1,3 @@
-#[cfg(target_os = "macos")]
 use self::hover_intent::{HoverDecision, HoverIntent};
 use crate::permissions;
 use crate::{
