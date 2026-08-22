@@ -19,10 +19,7 @@ export function Pricing() {
         </h2>
       </div>
 
-      <div
-        data-reveal
-        className="mt-9 grid gap-4 lg:mt-12 lg:grid-cols-[1.14fr_0.86fr] lg:gap-5"
-      >
+      <div data-reveal className="mt-9 grid gap-4 lg:mt-12 lg:grid-cols-[1.14fr_0.86fr] lg:gap-5">
         <article className="flex min-h-[380px] flex-col rounded-[24px] bg-[var(--lp-ink)] p-6 text-[var(--lp-paper)] md:rounded-[30px] md:p-9">
           <p className="text-[#bfc0c7] text-[14px]">Local</p>
           <p className="mt-4 font-display font-semibold text-[70px] leading-none tracking-[-0.065em] md:text-[94px]">

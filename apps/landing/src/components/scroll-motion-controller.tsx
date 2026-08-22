@@ -37,7 +37,8 @@ export function ScrollMotionController() {
 
     for (const element of revealElements) {
       const isRendered = element.getClientRects().length > 0;
-      const isNearInitialViewport = isRendered && element.getBoundingClientRect().top < innerHeight * 0.9;
+      const isNearInitialViewport =
+        isRendered && element.getBoundingClientRect().top < innerHeight * 0.9;
 
       if (isNearInitialViewport) {
         element.dataset.revealVisible = "true";

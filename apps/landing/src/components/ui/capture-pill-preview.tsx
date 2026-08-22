@@ -50,7 +50,10 @@ function CaptureStateMark({ state }: { readonly state: CaptureState }) {
   );
 }
 
-export function CapturePillPreview({ className = "", state = "listening" }: CapturePillPreviewProps) {
+export function CapturePillPreview({
+  className = "",
+  state = "listening",
+}: CapturePillPreviewProps) {
   const copy = COPY[state];
 
   return (

@@ -1,6 +1,6 @@
 import { containerClass } from "../lib/layout";
-import { ctaGhostClass, ctaPrimaryClass } from "./ui/cta";
 import { CapturePillPreview } from "./ui/capture-pill-preview";
+import { ctaGhostClass, ctaPrimaryClass } from "./ui/cta";
 
 /** The product promise beside a real capture of the Purple desktop workspace. */
 

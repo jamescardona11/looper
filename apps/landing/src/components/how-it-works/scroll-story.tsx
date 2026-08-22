@@ -100,10 +100,7 @@ export function ScrollStory() {
               </div>
 
               <CapturePillPreview className="lp-story-pill lp-story-pill-0" />
-              <CapturePillPreview
-                className="lp-story-pill lp-story-pill-1"
-                state="transcribing"
-              />
+              <CapturePillPreview className="lp-story-pill lp-story-pill-1" state="transcribing" />
               <CapturePillPreview className="lp-story-pill lp-story-pill-2" state="inserted" />
             </div>
             <figcaption className="mt-3 ml-5 max-w-[620px] text-[13px] text-ink-muted leading-[1.55]">
