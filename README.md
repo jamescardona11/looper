@@ -7,6 +7,7 @@
 </p>
 
 <p align="center">
+  <a href="https://github.com/jamescardona11/looper/releases/latest"><strong>Download Desktop</strong></a> ·
   <a href="#product">Product</a> ·
   <a href="#getting-started">Getting started</a> ·
   <a href="#architecture">Architecture</a> ·
@@ -83,6 +84,12 @@ artifacts. Availability can vary by platform and release._
 ---
 
 ## Getting started
+
+### Download Desktop
+
+Signed installers for macOS 14+ and Windows are published in
+[GitHub Releases](https://github.com/jamescardona11/looper/releases/latest).
+The desktop app checks the same release channel for signed updates.
 
 ### Requirements
 
