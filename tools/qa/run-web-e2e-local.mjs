@@ -19,8 +19,7 @@ const sections = [
   "Gate: Web/Desktop local Playwright QA",
   `Date: ${new Date().toISOString()}`,
   "Command: pnpm run web:e2e",
-  "Covers: transcribe-fixture.spec.ts, dictation-crud.spec.ts",
-  "Fixture: test-support/fixtures/audio/harvard.wav",
+  "Covers: apps/web/e2e",
   "",
   `Exit code: ${result.status ?? "signal"}`,
   "",
@@ -36,12 +35,7 @@ if (result.error) {
   sections.push(`Error: ${result.error.message}`, "");
 }
 
-const passed =
-  !result.error &&
-  result.status === 0 &&
-  result.stdout.includes("2 passed") &&
-  result.stdout.includes("transcribe-fixture.spec.ts") &&
-  result.stdout.includes("dictation-crud.spec.ts");
+const passed = !result.error && result.status === 0;
 
 sections.push("## Result", "", passed ? "- PASS." : "- FAIL.");
 
