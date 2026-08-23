@@ -2,9 +2,6 @@ name: Desktop release
 
 on:
   workflow_dispatch:
-  push:
-    tags:
-      - "desktop-v*"
 
 permissions:
   contents: read
@@ -18,15 +15,8 @@ jobs:
     name: Validate release
     runs-on: ubuntu-latest
     env:
-      APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
-      APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
-      APPLE_ID: ${{ secrets.APPLE_ID }}
-      APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
-      APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
       TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
       TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
-      WINDOWS_CERTIFICATE: ${{ secrets.WINDOWS_CERTIFICATE }}
-      WINDOWS_CERTIFICATE_PASSWORD: ${{ secrets.WINDOWS_CERTIFICATE_PASSWORD }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -34,7 +24,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22.18.0
-      - name: Verify version, source, and signing secrets
+      - name: Verify version, source, and updater signing secrets
         shell: bash
         run: |
           set -euo pipefail
@@ -47,12 +37,7 @@ jobs:
             exit 1
           fi
 
-          if [[ "$GITHUB_EVENT_NAME" == "push" && "$GITHUB_REF_NAME" != "desktop-v$package_version" ]]; then
-            echo "Expected tag desktop-v$package_version, received $GITHUB_REF_NAME" >&2
-            exit 1
-          fi
-
-          if [[ "$GITHUB_EVENT_NAME" == "workflow_dispatch" && "$GITHUB_REF_NAME" != "main" ]]; then
+          if [[ "$GITHUB_REF_NAME" != "main" ]]; then
             echo "Manual desktop releases must run from main." >&2
             exit 1
           fi
@@ -64,15 +49,8 @@ jobs:
           fi
 
           required=(
-            APPLE_CERTIFICATE
-            APPLE_CERTIFICATE_PASSWORD
-            APPLE_ID
-            APPLE_PASSWORD
-            APPLE_TEAM_ID
             TAURI_SIGNING_PRIVATE_KEY
             TAURI_SIGNING_PRIVATE_KEY_PASSWORD
-            WINDOWS_CERTIFICATE
-            WINDOWS_CERTIFICATE_PASSWORD
           )
           missing=()
           for name in "${required[@]}"; do
@@ -124,43 +102,6 @@ jobs:
       - name: Install workspace dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Import Apple Developer ID certificate
-        if: matrix.os == 'macos'
-        shell: bash
-        env:
-          APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
-          APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
-        run: |
-          set -euo pipefail
-
-          certificate_path="$RUNNER_TEMP/looper-developer-id.p12"
-          keychain_path="$RUNNER_TEMP/looper-signing.keychain-db"
-          keychain_password="$(openssl rand -base64 32)"
-          echo "::add-mask::$keychain_password"
-
-          printf '%s' "$APPLE_CERTIFICATE" | openssl base64 -d -A -out "$certificate_path"
-          security create-keychain -p "$keychain_password" "$keychain_path"
-          security set-keychain-settings -lut 21600 "$keychain_path"
-          security unlock-keychain -p "$keychain_password" "$keychain_path"
-          security import "$certificate_path" \
-            -k "$keychain_path" \
-            -P "$APPLE_CERTIFICATE_PASSWORD" \
-            -T /usr/bin/codesign \
-            -T /usr/bin/security
-          security list-keychains -d user -s "$keychain_path" login.keychain-db
-          security set-key-partition-list \
-            -S apple-tool:,apple:,codesign: \
-            -s \
-            -k "$keychain_password" \
-            "$keychain_path"
-
-          signing_identity="$(security find-identity -v -p codesigning "$keychain_path" | sed -n 's/.*"\(Developer ID Application:.*\)"/\1/p' | head -1)"
-          if [[ -z "$signing_identity" ]]; then
-            echo "The Apple certificate is not a Developer ID Application identity." >&2
-            exit 1
-          fi
-          echo "APPLE_SIGNING_IDENTITY=$signing_identity" >> "$GITHUB_ENV"
-
       - name: Cache Vulkan SDK
         if: matrix.os == 'windows'
         uses: actions/cache@v4
@@ -193,54 +134,20 @@ jobs:
           "VULKAN_SDK=$sdk" >> $env:GITHUB_ENV
           "$sdk\Bin" >> $env:GITHUB_PATH
 
-      - name: Import Windows signing certificate
-        if: matrix.os == 'windows'
-        shell: pwsh
-        env:
-          WINDOWS_CERTIFICATE: ${{ secrets.WINDOWS_CERTIFICATE }}
-          WINDOWS_CERTIFICATE_PASSWORD: ${{ secrets.WINDOWS_CERTIFICATE_PASSWORD }}
-        run: |
-          $pfxPath = Join-Path $env:RUNNER_TEMP "looper-code-signing.pfx"
-          [IO.File]::WriteAllBytes(
-            $pfxPath,
-            [Convert]::FromBase64String($env:WINDOWS_CERTIFICATE)
-          )
-          $password = ConvertTo-SecureString $env:WINDOWS_CERTIFICATE_PASSWORD -AsPlainText -Force
-          $certificate = Import-PfxCertificate -FilePath $pfxPath -CertStoreLocation Cert:\CurrentUser\My -Password $password |
-            Where-Object HasPrivateKey |
-            Select-Object -First 1
-          if (-not $certificate) {
-            throw "The Windows certificate does not contain an importable private key."
-          }
-
-          $configPath = "apps/desktop/src-tauri/tauri.windows-signing.json"
-          @{
-            bundle = @{
-              windows = @{
-                certificateThumbprint = $certificate.Thumbprint
-                digestAlgorithm = "sha256"
-                timestampUrl = "http://timestamp.digicert.com"
-              }
-            }
-          } | ConvertTo-Json -Depth 4 | Set-Content $configPath -Encoding utf8NoBOM
-          "RELEASE_CONFIG_ARGS=--config src-tauri/tauri.windows-signing.json" >> $env:GITHUB_ENV
-
-      - name: Build signed installers and create draft release
+      - name: Build installers and create draft release
         uses: tauri-apps/tauri-action@1deb371b0cd8bd54025b384f1cd735e725c4060f # v1.0.0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
-          APPLE_ID: ${{ matrix.os == 'macos' && secrets.APPLE_ID || '' }}
-          APPLE_PASSWORD: ${{ matrix.os == 'macos' && secrets.APPLE_PASSWORD || '' }}
-          APPLE_TEAM_ID: ${{ matrix.os == 'macos' && secrets.APPLE_TEAM_ID || '' }}
-          APPLE_SIGNING_IDENTITY: ${{ env.APPLE_SIGNING_IDENTITY }}
         with:
           projectPath: apps/desktop
           tauriScript: pnpm tauri
-          args: --target ${{ matrix.target }} --bundles ${{ matrix.bundles }} ${{ env.RELEASE_CONFIG_ARGS }}
+          args: --target ${{ matrix.target }} --bundles ${{ matrix.bundles }}
           tagName: desktop-v__VERSION__
           releaseName: Looper Desktop v__VERSION__
+          releaseBody: |
+            > Preview installers are not yet code-signed by Apple or Windows and may trigger an operating-system warning. Updater artifacts are signed and verified by Looper.
           releaseDraft: true
           prerelease: false
           generateReleaseNotes: true
@@ -248,40 +155,3 @@ jobs:
           updaterJsonPreferNsis: true
           releaseAssetNamePattern: "[name]_[version]_[platform]_[arch][_setup][ext]"
           retryAttempts: 1
-
-      - name: Verify macOS signatures and notarization
-        if: matrix.os == 'macos'
-        shell: bash
-        run: |
-          set -euo pipefail
-          target_dir="apps/desktop/src-tauri/target/${{ matrix.target }}/release/bundle"
-          app_path="$(find "$target_dir/macos" -maxdepth 1 -name '*.app' -type d -print -quit)"
-          dmg_path="$(find "$target_dir/dmg" -maxdepth 1 -name '*.dmg' -type f -print -quit)"
-          test -n "$app_path"
-          test -n "$dmg_path"
-          codesign --verify --deep --strict --verbose=2 "$app_path"
-          spctl --assess --type execute --verbose=2 "$app_path"
-          xcrun stapler validate "$dmg_path"
-
-      - name: Verify Windows Authenticode signatures
-        if: matrix.os == 'windows'
-        shell: pwsh
-        run: |
-          $bundleRoot = Join-Path $env:RUNNER_TEMP "cargo-target\${{ matrix.target }}\release\bundle"
-          $installers = Get-ChildItem $bundleRoot -Recurse -File | Where-Object {
-            $_.Extension -in ".exe", ".msi"
-          }
-          if (-not $installers) {
-            throw "No Windows installers were generated."
-          }
-          foreach ($installer in $installers) {
-            $signature = Get-AuthenticodeSignature $installer.FullName
-            if ($signature.Status -ne "Valid") {
-              throw "Invalid Authenticode signature for $($installer.Name): $($signature.Status)"
-            }
-          }
-
-      - name: Remove temporary macOS keychain
-        if: always() && matrix.os == 'macos'
-        shell: bash
-        run: security delete-keychain "$RUNNER_TEMP/looper-signing.keychain-db" 2>/dev/null || true

@@ -87,9 +87,10 @@ artifacts. Availability can vary by platform and release._
 
 ### Download Desktop
 
-Signed installers for macOS 14+ and Windows are published in
+Desktop installers for macOS 14+ and Windows are published manually in
 [GitHub Releases](https://github.com/jamescardona11/looper/releases/latest).
-The desktop app checks the same release channel for signed updates.
+The operating systems may warn while these preview installers remain unsigned.
+Updater packages are signed separately and verified by the desktop app.
 
 ### Requirements
 

@@ -21,8 +21,8 @@ export function FinalCta() {
             Keep your voice close. Put it to work.
           </h2>
           <p className="max-w-[560px] text-[16px] text-ink-secondary leading-[1.65] md:text-[18px]">
-            Choose the latest signed installer for macOS or Windows. Looper is open source, and
-            Linux builds remain available from source.
+            Choose the latest preview for macOS or Windows. Updates are verified by Looper, and
+            operating-system signing will follow before general availability.
           </p>
         </div>
         <a
