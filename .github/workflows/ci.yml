@@ -21,7 +21,7 @@ jobs:
         with:
           node-version: 22.18.0
           cache: pnpm
-      - run: pnpm install --frozen-lockfile
+      - run: pnpm install --frozen-lockfile --config.node-linker=isolated --package-import-method copy
       - name: Typecheck and test
         run: pnpm run convex:verify
 
@@ -35,7 +35,7 @@ jobs:
         with:
           node-version: 22.18.0
           cache: pnpm
-      - run: pnpm install --frozen-lockfile
+      - run: pnpm install --frozen-lockfile --config.node-linker=isolated --package-import-method copy
       - run: pnpm run verify
       - run: pnpm run qa:external-readiness
       - run: pnpm run qa:clean-archive
@@ -57,7 +57,7 @@ jobs:
         with:
           node-version: 22.18.0
           cache: pnpm
-      - run: pnpm install --frozen-lockfile
+      - run: pnpm install --frozen-lockfile --config.node-linker=isolated --package-import-method copy
       - run: pnpm run qa:mobile
 
   web-build:
@@ -70,7 +70,7 @@ jobs:
         with:
           node-version: 22.18.0
           cache: pnpm
-      - run: pnpm install --frozen-lockfile
+      - run: pnpm install --frozen-lockfile --config.node-linker=isolated --package-import-method copy
       - run: pnpm --filter @looper/web build
 
   web-e2e:
@@ -84,7 +84,7 @@ jobs:
         with:
           node-version: 22.18.0
           cache: pnpm
-      - run: pnpm install --frozen-lockfile
+      - run: pnpm install --frozen-lockfile --config.node-linker=isolated --package-import-method copy
       - run: pnpm --filter @looper/web exec playwright install --with-deps chromium
       - name: Run Web/Desktop Playwright QA
         env:
@@ -116,7 +116,7 @@ jobs:
         with:
           node-version: 22.18.0
           cache: pnpm
-      - run: pnpm install --frozen-lockfile
+      - run: pnpm install --frozen-lockfile --config.node-linker=isolated --package-import-method copy
       - name: Run remote dictation local pairing QA
         env:
           CI: "true"
@@ -141,7 +141,7 @@ jobs:
         with:
           node-version: 22.18.0
           cache: pnpm
-      - run: pnpm install --frozen-lockfile
+      - run: pnpm install --frozen-lockfile --config.node-linker=isolated --package-import-method copy
       - run: pnpm run qa:desktop-native
       - run: pnpm run qa:meeting-audio
       - uses: actions/upload-artifact@v4
