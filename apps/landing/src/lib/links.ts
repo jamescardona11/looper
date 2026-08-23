@@ -1,8 +1,7 @@
-const desktopReleaseVersion = "1.0.2";
-const desktopReleaseBaseUrl = `https://github.com/jamescardona11/looper/releases/download/desktop-v${desktopReleaseVersion}`;
+const latestDesktopReleaseUrl = "https://github.com/jamescardona11/looper/releases/latest/download";
 
-export const macosDesktopDownloadUrl = `${desktopReleaseBaseUrl}/Looper_${desktopReleaseVersion}_darwin_aarch64.dmg`;
-export const windowsDesktopDownloadUrl = `${desktopReleaseBaseUrl}/Looper_${desktopReleaseVersion}_windows_x64_setup.exe`;
+export const macosDesktopDownloadUrl = `${latestDesktopReleaseUrl}/Looper_darwin_aarch64.dmg`;
+export const windowsDesktopDownloadUrl = `${latestDesktopReleaseUrl}/Looper_windows_x64_setup.exe`;
 export const desktopReleasesUrl = "https://github.com/jamescardona11/looper/releases/latest";
 
 export function resolveDesktopDownload(userAgent: string, maxTouchPoints = 0) {

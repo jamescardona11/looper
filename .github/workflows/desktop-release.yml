@@ -156,7 +156,7 @@ jobs:
           generateReleaseNotes: true
           uploadUpdaterJson: true
           updaterJsonPreferNsis: true
-          releaseAssetNamePattern: "[name]_[version]_[platform]_[arch][_setup][ext]"
+          releaseAssetNamePattern: "[name]_[platform]_[arch][_setup][ext]"
           retryAttempts: 1
 
       - name: Verify macOS distribution
