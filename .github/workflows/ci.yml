@@ -171,7 +171,8 @@ jobs:
           node-version: 22.18.0
           cache: pnpm
       - uses: dtolnay/rust-toolchain@stable
-      - run: pnpm install --frozen-lockfile
+      - name: Install workspace dependencies
+        run: pnpm install --frozen-lockfile --package-import-method copy
       - run: pnpm --dir apps/desktop build
       - uses: actions/cache@v4
         id: vulkan-sdk-cache

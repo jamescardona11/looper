@@ -100,7 +100,11 @@ jobs:
         with:
           targets: ${{ matrix.target }}
       - name: Install workspace dependencies
+        if: matrix.os != 'windows'
         run: pnpm install --frozen-lockfile
+      - name: Install workspace dependencies on Windows
+        if: matrix.os == 'windows'
+        run: pnpm install --frozen-lockfile --package-import-method copy
 
       - name: Cache Vulkan SDK
         if: matrix.os == 'windows'
