@@ -78,11 +78,6 @@ jobs:
             target: aarch64-apple-darwin
             bundles: app,dmg
             os: macos
-          - name: macOS Intel
-            platform: macos-latest
-            target: x86_64-apple-darwin
-            bundles: app,dmg
-            os: macos
           - name: Windows x64
             platform: windows-latest
             target: x86_64-pc-windows-msvc
