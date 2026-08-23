@@ -108,7 +108,7 @@ jobs:
         run: pnpm install --frozen-lockfile
       - name: Install workspace dependencies on Windows
         if: matrix.os == 'windows'
-        run: pnpm install --frozen-lockfile --package-import-method copy
+        run: pnpm install --frozen-lockfile --config.node-linker=isolated --package-import-method copy
 
       - name: Cache Vulkan SDK
         if: matrix.os == 'windows'
