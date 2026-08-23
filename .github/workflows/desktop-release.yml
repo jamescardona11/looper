@@ -158,3 +158,20 @@ jobs:
           updaterJsonPreferNsis: true
           releaseAssetNamePattern: "[name]_[version]_[platform]_[arch][_setup][ext]"
           retryAttempts: 1
+
+      - name: Verify macOS distribution
+        if: matrix.os == 'macos'
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          app_path="$(find apps/desktop/src-tauri/target -type d -path '*/release/bundle/macos/Looper.app' -print -quit)"
+          dmg_path="$(find apps/desktop/src-tauri/target -type f -path '*/release/bundle/dmg/*.dmg' -print -quit)"
+
+          if [[ -z "$app_path" || -z "$dmg_path" ]]; then
+            echo "The expected macOS app or DMG was not produced." >&2
+            exit 1
+          fi
+
+          codesign --verify --deep --strict --verbose=2 "$app_path"
+          hdiutil verify "$dmg_path"
