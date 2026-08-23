@@ -100,7 +100,7 @@ jobs:
         run: '"CARGO_TARGET_DIR=D:\t" >> $env:GITHUB_ENV'
       - name: Install workspace dependencies
         if: matrix.os != 'windows'
-        run: pnpm install --frozen-lockfile --config.node-linker=isolated --package-import-method copy
+        run: pnpm install --frozen-lockfile
       - name: Install workspace dependencies on Windows
         if: matrix.os == 'windows'
         run: pnpm install --frozen-lockfile --config.node-linker=isolated --package-import-method copy
