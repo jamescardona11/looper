@@ -1,4 +1,5 @@
 import { containerClass } from "../lib/layout";
+import { desktopDownloadUrl } from "../lib/links";
 import { CapturePillPreview } from "./ui/capture-pill-preview";
 import { ctaGhostClass, ctaPrimaryClass } from "./ui/cta";
 
@@ -37,15 +38,18 @@ export function Hero() {
           className="lp-enter flex w-full flex-col items-stretch gap-3.5 md:mt-1 md:w-auto md:flex-row md:items-center"
           style={{ animationDelay: ".26s" }}
         >
-          <a href="#how" className={`${ctaPrimaryClass} h-[52px] rounded-[12px] px-6 text-[16px]`}>
-            See how Looper works
+          <a
+            href={desktopDownloadUrl}
+            className={`${ctaPrimaryClass} h-[52px] rounded-[12px] px-6 text-[16px]`}
+          >
+            Download Desktop
           </a>
 
           <a
-            href="#compare"
+            href="#how"
             className={`${ctaGhostClass} h-[52px] rounded-[12px] px-[22px] text-[16px] max-md:hidden`}
           >
-            Compare the tools
+            See how Looper works
           </a>
         </div>
       </div>

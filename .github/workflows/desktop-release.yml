@@ -1,0 +1,165 @@
+name: Desktop release
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: desktop-release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  validate:
+    name: Validate release
+    runs-on: ubuntu-latest
+    env:
+      TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+      TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.18.0
+      - name: Verify version, source, and updater signing secrets
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          package_version="$(node -p "require('./apps/desktop/package.json').version")"
+          cargo_version="$(sed -n 's/^version = "\([^"]*\)"/\1/p' apps/desktop/src-tauri/Cargo.toml | head -1)"
+
+          if [[ "$package_version" != "$cargo_version" ]]; then
+            echo "Desktop versions differ: package.json=$package_version Cargo.toml=$cargo_version" >&2
+            exit 1
+          fi
+
+          if [[ "$GITHUB_REF_NAME" != "main" ]]; then
+            echo "Manual desktop releases must run from main." >&2
+            exit 1
+          fi
+
+          git fetch origin main --depth=1
+          if ! git merge-base --is-ancestor "$GITHUB_SHA" origin/main; then
+            echo "Desktop releases must point to a commit contained in main." >&2
+            exit 1
+          fi
+
+          required=(
+            TAURI_SIGNING_PRIVATE_KEY
+            TAURI_SIGNING_PRIVATE_KEY_PASSWORD
+          )
+          missing=()
+          for name in "${required[@]}"; do
+            if [[ -z "${!name:-}" ]]; then
+              missing+=("$name")
+            fi
+          done
+
+          if (( ${#missing[@]} > 0 )); then
+            printf 'Missing required release secrets: %s\n' "${missing[*]}" >&2
+            exit 1
+          fi
+
+  build:
+    name: Build ${{ matrix.name }}
+    needs: validate
+    permissions:
+      contents: write
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: macOS Apple Silicon
+            platform: macos-latest
+            target: aarch64-apple-darwin
+            bundles: app,dmg
+            os: macos
+          - name: macOS Intel
+            platform: macos-latest
+            target: x86_64-apple-darwin
+            bundles: app,dmg
+            os: macos
+          - name: Windows x64
+            platform: windows-latest
+            target: x86_64-pc-windows-msvc
+            bundles: msi,nsis
+            os: windows
+    runs-on: ${{ matrix.platform }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.18.0
+          cache: pnpm
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+      - name: Shorten Windows build paths
+        if: matrix.os == 'windows'
+        shell: pwsh
+        run: '"CARGO_TARGET_DIR=D:\t" >> $env:GITHUB_ENV'
+      - name: Install workspace dependencies
+        if: matrix.os != 'windows'
+        run: pnpm install --frozen-lockfile
+      - name: Install workspace dependencies on Windows
+        if: matrix.os == 'windows'
+        run: pnpm install --frozen-lockfile --package-import-method copy
+
+      - name: Cache Vulkan SDK
+        if: matrix.os == 'windows'
+        uses: actions/cache@v4
+        id: vulkan-sdk-cache
+        with:
+          path: C:\VulkanSDK\1.4.350.0
+          key: vulkan-sdk-windows-x64-1.4.350.0
+      - name: Install Vulkan SDK
+        if: matrix.os == 'windows' && steps.vulkan-sdk-cache.outputs.cache-hit != 'true'
+        shell: pwsh
+        run: |
+          $version = "1.4.350.0"
+          $expectedHash = "855b27ba05d2d8119c5114c5d4ff870ca38f2c632b11e1bb9923b9b7e6ecfe7b"
+          $installer = Join-Path $env:RUNNER_TEMP "vulkan-sdk.exe"
+          $destination = "C:\VulkanSDK\$version"
+          Invoke-WebRequest "https://sdk.lunarg.com/sdk/download/$version/windows/vulkan-sdk.exe" -OutFile $installer
+          $actualHash = (Get-FileHash $installer -Algorithm SHA256).Hash.ToLowerInvariant()
+          if ($actualHash -ne $expectedHash) {
+            throw "Vulkan SDK checksum mismatch: $actualHash"
+          }
+          & $installer --root $destination --accept-licenses --default-answer --confirm-command install copy_only=1
+          if ($LASTEXITCODE -ne 0) {
+            throw "Vulkan SDK installer exited with code $LASTEXITCODE"
+          }
+      - name: Configure Vulkan SDK
+        if: matrix.os == 'windows'
+        shell: pwsh
+        run: |
+          $sdk = "C:\VulkanSDK\1.4.350.0"
+          "VULKAN_SDK=$sdk" >> $env:GITHUB_ENV
+          "$sdk\Bin" >> $env:GITHUB_PATH
+
+      - name: Build installers and create draft release
+        uses: tauri-apps/tauri-action@1deb371b0cd8bd54025b384f1cd735e725c4060f # v1.0.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+        with:
+          projectPath: apps/desktop
+          tauriScript: pnpm tauri
+          args: --target ${{ matrix.target }} --bundles ${{ matrix.bundles }}
+          tagName: desktop-v__VERSION__
+          releaseName: Looper Desktop v__VERSION__
+          releaseBody: |
+            > Preview installers are not yet code-signed by Apple or Windows and may trigger an operating-system warning. Updater artifacts are signed and verified by Looper.
+          releaseDraft: true
+          prerelease: false
+          generateReleaseNotes: true
+          uploadUpdaterJson: true
+          updaterJsonPreferNsis: true
+          releaseAssetNamePattern: "[name]_[version]_[platform]_[arch][_setup][ext]"
+          retryAttempts: 1

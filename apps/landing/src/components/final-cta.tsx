@@ -1,4 +1,5 @@
 import { containerClass } from "../lib/layout";
+import { desktopDownloadUrl } from "../lib/links";
 import { ctaInkClass } from "./ui/cta";
 
 export function FinalCta() {
@@ -20,15 +21,15 @@ export function FinalCta() {
             Keep your voice close. Put it to work.
           </h2>
           <p className="max-w-[560px] text-[16px] text-ink-secondary leading-[1.65] md:text-[18px]">
-            Looper is open source and built local first for macOS, Windows and Linux.
+            Choose the latest preview for macOS or Windows. Updates are verified by Looper, and
+            operating-system signing will follow before general availability.
           </p>
         </div>
         <a
           className={`${ctaInkClass} h-[52px] rounded-[12px] px-6 text-[15px]`}
-          href="https://github.com/jamescardona11/looper"
-          rel="noreferrer"
+          href={desktopDownloadUrl}
         >
-          View Looper on GitHub
+          Download Desktop
         </a>
       </div>
     </section>

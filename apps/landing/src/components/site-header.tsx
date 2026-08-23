@@ -1,5 +1,6 @@
 import { useRef } from "react";
 import { containerClass } from "../lib/layout";
+import { desktopDownloadUrl } from "../lib/links";
 import { ctaInkClass } from "./ui/cta";
 import { LooperMark } from "./ui/icons";
 import { mutedLinkClass } from "./ui/link";
@@ -45,10 +46,10 @@ export function SiteHeader() {
         </nav>
 
         <a
-          href="#download"
+          href={desktopDownloadUrl}
           className={`${ctaInkClass} rounded-[10px] px-[18px] py-2.5 text-[14px] max-md:hidden`}
         >
-          Get Looper
+          Download Desktop
         </a>
 
         <details ref={menu} className="md:hidden">
@@ -73,6 +74,13 @@ export function SiteHeader() {
                 {link.label}
               </a>
             ))}
+            <a
+              href={desktopDownloadUrl}
+              onClick={closeMenu}
+              className={`${mutedLinkClass} flex min-h-11 items-center text-[15px]`}
+            >
+              Download Desktop
+            </a>
           </nav>
         </details>
       </div>
