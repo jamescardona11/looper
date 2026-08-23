@@ -1,5 +1,5 @@
 import { containerClass } from "../lib/layout";
-import { desktopDownloadUrl } from "../lib/links";
+import { desktopDownloadLabel, desktopDownloadUrl } from "../lib/links";
 import { ctaInkClass } from "./ui/cta";
 
 export function FinalCta() {
@@ -29,7 +29,7 @@ export function FinalCta() {
           className={`${ctaInkClass} h-[52px] rounded-[12px] px-6 text-[15px]`}
           href={desktopDownloadUrl}
         >
-          Download Desktop
+          {desktopDownloadLabel}
         </a>
       </div>
     </section>

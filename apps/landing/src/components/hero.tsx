@@ -1,5 +1,5 @@
 import { containerClass } from "../lib/layout";
-import { desktopDownloadUrl } from "../lib/links";
+import { desktopDownloadLabel, desktopDownloadUrl } from "../lib/links";
 import { CapturePillPreview } from "./ui/capture-pill-preview";
 import { ctaGhostClass, ctaPrimaryClass } from "./ui/cta";
 
@@ -42,7 +42,7 @@ export function Hero() {
             href={desktopDownloadUrl}
             className={`${ctaPrimaryClass} h-[52px] rounded-[12px] px-6 text-[16px]`}
           >
-            Download Desktop
+            {desktopDownloadLabel}
           </a>
 
           <a
