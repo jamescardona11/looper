@@ -2282,6 +2282,7 @@ mod tests {
                 if message == "Audio device disconnected"
         ));
 
+        drop(storage);
         fs::remove_dir_all(directory).unwrap();
     }
 
@@ -2513,6 +2514,7 @@ mod tests {
         assert_eq!(important.marker.end_ms, 50_000);
         assert_eq!(important.details.note_markers.len(), 2);
 
+        drop(storage);
         fs::remove_dir_all(directory).unwrap();
     }
 
@@ -2692,6 +2694,8 @@ mod tests {
             }
         );
 
+        drop(reader);
+        drop(storage);
         fs::remove_dir_all(directory).unwrap();
     }
 
