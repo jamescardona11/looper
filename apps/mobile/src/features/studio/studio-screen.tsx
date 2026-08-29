@@ -1,6 +1,11 @@
-import { useDictationSettings } from "@looper/data";
-import { type Href, useFocusEffect, useRouter } from "expo-router";
-import { useCallback, useEffect, useState } from "react";
+import {
+  type ReplacementRule,
+  useDictationDictionary,
+  useDictationReplacements,
+  useDictationSettings,
+} from "@looper/data";
+import { useRouter } from "expo-router";
+import { useEffect, useState } from "react";
 import {
   Modal,
   Pressable,
@@ -25,10 +30,8 @@ import {
   type WritingStyle,
 } from "@/shared/studio/studio-settings";
 import { colors } from "@/shared/theme/colors";
-import { hitTarget, radius, relief, space } from "@/shared/theme/layout";
+import { radius, space } from "@/shared/theme/layout";
 import { typography } from "@/shared/theme/typography";
-
-type StudioTab = "styles" | "modes";
 
 const FORMAT_LABEL: Record<SmartMode["format"], string> = {
   bullets: "viñetas",
@@ -47,23 +50,12 @@ export function StudioScreen() {
   const router = useRouter();
   const remote = useDictationSettings();
   const [settings, setSettings] = useState(() => normalizeStudioSettings(remote.doc?.data));
-  const [tab, setTab] = useState<StudioTab>("styles");
-  const [editor, setEditor] = useState<"style" | "mode" | null>(null);
   const [status, setStatus] = useState<string | null>(null);
   const [failed, setFailed] = useState<MobileStudioSettings | null>(null);
 
   useEffect(() => {
     if (!remote.isLoading) setSettings(normalizeStudioSettings(remote.doc?.data));
   }, [remote.doc?.data, remote.isLoading]);
-
-  useFocusEffect(
-    useCallback(
-      () => () => {
-        setEditor(null);
-      },
-      [],
-    ),
-  );
 
   const persist = async (next: MobileStudioSettings) => {
     setSettings(next);
@@ -78,46 +70,11 @@ export function StudioScreen() {
     }
   };
 
-  const toggleMode = (id: string) =>
-    void persist({
-      ...settings,
-      smartModes: settings.smartModes.map((mode) =>
-        mode.id === id ? { ...mode, enabled: !mode.enabled } : mode,
-      ),
-    });
-
   return (
     <SafeAreaView style={styles.safeArea}>
-      <View style={styles.header}>
-        <Pressable
-          accessibilityLabel="Volver"
-          accessibilityRole="button"
-          onPress={() => router.back()}
-          style={styles.back}
-        >
-          <Icon color={colors.textSecondary} name="chevronLeft" size={22} strokeWidth={2.2} />
-        </Pressable>
-        <Pressable
-          accessibilityLabel="Ajustes del teclado"
-          accessibilityRole="button"
-          onPress={() => router.push("/keyboard" as Href)}
-          style={({ pressed }) => [styles.keyboardButton, pressed && styles.sunk]}
-        >
-          <Icon color={colors.textSecondary} name="keyboard" size={16} />
-          <Text style={styles.keyboardLabel}>Teclado</Text>
-        </Pressable>
-      </View>
-
       <View style={styles.intro}>
-        <Text style={styles.title}>Studio</Text>
-        <Text style={styles.lede}>
-          No inventa contenido: solo cambia la forma de lo que dictas.
-        </Text>
-      </View>
-
-      <View accessibilityLabel="Secciones de Studio" style={styles.segmented}>
-        <Segment active={tab === "styles"} label="Estilos" onPress={() => setTab("styles")} />
-        <Segment active={tab === "modes"} label="Smart Modes" onPress={() => setTab("modes")} />
+        <Text style={styles.kicker}>STUDIO</Text>
+        <Text style={styles.title}>Cómo escribe</Text>
       </View>
 
       <ScrollView contentContainerStyle={styles.content}>
@@ -130,85 +87,177 @@ export function StudioScreen() {
         ) : null}
         {remote.isLoading ? (
           <StudioSkeleton />
-        ) : tab === "styles" ? (
-          <StylesTab
-            onCreate={() => setEditor("style")}
+        ) : (
+          <CleaningCard
             select={(activeStyleId) => void persist({ ...settings, activeStyleId })}
             settings={settings}
           />
-        ) : (
-          <ModesTab
-            modes={settings.smartModes}
-            onCreate={() => setEditor("mode")}
-            toggle={toggleMode}
-            writingStyles={settings.styles}
-          />
         )}
+        <Pressable
+          accessibilityLabel="Abrir ajustes de dictado"
+          accessibilityRole="button"
+          onPress={() => router.push("/(app)/keyboard")}
+          style={styles.dictationSettingsLink}
+        >
+          <View>
+            <Text style={styles.dictationSettingsTitle}>Ajustes de dictado</Text>
+            <Text style={styles.dictationSettingsHint}>Teclado, vocabulario y correcciones</Text>
+          </View>
+          <Icon color={colors.muted} name="chevronRight" size={18} strokeWidth={2.2} />
+        </Pressable>
         {status ? (
           <Text accessibilityLiveRegion="polite" style={styles.status}>
             {status}
           </Text>
         ) : null}
       </ScrollView>
-
-      <View style={styles.footer}>
-        <Pressable
-          accessibilityHint="Diccionario, reemplazos, estilos y transcripciones"
-          accessibilityLabel="Importar desde otra app"
-          accessibilityRole="button"
-          onPress={() => router.push("/import" as Href)}
-          style={({ pressed }) => [styles.importRow, pressed && styles.dimmed]}
-        >
-          <View style={styles.importTile}>
-            <Icon color={colors.textSecondary} name="import" size={17} />
-          </View>
-          <View style={styles.rowCopy}>
-            <Text style={styles.rowTitle}>Importar desde otra app</Text>
-            <Text style={styles.rowNote}>Diccionario, reemplazos, estilos y transcripciones</Text>
-          </View>
-          <Icon color={colors.disabled} name="chevronRight" size={17} strokeWidth={2.2} />
-        </Pressable>
-      </View>
-
-      <StudioEditor
-        kind={editor}
-        onClose={() => setEditor(null)}
-        onMode={(mode) => {
-          setEditor(null);
-          void persist({ ...settings, smartModes: [...settings.smartModes, mode] });
-        }}
-        onStyle={(style) => {
-          setEditor(null);
-          void persist({
-            ...settings,
-            activeStyleId: style.id,
-            styles: [...settings.styles, style],
-          });
-        }}
-        writingStyles={settings.styles}
-      />
     </SafeAreaView>
   );
 }
 
-function Segment({
-  active,
-  label,
-  onPress,
+function VocabularyTab({
+  dictionary,
 }: {
-  active: boolean;
-  label: string;
-  onPress: () => void;
+  dictionary: ReturnType<typeof useDictationDictionary>;
+}) {
+  const [draft, setDraft] = useState("");
+  const add = () => {
+    const term = draft.trim();
+    if (!term) return;
+    setDraft("");
+    void dictionary.add(term);
+  };
+  return (
+    <View style={styles.studioCard}>
+      <View style={styles.cardHeading}>
+        <Text style={styles.cardTitle}>Vocabulario</Text>
+        <Text style={styles.count}>{dictionary.isLoading ? "…" : dictionary.entries.length}</Text>
+      </View>
+      <Text style={styles.cardHint}>Nombres y términos que Looper debe respetar al dictar.</Text>
+      <View style={styles.wordCloud}>
+        {dictionary.entries.map((entry) => (
+          <Pressable
+            accessibilityLabel={`Eliminar ${entry.term}`}
+            accessibilityRole="button"
+            key={entry.id}
+            onPress={() => void dictionary.remove(entry.id)}
+            style={styles.word}
+          >
+            <Text style={styles.wordText}>{entry.term}</Text>
+            <Text style={styles.wordRemove}>×</Text>
+          </Pressable>
+        ))}
+      </View>
+      <View style={styles.addWordRow}>
+        <TextInput
+          accessibilityLabel="Añadir palabra al vocabulario"
+          onChangeText={setDraft}
+          onSubmitEditing={add}
+          placeholder="Añadir palabra"
+          placeholderTextColor={colors.disabled}
+          returnKeyType="done"
+          style={styles.addWordInput}
+          value={draft}
+        />
+        <Pressable accessibilityLabel="Guardar palabra" accessibilityRole="button" onPress={add} style={styles.addWordButton}>
+          <Text style={styles.addWordButtonText}>Añadir</Text>
+        </Pressable>
+      </View>
+    </View>
+  );
+}
+
+function ReplacementTab({
+  replacements,
+}: {
+  replacements: ReturnType<typeof useDictationReplacements>;
+}) {
+  return (
+    <View style={styles.studioCard}>
+      <View style={styles.cardHeading}>
+        <Text style={styles.cardTitle}>Correcciones</Text>
+        <Text style={styles.count}>{replacements.isLoading ? "…" : replacements.rules.length}</Text>
+      </View>
+      <Text style={styles.cardHint}>Se aplican al terminar cada transcripción.</Text>
+      {replacements.rules.length ? (
+        replacements.rules.map((rule) => <ReplacementRow key={rule.id} replacements={replacements} rule={rule} />)
+      ) : (
+        <Text style={styles.emptyInline}>
+          {replacements.isLoading ? "Cargando correcciones…" : "Aún no hay correcciones guardadas."}
+        </Text>
+      )}
+    </View>
+  );
+}
+
+function ReplacementRow({
+  replacements,
+  rule,
+}: {
+  replacements: ReturnType<typeof useDictationReplacements>;
+  rule: ReplacementRule;
 }) {
   return (
     <Pressable
-      accessibilityRole="tab"
-      accessibilityState={{ selected: active }}
-      onPress={onPress}
-      style={[styles.segment, active && styles.segmentActive]}
+      accessibilityLabel={`Eliminar corrección ${rule.source}`}
+      accessibilityRole="button"
+      onPress={() => void replacements.remove(rule.id)}
+      style={styles.replacementRow}
     >
-      <Text style={[styles.segmentLabel, active && styles.segmentLabelActive]}>{label}</Text>
+      <Text style={styles.replacementText}>{rule.source} → {rule.destination}</Text>
+      <Text style={styles.wordRemove}>×</Text>
     </Pressable>
+  );
+}
+
+function CleaningCard({
+  select,
+  settings,
+}: {
+  select: (id: string) => void;
+  settings: MobileStudioSettings;
+}) {
+  const active = settings.styles.find((style) => style.id === settings.activeStyleId);
+  const levels = settings.styles.slice(0, 3);
+  return (
+    <View style={styles.cleaningCard}>
+      <View style={styles.cleaningHead}>
+        <Text style={styles.cleaningName}>Nivel de limpieza</Text>
+        <Text style={styles.cleaningValue}>{active?.name ?? "Ligero"}</Text>
+      </View>
+      <View style={styles.swatch}>
+        <View style={styles.swatchLine}>
+          <Text style={styles.swatchLabel}>DIJISTE</Text>
+          <Text style={styles.swatchDim}>
+            O sea que el original se queda ahí al lado para que no se pierda nada.
+          </Text>
+        </View>
+        <View style={styles.swatchLine}>
+          <Text style={styles.swatchLabel}>SALE</Text>
+          <Text style={styles.swatchText}>
+            {active?.example ?? "El original se queda al lado, así no se pierde nada."}
+          </Text>
+        </View>
+      </View>
+      <View style={styles.levels}>
+        {levels.map((style) => {
+          const selected = style.id === settings.activeStyleId;
+          return (
+            <Pressable
+              accessibilityRole="radio"
+              accessibilityState={{ selected }}
+              key={style.id}
+              onPress={() => select(style.id)}
+              style={[styles.level, selected && styles.levelSelected]}
+            >
+              <Text style={[styles.levelText, selected && styles.levelTextSelected]}>
+                {style.name}
+              </Text>
+            </Pressable>
+          );
+        })}
+      </View>
+    </View>
   );
 }
 
@@ -216,14 +265,20 @@ function StylesTab({
   onCreate,
   select,
   settings,
+  showAll,
+  toggleAll,
 }: {
   onCreate: () => void;
   select: (id: string) => void;
   settings: MobileStudioSettings;
+  showAll: boolean;
+  toggleAll: () => void;
 }) {
+  const active = settings.styles.find((style) => style.id === settings.activeStyleId);
+  const visibleStyles = showAll || !active ? settings.styles : [active];
   return (
     <View style={styles.list}>
-      {settings.styles.map((style) => (
+      {visibleStyles.map((style) => (
         <StyleCard
           key={style.id}
           onPress={() => select(style.id)}
@@ -231,6 +286,14 @@ function StylesTab({
           writingStyle={style}
         />
       ))}
+      {settings.styles.length > 1 ? (
+        <Pressable accessibilityRole="button" onPress={toggleAll} style={styles.disclosure}>
+          <Text style={styles.disclosureText}>
+            {showAll ? "Ver menos estilos" : "Ver todos los estilos"}
+          </Text>
+          <Icon color={colors.accent} name={showAll ? "chevronDown" : "chevronRight"} size={16} />
+        </Pressable>
+      ) : null}
       <CreateRow label="Nuevo estilo" onPress={onCreate} />
     </View>
   );
@@ -498,11 +561,22 @@ const SCREEN_PAD = 20;
 const SHEET_RADIUS = 22;
 
 const styles = StyleSheet.create({
-  back: {
+  addWordButton: {
     alignItems: "center",
-    height: hitTarget,
+    backgroundColor: colors.accentSubtle,
+    borderRadius: radius.md,
     justifyContent: "center",
-    width: hitTarget,
+    minHeight: 42,
+    paddingHorizontal: 12,
+  },
+  addWordButtonText: { ...typography.meta, color: colors.accent, fontWeight: "700" },
+  addWordInput: { ...typography.body, color: colors.text, flex: 1, minHeight: 42, paddingHorizontal: 12 },
+  addWordRow: {
+    alignItems: "center",
+    borderColor: colors.border,
+    borderRadius: radius.md,
+    borderWidth: 1,
+    flexDirection: "row",
   },
   backdrop: { backgroundColor: colors.overlay, flex: 1, justifyContent: "flex-end" },
   card: {
@@ -514,6 +588,9 @@ const styles = StyleSheet.create({
     padding: space.lg,
   },
   cardSelected: { borderColor: colors.accent },
+  cardHeading: { alignItems: "center", flexDirection: "row", justifyContent: "space-between" },
+  cardHint: { ...typography.meta, color: colors.muted, lineHeight: 18 },
+  cardTitle: { ...typography.item, color: colors.text },
   close: {
     alignItems: "center",
     backgroundColor: colors.surface,
@@ -522,7 +599,14 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     width: 36,
   },
-  content: { gap: space.lg, paddingBottom: space.xxl, paddingHorizontal: SCREEN_PAD },
+  content: { gap: space.lg, paddingBottom: 108, paddingHorizontal: space.lg },
+  cleaningHint: { ...typography.meta, color: colors.muted, marginTop: 3 },
+  cleaningCard: { backgroundColor: colors.surface, borderRadius: radius.lg, gap: 13, marginTop: 6, padding: 15 },
+  cleaningHead: { alignItems: "center", flexDirection: "row" },
+  cleaningIntro: { gap: 2 },
+  cleaningLabel: { ...typography.item, color: colors.text },
+  cleaningName: { ...typography.item, color: colors.text, flex: 1 },
+  cleaningValue: { ...typography.meta, color: colors.muted },
   createLabel: { ...typography.body, color: colors.muted, fontWeight: "600" },
   createRow: {
     alignItems: "center",
@@ -535,7 +619,31 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     minHeight: 52,
   },
+  count: {
+    ...typography.meta,
+    backgroundColor: colors.accentSubtle,
+    borderRadius: radius.pill,
+    color: colors.accent,
+    fontWeight: "700",
+    minWidth: 24,
+    paddingHorizontal: 7,
+    paddingVertical: 3,
+    textAlign: "center",
+  },
   dimmed: { opacity: 0.6 },
+  dictationSettingsHint: { ...typography.meta, color: colors.muted, marginTop: 2 },
+  dictationSettingsLink: {
+    alignItems: "center",
+    borderTopColor: colors.border,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    minHeight: 64,
+    paddingHorizontal: 2,
+  },
+  dictationSettingsTitle: { ...typography.item, color: colors.text },
+  disclosure: { alignItems: "center", flexDirection: "row", gap: space.xs, minHeight: 36 },
+  disclosureText: { ...typography.meta, color: colors.accent, fontWeight: "700" },
   emptyCard: {
     backgroundColor: colors.surfaceMuted,
     borderColor: colors.border,
@@ -544,6 +652,7 @@ const styles = StyleSheet.create({
     gap: space.xs,
     padding: space.xl,
   },
+  emptyInline: { ...typography.meta, color: colors.muted, paddingVertical: 6 },
   example: {
     backgroundColor: colors.background,
     borderColor: colors.border,
@@ -553,37 +662,6 @@ const styles = StyleSheet.create({
     padding: space.md,
   },
   exampleText: { ...typography.body, color: colors.textSecondary },
-  footer: {
-    borderTopColor: colors.border,
-    borderTopWidth: 1,
-    paddingHorizontal: SCREEN_PAD,
-    paddingVertical: space.md,
-  },
-  header: {
-    alignItems: "center",
-    flexDirection: "row",
-    justifyContent: "space-between",
-    minHeight: 46,
-    paddingLeft: 6,
-    paddingRight: 10,
-  },
-  importRow: {
-    alignItems: "center",
-    flexDirection: "row",
-    gap: 13,
-    minHeight: 56,
-    paddingHorizontal: space.xs,
-  },
-  importTile: {
-    alignItems: "center",
-    backgroundColor: colors.surface,
-    borderColor: colors.border,
-    borderRadius: radius.md,
-    borderWidth: 1,
-    height: 36,
-    justifyContent: "center",
-    width: 36,
-  },
   input: {
     ...typography.body,
     backgroundColor: colors.background,
@@ -595,20 +673,24 @@ const styles = StyleSheet.create({
     paddingHorizontal: 13,
   },
   instructions: { minHeight: 88, paddingTop: space.md },
-  intro: { gap: 7, paddingBottom: space.lg, paddingHorizontal: SCREEN_PAD, paddingTop: space.xs },
-  keyboardButton: {
-    ...relief.secondary,
-    alignItems: "center",
-    borderRadius: radius.md,
-    flexDirection: "row",
-    gap: space.sm,
-    minHeight: 40,
-    paddingHorizontal: 13,
-  },
-  keyboardLabel: { ...typography.meta, color: colors.textSecondary, fontWeight: "600" },
+  intro: { gap: 3, paddingBottom: 10, paddingHorizontal: space.lg, paddingTop: space.md },
+  kicker: { ...typography.label, color: colors.accent, letterSpacing: 1.1 },
   lede: { ...typography.body, color: colors.muted },
   list: { gap: 9 },
+  level: {
+    borderColor: colors.border,
+    borderRadius: radius.pill,
+    borderWidth: 1,
+    minHeight: 30,
+    paddingHorizontal: 11,
+    justifyContent: "center",
+  },
+  levels: { flexDirection: "row", flexWrap: "wrap", gap: 6 },
+  levelSelected: { backgroundColor: colors.accentSubtle, borderColor: colors.accent },
+  levelText: { ...typography.meta, color: colors.textSecondary, fontWeight: "600" },
+  levelTextSelected: { color: colors.accent },
   modeRow: { alignItems: "center", flexDirection: "row", gap: 13 },
+  modesDisclosure: { alignItems: "center", flexDirection: "row", gap: space.xs, minHeight: 44 },
   note: {
     borderColor: colors.border,
     borderRadius: radius.lg,
@@ -642,32 +724,40 @@ const styles = StyleSheet.create({
     width: 9,
   },
   radioSelected: { borderColor: colors.accent },
+  replacementRow: {
+    alignItems: "center",
+    backgroundColor: colors.background,
+    borderRadius: radius.md,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    minHeight: 42,
+    paddingHorizontal: 12,
+  },
+  replacementText: { ...typography.meta, color: colors.textSecondary, fontWeight: "600" },
   rowCopy: { flex: 1, gap: 2 },
   rowNote: { ...typography.meta, color: colors.muted, lineHeight: 19 },
   rowTitle: { ...typography.item, color: colors.text },
   rowTitleOff: { color: colors.muted },
-  safeArea: { backgroundColor: colors.background, flex: 1 },
-  segment: {
-    alignItems: "center",
-    borderRadius: radius.md,
-    flex: 1,
-    justifyContent: "center",
-    minHeight: 40,
-  },
-  segmentActive: { backgroundColor: colors.surface },
-  segmentLabel: { ...typography.meta, color: colors.muted, fontWeight: "600" },
-  segmentLabelActive: { color: colors.text, fontWeight: "700" },
-  segmented: {
-    backgroundColor: colors.surfaceMuted,
+  sectionTab: {
     borderColor: colors.border,
-    borderRadius: radius.lg,
+    borderRadius: radius.pill,
     borderWidth: 1,
-    flexDirection: "row",
-    gap: space.xs,
-    marginBottom: 14,
-    marginHorizontal: SCREEN_PAD,
-    padding: space.xs,
+    minHeight: 32,
+    paddingHorizontal: 13,
+    justifyContent: "center",
   },
+  sectionTabActive: { backgroundColor: colors.accentSubtle, borderColor: colors.accent },
+  sectionTabText: { ...typography.meta, color: colors.textSecondary, fontWeight: "700" },
+  sectionTabTextActive: { color: colors.accent },
+  sectionTabs: {
+    alignItems: "center",
+    flexDirection: "row",
+    gap: 8,
+    paddingBottom: space.md,
+    paddingHorizontal: SCREEN_PAD,
+  },
+  sectionTabsScroller: { maxHeight: 48, minHeight: 48 },
+  safeArea: { backgroundColor: colors.background, flex: 1 },
   sheet: {
     backgroundColor: colors.surfaceMuted,
     borderTopLeftRadius: SHEET_RADIUS,
@@ -692,7 +782,37 @@ const styles = StyleSheet.create({
   },
   skeletonExample: { backgroundColor: colors.surface, borderRadius: radius.md, height: 72 },
   status: { ...typography.meta, color: colors.muted },
+  studioCard: { backgroundColor: colors.surface, borderRadius: radius.lg, gap: 12, padding: 15 },
+  stylesSection: { gap: 9, marginTop: 6 },
   styleHead: { alignItems: "center", flexDirection: "row", gap: space.md },
-  sunk: relief.pressed,
-  title: { ...typography.display, color: colors.text },
+  swatch: { gap: 9 },
+  swatchDim: {
+    ...typography.meta,
+    color: colors.muted,
+    flex: 1,
+    fontStyle: "italic",
+    lineHeight: 18,
+  },
+  swatchLabel: {
+    ...typography.label,
+    color: colors.disabled,
+    fontSize: 9,
+    letterSpacing: 0.7,
+    width: 58,
+  },
+  swatchLine: { alignItems: "flex-start", flexDirection: "row", gap: 8 },
+  swatchText: { ...typography.meta, color: colors.textSecondary, flex: 1, lineHeight: 18 },
+  title: { ...typography.title, color: colors.text },
+  word: {
+    alignItems: "center",
+    backgroundColor: colors.accentSubtle,
+    borderRadius: radius.pill,
+    flexDirection: "row",
+    gap: 5,
+    minHeight: 30,
+    paddingHorizontal: 10,
+  },
+  wordCloud: { flexDirection: "row", flexWrap: "wrap", gap: 7 },
+  wordRemove: { ...typography.meta, color: colors.muted, fontWeight: "700" },
+  wordText: { ...typography.meta, color: colors.accentDark, fontWeight: "700" },
 });

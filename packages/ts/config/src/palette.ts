@@ -219,6 +219,26 @@ export const BRAND_MARK = {
   paper: "#f7f5f2",
 } as const;
 
+/**
+ * Semántica visual exclusiva de la app móvil. No cambia los tokens de web ni
+ * desktop: el generador la consume sólo al producir `apps/mobile`.
+ */
+export const MOBILE_MINIMAL = {
+  accent: "#6754e8",
+  accentDark: "#5946d8",
+  accentLight: "#d9d0ff",
+  canvas: "#fbfaf5",
+  coral: "#ec6d72",
+  disabled: "#9a9da5",
+  ink: "#15161a",
+  line: "#dfddd5",
+  muted: "#727680",
+  overlay: "rgba(21, 22, 26, 0.58)",
+  paper: "#fbfaf5",
+  soft: "#efede7",
+  secondary: "#3f424a",
+} as const;
+
 export type Mode = "dark" | "light";
 
 export type Palette = {

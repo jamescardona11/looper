@@ -52,10 +52,23 @@ export function LibraryScreen() {
   const meetings = useMeetingSessions();
   const [searching, setSearching] = useState(false);
   const [query, setQuery] = useState("");
+  const rangeDays = 7;
 
   const items = useMemo(
     () => buildLibraryItems(notes.notes, meetings.sessions, "all"),
     [meetings.sessions, notes.notes],
+  );
+  const rangeStart = useMemo(
+    () => Date.now() - rangeDays * 24 * 60 * 60 * 1_000,
+    [rangeDays],
+  );
+  const rangedItems = useMemo(
+    () => items.filter((item) => item.updatedAt >= rangeStart),
+    [items, rangeStart],
+  );
+  const wordCount = useMemo(
+    () => rangedItems.reduce((total, item) => total + wordCountFor(item.preview), 0),
+    [rangedItems],
   );
   const needle = searching ? query.trim() : "";
   const sections = useMemo<LibrarySection[]>(() => {
@@ -63,16 +76,20 @@ export function LibraryScreen() {
       const hits = searchLibraryItems(items, needle);
       return [{ key: "results", label: resultsLabel(hits.length, needle), data: hits }];
     }
-    return groupLibraryItemsByDay(items, Date.now()).map((group) => ({
-      key: group.key,
-      label: group.label,
-      data: group.items,
-    }));
-  }, [items, needle]);
+    return groupLibraryItemsByDay(rangedItems.slice(0, 2), Date.now()).map(
+      (group) => ({
+        key: group.key,
+        label: group.label,
+        data: group.items,
+      }),
+    );
+  }, [items, needle, rangedItems]);
 
   const openItem = useCallback(
     (item: LibraryItem) => {
-      router.push((item.kind === "meeting" ? `/meeting/${item.id}` : "/notes") as Href);
+      router.push(
+        (item.kind === "meeting" ? `/meeting/${item.id}` : `/notes?id=${item.id}`) as Href,
+      );
     },
     [router],
   );
@@ -117,17 +134,18 @@ export function LibraryScreen() {
     );
   } else {
     body = (
-      <SectionList
+        <SectionList
         contentContainerStyle={styles.list}
         keyboardDismissMode="on-drag"
         keyboardShouldPersistTaps="handled"
         keyExtractor={(item) => `${item.kind}:${item.id}`}
+        ListHeaderComponent={null}
         renderItem={renderItem}
-        renderSectionHeader={({ section }) => (
+        renderSectionHeader={needle ? ({ section }) => (
           <View style={styles.sectionHeader}>
             <SectionLabel>{section.label}</SectionLabel>
           </View>
-        )}
+        ) : undefined}
         sections={sections}
         stickySectionHeadersEnabled={false}
       />
@@ -141,7 +159,7 @@ export function LibraryScreen() {
       ) : (
         <BrowseHeader
           onOpenSearch={() => setSearching(true)}
-          onOpenStudio={() => router.push("/studio" as Href)}
+          wordCount={wordCount}
         />
       )}
       {body}
@@ -151,17 +169,27 @@ export function LibraryScreen() {
 
 function BrowseHeader({
   onOpenSearch,
-  onOpenStudio,
+  wordCount,
 }: {
   onOpenSearch: () => void;
-  onOpenStudio: () => void;
+  wordCount: number;
 }) {
   return (
-    <View style={styles.header}>
-      <Text style={styles.title}>Library</Text>
-      <View style={styles.headerActions}>
+    <View style={styles.headerBlock}>
+      <View style={styles.header}>
+        <View>
+          <Text style={styles.kicker}>DICTADO</Text>
+          <Text style={styles.title}>Hola, James</Text>
+        </View>
         <HeaderIcon icon="search" label="Buscar en Library" onPress={onOpenSearch} />
-        <HeaderIcon icon="studio" label="Abrir Studio" onPress={onOpenStudio} />
+      </View>
+      <View style={styles.signal}>
+        <Text style={styles.signalEyebrow}>ESTA SEMANA</Text>
+        <View style={styles.signalMetric}>
+          <Text style={styles.signalValue}>{formatNumber(wordCount)}</Text>
+          <Text style={styles.signalLabel}>palabras capturadas</Text>
+        </View>
+        <Text style={styles.signalSummary}>De tus apps, el teclado y las reuniones.</Text>
       </View>
     </View>
   );
@@ -251,7 +279,7 @@ function LibraryRow({
         <Icon color={colors.accent} name={kind.icon} size={16} />
       </View>
       <View style={styles.rowCopy}>
-        <Text numberOfLines={1} style={styles.rowTitle}>
+        <Text numberOfLines={2} style={styles.rowTitle}>
           {item.title}
         </Text>
         <Text numberOfLines={1} style={styles.rowMeta}>
@@ -301,10 +329,16 @@ function relativeTime(timestamp: number): string {
   return libraryDateFormatter.format(timestamp);
 }
 
-/** Alto de fila del artboard: cuadro de 34 con 10 de aire arriba y abajo. */
-const ROW_HEIGHT = 55;
-/** El cuerpo de la lista respira a 8 para que el fondo de pulsación desborde el texto. */
-const LIST_GUTTER = space.sm;
+function wordCountFor(value: string): number {
+  return value.trim() ? value.trim().split(/\s+/).length : 0;
+}
+
+function formatNumber(value: number): string {
+  return new Intl.NumberFormat("es").format(value);
+}
+
+const ROW_HEIGHT = 72;
+const LIST_GUTTER = space.lg;
 
 const styles = StyleSheet.create({
   cancel: { ...typography.body, color: colors.accent, fontWeight: "500" },
@@ -312,45 +346,64 @@ const styles = StyleSheet.create({
   header: {
     alignItems: "center",
     flexDirection: "row",
-    gap: space.md,
+    gap: space.sm,
     justifyContent: "space-between",
     paddingBottom: 10,
-    paddingLeft: space.xl,
-    paddingRight: 10,
-    paddingTop: space.xs,
+    paddingHorizontal: space.lg,
+    paddingTop: space.md,
   },
-  headerActions: { alignItems: "center", flexDirection: "row", gap: 2 },
+  headerBlock: { gap: 0, paddingBottom: space.sm },
   headerIcon: {
     alignItems: "center",
-    borderRadius: radius.md,
+    backgroundColor: colors.background,
+    borderRadius: 15,
     height: hitTarget,
     justifyContent: "center",
     width: hitTarget,
   },
-  headerIconPressed: { backgroundColor: colors.surfaceMuted },
-  list: { paddingBottom: space.xxl, paddingHorizontal: LIST_GUTTER },
+  headerIconPressed: { backgroundColor: colors.surfaceMuted, transform: [{ scale: 0.95 }] },
+  kicker: { ...typography.label, color: colors.accent, letterSpacing: 1.2 },
+  list: { paddingBottom: 108, paddingHorizontal: LIST_GUTTER },
   row: {
     alignItems: "center",
-    borderRadius: radius.lg,
+    borderBottomColor: colors.border,
+    borderBottomWidth: 1,
+    borderRadius: 0,
     flexDirection: "row",
-    gap: 13,
+    gap: 11,
     minHeight: ROW_HEIGHT,
-    paddingHorizontal: space.md,
-    paddingVertical: 10,
+    paddingHorizontal: 2,
+    paddingVertical: 11,
   },
   rowCopy: { flex: 1, gap: 3, minWidth: 0 },
   rowMeta: { ...typography.meta, color: colors.muted },
-  rowPressed: { backgroundColor: colors.surfaceMuted },
+  rowPressed: { backgroundColor: colors.background, transform: [{ scale: 0.99 }] },
   rowTile: {
     alignItems: "center",
-    backgroundColor: colors.accentSubtle,
-    borderRadius: radius.md,
-    height: 34,
+    backgroundColor: colors.background,
+    borderRadius: 14,
+    height: 40,
     justifyContent: "center",
-    width: 34,
+    width: 40,
   },
-  rowTitle: { ...typography.item, color: colors.text },
+  rowTitle: { ...typography.body, color: colors.text, fontSize: 14.5, fontWeight: "600", lineHeight: 19 },
   safeArea: { backgroundColor: colors.background, flex: 1 },
+  signal: {
+    backgroundColor: colors.accentLight,
+    borderRadius: radius.xl,
+    marginHorizontal: space.lg,
+    padding: 20,
+  },
+  signalEyebrow: { ...typography.label, color: colors.textSecondary, letterSpacing: 1 },
+  signalLabel: { ...typography.item, color: colors.text, fontSize: 15, lineHeight: 19 },
+  signalMetric: { alignItems: "baseline", flexDirection: "row", gap: space.sm, marginTop: space.sm },
+  signalSummary: { ...typography.meta, color: colors.textSecondary, marginTop: 6 },
+  signalValue: {
+    ...typography.display,
+    color: colors.text,
+    fontSize: 38,
+    lineHeight: 42,
+  },
   searchClear: {
     alignItems: "center",
     backgroundColor: colors.borderStrong,
@@ -404,5 +457,16 @@ const styles = StyleSheet.create({
   starterTitle: { ...typography.item, color: colors.text },
   starters: { gap: 9 },
   sunk: relief.pressed,
-  title: { ...typography.title, color: colors.text },
+  title: { ...typography.title, color: colors.text, marginTop: 2 },
+  weekBar: { backgroundColor: colors.accent, borderRadius: radius.pill, minHeight: 4, width: 8 },
+  weekBarTrack: {
+    alignItems: "center",
+    backgroundColor: "rgba(72, 50, 158, 0.10)",
+    borderRadius: radius.pill,
+    height: 38,
+    justifyContent: "flex-end",
+    overflow: "hidden",
+    width: 8,
+  },
+  weekBars: { alignItems: "flex-end", flexDirection: "row", gap: 7, height: 38, marginTop: 13 },
 });

@@ -350,7 +350,7 @@ private final class LooperLogoView: UIView {
 class KeyboardViewController: UIInputViewController {
   private enum Palette {
     static let background = UIColor(red: 0.000, green: 0.000, blue: 0.000, alpha: 1)
-    static let backgroundSecondary = UIColor(red: 0.039, green: 0.039, blue: 0.039, alpha: 1)
+    static let backgroundSecondary = UIColor(red: 0.110, green: 0.118, blue: 0.149, alpha: 1)
     static let surfaceMuted = UIColor(red: 0.082, green: 0.082, blue: 0.082, alpha: 1)
     static let surface = UIColor(red: 0.125, green: 0.125, blue: 0.125, alpha: 1)
     static let surfaceElevated = UIColor(red: 0.216, green: 0.216, blue: 0.216, alpha: 1)
@@ -358,8 +358,8 @@ class KeyboardViewController: UIInputViewController {
     static let text = UIColor(red: 1.000, green: 1.000, blue: 1.000, alpha: 1)
     static let textSecondary = UIColor(red: 0.745, green: 0.745, blue: 0.745, alpha: 1)
     static let muted = UIColor(red: 0.525, green: 0.525, blue: 0.525, alpha: 1)
-    static let accent = UIColor(red: 0.439, green: 0.475, blue: 0.984, alpha: 1)
-    static let onAccent = background
+    static let accent = UIColor(red: 0.404, green: 0.329, blue: 0.910, alpha: 1)
+    static let onAccent = text
   }
 
   private enum Layout {
@@ -375,22 +375,31 @@ class KeyboardViewController: UIInputViewController {
   private var isProcessing = false
 
   private var dictationRail: UIView!
+  private var dictationVisuals: UIView!
   private var pillButton: UIView!
   private var pillLabel: UILabel!
+  private var pillSubLabel: UILabel!
   private var controlIconView: UIImageView!
   private var controlActivityIndicator: UIActivityIndicatorView!
   private var waveformView: AudioWaveformView!
   private var progressView: IndeterminateProgressView!
   private var nextKeyboardButton: UIButton?
   private var logoButton: UIButton!
+  private var brandLabel: UILabel!
   private var languageChip: UIButton!
+  private var commandsButton: UIButton!
+  private var commandsGuide: UIView!
+  private var deleteButton: UIButton!
   private var transformSelectorButton: UIButton!
+  private var transformIcon: UIImageView!
+  private var transformChevron: UIImageView!
   private var transformSelectorWithoutLanguageConstraint: NSLayoutConstraint!
   private var transformSelectorWithLanguageConstraint: NSLayoutConstraint!
   private var transformationBackdrop: UIControl!
   private var transformationPanel: UIView!
   private var formatPickerButton: UIButton!
   private var stylePickerButton: UIButton!
+  private var transformationOptionsStack: UIStackView!
   private var transformSummaryLabel: UILabel!
 
   private var selectedToneId: String?
@@ -422,6 +431,7 @@ class KeyboardViewController: UIInputViewController {
   private var memberInfo: MemberInfo?
   private var memberRefreshTimer: Timer?
   private var fullAccessBanner: UIView!
+  private var isShowingCommands = false
 
   override func viewDidLoad() {
     super.viewDidLoad()
@@ -433,6 +443,7 @@ class KeyboardViewController: UIInputViewController {
 
   override func viewDidAppear(_ animated: Bool) {
     super.viewDidAppear(animated)
+    updateInputModeSwitchVisibility()
     syncFullAccessStatus()
     loadTones()
     loadWorkflows()
@@ -449,12 +460,14 @@ class KeyboardViewController: UIInputViewController {
   private func syncFullAccessStatus() {
     let defaults = UserDefaults(suiteName: DictationConstants.appGroupId)
     defaults?.set(hasFullAccess, forKey: "looper_keyboard_has_full_access")
+    defaults?.synchronize()
     updateFullAccessState()
   }
 
   private func updateFullAccessState() {
     dictationRail.isHidden = !hasFullAccess
     transformSelectorButton.isHidden = !hasFullAccess
+    commandsButton?.isHidden = !hasFullAccess
     fullAccessBanner.isHidden = hasFullAccess
   }
 
@@ -534,8 +547,8 @@ class KeyboardViewController: UIInputViewController {
 
     logoButton = configured(UIButton(type: .custom)) { button in
       button.translatesAutoresizingMaskIntoConstraints = false
-      button.backgroundColor = Palette.surface
-      button.layer.cornerRadius = 12
+      button.backgroundColor = Palette.accent
+      button.layer.cornerRadius = 6
       button.clipsToBounds = true
       button.accessibilityLabel = "Looper"
       button.accessibilityTraits = .button
@@ -556,13 +569,23 @@ class KeyboardViewController: UIInputViewController {
     ])
     logoButton.isAccessibilityElement = true
 
+    brandLabel = configured(UILabel()) { label in
+      label.translatesAutoresizingMaskIntoConstraints = false
+      label.text = "Looper"
+      label.textColor = Palette.text
+      label.font = .systemFont(ofSize: 13, weight: .bold)
+    }
+    view.addSubview(brandLabel)
+
     languageChip = configured(UIButton(type: .system)) { button in
       button.translatesAutoresizingMaskIntoConstraints = false
-      button.setTitle("EN", for: .normal)
+      button.setTitle("ES ▾", for: .normal)
       button.titleLabel?.font = .systemFont(ofSize: 13, weight: .semibold)
       button.setTitleColor(Palette.textSecondary, for: .normal)
-      button.backgroundColor = .clear
-      button.layer.cornerRadius = 12
+      button.backgroundColor = UIColor.white.withAlphaComponent(0.06)
+      button.layer.borderColor = UIColor.white.withAlphaComponent(0.14).cgColor
+      button.layer.borderWidth = 1
+      button.layer.cornerRadius = 9
       button.clipsToBounds = true
       button.isUserInteractionEnabled = true
       button.addTarget(self, action: #selector(onLanguageChipTap), for: .touchUpInside)
@@ -570,12 +593,22 @@ class KeyboardViewController: UIInputViewController {
     addButtonFeedback(languageChip)
     view.addSubview(languageChip)
 
+    commandsButton = configured(UIButton(type: .system)) { button in
+      button.translatesAutoresizingMaskIntoConstraints = false
+      button.setImage(UIImage(systemName: "questionmark.circle"), for: .normal)
+      button.tintColor = Palette.textSecondary
+      button.accessibilityLabel = "Ver comandos hablados"
+      button.addTarget(self, action: #selector(onCommandsTap), for: .touchUpInside)
+    }
+    addButtonFeedback(commandsButton)
+    view.addSubview(commandsButton)
+
     dictationRail = configured(UIView()) { rail in
       rail.translatesAutoresizingMaskIntoConstraints = false
       rail.backgroundColor = .clear
     }
 
-    let dictationVisuals = configured(UIView()) { visuals in
+    dictationVisuals = configured(UIView()) { visuals in
       visuals.translatesAutoresizingMaskIntoConstraints = false
     }
     dictationRail.addSubview(dictationVisuals)
@@ -603,6 +636,16 @@ class KeyboardViewController: UIInputViewController {
     }
     dictationVisuals.addSubview(pillLabel)
 
+    pillSubLabel = configured(UILabel()) { label in
+      label.translatesAutoresizingMaskIntoConstraints = false
+      label.textColor = Palette.textSecondary
+      label.font = .systemFont(ofSize: 11, weight: .regular)
+      label.textAlignment = .center
+      label.numberOfLines = 1
+      label.isAccessibilityElement = false
+    }
+    dictationVisuals.addSubview(pillSubLabel)
+
     pillButton = configured(UIView()) { button in
       button.translatesAutoresizingMaskIntoConstraints = false
       button.backgroundColor = Palette.accent
@@ -613,6 +656,10 @@ class KeyboardViewController: UIInputViewController {
       button.accessibilityTraits = .button
     }
     dictationRail.addSubview(pillButton)
+
+    commandsGuide = makeCommandsGuide()
+    commandsGuide.isHidden = true
+    dictationRail.addSubview(commandsGuide)
 
     controlIconView = configured(UIImageView()) { icon in
       icon.translatesAutoresizingMaskIntoConstraints = false
@@ -664,13 +711,22 @@ class KeyboardViewController: UIInputViewController {
       button.backgroundColor = Palette.accent
       button.setTitleColor(Palette.onAccent, for: .normal)
       button.contentEdgeInsets = UIEdgeInsets(top: 0, left: 16, bottom: 0, right: 16)
-      button.heightAnchor.constraint(equalToConstant: 32).isActive = true
-      button.layer.cornerRadius = 16
+      button.heightAnchor.constraint(equalToConstant: 44).isActive = true
+      button.layer.cornerRadius = 22
       button.addTarget(self, action: #selector(onOpenSettingsTap), for: .touchUpInside)
     }
     addButtonFeedback(settingsButton)
 
-    fullAccessBanner = configured(UIStackView(arrangedSubviews: [labelRow, settingsButton])) {
+    let accessDetail = configured(UILabel()) { label in
+      label.translatesAutoresizingMaskIntoConstraints = false
+      label.text = "iOS lo exige para conectar la extensión al dictado. Solo escucha después de pulsar el micrófono."
+      label.font = .systemFont(ofSize: 11, weight: .regular)
+      label.textColor = Palette.textSecondary
+      label.numberOfLines = 0
+      label.textAlignment = .center
+    }
+
+    fullAccessBanner = configured(UIStackView(arrangedSubviews: [labelRow, accessDetail, settingsButton])) {
       banner in
       banner.axis = .vertical
       banner.spacing = 8
@@ -686,12 +742,12 @@ class KeyboardViewController: UIInputViewController {
       dictationVisuals.leadingAnchor.constraint(equalTo: dictationRail.leadingAnchor, constant: 16),
       dictationVisuals.trailingAnchor.constraint(
         equalTo: dictationRail.trailingAnchor, constant: -16),
-      dictationVisuals.topAnchor.constraint(equalTo: pillButton.bottomAnchor, constant: 14),
-      dictationVisuals.heightAnchor.constraint(equalToConstant: 23),
+      dictationVisuals.topAnchor.constraint(equalTo: pillButton.bottomAnchor, constant: 12),
+      dictationVisuals.heightAnchor.constraint(equalToConstant: 42),
 
       waveformView.leadingAnchor.constraint(equalTo: dictationRail.leadingAnchor, constant: 8),
       waveformView.trailingAnchor.constraint(equalTo: dictationRail.trailingAnchor, constant: -8),
-      waveformView.bottomAnchor.constraint(equalTo: pillButton.topAnchor, constant: -16),
+      waveformView.bottomAnchor.constraint(equalTo: pillButton.topAnchor, constant: -14),
       waveformView.heightAnchor.constraint(equalToConstant: 26),
 
       progressView.leadingAnchor.constraint(equalTo: waveformView.leadingAnchor),
@@ -701,12 +757,20 @@ class KeyboardViewController: UIInputViewController {
 
       pillLabel.leadingAnchor.constraint(equalTo: dictationVisuals.leadingAnchor),
       pillLabel.trailingAnchor.constraint(equalTo: dictationVisuals.trailingAnchor),
-      pillLabel.centerYAnchor.constraint(equalTo: dictationVisuals.centerYAnchor),
+      pillLabel.topAnchor.constraint(equalTo: dictationVisuals.topAnchor),
+
+      pillSubLabel.leadingAnchor.constraint(equalTo: dictationVisuals.leadingAnchor),
+      pillSubLabel.trailingAnchor.constraint(equalTo: dictationVisuals.trailingAnchor),
+      pillSubLabel.topAnchor.constraint(equalTo: pillLabel.bottomAnchor, constant: 3),
 
       pillButton.centerXAnchor.constraint(equalTo: dictationRail.centerXAnchor),
-      pillButton.topAnchor.constraint(equalTo: dictationRail.topAnchor, constant: 48),
+      pillButton.topAnchor.constraint(equalTo: dictationRail.topAnchor, constant: 22),
       pillButton.widthAnchor.constraint(equalToConstant: 64),
       pillButton.heightAnchor.constraint(equalToConstant: 64),
+
+      commandsGuide.leadingAnchor.constraint(equalTo: dictationRail.leadingAnchor, constant: 8),
+      commandsGuide.trailingAnchor.constraint(equalTo: dictationRail.trailingAnchor, constant: -8),
+      commandsGuide.centerYAnchor.constraint(equalTo: dictationRail.centerYAnchor, constant: -3),
 
       controlIconView.centerXAnchor.constraint(equalTo: pillButton.centerXAnchor),
       controlIconView.centerYAnchor.constraint(equalTo: pillButton.centerYAnchor),
@@ -720,40 +784,39 @@ class KeyboardViewController: UIInputViewController {
 
     transformSelectorButton = UIButton(type: .system)
     transformSelectorButton.translatesAutoresizingMaskIntoConstraints = false
-    transformSelectorButton.backgroundColor = Palette.surfaceMuted
-    transformSelectorButton.layer.borderWidth = 1
-    transformSelectorButton.layer.borderColor = Palette.border.cgColor
-    transformSelectorButton.layer.cornerRadius = 12
+    transformSelectorButton.backgroundColor = UIColor(red: 0.757, green: 0.655, blue: 1, alpha: 0.16)
+    transformSelectorButton.layer.borderWidth = 0
+    transformSelectorButton.layer.cornerRadius = 9
     transformSelectorButton.addTarget(
       self, action: #selector(onTransformSelectorTap), for: .touchUpInside)
     transformSelectorButton.accessibilityLabel = "Transformación"
     addButtonFeedback(transformSelectorButton)
     view.addSubview(transformSelectorButton)
 
-    let transformIcon = UIImageView(image: UIImage(systemName: "slider.horizontal.3"))
+    transformIcon = UIImageView(image: UIImage(systemName: "sparkles"))
     transformIcon.translatesAutoresizingMaskIntoConstraints = false
-    transformIcon.tintColor = Palette.accent
+    transformIcon.tintColor = UIColor(red: 0.82, green: 0.74, blue: 1, alpha: 1)
     transformIcon.contentMode = .scaleAspectFit
     transformIcon.isUserInteractionEnabled = false
     transformSelectorButton.addSubview(transformIcon)
 
     let transformLabel = UILabel()
     transformLabel.translatesAutoresizingMaskIntoConstraints = false
-    transformLabel.text = "Transformación"
-    transformLabel.textColor = Palette.muted
-    transformLabel.font = .systemFont(ofSize: 9.5, weight: .semibold)
+    transformLabel.text = ""
+    transformLabel.textColor = .clear
+    transformLabel.font = .systemFont(ofSize: 1, weight: .regular)
     transformLabel.isUserInteractionEnabled = false
     transformSelectorButton.addSubview(transformLabel)
 
     transformSummaryLabel = UILabel()
     transformSummaryLabel.translatesAutoresizingMaskIntoConstraints = false
-    transformSummaryLabel.textColor = Palette.textSecondary
-    transformSummaryLabel.font = .systemFont(ofSize: 12, weight: .semibold)
+    transformSummaryLabel.textColor = UIColor(red: 0.82, green: 0.74, blue: 1.0, alpha: 1)
+    transformSummaryLabel.font = .systemFont(ofSize: 12, weight: .bold)
     transformSummaryLabel.lineBreakMode = .byTruncatingTail
     transformSummaryLabel.isUserInteractionEnabled = false
     transformSelectorButton.addSubview(transformSummaryLabel)
 
-    let transformChevron = UIImageView(image: UIImage(systemName: "chevron.right"))
+    transformChevron = UIImageView(image: UIImage(systemName: "chevron.up.chevron.down"))
     transformChevron.translatesAutoresizingMaskIntoConstraints = false
     transformChevron.tintColor = Palette.muted
     transformChevron.contentMode = .scaleAspectFit
@@ -764,11 +827,25 @@ class KeyboardViewController: UIInputViewController {
     nkb.setImage(
       UIImage(systemName: "globe", withConfiguration: UIImage.SymbolConfiguration(pointSize: 18)),
       for: .normal)
-    nkb.tintColor = Palette.muted
+    nkb.backgroundColor = UIColor.white.withAlphaComponent(0.09)
+    nkb.layer.cornerRadius = 9
+    nkb.tintColor = Palette.textSecondary
     nkb.translatesAutoresizingMaskIntoConstraints = false
     nkb.addTarget(self, action: #selector(handleInputModeList(from:with:)), for: .allTouchEvents)
     view.addSubview(nkb)
     nextKeyboardButton = nkb
+
+    deleteButton = UIButton(type: .system)
+    deleteButton.translatesAutoresizingMaskIntoConstraints = false
+    deleteButton.setImage(
+      UIImage(systemName: "delete.left", withConfiguration: UIImage.SymbolConfiguration(pointSize: 16)),
+      for: .normal)
+    deleteButton.backgroundColor = UIColor.white.withAlphaComponent(0.09)
+    deleteButton.layer.cornerRadius = 9
+    deleteButton.tintColor = Palette.textSecondary
+    deleteButton.accessibilityLabel = "Borrar"
+    deleteButton.addTarget(self, action: #selector(onDeleteTap), for: .touchUpInside)
+    view.addSubview(deleteButton)
 
     transformSelectorWithoutLanguageConstraint = transformSelectorButton.leadingAnchor.constraint(
       equalTo: logoButton.trailingAnchor,
@@ -780,29 +857,38 @@ class KeyboardViewController: UIInputViewController {
     )
 
     NSLayoutConstraint.activate([
-      logoButton.topAnchor.constraint(equalTo: view.topAnchor, constant: 8),
-      logoButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 12),
-      logoButton.heightAnchor.constraint(equalToConstant: 44),
-      logoButton.widthAnchor.constraint(equalToConstant: 44),
+      logoButton.topAnchor.constraint(equalTo: view.topAnchor, constant: 12),
+      logoButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
+      logoButton.heightAnchor.constraint(equalToConstant: 15),
+      logoButton.widthAnchor.constraint(equalToConstant: 15),
 
-      languageChip.topAnchor.constraint(equalTo: view.topAnchor, constant: 8),
-      languageChip.leadingAnchor.constraint(equalTo: logoButton.trailingAnchor, constant: 8),
-      languageChip.heightAnchor.constraint(equalToConstant: 44),
-      languageChip.widthAnchor.constraint(greaterThanOrEqualToConstant: 44),
+      brandLabel.leadingAnchor.constraint(equalTo: logoButton.trailingAnchor, constant: 6),
+      brandLabel.centerYAnchor.constraint(equalTo: logoButton.centerYAnchor),
 
-      transformSelectorButton.topAnchor.constraint(equalTo: view.topAnchor, constant: 8),
-      transformSelectorWithoutLanguageConstraint,
-      transformSelectorButton.trailingAnchor.constraint(
-        equalTo: view.trailingAnchor, constant: -12),
-      transformSelectorButton.heightAnchor.constraint(equalToConstant: 44),
+      languageChip.topAnchor.constraint(equalTo: view.topAnchor, constant: 7),
+      languageChip.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
+      languageChip.heightAnchor.constraint(equalToConstant: 30),
+      languageChip.widthAnchor.constraint(equalToConstant: 52),
 
-      dictationRail.topAnchor.constraint(equalTo: transformSelectorButton.bottomAnchor, constant: 14),
+      commandsButton.trailingAnchor.constraint(equalTo: languageChip.leadingAnchor, constant: -8),
+      commandsButton.centerYAnchor.constraint(equalTo: languageChip.centerYAnchor),
+      commandsButton.widthAnchor.constraint(equalToConstant: 30),
+      commandsButton.heightAnchor.constraint(equalToConstant: 30),
+
+      transformSelectorButton.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -12),
+      transformSelectorButton.leadingAnchor.constraint(equalTo: nkb.trailingAnchor, constant: 8),
+      transformSelectorButton.trailingAnchor.constraint(equalTo: deleteButton.leadingAnchor, constant: -8),
+      transformSelectorButton.heightAnchor.constraint(equalToConstant: 38),
+
+      dictationRail.topAnchor.constraint(equalTo: logoButton.bottomAnchor, constant: 9),
+      dictationRail.bottomAnchor.constraint(equalTo: transformSelectorButton.topAnchor, constant: -4),
       dictationRail.centerXAnchor.constraint(equalTo: view.centerXAnchor),
       dictationRail.widthAnchor.constraint(equalTo: view.widthAnchor, constant: -32),
-      dictationRail.heightAnchor.constraint(equalToConstant: 160),
 
       fullAccessBanner.centerXAnchor.constraint(equalTo: dictationRail.centerXAnchor),
       fullAccessBanner.centerYAnchor.constraint(equalTo: dictationRail.centerYAnchor),
+      fullAccessBanner.leadingAnchor.constraint(equalTo: dictationRail.leadingAnchor, constant: 12),
+      fullAccessBanner.trailingAnchor.constraint(equalTo: dictationRail.trailingAnchor, constant: -12),
 
       transformIcon.leadingAnchor.constraint(
         equalTo: transformSelectorButton.leadingAnchor, constant: 10),
@@ -823,10 +909,15 @@ class KeyboardViewController: UIInputViewController {
       transformChevron.widthAnchor.constraint(equalToConstant: 16),
       transformChevron.heightAnchor.constraint(equalToConstant: 16),
 
-      nkb.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 8),
-      nkb.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -4),
+      nkb.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 12),
+      nkb.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -12),
       nkb.widthAnchor.constraint(equalToConstant: 44),
-      nkb.heightAnchor.constraint(equalToConstant: 44),
+      nkb.heightAnchor.constraint(equalToConstant: 38),
+
+      deleteButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -12),
+      deleteButton.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -12),
+      deleteButton.widthAnchor.constraint(equalToConstant: 44),
+      deleteButton.heightAnchor.constraint(equalToConstant: 38),
     ])
 
     buildTransformationPanel()
@@ -835,6 +926,87 @@ class KeyboardViewController: UIInputViewController {
     updateColorsForAppearance()
     updateTransformationSummary()
     applyPillVisual(.idle, animated: false)
+  }
+
+  private func makeCommandsGuide() -> UIView {
+    let guide = UIView()
+    guide.translatesAutoresizingMaskIntoConstraints = false
+
+    let title = UILabel()
+    title.text = "Comandos hablados"
+    title.textColor = Palette.text
+    title.font = .systemFont(ofSize: 13, weight: .bold)
+
+    let close = UIButton(type: .system)
+    close.setTitle("Volver a dictar", for: .normal)
+    close.setTitleColor(Palette.accent, for: .normal)
+    close.titleLabel?.font = .systemFont(ofSize: 12, weight: .bold)
+    close.addTarget(self, action: #selector(onCommandsTap), for: .touchUpInside)
+
+    let header = UIStackView(arrangedSubviews: [title, UIView(), close])
+    header.axis = .horizontal
+    header.alignment = .center
+
+    let rows = [
+      ("«coma» · «punto» · «nueva línea»", "puntuación"),
+      ("«mejor dicho» · «borra eso»", "corrige"),
+      ("«punto de lista» · «siguiente elemento»", "listas"),
+      ("«modo literal» · «fin modo literal»", "sin formato"),
+    ].map { command, detail -> UIStackView in
+      let commandLabel = UILabel()
+      commandLabel.text = command
+      commandLabel.textColor = Palette.textSecondary
+      commandLabel.font = .systemFont(ofSize: 11, weight: .medium)
+      commandLabel.lineBreakMode = .byTruncatingTail
+
+      let detailLabel = UILabel()
+      detailLabel.text = detail
+      detailLabel.textColor = Palette.muted
+      detailLabel.font = .systemFont(ofSize: 10, weight: .regular)
+      detailLabel.textAlignment = .right
+      detailLabel.setContentHuggingPriority(.required, for: .horizontal)
+
+      let row = UIStackView(arrangedSubviews: [commandLabel, detailLabel])
+      row.axis = .horizontal
+      row.alignment = .center
+      row.spacing = 8
+      return row
+    }
+
+    let stack = UIStackView(arrangedSubviews: [header] + rows)
+    stack.translatesAutoresizingMaskIntoConstraints = false
+    stack.axis = .vertical
+    stack.spacing = 5
+    guide.addSubview(stack)
+    NSLayoutConstraint.activate([
+      stack.leadingAnchor.constraint(equalTo: guide.leadingAnchor),
+      stack.trailingAnchor.constraint(equalTo: guide.trailingAnchor),
+      stack.topAnchor.constraint(equalTo: guide.topAnchor),
+      stack.bottomAnchor.constraint(equalTo: guide.bottomAnchor),
+    ])
+    return guide
+  }
+
+  @objc private func onCommandsTap() {
+    guard !isProcessing, hasFullAccess else { return }
+    isShowingCommands.toggle()
+    commandsGuide.isHidden = !isShowingCommands
+    pillButton.isHidden = isShowingCommands
+    dictationVisuals.isHidden = isShowingCommands
+    waveformView.isHidden = isShowingCommands
+    transformIcon.isHidden = isShowingCommands
+    transformChevron.isHidden = isShowingCommands
+    transformSummaryLabel.text = isShowingCommands ? "Volver a dictar" : ""
+    if !isShowingCommands {
+      updateTransformationSummary()
+    }
+    commandsButton.accessibilityLabel = isShowingCommands
+      ? "Ocultar comandos hablados"
+      : "Ver comandos hablados"
+    UIAccessibility.post(
+      notification: .layoutChanged,
+      argument: isShowingCommands ? commandsGuide : pillButton
+    )
   }
 
   private func buildTransformationPanel() {
@@ -865,8 +1037,9 @@ class KeyboardViewController: UIInputViewController {
 
     let closeButton = UIButton(type: .system)
     closeButton.translatesAutoresizingMaskIntoConstraints = false
-    closeButton.setImage(UIImage(systemName: "xmark"), for: .normal)
-    closeButton.tintColor = Palette.textSecondary
+    closeButton.setTitle("Hecho", for: .normal)
+    closeButton.setTitleColor(Palette.accent, for: .normal)
+    closeButton.titleLabel?.font = .systemFont(ofSize: 14, weight: .bold)
     closeButton.accessibilityLabel = "Cerrar el selector de transformación"
     closeButton.addTarget(self, action: #selector(onDoneTransformationTap), for: .touchUpInside)
     transformationPanel.addSubview(closeButton)
@@ -875,20 +1048,18 @@ class KeyboardViewController: UIInputViewController {
     formatPickerButton = formatRow.button
     transformationPanel.addSubview(formatRow.container)
 
-    let styleRow = makeTransformationRow(label: "Estilo")
-    stylePickerButton = styleRow.button
-    transformationPanel.addSubview(styleRow.container)
+    let styleLabel = UILabel()
+    styleLabel.translatesAutoresizingMaskIntoConstraints = false
+    styleLabel.text = "Estilo"
+    styleLabel.textColor = Palette.textSecondary
+    styleLabel.font = .systemFont(ofSize: 12, weight: .semibold)
+    transformationPanel.addSubview(styleLabel)
 
-    let doneButton = UIButton(type: .system)
-    doneButton.translatesAutoresizingMaskIntoConstraints = false
-    doneButton.setTitle("Hecho", for: .normal)
-    doneButton.setTitleColor(Palette.onAccent, for: .normal)
-    doneButton.titleLabel?.font = .systemFont(ofSize: 14, weight: .bold)
-    doneButton.backgroundColor = Palette.accent
-    doneButton.layer.cornerRadius = 12
-    doneButton.addTarget(self, action: #selector(onDoneTransformationTap), for: .touchUpInside)
-    addButtonFeedback(doneButton)
-    transformationPanel.addSubview(doneButton)
+    transformationOptionsStack = UIStackView()
+    transformationOptionsStack.translatesAutoresizingMaskIntoConstraints = false
+    transformationOptionsStack.axis = .vertical
+    transformationOptionsStack.spacing = 4
+    transformationPanel.addSubview(transformationOptionsStack)
 
     NSLayoutConstraint.activate([
       transformationBackdrop.leadingAnchor.constraint(equalTo: view.leadingAnchor),
@@ -908,8 +1079,8 @@ class KeyboardViewController: UIInputViewController {
       title.centerYAnchor.constraint(equalTo: closeButton.centerYAnchor),
       closeButton.topAnchor.constraint(equalTo: transformationPanel.topAnchor, constant: 4),
       closeButton.trailingAnchor.constraint(
-        equalTo: transformationPanel.trailingAnchor, constant: -4),
-      closeButton.widthAnchor.constraint(equalToConstant: 44),
+        equalTo: transformationPanel.trailingAnchor, constant: -12),
+      closeButton.widthAnchor.constraint(equalToConstant: 58),
       closeButton.heightAnchor.constraint(equalToConstant: 44),
 
       formatRow.container.topAnchor.constraint(equalTo: closeButton.bottomAnchor, constant: 2),
@@ -917,18 +1088,15 @@ class KeyboardViewController: UIInputViewController {
         equalTo: transformationPanel.leadingAnchor, constant: 12),
       formatRow.container.trailingAnchor.constraint(
         equalTo: transformationPanel.trailingAnchor, constant: -12),
-      formatRow.container.heightAnchor.constraint(equalToConstant: 48),
+      formatRow.container.heightAnchor.constraint(equalToConstant: 36),
 
-      styleRow.container.topAnchor.constraint(
-        equalTo: formatRow.container.bottomAnchor, constant: 8),
-      styleRow.container.leadingAnchor.constraint(equalTo: formatRow.container.leadingAnchor),
-      styleRow.container.trailingAnchor.constraint(equalTo: formatRow.container.trailingAnchor),
-      styleRow.container.heightAnchor.constraint(equalToConstant: 48),
+      styleLabel.topAnchor.constraint(equalTo: formatRow.container.bottomAnchor, constant: 8),
+      styleLabel.leadingAnchor.constraint(equalTo: formatRow.container.leadingAnchor),
 
-      doneButton.topAnchor.constraint(equalTo: styleRow.container.bottomAnchor, constant: 8),
-      doneButton.leadingAnchor.constraint(equalTo: styleRow.container.leadingAnchor),
-      doneButton.trailingAnchor.constraint(equalTo: styleRow.container.trailingAnchor),
-      doneButton.heightAnchor.constraint(equalToConstant: 44),
+      transformationOptionsStack.topAnchor.constraint(equalTo: styleLabel.bottomAnchor, constant: 4),
+      transformationOptionsStack.leadingAnchor.constraint(equalTo: formatRow.container.leadingAnchor),
+      transformationOptionsStack.trailingAnchor.constraint(equalTo: formatRow.container.trailingAnchor),
+      transformationOptionsStack.heightAnchor.constraint(equalToConstant: 92),
     ])
   }
 
@@ -966,7 +1134,12 @@ class KeyboardViewController: UIInputViewController {
   }
 
   @objc private func onTransformSelectorTap() {
+    if isShowingCommands {
+      onCommandsTap()
+      return
+    }
     refreshTransformationMenus()
+    updateTransformationOptions()
     transformationBackdrop.alpha = 0
     transformationBackdrop.isHidden = false
     UIView.animate(withDuration: 0.16) {
@@ -1000,7 +1173,6 @@ class KeyboardViewController: UIInputViewController {
 
   private func updateTransformationSummary() {
     guard transformSummaryLabel != nil else { return }
-    let formatName = keyboardFormats.first { $0.id == selectedFormatId }?.name ?? "Sin formato"
     let styleName: String
     if let workflow = manualWorkflows.first(where: { $0.id == selectedWorkflowId }) {
       styleName = "Smart · \(workflow.name)"
@@ -1009,14 +1181,14 @@ class KeyboardViewController: UIInputViewController {
     } else {
       styleName = "Sin estilo"
     }
-    let summary = "\(formatName) · \(styleName)"
+    let summary = "✦ \(styleName)"
     transformSummaryLabel.text = summary
     transformSelectorButton.accessibilityValue = summary
     refreshTransformationMenus()
   }
 
   private func refreshTransformationMenus() {
-    guard formatPickerButton != nil, stylePickerButton != nil else { return }
+    guard formatPickerButton != nil else { return }
     let noFormat = UIAction(title: "Sin formato", state: selectedFormatId == nil ? .on : .off) {
       [weak self] _ in
       self?.selectFormat(nil)
@@ -1032,6 +1204,7 @@ class KeyboardViewController: UIInputViewController {
     formatPickerButton.setTitle(
       keyboardFormats.first { $0.id == selectedFormatId }?.name ?? "Sin formato", for: .normal)
 
+    guard stylePickerButton != nil else { return }
     let noStyle = UIAction(
       title: "Sin estilo", state: selectedToneId == nil && selectedWorkflowId == nil ? .on : .off
     ) { [weak self] _ in
@@ -1063,6 +1236,72 @@ class KeyboardViewController: UIInputViewController {
     }
   }
 
+  private func updateTransformationOptions() {
+    guard transformationOptionsStack != nil else { return }
+    transformationOptionsStack.arrangedSubviews.forEach { option in
+      transformationOptionsStack.removeArrangedSubview(option)
+      option.removeFromSuperview()
+    }
+
+    let noStyleSelected = selectedToneId == nil && selectedWorkflowId == nil
+    addTransformationOption(
+      title: "Sin estilo",
+      detail: "tal cual",
+      selected: noStyleSelected
+    ) { [weak self] in
+      self?.selectStyle(toneId: nil, workflowId: nil)
+    }
+
+    for workflow in manualWorkflows.prefix(2) {
+      addTransformationOption(
+        title: workflow.name,
+        detail: "Smart",
+        selected: workflow.id == selectedWorkflowId
+      ) { [weak self] in
+        self?.selectStyle(toneId: nil, workflowId: workflow.id)
+      }
+    }
+
+    for toneId in activeToneIds.prefix(2) {
+      guard let tone = toneById[toneId] else { continue }
+      addTransformationOption(
+        title: tone.name,
+        detail: toneId == selectedToneId && selectedWorkflowId == nil ? "activo" : "",
+      selected: toneId == selectedToneId && selectedWorkflowId == nil
+      ) { [weak self] in
+        self?.selectStyle(toneId: toneId, workflowId: nil)
+      }
+    }
+  }
+
+  private func addTransformationOption(
+    title: String,
+    detail: String,
+    selected: Bool,
+    onSelect: @escaping () -> Void
+  ) {
+    let button = UIButton(type: .system)
+    button.translatesAutoresizingMaskIntoConstraints = false
+    button.contentHorizontalAlignment = .left
+    button.contentEdgeInsets = UIEdgeInsets(top: 0, left: 10, bottom: 0, right: 10)
+    button.backgroundColor = selected ? Palette.accent.withAlphaComponent(0.16) : Palette.surface
+    button.layer.cornerRadius = 8
+    button.setTitle(title, for: .normal)
+    button.setTitleColor(selected ? Palette.accent : Palette.text, for: .normal)
+    button.titleLabel?.font = .systemFont(ofSize: 13, weight: selected ? .bold : .semibold)
+    button.accessibilityLabel = detail.isEmpty ? title : "\(title), \(detail)"
+    button.accessibilityValue = selected ? "Seleccionado" : nil
+    button.addAction(
+      UIAction { [weak self] _ in
+        onSelect()
+        self?.updateTransformationOptions()
+      },
+      for: .touchUpInside
+    )
+    transformationOptionsStack.addArrangedSubview(button)
+    button.heightAnchor.constraint(equalToConstant: 28).isActive = true
+  }
+
   private func selectFormat(_ formatId: String?) {
     selectedFormatId = formatId
     UserDefaults(suiteName: DictationConstants.appGroupId)?.set(
@@ -1081,6 +1320,23 @@ class KeyboardViewController: UIInputViewController {
   }
 
   private func applyPillVisual(_ visual: PillVisual, animated: Bool) {
+    let shouldCloseCommands: Bool
+    if case .idle = visual {
+      shouldCloseCommands = false
+    } else {
+      shouldCloseCommands = true
+    }
+    if isShowingCommands, shouldCloseCommands {
+      isShowingCommands = false
+      commandsGuide.isHidden = true
+      pillButton.isHidden = false
+      dictationVisuals.isHidden = false
+      waveformView.isHidden = false
+      transformIcon.isHidden = false
+      transformChevron.isHidden = false
+      updateTransformationSummary()
+      commandsButton.accessibilityLabel = "Ver comandos hablados"
+    }
     let changes: () -> Void
     switch visual {
     case .idle:
@@ -1089,7 +1345,8 @@ class KeyboardViewController: UIInputViewController {
         self.waveformView.isActive = false
         self.progressView.alpha = 0
         self.pillButton.backgroundColor = Palette.accent
-        self.pillLabel.text = "Listo para dictar"
+        self.pillLabel.text = "Toca para hablar"
+        self.pillSubLabel.text = "Transcripción con conexión"
         self.pillLabel.alpha = 1
         self.controlIconView.image = UIImage(systemName: "mic.fill")
         self.controlIconView.alpha = 1
@@ -1110,6 +1367,7 @@ class KeyboardViewController: UIInputViewController {
         self.progressView.alpha = 0
         self.pillButton.backgroundColor = Palette.accent
         self.pillLabel.text = "Escuchando"
+        self.pillSubLabel.text = "Di «coma» o «nueva línea» mientras hablas"
         self.pillLabel.alpha = 1
         self.controlIconView.image = UIImage(systemName: "stop.fill")
         self.controlIconView.alpha = 1
@@ -1129,7 +1387,8 @@ class KeyboardViewController: UIInputViewController {
         self.waveformView.isActive = false
         self.progressView.alpha = 1
         self.pillButton.backgroundColor = Palette.surfaceElevated
-        self.pillLabel.text = "Preparando tu texto"
+        self.pillLabel.text = "Escribiendo"
+        self.pillSubLabel.text = "Procesando el dictado"
         self.pillLabel.alpha = 1
         self.controlIconView.alpha = 0
         self.controlActivityIndicator.startAnimating()
@@ -1149,6 +1408,7 @@ class KeyboardViewController: UIInputViewController {
         self.progressView.alpha = 0
         self.pillButton.backgroundColor = UIColor.systemRed
         self.pillLabel.text = message
+        self.pillSubLabel.text = "Toca para intentarlo otra vez"
         self.pillLabel.alpha = 1
         self.controlIconView.image = UIImage(systemName: "exclamationmark")
         self.controlIconView.alpha = 1
@@ -1424,15 +1684,16 @@ class KeyboardViewController: UIInputViewController {
     let defaults = UserDefaults(suiteName: DictationConstants.appGroupId)
     let language = defaults?.string(forKey: "looper_dictation_language") ?? "en"
     dictationLanguages = defaults?.stringArray(forKey: "looper_dictation_languages") ?? ["en"]
-    languageChip.setTitle(KeyboardLanguagePolicy.shortCode(for: language), for: .normal)
-    let showsLanguageSelector = dictationLanguages.count > 1
-    languageChip.isHidden = !showsLanguageSelector
-    transformSelectorWithoutLanguageConstraint.isActive = !showsLanguageSelector
-    transformSelectorWithLanguageConstraint.isActive = showsLanguageSelector
+    languageChip.setTitle("\(KeyboardLanguagePolicy.shortCode(for: language)) ▾", for: .normal)
+    languageChip.isHidden = false
   }
 
   @objc private func onLogoButtonTap() {
     openURL("looper://open")
+  }
+
+  @objc private func onDeleteTap() {
+    textDocumentProxy.deleteBackward()
   }
 
   @objc private func onLanguageChipTap() {
@@ -1443,7 +1704,7 @@ class KeyboardViewController: UIInputViewController {
     }
 
     defaults?.set(next, forKey: "looper_dictation_language")
-    languageChip.setTitle(KeyboardLanguagePolicy.shortCode(for: next), for: .normal)
+    languageChip.setTitle("\(KeyboardLanguagePolicy.shortCode(for: next)) ▾", for: .normal)
 
     CounterRepo().incrementApp()
   }
@@ -1680,7 +1941,7 @@ class KeyboardViewController: UIInputViewController {
           guard !rawTranscript.isEmpty else {
             await MainActor.run {
               self.isProcessing = false
-              self.applyPillVisual(.idle, animated: true)
+              self.applyPillVisual(.error("No se detectó voz — inténtalo de nuevo"), animated: true)
             }
             return
           }
@@ -1753,7 +2014,7 @@ class KeyboardViewController: UIInputViewController {
           guard !finalText.isEmpty else {
             await MainActor.run {
               self.isProcessing = false
-              self.applyPillVisual(.idle, animated: true)
+              self.applyPillVisual(.error("No se detectó texto — inténtalo de nuevo"), animated: true)
             }
             return
           }
@@ -1937,8 +2198,13 @@ class KeyboardViewController: UIInputViewController {
 
   override func viewWillLayoutSubviews() {
     super.viewWillLayoutSubviews()
-    let showGlobe = needsInputModeSwitchKey
-    nextKeyboardButton?.isHidden = !showGlobe
+    updateInputModeSwitchVisibility()
+  }
+
+  private func updateInputModeSwitchVisibility() {
+    // El dock de V4 reserva siempre este control para cambiar de teclado.
+    // Evitamos consultar needsInputModeSwitchKey antes de que UIKit conecte el host.
+    nextKeyboardButton?.isHidden = false
   }
 
   override func viewWillDisappear(_ animated: Bool) {

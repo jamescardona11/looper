@@ -1,19 +1,26 @@
 import {
   useDictationDictionary,
   useDictationReplacements,
-  useDictationSettings,
   useDictationSnippets,
 } from "@looper/data";
-import { type Href, useRouter } from "expo-router";
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
+import { type Href, useFocusEffect, useRouter } from "expo-router";
+import { type ReactNode, useCallback, useEffect, useState } from "react";
+import {
+  KeyboardAvoidingView,
+  Modal,
+  Platform,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Button } from "@/shared/components/button";
-import { Chip } from "@/shared/components/chip";
 import { Icon } from "@/shared/components/icon";
 import { EmptyState, ErrorState, SkeletonRow } from "@/shared/components/screen-states";
 import { SectionLabel } from "@/shared/components/section-label";
-import { normalizeStudioSettings, type SmartMode } from "@/shared/studio/studio-settings";
 import { colors } from "@/shared/theme/colors";
 import { hitTarget, radius, space } from "@/shared/theme/layout";
 import { typography } from "@/shared/theme/typography";
@@ -22,36 +29,16 @@ import {
   isNativeKeyboardEnabled,
   openNativeKeyboardSettings,
 } from "./native-keyboard";
-import { syncKeyboardContent } from "./sync-keyboard-content";
-
-/** Los cinco formatos reales del ajuste (`SmartMode["format"]`), en español. */
-const FORMATS: { label: string; value: SmartMode["format"] }[] = [
-  { label: "Ninguno", value: "none" },
-  { label: "Correo", value: "email" },
-  { label: "Mensaje", value: "message" },
-  { label: "Bullets", value: "bullets" },
-  { label: "Tareas", value: "todo" },
-];
 
 /**
- * iOS no expone la lista de teclados activos (`isEnabled` resuelve siempre
- * `false`), así que el único paso que la app puede dar por hecho es el primero:
- * si el puente nativo responde, este build trae la extensión.
+ * iOS no expone la lista de teclados activos. La extensión comparte si tuvo
+ * acceso completo la última vez que se abrió, que es evidencia útil pero no
+ * sustituye una comprobación actual de Ajustes.
  */
-const SETUP_STEPS: { done: boolean; text: string }[] = [
-  { done: true, text: "Añade Looper en Ajustes › Teclados." },
-  { done: false, text: "Actívalo en la lista de teclados." },
-  { done: false, text: "Concede acceso completo: sin él no puede dictar." },
-];
-
 const FAILURE_COPY: Record<FailureKind, { body: string; title: string }> = {
   settings: {
     body: "Ábrelos a mano en Ajustes › General › Teclado › Teclados.",
     title: "No se pudieron abrir los ajustes",
-  },
-  sync: {
-    body: "Tus términos, reemplazos y snippets siguen guardados en la cuenta. El teclado se queda con la última copia que recibió.",
-    title: "No se pudo sincronizar",
   },
 };
 
@@ -60,15 +47,12 @@ export function KeyboardScreen() {
   const dictionary = useDictationDictionary();
   const replacements = useDictationReplacements();
   const snippets = useDictationSnippets();
-  const settings = useDictationSettings();
-  const studio = useMemo(() => normalizeStudioSettings(settings.doc?.data), [settings.doc?.data]);
 
   const [enabled, setEnabled] = useState<boolean | null>(null);
-  const [syncing, setSyncing] = useState(false);
-  const [syncedAt, setSyncedAt] = useState<number | null>(null);
   const [failure, setFailure] = useState<Failure | null>(null);
-  const [format, setFormat] = useState<SmartMode["format"]>("none");
   const [openList, setOpenList] = useState<ListKind | null>(null);
+  const [showKnowledge, setShowKnowledge] = useState(false);
+  const [showAdvanced, setShowAdvanced] = useState(false);
 
   const hasBridge = isNativeKeyboardAvailable();
 
@@ -80,29 +64,7 @@ export function KeyboardScreen() {
   }, []);
 
   useEffect(refreshStatus, [refreshStatus]);
-
-  const sync = async () => {
-    setSyncing(true);
-    setFailure(null);
-    try {
-      const didSync = await syncKeyboardContent({
-        entries: dictionary.entries,
-        replacements: replacements.rules,
-        snippets: snippets.snippets,
-        studio,
-      });
-      if (!didSync) {
-        setFailure({ detail: "Falta EXPO_PUBLIC_CONVEX_URL en este build.", kind: "sync" });
-        return;
-      }
-      setSyncedAt(Date.now());
-      setEnabled(await isNativeKeyboardEnabled());
-    } catch (cause) {
-      setFailure({ detail: messageOf(cause), kind: "sync" });
-    } finally {
-      setSyncing(false);
-    }
-  };
+  useFocusEffect(refreshStatus);
 
   const openSettings = () => {
     void openNativeKeyboardSettings()
@@ -113,8 +75,6 @@ export function KeyboardScreen() {
   const lists = buildLists({ dictionary, replacements, snippets });
   const openSpec = lists.find((list) => list.kind === openList) ?? null;
   const listsLoading = dictionary.isLoading || replacements.isLoading || snippets.isLoading;
-  const summary = syncSummary(syncedAt, dictionary.entries.length);
-
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.header}>
@@ -126,22 +86,12 @@ export function KeyboardScreen() {
         >
           <Icon color={colors.textSecondary} name="chevronLeft" size={22} strokeWidth={2.2} />
         </Pressable>
-        <Pressable
-          accessibilityLabel="Sincronizar el teclado"
-          accessibilityRole="button"
-          accessibilityState={{ disabled: syncing }}
-          disabled={syncing}
-          onPress={() => void sync()}
-          style={({ pressed }) => [styles.syncAction, pressed && styles.pressed]}
-        >
-          <Icon color={colors.accent} name="refresh" size={14} strokeWidth={2.2} />
-          <Text style={styles.syncActionText}>{syncing ? "Sincronizando…" : "Sincronizar"}</Text>
-        </Pressable>
+        <View style={styles.headerSpacer} />
       </View>
 
       <View style={styles.titleBlock}>
-        <Text style={styles.title}>Teclado</Text>
-        <Text style={styles.support}>Dicta con tus estilos dentro de cualquier app.</Text>
+        <Text style={styles.kicker}>TECLADO</Text>
+        <Text style={styles.title}>Dicta en cualquier app.</Text>
       </View>
 
       <ScrollView contentContainerStyle={styles.content}>
@@ -155,7 +105,7 @@ export function KeyboardScreen() {
           <ErrorState
             body={FAILURE_COPY[failure.kind].body}
             detail={failure.detail}
-            onRetry={failure.kind === "sync" ? () => void sync() : openSettings}
+            onRetry={openSettings}
             title={FAILURE_COPY[failure.kind].title}
           />
         ) : enabled === null ? (
@@ -168,72 +118,157 @@ export function KeyboardScreen() {
               <Icon color={colors.accent} name="check" size={17} strokeWidth={2.8} />
             </View>
             <View style={styles.activeCopy}>
-              <Text style={styles.activeTitle}>Activo y con acceso completo</Text>
+              <Text style={styles.activeTitle}>Teclado confirmado</Text>
               <Text accessibilityLiveRegion="polite" style={styles.activeMeta}>
-                {summary}
+                La última vez que abriste Looper tenía acceso completo. Si cambiaste Ajustes,
+                compruébalo desde el globo.
               </Text>
             </View>
           </View>
         ) : (
           <View style={styles.setupCard}>
-            <Text style={styles.setupTitle}>Tres pasos, una sola vez</Text>
-            {SETUP_STEPS.map((step, index) => (
-              <View key={step.text} style={styles.step}>
-                <View style={[styles.stepBadge, step.done && styles.stepBadgeDone]}>
-                  <Text style={[styles.stepNumber, step.done && styles.stepNumberDone]}>
-                    {index + 1}
-                  </Text>
-                </View>
-                <Text style={[styles.stepText, step.done && styles.stepTextDone]}>{step.text}</Text>
-              </View>
-            ))}
-            <Button
-              icon="chevronRight"
-              label="Abrir ajustes del sistema"
-              onPress={openSettings}
-              variant="primary"
-            />
-            <Text accessibilityLiveRegion="polite" style={styles.setupMeta}>
-              {summary}
+            <Text style={styles.setupCount}>
+              3 pasos <Text style={styles.setupCountMuted}>para activarlo</Text>
             </Text>
+            <KeyboardSetupSteps onOpenSettings={openSettings} />
           </View>
         )}
 
-        <View style={styles.section}>
-          <SectionLabel>Formato de salida</SectionLabel>
-          <View style={styles.chips}>
-            {FORMATS.map((entry) => (
-              <Chip
-                key={entry.value}
-                label={entry.label}
-                onPress={() => setFormat(entry.value)}
-                selected={format === entry.value}
-              />
-            ))}
-          </View>
-          <Text style={styles.sectionNote}>
-            El formato ordena lo que dijiste. El estilo, que eliges en Studio, cambia cómo suena.
-          </Text>
-        </View>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityState={{ expanded: showAdvanced }}
+          onPress={() => setShowAdvanced((current) => !current)}
+          style={styles.advancedDisclosure}
+        >
+          <Text style={styles.advancedText}>Formato, diccionario y atajos</Text>
+          <Icon
+            color={colors.accent}
+            name={showAdvanced ? "chevronDown" : "chevronRight"}
+            size={17}
+          />
+        </Pressable>
 
-        <View style={styles.section}>
-          <SectionLabel>Lo que el teclado sabe</SectionLabel>
-          {listsLoading ? (
-            <>
-              <SkeletonRow />
-              <SkeletonRow />
-              <SkeletonRow />
-            </>
-          ) : (
-            lists.map((list) => (
-              <KnowledgeRow key={list.kind} onPress={() => setOpenList(list.kind)} spec={list} />
-            ))
-          )}
-        </View>
+        {showAdvanced ? (
+          <>
+            <View style={styles.section}>
+              <SectionLabel>Lo que el teclado sabe</SectionLabel>
+              <Pressable
+                accessibilityRole="button"
+                onPress={() => setShowKnowledge((current) => !current)}
+                style={styles.knowledgeDisclosure}
+              >
+                <View style={styles.rowCopy}>
+                  <Text style={styles.rowTitle}>Diccionario y atajos</Text>
+                  <Text style={styles.rowNote}>Términos, reemplazos y snippets</Text>
+                </View>
+                <Icon
+                  color={colors.accent}
+                  name={showKnowledge ? "chevronDown" : "chevronRight"}
+                  size={17}
+                  strokeWidth={2.2}
+                />
+              </Pressable>
+              {showKnowledge &&
+                (listsLoading ? (
+                  <>
+                    <SkeletonRow />
+                    <SkeletonRow />
+                    <SkeletonRow />
+                  </>
+                ) : (
+                  lists.map((list) => (
+                    <KnowledgeRow
+                      key={list.kind}
+                      onPress={() => setOpenList(list.kind)}
+                      spec={list}
+                    />
+                  ))
+                ))}
+            </View>
+            <SpokenCommandsCard />
+          </>
+        ) : null}
       </ScrollView>
 
       <ListSheet onClose={() => setOpenList(null)} spec={openSpec} />
     </SafeAreaView>
+  );
+}
+
+function KeyboardSetupSteps({ onOpenSettings }: { onOpenSettings: () => void }) {
+  return (
+    <View style={styles.steps}>
+      <SetupStep
+        number="1"
+        subtitle="Aparece en Ajustes › Teclados"
+        title="Añadir el teclado Looper"
+      />
+      <SetupStep number="2" subtitle="Se abre al tocar el globo" title="Cambiar a Looper" />
+      <SetupStep
+        action={<Button label="Abrir ajustes" onPress={onOpenSettings} variant="primary" />}
+        detail="iOS lo exige para conectar la extensión al servicio de dictado. Solo escucha después de pulsar el micrófono. Puedes volver al teclado del sistema en cualquier momento."
+        number="3"
+        subtitle="Sin acceso completo no puede dictar"
+        title="Permitir acceso completo"
+      />
+    </View>
+  );
+}
+
+function SetupStep({
+  action,
+  complete = false,
+  detail,
+  number,
+  subtitle,
+  title,
+}: {
+  action?: ReactNode;
+  complete?: boolean;
+  detail?: string;
+  number: string;
+  subtitle: string;
+  title: string;
+}) {
+  return (
+    <View style={styles.step}>
+      <View style={[styles.stepBadge, complete && styles.stepBadgeDone]}>
+        {complete ? (
+          <Icon color={colors.onAccent} name="check" size={13} strokeWidth={2.8} />
+        ) : (
+          <Text style={styles.stepNumber}>{number}</Text>
+        )}
+      </View>
+      <View style={styles.stepCopy}>
+        <Text style={[styles.stepTitle, complete && styles.stepTitleDone]}>{title}</Text>
+        <Text style={styles.stepSubtitle}>{subtitle}</Text>
+        {action ? <View style={styles.stepAction}>{action}</View> : null}
+        {detail ? (
+          <Text accessibilityLiveRegion="polite" style={styles.setupMeta}>
+            {detail}
+          </Text>
+        ) : null}
+      </View>
+    </View>
+  );
+}
+
+function SpokenCommandsCard() {
+  return (
+    <View style={styles.commandsCard}>
+      <Text style={styles.commandsKicker}>SE DICE, NO SE TOCA</Text>
+      {[
+        ["«coma» · «punto» · «nueva línea»", "puntuación"],
+        ["«mejor dicho» · «borra eso»", "corrige"],
+        ["«punto de lista» · «siguiente elemento»", "listas"],
+        ["«modo literal» · «fin modo literal»", "sin formato"],
+      ].map(([command, meaning]) => (
+        <View key={command} style={styles.commandRow}>
+          <Text style={styles.commandText}>{command}</Text>
+          <Text style={styles.commandMeaning}>{meaning}</Text>
+        </View>
+      ))}
+    </View>
   );
 }
 
@@ -278,7 +313,16 @@ function ListSheet({ spec, onClose }: { spec: ListSpec | null; onClose: () => vo
   return (
     <Modal animationType="slide" onRequestClose={close} transparent visible={spec !== null}>
       <View style={styles.backdrop}>
-        <View style={styles.sheet}>
+        <Pressable
+          accessibilityLabel="Cerrar"
+          accessibilityRole="button"
+          onPress={close}
+          style={StyleSheet.absoluteFill}
+        />
+        <KeyboardAvoidingView
+          behavior={Platform.OS === "ios" ? "padding" : undefined}
+          style={styles.sheet}
+        >
           <View style={styles.sheetHead}>
             <Text style={styles.sheetTitle}>{spec?.title ?? ""}</Text>
             <Pressable
@@ -293,6 +337,7 @@ function ListSheet({ spec, onClose }: { spec: ListSpec | null; onClose: () => vo
           <Text style={styles.sheetNote}>{spec?.note ?? ""}</Text>
           {spec?.fields.map((placeholder, index) => (
             <TextInput
+              accessibilityLabel={placeholder}
               key={placeholder}
               onChangeText={(value) =>
                 setValues((current) =>
@@ -331,7 +376,7 @@ function ListSheet({ spec, onClose }: { spec: ListSpec | null; onClose: () => vo
               ))
             )}
           </ScrollView>
-        </View>
+        </KeyboardAvoidingView>
       </View>
     </Modal>
   );
@@ -398,21 +443,6 @@ function buildLists({
   ];
 }
 
-function syncSummary(syncedAt: number | null, terms: number): string {
-  const count = `${terms} ${terms === 1 ? "término" : "términos"}`;
-  if (syncedAt === null) return `Sin sincronizar en esta sesión · ${count}`;
-  return `Sincronizado ${elapsedLabel(Date.now() - syncedAt)} · ${count}`;
-}
-
-function elapsedLabel(elapsedMs: number): string {
-  const minutes = Math.floor(elapsedMs / 60_000);
-  if (minutes < 1) return "hace un momento";
-  if (minutes < 60) return `hace ${minutes} min`;
-  const hours = Math.floor(minutes / 60);
-  if (hours < 24) return `hace ${hours} h`;
-  return `hace ${Math.floor(hours / 24)} d`;
-}
-
 function messageOf(cause: unknown): string {
   return cause instanceof Error ? cause.message : String(cause);
 }
@@ -423,6 +453,8 @@ const ROW_COUNT_WIDTH = 38;
 const ROW_HEIGHT = 66;
 
 const styles = StyleSheet.create({
+  advancedDisclosure: { alignItems: "center", flexDirection: "row", gap: 6, minHeight: 44 },
+  advancedText: { ...typography.meta, color: colors.accent, fontWeight: "700" },
   activeBadge: {
     alignItems: "center",
     backgroundColor: colors.accentSubtle,
@@ -447,8 +479,37 @@ const styles = StyleSheet.create({
   activeTitle: { ...typography.item, color: colors.text },
   back: { alignItems: "center", height: hitTarget, justifyContent: "center", width: hitTarget },
   backdrop: { backgroundColor: colors.overlay, flex: 1, justifyContent: "flex-end" },
-  chips: { flexDirection: "row", flexWrap: "wrap", gap: 7 },
   close: { alignItems: "center", height: hitTarget, justifyContent: "center", width: hitTarget },
+  commandMeaning: {
+    ...typography.meta,
+    color: colors.muted,
+    fontWeight: "700",
+    textAlign: "right",
+  },
+  commandRow: {
+    alignItems: "center",
+    backgroundColor: colors.surfaceMuted,
+    borderRadius: radius.md,
+    flexDirection: "row",
+    gap: space.sm,
+    minHeight: 34,
+    paddingHorizontal: space.sm,
+  },
+  commandText: { ...typography.meta, color: colors.textSecondary, flex: 1 },
+  commandsCard: {
+    borderColor: colors.border,
+    borderRadius: radius.lg,
+    borderWidth: 1,
+    gap: 5,
+    padding: space.sm,
+  },
+  commandsKicker: {
+    ...typography.label,
+    color: colors.muted,
+    fontSize: 10,
+    letterSpacing: 0.9,
+    paddingBottom: 2,
+  },
   content: { gap: 22, paddingBottom: 40, paddingHorizontal: space.xl },
   header: {
     alignItems: "center",
@@ -458,6 +519,7 @@ const styles = StyleSheet.create({
     paddingLeft: 6,
     paddingRight: 14,
   },
+  headerSpacer: { width: hitTarget },
   input: {
     ...typography.body,
     borderColor: colors.borderStrong,
@@ -477,6 +539,15 @@ const styles = StyleSheet.create({
   },
   itemRemove: { alignItems: "center", height: 32, justifyContent: "center", width: 32 },
   itemValue: { ...typography.body, color: colors.text, flex: 1 },
+  knowledgeDisclosure: {
+    alignItems: "center",
+    backgroundColor: colors.accentLight,
+    borderRadius: radius.lg,
+    flexDirection: "row",
+    gap: space.md,
+    minHeight: ROW_HEIGHT,
+    paddingHorizontal: space.lg,
+  },
   pressed: { opacity: 0.6 },
   row: {
     alignItems: "center",
@@ -501,17 +572,16 @@ const styles = StyleSheet.create({
   rowTitle: { ...typography.item, color: colors.text },
   safeArea: { backgroundColor: colors.background, flex: 1 },
   section: { gap: 10 },
-  sectionNote: { ...typography.meta, color: colors.muted, lineHeight: 20 },
   setupCard: {
-    backgroundColor: colors.surfaceMuted,
-    borderColor: colors.borderStrong,
-    borderRadius: radius.xl,
-    borderWidth: 1,
+    borderLeftColor: colors.accent,
+    borderLeftWidth: 2,
     gap: space.md,
-    padding: space.xl,
+    paddingHorizontal: space.lg,
+    paddingVertical: space.md,
   },
+  setupCount: { ...typography.item, color: colors.text },
+  setupCountMuted: { color: colors.muted, fontWeight: "400" },
   setupMeta: { ...typography.meta, color: colors.muted },
-  setupTitle: { ...typography.item, color: colors.text },
   sheet: {
     backgroundColor: colors.backgroundSecondary,
     borderTopLeftRadius: radius.xl,
@@ -532,6 +602,7 @@ const styles = StyleSheet.create({
     padding: space.md,
   },
   step: { alignItems: "flex-start", flexDirection: "row", gap: space.md },
+  stepAction: { marginTop: space.sm },
   stepBadge: {
     alignItems: "center",
     borderColor: colors.borderStrong,
@@ -542,18 +613,18 @@ const styles = StyleSheet.create({
     width: STEP_BADGE_SIZE,
   },
   stepBadgeDone: { backgroundColor: colors.accent, borderColor: colors.accent },
+  stepCopy: { flex: 1, gap: 3, paddingBottom: space.sm },
   stepNumber: { ...typography.meta, color: colors.textSecondary, fontSize: 12, fontWeight: "700" },
-  stepNumberDone: { color: colors.onAccent },
-  stepText: { ...typography.body, color: colors.textSecondary, flex: 1 },
-  stepTextDone: { color: colors.muted },
-  support: { ...typography.body, color: colors.muted },
-  syncAction: { alignItems: "center", flexDirection: "row", gap: 7, height: hitTarget },
-  syncActionText: { ...typography.meta, color: colors.accent, fontWeight: "600" },
-  title: { ...typography.display, color: colors.text },
+  stepSubtitle: { ...typography.meta, color: colors.muted, lineHeight: 18 },
+  stepTitle: { ...typography.item, color: colors.text },
+  stepTitleDone: { color: colors.textSecondary },
+  steps: { gap: space.sm },
+  kicker: { ...typography.label, color: colors.muted, letterSpacing: 1.1 },
+  title: { ...typography.title, color: colors.text },
   titleBlock: { gap: 7, paddingBottom: 18, paddingHorizontal: space.xl, paddingTop: space.xs },
 });
 
-type FailureKind = "settings" | "sync";
+type FailureKind = "settings";
 
 type Failure = { detail: string; kind: FailureKind };
 

@@ -240,13 +240,45 @@ class BaseTranscribeAudioRepo {
         prompt: String?,
         language: String?
     ) async throws -> String {
-        try await withRetry {
+        let response = try await withRetry {
             try await self.transcribeSegment(
                 audioData: payload,
                 prompt: prompt,
                 language: language
             )
         }
+        return TranscriptPayload.text(from: response)
+    }
+}
+
+enum TranscriptPayload {
+    /// Algunos proveedores envuelven la transcripción en un objeto JSON aunque
+    /// el contrato pida texto plano. Nunca insertamos ese protocolo en la app
+    /// de destino: solo extraemos una propiedad inequívoca.
+    static func text(from response: String) -> String {
+        let trimmed = response.trimmingCharacters(in: .whitespacesAndNewlines)
+        let jsonSource: String
+        if trimmed.hasPrefix("```"), trimmed.hasSuffix("```") {
+            guard let firstLine = trimmed.firstIndex(of: "\n") else { return response }
+            jsonSource = String(trimmed[trimmed.index(after: firstLine)..<trimmed.index(trimmed.endIndex, offsetBy: -3)])
+                .trimmingCharacters(in: .whitespacesAndNewlines)
+        } else {
+            jsonSource = trimmed
+        }
+
+        guard
+            let data = jsonSource.data(using: .utf8),
+            let object = try? JSONSerialization.jsonObject(with: data) as? [String: Any]
+        else {
+            return response
+        }
+
+        for key in ["text", "transcript"] {
+            if let text = object[key] as? String, !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                return text
+            }
+        }
+        return response
     }
 }
 

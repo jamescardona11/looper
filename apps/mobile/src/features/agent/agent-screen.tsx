@@ -1,9 +1,9 @@
-import type { ChatMessage } from "@looper/data";
+import { type ChatMessage, type MeetingSession, type Note, useMeetingSessions, useNotes } from "@looper/data";
+import { type Href, useRouter } from "expo-router";
 import { useRef, useState } from "react";
 import {
   FlatList,
   KeyboardAvoidingView,
-  type ListRenderItem,
   Platform,
   Pressable,
   StyleSheet,
@@ -12,14 +12,13 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { Chip } from "@/shared/components/chip";
 import { Icon, type IconName } from "@/shared/components/icon";
-import { EmptyState, ErrorState } from "@/shared/components/screen-states";
+import { ErrorState } from "@/shared/components/screen-states";
 import { SectionLabel } from "@/shared/components/section-label";
 import { colors } from "@/shared/theme/colors";
 import { hitTarget, radius, relief, space } from "@/shared/theme/layout";
 import { typography } from "@/shared/theme/typography";
-import { type AgentCitation, agentScopes, citationsFromAnswer } from "./agent-logic";
+import { answerParts, type AgentCitation } from "./agent-logic";
 import { useMobileAgent } from "./use-mobile-agent";
 
 const SUGGESTIONS = [
@@ -34,12 +33,14 @@ const CITATION_ICON: Record<AgentCitation["kind"], IconName> = {
   Note: "nota",
 };
 
-const renderMessage: ListRenderItem<ChatMessage> = ({ item }) => <MessageRow message={item} />;
-
 export function AgentScreen({ meetingId }: { meetingId?: string }) {
   const agent = useMobileAgent(meetingId);
+  const router = useRouter();
+  const notes = useNotes();
+  const meetings = useMeetingSessions();
   const [draft, setDraft] = useState("");
   const [hiddenThrough, setHiddenThrough] = useState<string | null>(null);
+  const [suggestionsOpen, setSuggestionsOpen] = useState(false);
   const listRef = useRef<FlatList<ChatMessage>>(null);
 
   // Una conversación nueva se pide sin borrar el hilo: se corta por el último
@@ -50,7 +51,12 @@ export function AgentScreen({ meetingId }: { meetingId?: string }) {
     (found, item) => (item.role === "user" ? item.content : found),
     "",
   );
-  const scopeLocked = Boolean(meetingId);
+  const resolveCitation = (citation: AgentCitation) =>
+    citationTarget(citation, notes.notes, meetings.sessions);
+  const openCitation = (citation: AgentCitation) => {
+    const target = resolveCitation(citation);
+    if (target) router.push(target);
+  };
 
   const submit = async (value = draft) => {
     if (!value.trim() || agent.isBusy) return;
@@ -66,32 +72,22 @@ export function AgentScreen({ meetingId }: { meetingId?: string }) {
         style={styles.keyboard}
       >
         <View style={styles.header}>
-          <Text accessibilityRole="header" style={styles.title}>
-            Ask
-          </Text>
-          <Pressable
-            accessibilityLabel="Nueva conversación"
-            accessibilityRole="button"
-            disabled={messages.length === 0}
-            onPress={() => setHiddenThrough(agent.messages.at(-1)?._id ?? null)}
-            style={styles.reset}
-          >
-            <Icon
-              color={messages.length === 0 ? colors.disabled : colors.textSecondary}
-              name="plus"
-            />
-          </Pressable>
-        </View>
-
-        <View accessibilityLabel="Ámbito de búsqueda" style={styles.scopes}>
-          {agentScopes.map((item) => (
-            <Chip
-              key={item.id}
-              label={item.label}
-              onPress={scopeLocked ? undefined : () => agent.setScope(item.id)}
-              selected={agent.scope === item.id}
-            />
-          ))}
+          <View>
+            <Text style={styles.kicker}>PREGUNTAR</Text>
+            <Text accessibilityRole="header" style={styles.title}>
+              Lo que ya dijiste
+            </Text>
+          </View>
+          {messages.length ? (
+            <Pressable
+              accessibilityLabel="Nueva conversación"
+              accessibilityRole="button"
+              onPress={() => setHiddenThrough(agent.messages.at(-1)?._id ?? null)}
+              style={styles.reset}
+            >
+              <Icon color={colors.textSecondary} name="plus" />
+            </Pressable>
+          ) : null}
         </View>
 
         <FlatList
@@ -99,30 +95,31 @@ export function AgentScreen({ meetingId }: { meetingId?: string }) {
           data={messages}
           keyboardShouldPersistTaps="handled"
           keyExtractor={(item) => item._id}
+          ListFooterComponent={
+            messages.some((item) => item.role === "assistant" && item.content.trim().length > 0) ? (
+              <FollowUpSuggestions onSubmit={(suggestion) => void submit(suggestion)} />
+            ) : null
+          }
           ListEmptyComponent={
             agent.isLoading ? (
               <ThreadSkeleton />
             ) : (
-              <EmptyState
-                action={
-                  <View style={styles.suggestions}>
-                    {SUGGESTIONS.map((suggestion) => (
-                      <Suggestion
-                        key={suggestion}
-                        onPress={() => void submit(suggestion)}
-                        text={suggestion}
-                      />
-                    ))}
-                  </View>
-                }
-                body="Nada de internet, nada inventado. Cada respuesta viene con la grabación o la nota de la que sale."
-                title="Solo sabe lo que tú capturaste."
+              <AskStarter
+                expanded={suggestionsOpen}
+                onToggle={() => setSuggestionsOpen((current) => !current)}
+                onSubmit={(suggestion) => void submit(suggestion)}
               />
             )
           }
           onContentSizeChange={() => listRef.current?.scrollToEnd({ animated: true })}
           ref={listRef}
-          renderItem={renderMessage}
+          renderItem={({ item }) => (
+            <MessageRow
+              message={item}
+              onOpenCitation={openCitation}
+              resolveCitation={resolveCitation}
+            />
+          )}
         />
 
         {agent.error ? (
@@ -145,7 +142,7 @@ export function AgentScreen({ meetingId }: { meetingId?: string }) {
               onChangeText={setDraft}
               onSubmitEditing={() => void submit()}
               placeholder={
-                messages.length === 0 ? "Pregunta sobre lo que capturaste" : "Sigue preguntando…"
+                messages.length === 0 ? "Pregunta otra cosa…" : "Sigue preguntando…"
               }
               placeholderTextColor={colors.muted}
               style={styles.input}
@@ -160,6 +157,58 @@ export function AgentScreen({ meetingId }: { meetingId?: string }) {
         </View>
       </KeyboardAvoidingView>
     </SafeAreaView>
+  );
+}
+
+function FollowUpSuggestions({ onSubmit }: { onSubmit: (suggestion: string) => void }) {
+  return (
+    <View style={styles.followUps}>
+      <Text style={styles.followUpsLabel}>SIGUE EXPLORANDO</Text>
+      {[
+        "¿Quién propuso esa decisión?",
+        "Enséñame el contexto anterior",
+        "¿Qué quedó pendiente?",
+      ].map((suggestion) => (
+        <Pressable
+          accessibilityLabel={suggestion}
+          accessibilityRole="button"
+          key={suggestion}
+          onPress={() => onSubmit(suggestion)}
+          style={({ pressed }) => [styles.followUp, pressed && styles.suggestionPressed]}
+        >
+          <Text style={styles.followUpText}>{suggestion}</Text>
+          <Icon color={colors.accent} name="chevronRight" size={15} />
+        </Pressable>
+      ))}
+    </View>
+  );
+}
+
+function AskStarter({
+  expanded,
+  onSubmit,
+  onToggle,
+}: {
+  expanded: boolean;
+  onSubmit: (suggestion: string) => void;
+  onToggle: () => void;
+}) {
+  return (
+    <View style={styles.starter}>
+      <Text style={styles.starterTitle}>Pregunta sobre tus notas y grabaciones.</Text>
+      <Text style={styles.starterBody}>
+        Las respuestas se sostienen en tus notas y grabaciones.
+      </Text>
+      <Pressable accessibilityRole="button" onPress={onToggle} style={styles.suggestionToggle}>
+        <Text style={styles.suggestionToggleText}>{expanded ? "Ocultar ideas" : "Ver ideas"}</Text>
+        <Icon color={colors.accent} name={expanded ? "chevronDown" : "chevronRight"} size={16} />
+      </Pressable>
+      {expanded
+        ? SUGGESTIONS.map((suggestion) => (
+            <Suggestion key={suggestion} onPress={() => onSubmit(suggestion)} text={suggestion} />
+          ))
+        : null}
+    </View>
   );
 }
 
@@ -210,7 +259,15 @@ function Suggestion({ text, onPress }: { text: string; onPress: () => void }) {
   );
 }
 
-function MessageRow({ message }: { message: ChatMessage }) {
+function MessageRow({
+  message,
+  onOpenCitation,
+  resolveCitation,
+}: {
+  message: ChatMessage;
+  onOpenCitation: (citation: AgentCitation) => void;
+  resolveCitation: (citation: AgentCitation) => Href | null;
+}) {
   if (message.role === "user") {
     return (
       <View style={styles.userRow}>
@@ -220,7 +277,6 @@ function MessageRow({ message }: { message: ChatMessage }) {
   }
 
   const streaming = message.status === "streaming" && !message.content;
-  const citations = citationsFromAnswer(message.content);
 
   return (
     <View style={styles.answerRow}>
@@ -231,18 +287,40 @@ function MessageRow({ message }: { message: ChatMessage }) {
       {streaming ? (
         <SearchingBubble count={message.sources?.length ?? 0} />
       ) : (
-        <View style={styles.answerBubble}>
-          <Text style={styles.answerText}>{message.content}</Text>
-        </View>
+        <AnswerBody
+          answer={message.content}
+          onOpenCitation={onOpenCitation}
+          resolveCitation={resolveCitation}
+        />
       )}
-      {citations.length > 0 ? (
-        <View style={styles.sources}>
-          <SectionLabel>Fuentes</SectionLabel>
-          {citations.map((citation) => (
-            <SourceRow citation={citation} key={`${citation.kind}:${citation.title}`} />
-          ))}
-        </View>
-      ) : null}
+    </View>
+  );
+}
+
+function AnswerBody({
+  answer,
+  onOpenCitation,
+  resolveCitation,
+}: {
+  answer: string;
+  onOpenCitation: (citation: AgentCitation) => void;
+  resolveCitation: (citation: AgentCitation) => Href | null;
+}) {
+  return (
+    <View style={styles.answerBubble}>
+      <View style={styles.answerParts}>
+        {answerParts(answer).map((part, index) =>
+          part.kind === "text" ? (
+            <Text key={`${index}:${part.value}`} style={styles.answerText}>{part.value}</Text>
+          ) : (
+            <CitationChip
+              citation={part.citation}
+              key={`${index}:${part.citation.kind}:${part.citation.title}`}
+              onPress={resolveCitation(part.citation) ? () => onOpenCitation(part.citation) : undefined}
+            />
+          ),
+        )}
+      </View>
     </View>
   );
 }
@@ -260,17 +338,54 @@ function SearchingBubble({ count }: { count: number }) {
   );
 }
 
-function SourceRow({ citation }: { citation: AgentCitation }) {
+function CitationChip({
+  citation,
+  onPress,
+}: {
+  citation: AgentCitation;
+  onPress?: () => void;
+}) {
   const [title, at] = splitTimestamp(citation.title);
-  return (
-    <View style={styles.source}>
-      <Icon color={colors.muted} name={CITATION_ICON[citation.kind]} size={14} />
-      <Text numberOfLines={1} style={styles.sourceTitle}>
+  const contents = (
+    <>
+      <Icon color={colors.accent} name={CITATION_ICON[citation.kind]} size={12} />
+      <Text numberOfLines={1} style={styles.citationTitle}>
         {title}
       </Text>
-      {at ? <Text style={styles.sourceAt}>{at}</Text> : null}
-    </View>
+      {at ? <Text style={styles.citationAt}>{at}</Text> : null}
+    </>
   );
+  if (!onPress) {
+    return <View accessibilityLabel={`Fuente: ${title}`} style={styles.citationChip}>{contents}</View>;
+  }
+  return (
+    <Pressable
+      accessibilityLabel={`Abrir fuente ${title}`}
+      accessibilityRole="button"
+      onPress={onPress}
+      style={styles.citationChip}
+    >
+      {contents}
+    </Pressable>
+  );
+}
+
+function citationTarget(
+  citation: AgentCitation,
+  notes: Note[],
+  meetings: MeetingSession[],
+): Href | null {
+  const [title] = splitTimestamp(citation.title);
+  if (citation.kind === "Meeting") {
+    const meeting = meetings.find((candidate) => candidate.title === title);
+    return meeting ? (`/meeting/${meeting.meetingId}` as Href) : null;
+  }
+  const note = notes.find(
+    (candidate) =>
+      candidate.title === title &&
+      (citation.kind === "Note" || candidate.kind === "dictation"),
+  );
+  return note ? (`/notes?id=${encodeURIComponent(note.id)}` as Href) : null;
 }
 
 /** Una cita puede llegar con el minuto pegado al título: «Weekly sync 34:12». */
@@ -308,15 +423,14 @@ const styles = StyleSheet.create({
     paddingVertical: 15,
   },
   answerRow: { alignSelf: "stretch", gap: 10 },
+  answerParts: { alignItems: "baseline", flexDirection: "row", flexWrap: "wrap", gap: 4 },
   answerText: { ...typography.body, color: colors.text, lineHeight: 24 },
   brandLabel: { ...typography.label, color: colors.accent },
   brandRow: { alignItems: "center", flexDirection: "row", gap: 7 },
   composer: {
     alignItems: "flex-end",
-    backgroundColor: colors.surfaceMuted,
-    borderColor: colors.borderStrong,
-    borderRadius: radius.xl,
-    borderWidth: 1,
+    backgroundColor: colors.surface,
+    borderRadius: radius.pill,
     flexDirection: "row",
     gap: 10,
     minHeight: COMPOSER_HEIGHT,
@@ -324,18 +438,31 @@ const styles = StyleSheet.create({
     paddingRight: 6,
     paddingVertical: 5,
   },
-  composerSlot: { paddingBottom: 10, paddingHorizontal: space.lg, paddingTop: space.md },
+  composerSlot: { paddingBottom: 98, paddingHorizontal: space.lg, paddingTop: space.md },
   dot: { backgroundColor: colors.accent, borderRadius: radius.pill, height: 7, width: 7 },
   dotFaint: { opacity: 0.22 },
   dotHalf: { opacity: 0.5 },
   errorSlot: { paddingHorizontal: space.xl, paddingTop: space.md },
+  followUp: {
+    alignItems: "center",
+    borderColor: colors.border,
+    borderRadius: radius.lg,
+    borderWidth: 1,
+    flexDirection: "row",
+    gap: space.sm,
+    minHeight: 44,
+    paddingHorizontal: space.md,
+  },
+  followUpText: { ...typography.meta, color: colors.textSecondary, flex: 1 },
+  followUps: { gap: 7, paddingTop: space.sm },
+  followUpsLabel: { ...typography.label, color: colors.muted, letterSpacing: 0.8, marginBottom: 2 },
   header: {
     alignItems: "center",
     flexDirection: "row",
     justifyContent: "space-between",
-    paddingBottom: space.md,
-    paddingHorizontal: space.xl,
-    paddingTop: space.xs,
+    paddingBottom: 10,
+    paddingHorizontal: space.lg,
+    paddingTop: space.md,
   },
   input: {
     ...typography.body,
@@ -355,7 +482,7 @@ const styles = StyleSheet.create({
     width: hitTarget,
   },
   safeArea: { backgroundColor: colors.background, flex: 1 },
-  scopes: { flexDirection: "row", gap: 7, paddingBottom: 14, paddingHorizontal: space.xl },
+  kicker: { ...typography.label, color: colors.accent, letterSpacing: 1.1, marginBottom: 3 },
   searching: {
     alignItems: "center",
     backgroundColor: colors.surfaceMuted,
@@ -397,24 +524,24 @@ const styles = StyleSheet.create({
     height: 46,
     width: "62%",
   },
-  source: {
+  citationChip: {
     alignItems: "center",
-    borderColor: colors.border,
-    borderRadius: radius.md,
+    backgroundColor: colors.accentSubtle,
+    borderRadius: radius.pill,
     borderWidth: 1,
+    borderColor: colors.accent,
     flexDirection: "row",
-    gap: 10,
-    height: hitTarget,
-    paddingHorizontal: space.md,
+    gap: 4,
+    minHeight: 25,
+    paddingHorizontal: 8,
   },
-  sourceAt: {
+  citationAt: {
     ...typography.meta,
-    color: colors.muted,
+    color: colors.accent,
     fontVariant: ["tabular-nums"],
     fontWeight: "700",
   },
-  sourceTitle: { ...typography.meta, color: colors.textSecondary, flex: 1 },
-  sources: { gap: 6, paddingTop: 2 },
+  citationTitle: { ...typography.meta, color: colors.accentDark, maxWidth: 150 },
   suggestion: {
     alignItems: "center",
     backgroundColor: colors.surfaceMuted,
@@ -426,14 +553,19 @@ const styles = StyleSheet.create({
     minHeight: 58,
     paddingHorizontal: space.lg,
   },
+  suggestionToggle: { alignItems: "center", flexDirection: "row", gap: space.xs },
+  suggestionToggleText: { ...typography.meta, color: colors.accent, fontWeight: "700" },
   suggestionPressed: { backgroundColor: colors.surface },
   suggestionText: { ...typography.body, color: colors.textSecondary, flex: 1 },
   suggestions: { gap: 9 },
+  starter: { gap: 8, paddingTop: 16 },
+  starterBody: { ...typography.meta, color: colors.muted, lineHeight: 19, maxWidth: 280 },
+  starterTitle: { ...typography.section, color: colors.text, lineHeight: 25, maxWidth: 310 },
   timeline: {
     flexGrow: 1,
-    gap: space.xl,
+    gap: space.md,
     paddingBottom: space.sm,
-    paddingHorizontal: space.xl,
+    paddingHorizontal: space.lg,
     paddingTop: space.xs,
   },
   title: { ...typography.title, color: colors.text },

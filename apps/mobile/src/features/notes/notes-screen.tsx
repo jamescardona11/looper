@@ -1,6 +1,12 @@
-import { type Note, useNoteCommands, useNotes } from "@looper/data";
-import { type Href, useLocalSearchParams, useRouter } from "expo-router";
-import { useEffect, useMemo, useRef, useState } from "react";
+import {
+  type MeetingSession,
+  type Note,
+  useMeetingSessions,
+  useNoteCommands,
+  useNotes,
+} from "@looper/data";
+import { type Href, useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   Alert,
   KeyboardAvoidingView,
@@ -14,6 +20,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Svg, { Path } from "react-native-svg";
+import { useAppChrome } from "@/shared/components/app-chrome-context";
 import { Button } from "@/shared/components/button";
 import { Icon } from "@/shared/components/icon";
 import { EmptyState } from "@/shared/components/screen-states";
@@ -33,13 +40,15 @@ export function NotesScreen() {
   const router = useRouter();
   const params = useLocalSearchParams<{ id?: string }>();
   const { notes, isLoading } = useNotes();
+  const meetings = useMeetingSessions();
   const { create, update, remove } = useNoteCommands();
   const [openedId, setOpenedId] = useState<string | null>(null);
+  const [showArchive, setShowArchive] = useState(false);
 
   const ordered = useMemo(() => sortNotesByUpdatedAt(notes), [notes]);
   const wantedId = openedId ?? params.id ?? null;
   const note = useMemo(
-    () => ordered.find((item) => item.id === wantedId) ?? ordered[0] ?? null,
+    () => (wantedId ? (ordered.find((item) => item.id === wantedId) ?? null) : null),
     [ordered, wantedId],
   );
 
@@ -50,6 +59,41 @@ export function NotesScreen() {
       Alert.alert("No se pudo crear la nota", "Revisa la conexión e inténtalo de nuevo.");
     }
   };
+
+  if (!params.id && !openedId) {
+    return (
+      <NotesLibrary
+        isLoading={isLoading || meetings.isLoading}
+        meetings={meetings.sessions}
+        notes={ordered}
+        onCreate={() => void createNote()}
+        onOpen={setOpenedId}
+        onToggleArchive={() => setShowArchive((current) => !current)}
+        showArchive={showArchive}
+      />
+    );
+  }
+
+  if (wantedId && !isLoading && !note) {
+    return (
+      <SafeAreaView style={styles.safeArea}>
+        <EditorHeader
+          onBack={() => goBack(router)}
+          onMenu={() => void createNote()}
+          saveState="saved"
+        />
+        <View style={styles.blank}>
+          <EmptyState
+            action={
+              <Button label="Crear una nota" onPress={() => void createNote()} variant="primary" />
+            }
+            body="Puede que se haya eliminado o que el enlace haya caducado."
+            title="Esta nota ya no está disponible"
+          />
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   const deleteNote = async (id: string) => {
     try {
@@ -109,6 +153,164 @@ export function NotesScreen() {
   );
 }
 
+function NotesLibrary({
+  isLoading,
+  meetings,
+  notes,
+  onCreate,
+  onOpen,
+  onToggleArchive,
+  showArchive,
+}: {
+  isLoading: boolean;
+  meetings: MeetingSession[];
+  notes: Note[];
+  onCreate: () => void;
+  onOpen: (id: string) => void;
+  onToggleArchive: () => void;
+  showArchive: boolean;
+}) {
+  const router = useRouter();
+  const rows = useMemo(() => buildNoteRows(notes, meetings), [meetings, notes]);
+  const visibleRows = showArchive ? rows : rows.slice(0, 3);
+  const hiddenCount = Math.max(0, rows.length - 3);
+  return (
+    <SafeAreaView style={styles.safeArea}>
+      <View style={styles.notesIndexHeader}>
+        <View>
+          <Text style={styles.notesIndexKicker}>NOTAS</Text>
+          <Text style={styles.notesIndexTitle}>Reuniones y audios</Text>
+        </View>
+        <View style={styles.notesIndexActions}>
+          <Pressable
+            accessibilityLabel="Crear una nota"
+            accessibilityRole="button"
+            onPress={onCreate}
+            style={styles.newNote}
+          >
+            <Icon color={colors.textSecondary} name="plus" size={20} strokeWidth={2.4} />
+          </Pressable>
+          <Pressable
+            accessibilityLabel="Importar una nota"
+            accessibilityRole="button"
+            onPress={() => router.push("/import" as Href)}
+            style={styles.newNote}
+          >
+            <Icon color={colors.textSecondary} name="import" size={19} strokeWidth={2.2} />
+          </Pressable>
+        </View>
+      </View>
+      <ScrollView contentContainerStyle={styles.notesIndexContent}>
+        {isLoading ? <EditorSkeleton /> : null}
+        {!isLoading && rows.length === 0 ? (
+          <View style={styles.notesEmpty}>
+            <Text style={styles.notesEmptyTitle}>Todavía no hay notas.</Text>
+            <Text style={styles.notesEmptyBody}>
+              Escribe una idea o captúrala como nota de voz.
+            </Text>
+          </View>
+        ) : null}
+        {visibleRows.length ? (
+          <View style={styles.notesGroupHeader}>
+            <Text style={styles.notesGroupLabel}>ESTA SEMANA</Text>
+            <View style={styles.notesGroupLine} />
+            <Text style={styles.notesGroupCount}>{visibleRows.length}</Text>
+          </View>
+        ) : null}
+        {visibleRows.map((item) =>
+          isMeeting(item) ? (
+            <Pressable
+              accessibilityLabel={`Abrir ${item.title}`}
+              accessibilityRole="button"
+              key={`meeting:${item.meetingId}`}
+              onPress={() => router.push(`/meeting/${item.meetingId}` as Href)}
+              style={({ pressed }) => [styles.noteRow, pressed && styles.noteRowPressed]}
+            >
+              <View style={styles.noteMark}>
+                <Icon color={colors.accent} name="meeting" size={17} />
+              </View>
+              <View style={styles.noteRowCopy}>
+                <Text numberOfLines={1} style={styles.noteRowTitle}>
+                  {item.title}
+                </Text>
+                <Text numberOfLines={1} style={styles.noteRowMeta}>
+                  {meetingMeta(item)}
+                </Text>
+              </View>
+              <Text style={[styles.noteStatus, item.state === "ended" && styles.noteStatusDone]}>
+                {item.state === "active"
+                  ? "Grabando"
+                  : item.state === "paused"
+                    ? "En pausa"
+                    : "Lista"}
+              </Text>
+            </Pressable>
+          ) : (
+            <Pressable
+              accessibilityLabel={`Abrir ${persistedNoteTitle(item.title)}`}
+              accessibilityRole="button"
+              key={`note:${item.id}`}
+              onPress={() => onOpen(item.id)}
+              style={({ pressed }) => [styles.noteRow, pressed && styles.noteRowPressed]}
+            >
+              <View style={styles.noteMark}>
+                <Icon
+                  color={colors.accent}
+                  name={item.kind === "dictation" ? "dictado" : "nota"}
+                  size={17}
+                />
+              </View>
+              <View style={styles.noteRowCopy}>
+                <Text numberOfLines={1} style={styles.noteRowTitle}>
+                  {persistedNoteTitle(item.title)}
+                </Text>
+                <Text numberOfLines={1} style={styles.noteRowMeta}>
+                  {noteMeta(item.updatedAt, item.body)}
+                </Text>
+              </View>
+            </Pressable>
+          ),
+        )}
+        {hiddenCount > 0 ? (
+          <Pressable
+            accessibilityRole="button"
+            onPress={onToggleArchive}
+            style={styles.archiveToggle}
+          >
+            <Text style={styles.archiveToggleText}>
+              {showArchive ? "Ver menos" : `Ver ${hiddenCount} notas anteriores`}
+            </Text>
+          </Pressable>
+        ) : null}
+      </ScrollView>
+    </SafeAreaView>
+  );
+}
+
+type NotesRow = MeetingSession | Note;
+function buildNoteRows(notes: Note[], meetings: MeetingSession[]): NotesRow[] {
+  const rows: NotesRow[] = [...notes, ...meetings];
+  return rows.sort((left, right) => noteRowTime(right) - noteRowTime(left));
+}
+
+function noteRowTime(item: NotesRow): number {
+  return isMeeting(item) ? item.lastActiveAt : item.updatedAt;
+}
+
+function isMeeting(item: NotesRow): item is MeetingSession {
+  return "meetingId" in item;
+}
+
+function meetingMeta(meeting: MeetingSession): string {
+  const state =
+    meeting.state === "active"
+      ? "en curso"
+      : meeting.state === "paused"
+        ? "en pausa"
+        : "finalizada";
+  return `${dateFormatter.format(meeting.lastActiveAt)} · reunión ${state}`;
+}
+
 type NoteEditorProps = {
   note: Note;
   onSave: (input: { id: string; title: string; body: string }) => Promise<void>;
@@ -119,6 +321,7 @@ type NoteEditorProps = {
 };
 
 function NoteEditor({ note, onSave, onBack, onDelete, onNew, onDictate }: NoteEditorProps) {
+  const { setTabBarHidden } = useAppChrome();
   const [title, setTitle] = useState(note.title);
   const [body, setBody] = useState(note.body);
   const [caret, setCaret] = useState({ end: 0, start: 0 });
@@ -131,6 +334,13 @@ function NoteEditor({ note, onSave, onBack, onDelete, onNew, onDictate }: NoteEd
     savedTitle: note.title,
     savedBody: note.body,
   });
+
+  useFocusEffect(
+    useCallback(() => {
+      setTabBarHidden(true);
+      return () => setTabBarHidden(false);
+    }, [setTabBarHidden]),
+  );
 
   // retryCount intentionally restarts the autosave effect after a failed save.
   // biome-ignore lint/correctness/useExhaustiveDependencies: retryCount is a deliberate retrigger
@@ -372,6 +582,13 @@ const GLYPHS = {
 const ACCESSORY_BAR_HEIGHT = 56;
 
 const styles = StyleSheet.create({
+  archiveToggle: {
+    alignItems: "center",
+    alignSelf: "flex-start",
+    minHeight: hitTarget,
+    paddingVertical: space.sm,
+  },
+  archiveToggleText: { ...typography.meta, color: colors.accent, fontWeight: "700" },
   accessories: {
     alignItems: "center",
     backgroundColor: colors.surfaceMuted,
@@ -414,6 +631,61 @@ const styles = StyleSheet.create({
     width: hitTarget,
   },
   meta: { ...typography.meta, color: colors.muted, marginTop: -space.sm },
+  newNote: {
+    alignItems: "center",
+    backgroundColor: colors.background,
+    borderRadius: radius.md,
+    height: 44,
+    justifyContent: "center",
+    width: 44,
+  },
+  notesIndexActions: { flexDirection: "row", gap: space.xs },
+  noteRow: {
+    alignItems: "center",
+    borderBottomColor: colors.border,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    flexDirection: "row",
+    gap: space.md,
+    minHeight: 72,
+  },
+  noteMark: {
+    alignItems: "center",
+    backgroundColor: colors.background,
+    borderRadius: 14,
+    height: 40,
+    justifyContent: "center",
+    width: 40,
+  },
+  noteRowCopy: { flex: 1, gap: 3 },
+  noteRowMeta: { ...typography.meta, color: colors.muted },
+  noteRowPressed: { backgroundColor: colors.background, transform: [{ scale: 0.99 }] },
+  noteStatus: { ...typography.meta, color: colors.accent, fontWeight: "700" },
+  noteStatusDone: { color: colors.muted },
+  noteRowTitle: {
+    ...typography.body,
+    color: colors.text,
+    fontSize: 14.5,
+    fontWeight: "600",
+    lineHeight: 19,
+  },
+  notesEmpty: { gap: space.xs, paddingTop: space.xl },
+  notesEmptyBody: { ...typography.body, color: colors.muted },
+  notesEmptyTitle: { ...typography.item, color: colors.text },
+  notesGroupCount: { ...typography.label, color: colors.disabled },
+  notesGroupHeader: { alignItems: "center", flexDirection: "row", gap: 10, marginBottom: 4 },
+  notesGroupLabel: { ...typography.label, color: colors.muted, letterSpacing: 1.1 },
+  notesGroupLine: { backgroundColor: colors.border, flex: 1, height: StyleSheet.hairlineWidth },
+  notesIndexContent: { gap: 2, paddingBottom: 108, paddingHorizontal: space.lg },
+  notesIndexHeader: {
+    alignItems: "flex-start",
+    flexDirection: "row",
+    justifyContent: "space-between",
+    paddingBottom: 10,
+    paddingHorizontal: space.lg,
+    paddingTop: space.md,
+  },
+  notesIndexKicker: { ...typography.label, color: colors.accent, letterSpacing: 1.1 },
+  notesIndexTitle: { ...typography.title, color: colors.text, marginTop: 2 },
   pressed: { backgroundColor: colors.surface },
   safeArea: { backgroundColor: colors.background, flex: 1 },
   saveFailure: {

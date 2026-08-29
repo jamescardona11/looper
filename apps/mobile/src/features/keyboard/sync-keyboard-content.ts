@@ -1,7 +1,7 @@
 import type { DictionaryEntry, ReplacementRule, UserSnippet } from "@looper/data";
+import type { MeetingSession, Note } from "@looper/data";
 import { getConvexRefreshToken } from "@/lib/secure-storage";
 import { type MobileStudioSettings, smartModePrompt } from "@/shared/studio/studio-settings";
-import { getLocalSttModelPath } from "../dictation/local-stt-runtime";
 import { buildKeyboardSyncPayload } from "./keyboard-config";
 import { syncNativeKeyboard } from "./native-keyboard";
 
@@ -12,22 +12,28 @@ export async function syncKeyboardContent({
   replacements,
   snippets,
   studio,
+  widgetSummary,
 }: {
   entries: DictionaryEntry[];
   replacements: ReplacementRule[];
   snippets: UserSnippet[];
   studio: MobileStudioSettings;
+  widgetSummary: {
+    lastCaptureDetail: string;
+    lastCaptureTitle: string | null;
+    weeklyWordCount: number;
+  };
 }): Promise<boolean> {
   if (!convexUrl) return false;
-  const [refreshToken, localSttModelPath] = await Promise.all([
-    getConvexRefreshToken(convexUrl),
-    getLocalSttModelPath(),
-  ]);
+  // La extensión vive en otro sandbox: no puede abrir el modelo local del host.
+  // Evitamos consultar ese runtime durante cada sincronización y declaramos cloud
+  // de forma explícita hasta que exista un modelo empaquetado para la extensión.
+  const refreshToken = await getConvexRefreshToken(convexUrl);
   await syncNativeKeyboard(
     buildKeyboardSyncPayload({
       convexUrl,
       refreshToken,
-      localSttModelPath,
+      localSttModelPath: null,
       entries,
       replacements,
       snippets,
@@ -54,6 +60,7 @@ export async function syncKeyboardContent({
         output: "insert",
         autoSendOnInsert: false,
       })),
+      widgetSummary,
     }),
   );
   return true;

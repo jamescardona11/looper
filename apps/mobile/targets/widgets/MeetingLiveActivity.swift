@@ -5,26 +5,66 @@ import WidgetKit
 struct MeetingLiveActivity: Widget {
     var body: some WidgetConfiguration {
         ActivityConfiguration(for: MeetingActivityAttributes.self) { context in
-            HStack(spacing: 12) {
-                activityIcon(for: context.state.phase)
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(context.attributes.title)
-                        .font(.headline)
-                        .lineLimit(1)
-                    HStack(spacing: 8) {
-                        phaseLabel(for: context.state.phase)
-                        if context.state.phase == "recording" {
-                            Text(timerInterval: context.state.startedAt...Date.distantFuture, countsDown: false)
-                                .monospacedDigit()
-                        }
+            VStack(alignment: .leading, spacing: 12) {
+                HStack(spacing: 10) {
+                    activityIcon(for: context.state.phase)
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(context.attributes.title)
+                            .font(.headline)
+                            .lineLimit(1)
+                        Text("en este iPhone")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
                     }
-                    .font(.caption)
+                    Spacer()
+                    Label {
+                        phaseLabel(for: context.state.phase)
+                    } icon: {
+                        Circle()
+                            .fill(context.state.phase == "recording" ? Color.red.opacity(0.8) : Color.accentColor)
+                            .frame(width: 6, height: 6)
+                    }
+                    .font(.caption.bold())
+                }
+
+                HStack(spacing: 0) {
+                    activityMetric(
+                        context.state.phase == "recording"
+                            ? Text(timerInterval: context.state.startedAt...Date.distantFuture, countsDown: false)
+                            : Text("—"),
+                        label: "Transcurrido"
+                    )
+                    activityMetric(Text("\(context.state.markedMoments)"), label: "Momentos")
+                    activityMetric(phaseLabel(for: context.state.phase), label: "Estado")
+                }
+
+                VStack(spacing: 5) {
+                    HStack(spacing: 0) {
+                        phaseNode("waveform", active: context.state.phase == "recording")
+                        Rectangle().fill(Color.white.opacity(0.2)).frame(height: 1)
+                        phaseNode("sparkles", active: context.state.phase == "processing")
+                        Rectangle().fill(Color.white.opacity(0.2)).frame(height: 1)
+                        phaseNode("checkmark", active: context.state.phase == "complete")
+                    }
+                    HStack {
+                        Text("Escuchando")
+                        Spacer()
+                        Text("Organizando")
+                        Spacer()
+                        Text("Guardado")
+                    }
+                    .font(.caption2)
                     .foregroundStyle(.secondary)
                 }
-                Spacer()
-                if context.state.markedMoments > 0 {
-                    Label("\(context.state.markedMoments)", systemImage: "bookmark.fill")
-                        .font(.caption.bold())
+
+                Link(destination: URL(string: "looper://capture")!) {
+                    HStack {
+                        Label("Abrir para marcar un momento", systemImage: "bookmark")
+                        Spacer()
+                        Text("Abrir meeting ↗")
+                    }
+                    .font(.caption.bold())
+                    .foregroundStyle(.white)
                 }
             }
             .padding()
@@ -74,6 +114,27 @@ struct MeetingLiveActivity: Widget {
             .widgetURL(URL(string: "looper://capture"))
         }
     }
+}
+
+@ViewBuilder
+private func activityMetric(_ value: Text, label: String) -> some View {
+    VStack(alignment: .leading, spacing: 2) {
+        value
+            .font(.headline.monospacedDigit())
+            .lineLimit(1)
+        Text(label)
+            .font(.caption2)
+            .foregroundStyle(.secondary)
+    }
+    .frame(maxWidth: .infinity, alignment: .leading)
+}
+
+private func phaseNode(_ name: String, active: Bool) -> some View {
+    Image(systemName: name)
+        .font(.caption.bold())
+        .foregroundStyle(active ? Color(red: 143 / 255, green: 156 / 255, blue: 255 / 255) : .secondary)
+        .frame(width: 22, height: 22)
+        .background(active ? Color.white.opacity(0.12) : Color.clear, in: Circle())
 }
 
 @ViewBuilder

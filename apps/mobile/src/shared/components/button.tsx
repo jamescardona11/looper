@@ -66,7 +66,7 @@ const styles = StyleSheet.create({
     minHeight: controlHeight,
     paddingHorizontal: space.xl,
   },
-  danger: { ...relief.secondary, borderColor: colors.danger },
+  danger: { backgroundColor: colors.danger },
   flatDisabled: {
     ...relief.disabled,
     backgroundColor: colors.surfaceMuted,
@@ -106,7 +106,7 @@ const DISABLED: Record<ButtonVariant, object> = {
 };
 
 const LABEL_COLOR: Record<ButtonVariant, string> = {
-  danger: colors.danger,
+  danger: colors.onDanger,
   ghost: colors.accent,
   primary: colors.onAccent,
   secondary: colors.text,

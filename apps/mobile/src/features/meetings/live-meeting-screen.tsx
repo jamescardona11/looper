@@ -1,5 +1,6 @@
 import { type Href, useRouter } from "expo-router";
-import { type RefObject, useEffect, useRef } from "react";
+import * as Haptics from "expo-haptics";
+import { useEffect, useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import Animated, {
   cancelAnimation,
@@ -13,9 +14,7 @@ import Animated, {
 import { SafeAreaView } from "react-native-safe-area-context";
 import Svg, { Circle } from "react-native-svg";
 import { Button } from "@/shared/components/button";
-import { Chip } from "@/shared/components/chip";
 import { Icon } from "@/shared/components/icon";
-import { PillListeningSignal } from "@/shared/components/pill-listening-signal";
 import { ErrorState } from "@/shared/components/screen-states";
 import { SectionLabel } from "@/shared/components/section-label";
 import { colors } from "@/shared/theme/colors";
@@ -24,16 +23,11 @@ import { typography } from "@/shared/theme/typography";
 import { formatMeetingDuration } from "./meeting-capture-logic";
 import { useMeetingCapture } from "./use-meeting-capture";
 
-const STEPS = [
-  "Looper graba mientras tú escribes lo que quieras.",
-  "Al terminar, Parakeet transcribe sin conexión.",
-  "Queda un documento buscable, con tus momentos marcados.",
-];
+const WAVE_HEIGHTS = [8, 17, 26, 12, 21, 9, 24, 14, 19, 7, 22, 11] as const;
 
 export function LiveMeetingScreen() {
   const router = useRouter();
   const capture = useMeetingCapture();
-  const notesRef = useRef<TextInput>(null);
   const modelReady = capture.localSttStatus === "ready";
   const isRecording = capture.phase === "recording";
   const busyPhase =
@@ -46,22 +40,38 @@ export function LiveMeetingScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <View style={styles.header}>
-        <Pressable
-          accessibilityLabel="Volver a Library"
-          accessibilityRole="button"
-          hitSlop={8}
-          onPress={() => router.replace("/")}
-          style={styles.headerButton}
-        >
-          <Icon color={colors.textSecondary} name="chevronLeft" size={22} strokeWidth={2.2} />
-        </Pressable>
-        <Text style={styles.headerTitle}>Meeting</Text>
-        <View style={styles.headerButton} />
-      </View>
+    <SafeAreaView style={[styles.safeArea, isRecording && styles.captureSafeArea]}>
+      {isRecording ? (
+        <View style={styles.captureHeader}>
+          <Text numberOfLines={1} style={styles.captureMeetingTitle}>
+            {capture.title || "Product sync"}
+          </Text>
+          <View style={styles.liveLabel}>
+            <View style={styles.liveDot} />
+            <Text style={styles.captureLabel}>Grabando</Text>
+          </View>
+          <Text style={styles.captureClock}>{formatMeetingDuration(capture.durationMs)}</Text>
+        </View>
+      ) : (
+        <View style={styles.header}>
+          <Pressable
+            accessibilityLabel="Volver a Library"
+            accessibilityRole="button"
+            hitSlop={8}
+            onPress={() => router.replace("/")}
+            style={styles.headerButton}
+          >
+            <Icon color={colors.textSecondary} name="chevronLeft" size={22} strokeWidth={2.2} />
+          </Pressable>
+          <Text style={styles.headerTitle}>Meeting</Text>
+          <View style={styles.headerButton} />
+        </View>
+      )}
 
-      <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+      <ScrollView
+        contentContainerStyle={[styles.content, isRecording && styles.captureContent]}
+        keyboardShouldPersistTaps="handled"
+      >
         {capture.phase === "ready" ? (
           <ReadyPhase
             install={capture.installLocalStt}
@@ -74,22 +84,17 @@ export function LiveMeetingScreen() {
           />
         ) : null}
 
-        {isRecording ? (
-          <RecordingPhase
-            audioLevel={capture.audioLevel}
-            durationMs={capture.durationMs}
-            moments={capture.moments}
-            notes={capture.notes}
-            notesRef={notesRef}
-            setNotes={capture.setNotes}
-          />
-        ) : null}
+        {isRecording ? <RecordingPhase durationMs={capture.durationMs} /> : null}
 
         {busyPhase ? <BusyPhase durationMs={capture.durationMs} phase={busyPhase} /> : null}
 
         {capture.phase === "error" ? (
           <ErrorState
-            body={`El audio está a salvo: son ${describeMinutes(capture.durationMs)} y no se ha perdido nada. Parakeet no pudo terminar de procesarlo.`}
+            body={
+              capture.hasPersistedAudio
+                ? `El audio quedó guardado en este dispositivo: son ${describeMinutes(capture.durationMs)}. Parakeet no pudo terminar de procesarlo.`
+                : "No se pudo confirmar que el audio quedara guardado. No cierres la app e inténtalo de nuevo."
+            }
             detail={capture.error ?? "local-stt: el runtime no devolvió detalle."}
             onRetry={() => void capture.retry().then(openMeeting)}
             title="La transcripción se quedó a medias"
@@ -97,16 +102,12 @@ export function LiveMeetingScreen() {
         ) : null}
       </ScrollView>
 
-      <View style={styles.footer}>
+      <View style={[styles.footer, isRecording && styles.captureFooter]}>
         {isRecording ? (
-          <View style={styles.actionRow}>
-            <View style={styles.action}>
-              <Button icon="bookmark" label="Momento" onPress={capture.markMoment} />
-            </View>
-            <View style={styles.action}>
-              <Button icon="edit" label="Nota" onPress={() => notesRef.current?.focus()} />
-            </View>
-          </View>
+          <CaptureBar
+            onFinish={() => void capture.finish().then(openMeeting)}
+            onMark={capture.markMoment}
+          />
         ) : null}
 
         {capture.phase === "ready" ? (
@@ -114,14 +115,6 @@ export function LiveMeetingScreen() {
             disabled={!modelReady}
             label="Empezar meeting"
             onPress={() => void capture.start()}
-            variant="primary"
-          />
-        ) : null}
-
-        {isRecording ? (
-          <Button
-            label="Terminar y transcribir"
-            onPress={() => void capture.finish().then(openMeeting)}
             variant="primary"
           />
         ) : null}
@@ -156,16 +149,8 @@ function ReadyPhase({
 
   return (
     <View style={styles.ready}>
-      <View style={styles.chipRow}>
-        <Chip
-          icon="lock"
-          label={modelReady ? "Parakeet · en el dispositivo" : "Parakeet · sin instalar"}
-          selected={modelReady}
-        />
-      </View>
-
       <View style={styles.field}>
-        <SectionLabel>Nombre</SectionLabel>
+        <SectionLabel>Nueva reunión</SectionLabel>
         <View style={styles.fieldRow}>
           <TextInput
             accessibilityLabel="Nombre del meeting"
@@ -179,15 +164,10 @@ function ReadyPhase({
         </View>
       </View>
 
-      <View style={styles.card}>
-        <Text style={styles.cardTitle}>Qué va a pasar</Text>
-        {STEPS.map((step, index) => (
-          <View key={step} style={styles.step}>
-            <Text style={styles.stepIndex}>{index + 1}</Text>
-            <Text style={styles.stepText}>{step}</Text>
-          </View>
-        ))}
-      </View>
+      <Text style={styles.readyHint}>
+        El audio se guarda primero en este iPhone. Al finalizar, tendrás una nota buscable y tus
+        momentos marcados.
+      </Text>
 
       {modelReady ? null : (
         <View style={styles.card}>
@@ -213,66 +193,72 @@ function ReadyPhase({
   );
 }
 
-function RecordingPhase({
-  audioLevel,
-  durationMs,
-  moments,
-  notes,
-  notesRef,
-  setNotes,
-}: {
-  audioLevel: number;
-  durationMs: number;
-  moments: number[];
-  notes: string;
-  notesRef: RefObject<TextInput | null>;
-  setNotes: (value: string) => void;
-}) {
+function RecordingPhase({ durationMs }: { durationMs: number }) {
   return (
     <View style={styles.recording}>
-      <View style={styles.recordingHead}>
-        <View style={styles.liveLabel}>
-          <View style={styles.liveDot} />
-          <SectionLabel>Grabando</SectionLabel>
-        </View>
-        <Text style={styles.timer}>{formatMeetingDuration(durationMs)}</Text>
-        <PillListeningSignal active elapsedMs={durationMs} level={audioLevel} />
+      <View style={styles.liveTranscript}>
+        <Text style={styles.transcriptOld}>
+          El audio y la transcripción se quedan en este dispositivo.
+        </Text>
+        <Text style={styles.transcriptRecent}>Marca los momentos a los que quieras volver.</Text>
+        <Text style={styles.transcriptNow}>
+          {formatMeetingDuration(durationMs)} · Nada debería impedir que alguien entre en el
+          producto<Text style={styles.caret}>▌</Text>
+        </Text>
       </View>
+    </View>
+  );
+}
 
-      <View style={styles.moments}>
-        <View style={styles.momentsHead}>
-          <SectionLabel>{`Momentos · ${moments.length}`}</SectionLabel>
-          <View style={styles.rule} />
-        </View>
-        {moments.length === 0 ? (
-          <Text style={styles.momentsHint}>
-            Marca un momento y queda anclado al minuto exacto de la grabación.
-          </Text>
-        ) : (
-          moments.map((timestamp, index) => (
-            <View key={timestamp} style={styles.momentRow}>
-              <Icon color={colors.accent} name="bookmark" size={14} strokeWidth={2.2} />
-              <Text style={styles.momentAt}>{formatMeetingDuration(timestamp)}</Text>
-              <Text numberOfLines={1} style={styles.momentText}>{`Momento ${index + 1}`}</Text>
-            </View>
-          ))
-        )}
-      </View>
+function CaptureBar({ onFinish, onMark }: { onFinish: () => void; onMark: () => void }) {
+  const [momentMarked, setMomentMarked] = useState(false);
 
-      <View style={styles.notesCard}>
-        <SectionLabel>Mis notas</SectionLabel>
-        <TextInput
-          accessibilityLabel="Mis notas"
-          multiline
-          onChangeText={setNotes}
-          placeholder="Escribe mientras Looper escucha…"
-          placeholderTextColor={colors.disabled}
-          ref={notesRef}
-          style={styles.notesInput}
-          textAlignVertical="top"
-          value={notes}
-        />
+  const markMoment = () => {
+    onMark();
+    setMomentMarked(true);
+    void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => undefined);
+    setTimeout(() => setMomentMarked(false), 1200);
+  };
+
+  return (
+    <View style={styles.captureBar}>
+      <Pressable
+        accessibilityLabel={momentMarked ? "Momento marcado" : "Marcar momento importante"}
+        accessibilityRole="button"
+        accessibilityState={{ selected: momentMarked }}
+        onPress={markMoment}
+        style={({ pressed }) => [
+          styles.captureAction,
+          momentMarked && styles.captureActionMarked,
+          pressed && styles.captureActionPressed,
+        ]}
+      >
+        <Icon color={momentMarked ? colors.onAccent : colors.textSecondary} name="bookmark" size={16} />
+        <Text style={[styles.captureActionText, momentMarked && styles.captureActionMarkedText]}>
+          {momentMarked ? "Marcado" : "Momento"}
+        </Text>
+      </Pressable>
+      <View accessibilityElementsHidden style={styles.wave}>
+        {WAVE_HEIGHTS.map((height) => (
+          <View key={height} style={[styles.waveBar, { height }]} />
+        ))}
       </View>
+      <Pressable
+        accessibilityLabel="Parar y guardar"
+        accessibilityRole="button"
+        onPress={() => {
+          void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => undefined);
+          onFinish();
+        }}
+        style={({ pressed }) => [
+          styles.captureAction,
+          styles.stopAction,
+          pressed && styles.captureActionPressed,
+        ]}
+      >
+        <Text style={styles.stopIcon}>■</Text>
+        <Text style={styles.stopText}>Finalizar</Text>
+      </Pressable>
     </View>
   );
 }
@@ -298,7 +284,7 @@ function BusyPhase({
   }
   return (
     <BusyPanel
-      body={`${describeMinutes(durationMs)} de audio, sin conexión. Puedes cerrar la app: sigue al volver.`}
+      body={`${describeMinutes(durationMs)} de audio. Mantén la app abierta mientras termina de transcribirse.`}
       percent={null}
       title="Transcribiendo"
     />
@@ -401,8 +387,6 @@ function describeMinutes(durationMs: number): string {
 }
 
 const styles = StyleSheet.create({
-  action: { flex: 1 },
-  actionRow: { flexDirection: "row", gap: 10, marginBottom: 10 },
   busy: { alignItems: "center", flex: 1, gap: 26, justifyContent: "center", paddingBottom: 60 },
   busyBody: { ...typography.body, color: colors.muted, maxWidth: 270, textAlign: "center" },
   busyCopy: { alignItems: "center", gap: space.sm },
@@ -418,7 +402,47 @@ const styles = StyleSheet.create({
   },
   cardBody: { ...typography.body, color: colors.muted },
   cardTitle: { ...typography.item, color: colors.text },
-  chipRow: { alignItems: "flex-start" },
+  captureAction: {
+    alignItems: "center",
+    backgroundColor: "#f0efeb",
+    borderRadius: radius.lg,
+    flexDirection: "row",
+    gap: 6,
+    height: 46,
+    justifyContent: "center",
+    minWidth: 88,
+    paddingHorizontal: 10,
+  },
+  captureActionMarked: { backgroundColor: colors.accent },
+  captureActionMarkedText: { color: colors.onAccent },
+  captureActionPressed: { opacity: 0.72, transform: [{ scale: 0.96 }] },
+  captureActionText: { ...typography.meta, color: colors.textSecondary, fontWeight: "600" },
+  captureBar: {
+    alignItems: "center",
+    backgroundColor: colors.backgroundSecondary,
+    borderRadius: 24,
+    flexDirection: "row",
+    gap: 8,
+    padding: 9,
+  },
+  captureClock: {
+    ...typography.meta,
+    color: "rgba(255,255,255,0.62)",
+    fontVariant: ["tabular-nums"],
+  },
+  captureContent: { paddingHorizontal: 0, paddingTop: 0 },
+  captureFooter: { paddingBottom: 12, paddingHorizontal: 14 },
+  captureHeader: {
+    alignItems: "center",
+    flexDirection: "row",
+    gap: 10,
+    justifyContent: "space-between",
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+  },
+  captureLabel: { ...typography.meta, color: "rgba(255, 255, 255, 0.62)", fontWeight: "600" },
+  captureMeetingTitle: { ...typography.item, color: "#ffffff", flex: 1 },
+  captureSafeArea: { backgroundColor: colors.pillShell },
   content: { flexGrow: 1, paddingBottom: space.lg, paddingHorizontal: space.xl, paddingTop: 6 },
   field: { gap: space.sm },
   fieldInput: { ...typography.title, color: colors.text, flex: 1, padding: 0 },
@@ -448,7 +472,7 @@ const styles = StyleSheet.create({
   },
   headerTitle: { ...typography.item, color: colors.textSecondary },
   installProgress: { alignItems: "center", gap: space.md, paddingTop: space.sm },
-  liveDot: { backgroundColor: colors.accent, borderRadius: radius.pill, height: 8, width: 8 },
+  liveDot: { backgroundColor: colors.danger, borderRadius: radius.pill, height: 8, width: 8 },
   liveLabel: { alignItems: "center", flexDirection: "row", gap: space.sm },
   momentAt: {
     ...typography.meta,
@@ -466,29 +490,30 @@ const styles = StyleSheet.create({
     paddingVertical: 9,
   },
   momentText: { ...typography.body, color: colors.textSecondary, flex: 1 },
-  moments: { gap: 9 },
-  momentsHead: { alignItems: "center", flexDirection: "row", gap: space.sm },
-  momentsHint: { ...typography.meta, color: colors.muted },
-  notesCard: {
-    backgroundColor: colors.surfaceMuted,
-    borderColor: colors.border,
-    borderCurve: "continuous",
-    borderRadius: radius.lg,
-    borderWidth: 1,
-    gap: space.sm,
-    padding: 15,
+  ready: { gap: 16, paddingTop: space.md },
+  readyHint: { ...typography.body, color: colors.muted, lineHeight: 22, maxWidth: 310 },
+  caret: { color: colors.accentLight },
+  liveTranscript: {
+    flex: 1,
+    gap: 16,
+    justifyContent: "center",
+    paddingHorizontal: 24,
+    paddingVertical: 32,
   },
-  notesInput: { ...typography.body, color: colors.textSecondary, minHeight: 120, padding: 0 },
-  ready: { gap: 22 },
-  recording: { gap: space.xl },
-  recordingHead: { alignItems: "center", gap: 14 },
+  recording: { flex: 1 },
   ring: { alignItems: "center", height: RING_SIZE, justifyContent: "center", width: RING_SIZE },
   ringArc: { position: "absolute" },
   ringPercent: { ...typography.section, color: colors.text },
-  rule: { backgroundColor: colors.border, flex: 1, height: 1 },
   safeArea: { backgroundColor: colors.background, flex: 1 },
   step: { flexDirection: "row", gap: 10 },
   stepIndex: { ...typography.body, color: colors.disabled },
   stepText: { ...typography.body, color: colors.muted, flex: 1 },
-  timer: { ...typography.display, color: colors.text, fontVariant: ["tabular-nums"] },
+  stopAction: { backgroundColor: colors.danger },
+  stopIcon: { color: colors.onDanger, fontSize: 10 },
+  stopText: { ...typography.meta, color: colors.onDanger, fontWeight: "700" },
+  transcriptNow: { ...typography.section, color: colors.onAccent, fontSize: 23, lineHeight: 31 },
+  transcriptOld: { ...typography.body, color: "rgba(255,255,255,0.4)", lineHeight: 21 },
+  transcriptRecent: { ...typography.body, color: "rgba(255,255,255,0.72)", lineHeight: 22 },
+  wave: { alignItems: "center", flex: 1, flexDirection: "row", gap: 3, justifyContent: "center" },
+  waveBar: { backgroundColor: "rgba(23,23,27,0.48)", borderRadius: radius.pill, width: 3 },
 });

@@ -44,6 +44,11 @@ export interface KeyboardSyncPayload {
   toneById: Record<string, KeyboardTone>;
   selectedToneId: string | null;
   smartModeRules: KeyboardWorkflow[];
+  widgetSummary?: {
+    lastCaptureDetail: string;
+    lastCaptureTitle: string | null;
+    weeklyWordCount: number;
+  };
 }
 
 export function buildKeyboardSyncPayload({
@@ -57,6 +62,7 @@ export function buildKeyboardSyncPayload({
   toneById = {},
   selectedToneId = null,
   smartModeRules = [],
+  widgetSummary,
 }: {
   convexUrl: string;
   refreshToken: string | null;
@@ -68,6 +74,7 @@ export function buildKeyboardSyncPayload({
   toneById?: Record<string, KeyboardTone>;
   selectedToneId?: string | null;
   smartModeRules?: KeyboardWorkflow[];
+  widgetSummary?: KeyboardSyncPayload["widgetSummary"];
 }): KeyboardSyncPayload {
   const terms = [
     ...entries.map(
@@ -98,5 +105,6 @@ export function buildKeyboardSyncPayload({
     toneById,
     selectedToneId,
     smartModeRules,
+    widgetSummary,
   };
 }

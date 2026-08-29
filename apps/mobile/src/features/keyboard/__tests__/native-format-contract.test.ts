@@ -40,6 +40,7 @@ describe("native keyboard output formats", () => {
 
   it("keeps Studio sync keys aligned across iOS and Android", () => {
     const iosModule = readNativeFile("../../../../native/ios/LooperKeyboardModule.swift");
+    const iosKeyboard = readNativeFile("../../../../targets/keyboard/KeyboardViewController.swift");
     const androidModule = readNativeFile(
       "../../../../native/android/com/j11/looper/mobile/LooperKeyboardModule.kt",
     );
@@ -62,6 +63,13 @@ describe("native keyboard output formats", () => {
     expect(androidKeyboard).toContain("manualSmartModeRules");
     expect(androidKeyboard).toContain(`contentDescription = "Smart Mode: \${workflow.name}"`);
     expect(androidKeyboard).toContain("resolveActiveSmartModeRule");
+    expect(iosModule).toContain("looper_widget_weekly_word_count");
+    expect(iosModule).toContain("WidgetCenter.shared.reloadAllTimelines()");
+    expect(iosModule).toContain("looper_keyboard_has_full_access");
+    expect(iosKeyboard).toContain("looper_keyboard_has_full_access");
+    expect(iosKeyboard).toContain("No se detectó voz — inténtalo de nuevo");
+    expect(iosKeyboard).toContain("Transcripción con conexión");
+    expect(iosKeyboard).not.toContain("Transcripción local · sin conexión");
   });
 
   it("keeps transformation controls compact in the iOS keyboard", () => {
@@ -70,6 +78,9 @@ describe("native keyboard output formats", () => {
     expect(iosKeyboard).toContain("transformSelectorButton");
     expect(iosKeyboard).toContain("transformationPanel");
     expect(iosKeyboard).toContain("updateTransformationSummary");
+    expect(iosKeyboard).toContain("updateTransformationOptions");
+    expect(iosKeyboard).toContain('title: "Sin estilo"');
+    expect(iosKeyboard).toContain('detail: "Smart"');
     expect(iosKeyboard).toContain("pillButton.widthAnchor.constraint(equalToConstant: 64)");
     expect(iosKeyboard).toContain(
       "pillButton.centerXAnchor.constraint(equalTo: dictationRail.centerXAnchor)",
@@ -78,6 +89,12 @@ describe("native keyboard output formats", () => {
     expect(iosKeyboard).toContain("static let contentHeight: CGFloat = 240");
     expect(iosKeyboard).toContain("private final class LooperLogoView");
     expect(iosKeyboard).toContain('button.accessibilityLabel = "Looper"');
+    expect(iosKeyboard).toContain("Solo escucha después de pulsar el micrófono.");
+    expect(iosKeyboard).toContain("button.heightAnchor.constraint(equalToConstant: 44)");
+    expect(iosKeyboard).toContain('button.accessibilityLabel = "Ver comandos hablados"');
+    expect(iosKeyboard).toContain('title.text = "Comandos hablados"');
+    expect(iosKeyboard).toContain("«modo literal» · «fin modo literal»");
+    expect(iosKeyboard).toContain("private func makeCommandsGuide() -> UIView");
     expect(iosKeyboard).toContain("inputView?.allowsSelfSizing = true");
     expect(iosKeyboard).toContain(
       "preferredContentSize = CGSize(width: 0, height: Layout.contentHeight)",
@@ -87,17 +104,12 @@ describe("native keyboard output formats", () => {
     );
     expect(iosKeyboard).not.toContain("heightAnchor.constraint(equalToConstant: 286)");
     expect(iosKeyboard).toContain(
-      "transformSelectorButton.topAnchor.constraint(equalTo: view.topAnchor, constant: 8)",
+      "transformSelectorButton.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -12)",
     );
     expect(iosKeyboard).toContain(
-      "dictationRail.topAnchor.constraint(equalTo: transformSelectorButton.bottomAnchor, constant: 14)",
+      "dictationRail.bottomAnchor.constraint(equalTo: transformSelectorButton.topAnchor, constant: -4)",
     );
-    expect(iosKeyboard).toContain(
-      "transformSelectorWithoutLanguageConstraint.isActive = !showsLanguageSelector",
-    );
-    expect(iosKeyboard).toContain(
-      "transformSelectorWithLanguageConstraint.isActive = showsLanguageSelector",
-    );
+    expect(iosKeyboard).toContain('deleteButton.accessibilityLabel = "Borrar"');
     expect(iosKeyboard).toContain("private let dotSpacing: CGFloat = 3");
     expect(iosKeyboard).toContain("private let baseDotRadius: CGFloat = 0.9");
     expect(iosKeyboard).toContain("private let activeDotRadius: CGFloat = 1.0");
