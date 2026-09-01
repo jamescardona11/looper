@@ -109,6 +109,14 @@ describe("native keyboard output formats", () => {
     expect(iosKeyboard).toContain(
       "dictationRail.bottomAnchor.constraint(equalTo: transformSelectorButton.topAnchor, constant: -4)",
     );
+    expect(iosKeyboard).toContain(
+      "transformSelectorButton.heightAnchor.constraint(equalToConstant: 44)",
+    );
+    expect(iosKeyboard).toContain("nkb.heightAnchor.constraint(equalToConstant: 44)");
+    expect(iosKeyboard).toContain("deleteButton.heightAnchor.constraint(equalToConstant: 44)");
+    expect(iosKeyboard).toContain("transformationOptionsScroll.contentLayoutGuide.topAnchor");
+    expect(iosKeyboard).toContain("button.heightAnchor.constraint(equalToConstant: 44)");
+    expect(iosKeyboard).not.toContain("button.heightAnchor.constraint(equalToConstant: 28)");
     expect(iosKeyboard).toContain('deleteButton.accessibilityLabel = "Borrar"');
     expect(iosKeyboard).toContain("private let dotSpacing: CGFloat = 3");
     expect(iosKeyboard).toContain("private let baseDotRadius: CGFloat = 0.9");

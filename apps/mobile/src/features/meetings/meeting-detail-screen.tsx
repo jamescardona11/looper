@@ -193,14 +193,16 @@ function MeetingAudioPlayer({
         accessibilityState={{ disabled: !audioUri }}
         disabled={!audioUri}
         onPress={togglePlayback}
-        style={[styles.playerPlay, !audioUri && styles.playerPlayDisabled]}
+        style={styles.playerPlayTarget}
       >
-        <Icon
-          color={colors.onAccent}
-          name={status.playing ? "pause" : "play"}
-          size={14}
-          strokeWidth={2.4}
-        />
+        <View style={[styles.playerPlay, !audioUri && styles.playerPlayDisabled]}>
+          <Icon
+            color={colors.onAccent}
+            name={status.playing ? "pause" : "play"}
+            size={14}
+            strokeWidth={2.4}
+          />
+        </View>
       </Pressable>
       <View style={styles.playerCopy}>
         <Text numberOfLines={1} style={styles.playerTitle}>{`${title} · grabación local`}</Text>
@@ -237,7 +239,7 @@ function Header({ onBack, title }: { onBack: () => void; title?: string }) {
           </Text>
         </View>
       ) : null}
-      {title ? <Icon color={colors.textSecondary} name="import" size={18} /> : null}
+      {title ? <View style={styles.headerButton} /> : null}
     </View>
   );
 }
@@ -529,6 +531,12 @@ const styles = StyleSheet.create({
     width: 32,
   },
   playerPlayDisabled: { backgroundColor: colors.disabled },
+  playerPlayTarget: {
+    alignItems: "center",
+    height: 44,
+    justifyContent: "center",
+    width: 44,
+  },
   playerProgress: {
     backgroundColor: colors.accent,
     borderRadius: radius.pill,

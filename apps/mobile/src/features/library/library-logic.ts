@@ -83,6 +83,10 @@ export function searchLibraryItems(items: LibraryItem[], query: string): Library
   );
 }
 
+export function recentLibraryItems(items: LibraryItem[], since: number, limit = 2): LibraryItem[] {
+  return items.filter((item) => item.updatedAt >= since).slice(0, limit);
+}
+
 function meetingPreview(meeting: MeetingSession): string {
   if (meeting.state === "active") return "Meeting en curso";
   if (meeting.state === "paused") return "Meeting pausado";

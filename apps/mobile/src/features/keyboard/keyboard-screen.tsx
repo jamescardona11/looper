@@ -355,7 +355,7 @@ function ListSheet({ spec, onClose }: { spec: ListSpec | null; onClose: () => vo
             icon="plus"
             label={spec?.addLabel ?? "Añadir"}
             onPress={() => void add()}
-            variant="secondary"
+            variant="primary"
           />
           <ScrollView contentContainerStyle={styles.sheetList}>
             {spec && spec.items.length === 0 ? (
@@ -537,7 +537,7 @@ const styles = StyleSheet.create({
     gap: space.sm,
     paddingVertical: 10,
   },
-  itemRemove: { alignItems: "center", height: 32, justifyContent: "center", width: 32 },
+  itemRemove: { alignItems: "center", height: 44, justifyContent: "center", width: 44 },
   itemValue: { ...typography.body, color: colors.text, flex: 1 },
   knowledgeDisclosure: {
     alignItems: "center",

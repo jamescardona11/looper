@@ -1,13 +1,10 @@
-import {
-  type ReplacementRule,
-  type useDictationDictionary,
-  type useDictationReplacements,
-  useDictationSettings,
-} from "@looper/data";
+import { useDictationSettings } from "@looper/data";
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import {
+  KeyboardAvoidingView,
   Modal,
+  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -41,17 +38,16 @@ const FORMAT_LABEL: Record<SmartMode["format"], string> = {
   todo: "tareas",
 };
 
-/**
- * Studio es pantalla empujada, no tab: se abre desde la cabecera de Library y
- * vuelve con el chevron. Importar cuelga del pie porque es configuración de una
- * vez, no algo diario.
- */
+/** Studio mantiene la elección cotidiana arriba y revela la configuración avanzada bajo demanda. */
 export function StudioScreen() {
   const router = useRouter();
   const remote = useDictationSettings();
   const [settings, setSettings] = useState(() => normalizeStudioSettings(remote.doc?.data));
   const [status, setStatus] = useState<string | null>(null);
   const [failed, setFailed] = useState<MobileStudioSettings | null>(null);
+  const [personalizeOpen, setPersonalizeOpen] = useState(false);
+  const [showAllStyles, setShowAllStyles] = useState(false);
+  const [editorKind, setEditorKind] = useState<"style" | "mode" | null>(null);
 
   useEffect(() => {
     if (!remote.isLoading) setSettings(normalizeStudioSettings(remote.doc?.data));
@@ -68,6 +64,27 @@ export function StudioScreen() {
       setStatus(null);
       setFailed(next);
     }
+  };
+
+  const addStyle = (style: WritingStyle) => {
+    void persist({
+      ...settings,
+      activeStyleId: style.id,
+      styles: [...settings.styles, style],
+    });
+  };
+
+  const addMode = (mode: SmartMode) => {
+    void persist({ ...settings, smartModes: [...settings.smartModes, mode] });
+  };
+
+  const toggleMode = (id: string) => {
+    void persist({
+      ...settings,
+      smartModes: settings.smartModes.map((mode) =>
+        mode.id === id ? { ...mode, enabled: !mode.enabled } : mode,
+      ),
+    });
   };
 
   return (
@@ -94,124 +111,76 @@ export function StudioScreen() {
           />
         )}
         <Pressable
-          accessibilityLabel="Abrir ajustes de dictado"
+          accessibilityLabel="Personalizar cómo escribe Looper"
           accessibilityRole="button"
-          onPress={() => router.push("/(app)/keyboard")}
-          style={styles.dictationSettingsLink}
+          accessibilityState={{ expanded: personalizeOpen }}
+          onPress={() => setPersonalizeOpen((current) => !current)}
+          style={({ pressed }) => [styles.personalizeDisclosure, pressed && styles.dimmed]}
         >
-          <View>
-            <Text style={styles.dictationSettingsTitle}>Ajustes de dictado</Text>
-            <Text style={styles.dictationSettingsHint}>Teclado, vocabulario y correcciones</Text>
+          <View style={styles.personalizeCopy}>
+            <Text style={styles.dictationSettingsTitle}>Personalizar</Text>
+            <Text style={styles.dictationSettingsHint}>
+              Estilos, Smart Modes y conocimiento del teclado
+            </Text>
           </View>
-          <Icon color={colors.muted} name="chevronRight" size={18} strokeWidth={2.2} />
+          <Icon
+            color={colors.accent}
+            name={personalizeOpen ? "chevronDown" : "chevronRight"}
+            size={18}
+            strokeWidth={2.2}
+          />
         </Pressable>
+        {personalizeOpen && !remote.isLoading ? (
+          <View style={styles.personalizeContent}>
+            <View style={styles.sectionBlock}>
+              <SectionLabel>Estilos</SectionLabel>
+              <StylesTab
+                onCreate={() => setEditorKind("style")}
+                select={(activeStyleId) => void persist({ ...settings, activeStyleId })}
+                settings={settings}
+                showAll={showAllStyles}
+                toggleAll={() => setShowAllStyles((current) => !current)}
+              />
+            </View>
+            <View style={styles.sectionBlock}>
+              <SectionLabel>Smart Modes</SectionLabel>
+              <ModesTab
+                modes={settings.smartModes}
+                onCreate={() => setEditorKind("mode")}
+                toggle={toggleMode}
+                writingStyles={settings.styles}
+              />
+            </View>
+            <Pressable
+              accessibilityLabel="Abrir vocabulario, correcciones y snippets"
+              accessibilityRole="button"
+              onPress={() => router.push("/(app)/keyboard")}
+              style={({ pressed }) => [styles.dictationSettingsLink, pressed && styles.dimmed]}
+            >
+              <View style={styles.personalizeCopy}>
+                <Text style={styles.dictationSettingsTitle}>Conocimiento del teclado</Text>
+                <Text style={styles.dictationSettingsHint}>
+                  Vocabulario, correcciones y snippets
+                </Text>
+              </View>
+              <Icon color={colors.muted} name="chevronRight" size={18} strokeWidth={2.2} />
+            </Pressable>
+          </View>
+        ) : null}
         {status ? (
           <Text accessibilityLiveRegion="polite" style={styles.status}>
             {status}
           </Text>
         ) : null}
       </ScrollView>
+      <StudioEditor
+        kind={editorKind}
+        onClose={() => setEditorKind(null)}
+        onMode={addMode}
+        onStyle={addStyle}
+        writingStyles={settings.styles}
+      />
     </SafeAreaView>
-  );
-}
-
-function VocabularyTab({ dictionary }: { dictionary: ReturnType<typeof useDictationDictionary> }) {
-  const [draft, setDraft] = useState("");
-  const add = () => {
-    const term = draft.trim();
-    if (!term) return;
-    setDraft("");
-    void dictionary.add(term);
-  };
-  return (
-    <View style={styles.studioCard}>
-      <View style={styles.cardHeading}>
-        <Text style={styles.cardTitle}>Vocabulario</Text>
-        <Text style={styles.count}>{dictionary.isLoading ? "…" : dictionary.entries.length}</Text>
-      </View>
-      <Text style={styles.cardHint}>Nombres y términos que Looper debe respetar al dictar.</Text>
-      <View style={styles.wordCloud}>
-        {dictionary.entries.map((entry) => (
-          <Pressable
-            accessibilityLabel={`Eliminar ${entry.term}`}
-            accessibilityRole="button"
-            key={entry.id}
-            onPress={() => void dictionary.remove(entry.id)}
-            style={styles.word}
-          >
-            <Text style={styles.wordText}>{entry.term}</Text>
-            <Text style={styles.wordRemove}>×</Text>
-          </Pressable>
-        ))}
-      </View>
-      <View style={styles.addWordRow}>
-        <TextInput
-          accessibilityLabel="Añadir palabra al vocabulario"
-          onChangeText={setDraft}
-          onSubmitEditing={add}
-          placeholder="Añadir palabra"
-          placeholderTextColor={colors.disabled}
-          returnKeyType="done"
-          style={styles.addWordInput}
-          value={draft}
-        />
-        <Pressable
-          accessibilityLabel="Guardar palabra"
-          accessibilityRole="button"
-          onPress={add}
-          style={styles.addWordButton}
-        >
-          <Text style={styles.addWordButtonText}>Añadir</Text>
-        </Pressable>
-      </View>
-    </View>
-  );
-}
-
-function ReplacementTab({
-  replacements,
-}: {
-  replacements: ReturnType<typeof useDictationReplacements>;
-}) {
-  return (
-    <View style={styles.studioCard}>
-      <View style={styles.cardHeading}>
-        <Text style={styles.cardTitle}>Correcciones</Text>
-        <Text style={styles.count}>{replacements.isLoading ? "…" : replacements.rules.length}</Text>
-      </View>
-      <Text style={styles.cardHint}>Se aplican al terminar cada transcripción.</Text>
-      {replacements.rules.length ? (
-        replacements.rules.map((rule) => (
-          <ReplacementRow key={rule.id} replacements={replacements} rule={rule} />
-        ))
-      ) : (
-        <Text style={styles.emptyInline}>
-          {replacements.isLoading ? "Cargando correcciones…" : "Aún no hay correcciones guardadas."}
-        </Text>
-      )}
-    </View>
-  );
-}
-
-function ReplacementRow({
-  replacements,
-  rule,
-}: {
-  replacements: ReturnType<typeof useDictationReplacements>;
-  rule: ReplacementRule;
-}) {
-  return (
-    <Pressable
-      accessibilityLabel={`Eliminar corrección ${rule.source}`}
-      accessibilityRole="button"
-      onPress={() => void replacements.remove(rule.id)}
-      style={styles.replacementRow}
-    >
-      <Text style={styles.replacementText}>
-        {rule.source} → {rule.destination}
-      </Text>
-      <Text style={styles.wordRemove}>×</Text>
-    </Pressable>
   );
 }
 
@@ -408,6 +377,7 @@ function ModeRow({
         </View>
         <Switch
           accessibilityLabel={mode.name}
+          hitSlop={8}
           onValueChange={() => toggle(mode.id)}
           trackColor={{ false: colors.surface, true: colors.accent }}
           value={mode.enabled}
@@ -488,76 +458,87 @@ function StudioEditor({
     }
     setName("");
     setInstructions("");
+    onClose();
   };
 
   return (
     <Modal animationType="slide" onRequestClose={onClose} transparent visible={kind !== null}>
-      <View style={styles.backdrop}>
-        <View style={styles.sheet}>
-          <View style={styles.sheetHead}>
-            <Text style={styles.sheetTitle}>
-              {kind === "style" ? "Nuevo estilo" : "Nuevo Smart Mode"}
-            </Text>
-            <Pressable
-              accessibilityLabel="Cerrar"
-              accessibilityRole="button"
-              onPress={onClose}
-              style={styles.close}
-            >
-              <Icon color={colors.text} name="close" size={18} />
-            </Pressable>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        style={styles.backdrop}
+      >
+        <ScrollView
+          bounces={false}
+          contentContainerStyle={styles.sheetScrollContent}
+          keyboardDismissMode="interactive"
+          keyboardShouldPersistTaps="handled"
+        >
+          <View style={styles.sheet}>
+            <View style={styles.sheetHead}>
+              <Text style={styles.sheetTitle}>
+                {kind === "style" ? "Nuevo estilo" : "Nuevo Smart Mode"}
+              </Text>
+              <Pressable
+                accessibilityLabel="Cerrar"
+                accessibilityRole="button"
+                onPress={onClose}
+                style={styles.close}
+              >
+                <Icon color={colors.text} name="close" size={18} />
+              </Pressable>
+            </View>
+            <TextInput
+              onChangeText={setName}
+              placeholder="Nombre"
+              placeholderTextColor={colors.muted}
+              style={styles.input}
+              value={name}
+            />
+            {kind === "mode" ? (
+              <>
+                <SectionLabel>Estilo</SectionLabel>
+                <View style={styles.options}>
+                  {writingStyles.map((item) => (
+                    <Pressable
+                      accessibilityRole="radio"
+                      accessibilityState={{ selected: styleId === item.id }}
+                      key={item.id}
+                      onPress={() => setStyleId(item.id)}
+                      style={[styles.option, styleId === item.id && styles.optionSelected]}
+                    >
+                      <Text style={styles.optionLabel}>{item.name}</Text>
+                    </Pressable>
+                  ))}
+                </View>
+                <SectionLabel>Formato</SectionLabel>
+                <View style={styles.options}>
+                  {(["none", "email", "message", "bullets", "todo"] as const).map((value) => (
+                    <Pressable
+                      accessibilityRole="radio"
+                      accessibilityState={{ selected: format === value }}
+                      key={value}
+                      onPress={() => setFormat(value)}
+                      style={[styles.option, format === value && styles.optionSelected]}
+                    >
+                      <Text style={styles.optionLabel}>{FORMAT_LABEL[value]}</Text>
+                    </Pressable>
+                  ))}
+                </View>
+              </>
+            ) : null}
+            <TextInput
+              multiline
+              onChangeText={setInstructions}
+              placeholder="Instrucciones"
+              placeholderTextColor={colors.muted}
+              style={[styles.input, styles.instructions]}
+              textAlignVertical="top"
+              value={instructions}
+            />
+            <Button disabled={!name.trim()} label="Guardar" onPress={save} variant="primary" />
           </View>
-          <TextInput
-            onChangeText={setName}
-            placeholder="Nombre"
-            placeholderTextColor={colors.muted}
-            style={styles.input}
-            value={name}
-          />
-          {kind === "mode" ? (
-            <>
-              <SectionLabel>Estilo</SectionLabel>
-              <View style={styles.options}>
-                {writingStyles.map((item) => (
-                  <Pressable
-                    accessibilityRole="radio"
-                    accessibilityState={{ selected: styleId === item.id }}
-                    key={item.id}
-                    onPress={() => setStyleId(item.id)}
-                    style={[styles.option, styleId === item.id && styles.optionSelected]}
-                  >
-                    <Text style={styles.optionLabel}>{item.name}</Text>
-                  </Pressable>
-                ))}
-              </View>
-              <SectionLabel>Formato</SectionLabel>
-              <View style={styles.options}>
-                {(["none", "email", "message", "bullets", "todo"] as const).map((value) => (
-                  <Pressable
-                    accessibilityRole="radio"
-                    accessibilityState={{ selected: format === value }}
-                    key={value}
-                    onPress={() => setFormat(value)}
-                    style={[styles.option, format === value && styles.optionSelected]}
-                  >
-                    <Text style={styles.optionLabel}>{FORMAT_LABEL[value]}</Text>
-                  </Pressable>
-                ))}
-              </View>
-            </>
-          ) : null}
-          <TextInput
-            multiline
-            onChangeText={setInstructions}
-            placeholder="Instrucciones"
-            placeholderTextColor={colors.muted}
-            style={[styles.input, styles.instructions]}
-            textAlignVertical="top"
-            value={instructions}
-          />
-          <Button disabled={!name.trim()} label="Guardar" onPress={save} variant="primary" />
-        </View>
-      </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
     </Modal>
   );
 }
@@ -566,29 +547,6 @@ const SCREEN_PAD = 20;
 const SHEET_RADIUS = 22;
 
 const styles = StyleSheet.create({
-  addWordButton: {
-    alignItems: "center",
-    backgroundColor: colors.accentSubtle,
-    borderRadius: radius.md,
-    justifyContent: "center",
-    minHeight: 42,
-    paddingHorizontal: 12,
-  },
-  addWordButtonText: { ...typography.meta, color: colors.accent, fontWeight: "700" },
-  addWordInput: {
-    ...typography.body,
-    color: colors.text,
-    flex: 1,
-    minHeight: 42,
-    paddingHorizontal: 12,
-  },
-  addWordRow: {
-    alignItems: "center",
-    borderColor: colors.border,
-    borderRadius: radius.md,
-    borderWidth: 1,
-    flexDirection: "row",
-  },
   backdrop: { backgroundColor: colors.overlay, flex: 1, justifyContent: "flex-end" },
   card: {
     backgroundColor: colors.surfaceMuted,
@@ -606,9 +564,9 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: colors.surface,
     borderRadius: radius.md,
-    height: 36,
+    height: 44,
     justifyContent: "center",
-    width: 36,
+    width: 44,
   },
   content: { gap: space.lg, paddingBottom: 108, paddingHorizontal: space.lg },
   cleaningHint: { ...typography.meta, color: colors.muted, marginTop: 3 },
@@ -698,7 +656,7 @@ const styles = StyleSheet.create({
     borderColor: colors.border,
     borderRadius: radius.pill,
     borderWidth: 1,
-    minHeight: 30,
+    minHeight: 44,
     paddingHorizontal: 11,
     justifyContent: "center",
   },
@@ -719,12 +677,27 @@ const styles = StyleSheet.create({
     borderColor: colors.border,
     borderRadius: radius.sm,
     borderWidth: 1,
+    justifyContent: "center",
+    minHeight: 44,
     paddingHorizontal: 10,
     paddingVertical: space.sm,
   },
   optionLabel: { ...typography.meta, color: colors.textSecondary, fontWeight: "600" },
   optionSelected: { backgroundColor: colors.accentSubtle, borderColor: colors.accent },
   options: { flexDirection: "row", flexWrap: "wrap", gap: 7 },
+  personalizeContent: { gap: space.xl },
+  personalizeCopy: { flex: 1, gap: 2, minWidth: 0 },
+  personalizeDisclosure: {
+    alignItems: "center",
+    borderBottomColor: colors.border,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderTopColor: colors.border,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    flexDirection: "row",
+    gap: space.md,
+    minHeight: 64,
+    paddingHorizontal: 2,
+  },
   radio: {
     alignItems: "center",
     borderColor: colors.borderStrong,
@@ -741,16 +714,6 @@ const styles = StyleSheet.create({
     width: 9,
   },
   radioSelected: { borderColor: colors.accent },
-  replacementRow: {
-    alignItems: "center",
-    backgroundColor: colors.background,
-    borderRadius: radius.md,
-    flexDirection: "row",
-    justifyContent: "space-between",
-    minHeight: 42,
-    paddingHorizontal: 12,
-  },
-  replacementText: { ...typography.meta, color: colors.textSecondary, fontWeight: "600" },
   rowCopy: { flex: 1, gap: 2 },
   rowNote: { ...typography.meta, color: colors.muted, lineHeight: 19 },
   rowTitle: { ...typography.item, color: colors.text },
@@ -774,6 +737,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: SCREEN_PAD,
   },
   sectionTabsScroller: { maxHeight: 48, minHeight: 48 },
+  sectionBlock: { gap: space.sm },
   safeArea: { backgroundColor: colors.background, flex: 1 },
   sheet: {
     backgroundColor: colors.surfaceMuted,
@@ -783,6 +747,7 @@ const styles = StyleSheet.create({
     padding: SCREEN_PAD,
     paddingBottom: 34,
   },
+  sheetScrollContent: { flexGrow: 1, justifyContent: "flex-end" },
   sheetHead: { alignItems: "center", flexDirection: "row" },
   sheetTitle: { ...typography.section, color: colors.text, flex: 1 },
   skeletonBarNarrow: {
@@ -799,7 +764,6 @@ const styles = StyleSheet.create({
   },
   skeletonExample: { backgroundColor: colors.surface, borderRadius: radius.md, height: 72 },
   status: { ...typography.meta, color: colors.muted },
-  studioCard: { backgroundColor: colors.surface, borderRadius: radius.lg, gap: 12, padding: 15 },
   stylesSection: { gap: 9, marginTop: 6 },
   styleHead: { alignItems: "center", flexDirection: "row", gap: space.md },
   swatch: { gap: 9 },
@@ -820,16 +784,4 @@ const styles = StyleSheet.create({
   swatchLine: { alignItems: "flex-start", flexDirection: "row", gap: 8 },
   swatchText: { ...typography.meta, color: colors.textSecondary, flex: 1, lineHeight: 18 },
   title: { ...typography.title, color: colors.text },
-  word: {
-    alignItems: "center",
-    backgroundColor: colors.accentSubtle,
-    borderRadius: radius.pill,
-    flexDirection: "row",
-    gap: 5,
-    minHeight: 30,
-    paddingHorizontal: 10,
-  },
-  wordCloud: { flexDirection: "row", flexWrap: "wrap", gap: 7 },
-  wordRemove: { ...typography.meta, color: colors.muted, fontWeight: "700" },
-  wordText: { ...typography.meta, color: colors.accentDark, fontWeight: "700" },
 });

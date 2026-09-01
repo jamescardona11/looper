@@ -3,6 +3,7 @@ import { type Href, useRouter } from "expo-router";
 import { useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
+  Alert,
   Clipboard,
   Pressable,
   ScrollView,
@@ -127,6 +128,32 @@ export function DictationScreen() {
     if (audioUri.current) void transcribe(audioUri.current);
   };
 
+  const openMore = () => {
+    const actions = [
+      {
+        text: "Abrir Studio",
+        onPress: () => router.push("/studio" as Href),
+      },
+      ...(modelReady && !focusedCapture
+        ? [
+            {
+              text: "Eliminar modelo",
+              style: "destructive" as const,
+              onPress: () => void localStt.remove(),
+            },
+          ]
+        : []),
+      { text: "Cancelar", style: "cancel" as const },
+    ];
+    Alert.alert(
+      "Opciones de dictado",
+      modelReady
+        ? "Eliminar el modelo libera su espacio. Podrás instalarlo de nuevo cuando quieras."
+        : "Abre Studio para elegir cómo se transforma el texto.",
+      actions,
+    );
+  };
+
   return (
     <SafeAreaView style={[styles.safeArea, focusedCapture && styles.captureSafeArea]}>
       <View style={[styles.header, focusedCapture && styles.captureHeader]}>
@@ -144,14 +171,18 @@ export function DictationScreen() {
           />
         </Pressable>
         <Text style={[styles.headerTitle, focusedCapture && styles.captureText]}>Dictar</Text>
-        <Pressable
-          accessibilityLabel="Abrir Studio"
-          accessibilityRole="button"
-          onPress={() => router.push("/studio" as Href)}
-          style={styles.headerButton}
-        >
-          <Icon color={focusedCapture ? "#ffffff" : colors.textSecondary} name="studio" size={20} />
-        </Pressable>
+        {focusedCapture ? (
+          <View style={styles.headerButton} />
+        ) : (
+          <Pressable
+            accessibilityLabel="Más opciones de dictado"
+            accessibilityRole="button"
+            onPress={openMore}
+            style={styles.headerButton}
+          >
+            <Icon color={colors.textSecondary} name="more" size={20} />
+          </Pressable>
+        )}
       </View>
 
       {!focusedCapture ? (
@@ -233,14 +264,7 @@ export function DictationScreen() {
         {recorder.error ? <Text style={styles.recorderError}>{recorder.error}</Text> : null}
 
         {phase === "idle" && modelReady && !failure ? (
-          <>
-            <Text style={styles.hint}>Mantén pulsado el botón para dictar sin soltarlo</Text>
-            <Button
-              label="Eliminar modelo"
-              onPress={() => void localStt.remove()}
-              variant="ghost"
-            />
-          </>
+          <Text style={styles.hint}>Mantén pulsado el botón para dictar sin soltarlo</Text>
         ) : null}
 
         {phase === "recording" ? (

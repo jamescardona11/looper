@@ -23,7 +23,7 @@ import { ErrorState } from "@/shared/components/screen-states";
 import { colors } from "@/shared/theme/colors";
 import { hitTarget, radius, relief, space } from "@/shared/theme/layout";
 import { typography } from "@/shared/theme/typography";
-import { type AgentCitation, answerParts } from "./agent-logic";
+import { type AgentCitation, answerParts, inlineEmphasisParts } from "./agent-logic";
 import { useMobileAgent } from "./use-mobile-agent";
 
 const SUGGESTIONS = [
@@ -61,6 +61,10 @@ export function AgentScreen({ meetingId }: { meetingId?: string }) {
   const openCitation = (citation: AgentCitation) => {
     const target = resolveCitation(citation);
     if (target) router.push(target);
+  };
+
+  const scrollToLatest = () => {
+    requestAnimationFrame(() => listRef.current?.scrollToEnd({ animated: true }));
   };
 
   const submit = async (value = draft) => {
@@ -105,6 +109,7 @@ export function AgentScreen({ meetingId }: { meetingId?: string }) {
               <FollowUpSuggestions onSubmit={(suggestion) => void submit(suggestion)} />
             ) : null
           }
+          ListFooterComponentStyle={styles.followUpFooter}
           ListEmptyComponent={
             agent.isLoading ? (
               <ThreadSkeleton />
@@ -116,7 +121,8 @@ export function AgentScreen({ meetingId }: { meetingId?: string }) {
               />
             )
           }
-          onContentSizeChange={() => listRef.current?.scrollToEnd({ animated: true })}
+          onContentSizeChange={scrollToLatest}
+          onLayout={scrollToLatest}
           ref={listRef}
           renderItem={({ item }) => (
             <MessageRow
@@ -315,7 +321,14 @@ function AnswerBody({
         {answerParts(answer).map((part) =>
           part.kind === "text" ? (
             <Text key={`text:${part.start}`} style={styles.answerText}>
-              {part.value}
+              {inlineEmphasisParts(part.value).map((segment) => (
+                <Text
+                  key={`text:${part.start}:${segment.start}`}
+                  style={segment.emphasized ? styles.answerStrong : undefined}
+                >
+                  {segment.value}
+                </Text>
+              ))}
             </Text>
           ) : (
             <CitationChip
@@ -368,9 +381,9 @@ function CitationChip({ citation, onPress }: { citation: AgentCitation; onPress?
       accessibilityLabel={`Abrir fuente ${title}`}
       accessibilityRole="button"
       onPress={onPress}
-      style={styles.citationChip}
+      style={styles.citationTapTarget}
     >
-      {contents}
+      <View style={styles.citationChip}>{contents}</View>
     </Pressable>
   );
 }
@@ -413,8 +426,8 @@ function ThreadSkeleton() {
   );
 }
 
-const COMPOSER_HEIGHT = 52;
-const SEND_SIZE = 40;
+const COMPOSER_HEIGHT = 56;
+const SEND_SIZE = 44;
 
 const styles = StyleSheet.create({
   answerBubble: {
@@ -429,6 +442,7 @@ const styles = StyleSheet.create({
   answerRow: { alignSelf: "stretch", gap: 10 },
   answerParts: { alignItems: "baseline", flexDirection: "row", flexWrap: "wrap", gap: 4 },
   answerText: { ...typography.body, color: colors.text, lineHeight: 24 },
+  answerStrong: { fontWeight: "700" },
   brandLabel: { ...typography.label, color: colors.accent },
   brandRow: { alignItems: "center", flexDirection: "row", gap: 7 },
   composer: {
@@ -459,6 +473,7 @@ const styles = StyleSheet.create({
   },
   followUpText: { ...typography.meta, color: colors.textSecondary, flex: 1 },
   followUps: { gap: 7, paddingTop: space.sm },
+  followUpFooter: { paddingBottom: space.lg },
   followUpsLabel: { ...typography.label, color: colors.muted, letterSpacing: 0.8, marginBottom: 2 },
   header: {
     alignItems: "center",
@@ -546,6 +561,11 @@ const styles = StyleSheet.create({
     fontWeight: "700",
   },
   citationTitle: { ...typography.meta, color: colors.accentDark, maxWidth: 150 },
+  citationTapTarget: {
+    alignItems: "center",
+    justifyContent: "center",
+    minHeight: hitTarget,
+  },
   suggestion: {
     alignItems: "center",
     backgroundColor: colors.surfaceMuted,
@@ -557,7 +577,14 @@ const styles = StyleSheet.create({
     minHeight: 58,
     paddingHorizontal: space.lg,
   },
-  suggestionToggle: { alignItems: "center", flexDirection: "row", gap: space.xs },
+  suggestionToggle: {
+    alignItems: "center",
+    alignSelf: "flex-start",
+    flexDirection: "row",
+    gap: space.xs,
+    minHeight: hitTarget,
+    paddingRight: space.sm,
+  },
   suggestionToggleText: { ...typography.meta, color: colors.accent, fontWeight: "700" },
   suggestionPressed: { backgroundColor: colors.surface },
   suggestionText: { ...typography.body, color: colors.textSecondary, flex: 1 },
@@ -568,7 +595,7 @@ const styles = StyleSheet.create({
   timeline: {
     flexGrow: 1,
     gap: space.md,
-    paddingBottom: space.sm,
+    paddingBottom: space.lg,
     paddingHorizontal: space.lg,
     paddingTop: space.xs,
   },

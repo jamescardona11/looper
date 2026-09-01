@@ -16,6 +16,12 @@ export type AnswerPart =
   | { kind: "text"; start: number; value: string }
   | { kind: "citation"; start: number; citation: AgentCitation };
 
+export type InlineEmphasisPart = {
+  emphasized: boolean;
+  start: number;
+  value: string;
+};
+
 const CITATION_PATTERN = /\[(Note|Dictation|Meeting):\s*([^\]]+)]/g;
 
 export function citationsFromAnswer(answer: string): AgentCitation[] {
@@ -58,4 +64,26 @@ export function answerParts(answer: string): AnswerPart[] {
     parts.push({ kind: "text", start: cursor, value: answer.slice(cursor) });
   }
   return parts.length ? parts : [{ kind: "text", start: 0, value: answer }];
+}
+
+/** Renderiza el énfasis breve del agente sin enseñar los marcadores Markdown. */
+export function inlineEmphasisParts(value: string): InlineEmphasisPart[] {
+  const parts: InlineEmphasisPart[] = [];
+  const pattern = /\*\*(.+?)\*\*/g;
+  let cursor = 0;
+
+  for (const match of value.matchAll(pattern)) {
+    const index = match.index ?? cursor;
+    if (index > cursor) {
+      parts.push({ emphasized: false, start: cursor, value: value.slice(cursor, index) });
+    }
+    parts.push({ emphasized: true, start: index, value: match[1] ?? "" });
+    cursor = index + match[0].length;
+  }
+
+  if (cursor < value.length) {
+    parts.push({ emphasized: false, start: cursor, value: value.slice(cursor) });
+  }
+
+  return parts.length ? parts : [{ emphasized: false, start: 0, value }];
 }

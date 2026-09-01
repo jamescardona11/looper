@@ -399,6 +399,7 @@ class KeyboardViewController: UIInputViewController {
   private var transformationPanel: UIView!
   private var formatPickerButton: UIButton!
   private var stylePickerButton: UIButton!
+  private var transformationOptionsScroll: UIScrollView!
   private var transformationOptionsStack: UIStackView!
   private var transformSummaryLabel: UILabel!
 
@@ -878,7 +879,7 @@ class KeyboardViewController: UIInputViewController {
       transformSelectorButton.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -12),
       transformSelectorButton.leadingAnchor.constraint(equalTo: nkb.trailingAnchor, constant: 8),
       transformSelectorButton.trailingAnchor.constraint(equalTo: deleteButton.leadingAnchor, constant: -8),
-      transformSelectorButton.heightAnchor.constraint(equalToConstant: 38),
+      transformSelectorButton.heightAnchor.constraint(equalToConstant: 44),
 
       dictationRail.topAnchor.constraint(equalTo: logoButton.bottomAnchor, constant: 9),
       dictationRail.bottomAnchor.constraint(equalTo: transformSelectorButton.topAnchor, constant: -4),
@@ -912,12 +913,12 @@ class KeyboardViewController: UIInputViewController {
       nkb.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 12),
       nkb.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -12),
       nkb.widthAnchor.constraint(equalToConstant: 44),
-      nkb.heightAnchor.constraint(equalToConstant: 38),
+      nkb.heightAnchor.constraint(equalToConstant: 44),
 
       deleteButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -12),
       deleteButton.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -12),
       deleteButton.widthAnchor.constraint(equalToConstant: 44),
-      deleteButton.heightAnchor.constraint(equalToConstant: 38),
+      deleteButton.heightAnchor.constraint(equalToConstant: 44),
     ])
 
     buildTransformationPanel()
@@ -1055,11 +1056,17 @@ class KeyboardViewController: UIInputViewController {
     styleLabel.font = .systemFont(ofSize: 12, weight: .semibold)
     transformationPanel.addSubview(styleLabel)
 
+    transformationOptionsScroll = UIScrollView()
+    transformationOptionsScroll.translatesAutoresizingMaskIntoConstraints = false
+    transformationOptionsScroll.alwaysBounceVertical = false
+    transformationOptionsScroll.showsVerticalScrollIndicator = true
+    transformationPanel.addSubview(transformationOptionsScroll)
+
     transformationOptionsStack = UIStackView()
     transformationOptionsStack.translatesAutoresizingMaskIntoConstraints = false
     transformationOptionsStack.axis = .vertical
     transformationOptionsStack.spacing = 4
-    transformationPanel.addSubview(transformationOptionsStack)
+    transformationOptionsScroll.addSubview(transformationOptionsStack)
 
     NSLayoutConstraint.activate([
       transformationBackdrop.leadingAnchor.constraint(equalTo: view.leadingAnchor),
@@ -1073,7 +1080,7 @@ class KeyboardViewController: UIInputViewController {
         equalTo: transformationBackdrop.trailingAnchor, constant: -8),
       transformationPanel.bottomAnchor.constraint(
         equalTo: transformationBackdrop.bottomAnchor, constant: -8),
-      transformationPanel.heightAnchor.constraint(equalToConstant: 214),
+      transformationPanel.heightAnchor.constraint(equalToConstant: 224),
 
       title.leadingAnchor.constraint(equalTo: transformationPanel.leadingAnchor, constant: 16),
       title.centerYAnchor.constraint(equalTo: closeButton.centerYAnchor),
@@ -1088,15 +1095,27 @@ class KeyboardViewController: UIInputViewController {
         equalTo: transformationPanel.leadingAnchor, constant: 12),
       formatRow.container.trailingAnchor.constraint(
         equalTo: transformationPanel.trailingAnchor, constant: -12),
-      formatRow.container.heightAnchor.constraint(equalToConstant: 36),
+      formatRow.container.heightAnchor.constraint(equalToConstant: 44),
 
       styleLabel.topAnchor.constraint(equalTo: formatRow.container.bottomAnchor, constant: 8),
       styleLabel.leadingAnchor.constraint(equalTo: formatRow.container.leadingAnchor),
 
-      transformationOptionsStack.topAnchor.constraint(equalTo: styleLabel.bottomAnchor, constant: 4),
-      transformationOptionsStack.leadingAnchor.constraint(equalTo: formatRow.container.leadingAnchor),
-      transformationOptionsStack.trailingAnchor.constraint(equalTo: formatRow.container.trailingAnchor),
-      transformationOptionsStack.heightAnchor.constraint(equalToConstant: 92),
+      transformationOptionsScroll.topAnchor.constraint(equalTo: styleLabel.bottomAnchor, constant: 4),
+      transformationOptionsScroll.leadingAnchor.constraint(equalTo: formatRow.container.leadingAnchor),
+      transformationOptionsScroll.trailingAnchor.constraint(equalTo: formatRow.container.trailingAnchor),
+      transformationOptionsScroll.bottomAnchor.constraint(
+        equalTo: transformationPanel.bottomAnchor, constant: -8),
+
+      transformationOptionsStack.topAnchor.constraint(
+        equalTo: transformationOptionsScroll.contentLayoutGuide.topAnchor),
+      transformationOptionsStack.leadingAnchor.constraint(
+        equalTo: transformationOptionsScroll.contentLayoutGuide.leadingAnchor),
+      transformationOptionsStack.trailingAnchor.constraint(
+        equalTo: transformationOptionsScroll.contentLayoutGuide.trailingAnchor),
+      transformationOptionsStack.bottomAnchor.constraint(
+        equalTo: transformationOptionsScroll.contentLayoutGuide.bottomAnchor),
+      transformationOptionsStack.widthAnchor.constraint(
+        equalTo: transformationOptionsScroll.frameLayoutGuide.widthAnchor),
     ])
   }
 
@@ -1299,7 +1318,7 @@ class KeyboardViewController: UIInputViewController {
       for: .touchUpInside
     )
     transformationOptionsStack.addArrangedSubview(button)
-    button.heightAnchor.constraint(equalToConstant: 28).isActive = true
+    button.heightAnchor.constraint(equalToConstant: 44).isActive = true
   }
 
   private func selectFormat(_ formatId: String?) {

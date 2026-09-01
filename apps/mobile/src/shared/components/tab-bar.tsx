@@ -8,8 +8,8 @@ import { Icon, type IconName } from "./icon";
 type Slot = { route: string; label: string; icon: IconName };
 
 const SLOTS: Slot[] = [
-  { route: "index", label: "Dictado", icon: "dictado" },
-  { route: "notes", label: "Notas", icon: "nota" },
+  { route: "index", label: "Inicio", icon: "dictado" },
+  { route: "notes", label: "Biblioteca", icon: "library" },
   { route: "ask", label: "Preguntar", icon: "ask" },
   { route: "studio", label: "Studio", icon: "studio" },
 ];

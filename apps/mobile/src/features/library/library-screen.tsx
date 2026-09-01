@@ -14,6 +14,7 @@ import {
   buildLibraryItems,
   groupLibraryItemsByDay,
   type LibraryItem,
+  recentLibraryItems,
   searchLibraryItems,
 } from "./library-logic";
 
@@ -62,6 +63,7 @@ export function LibraryScreen() {
     () => items.filter((item) => item.updatedAt >= rangeStart),
     [items, rangeStart],
   );
+  const recentItems = useMemo(() => recentLibraryItems(items, rangeStart), [items, rangeStart]);
   const wordCount = useMemo(
     () => rangedItems.reduce((total, item) => total + wordCountFor(item.preview), 0),
     [rangedItems],
@@ -72,12 +74,12 @@ export function LibraryScreen() {
       const hits = searchLibraryItems(items, needle);
       return [{ key: "results", label: resultsLabel(hits.length, needle), data: hits }];
     }
-    return groupLibraryItemsByDay(rangedItems.slice(0, 2), Date.now()).map((group) => ({
+    return groupLibraryItemsByDay(recentItems, Date.now()).map((group) => ({
       key: group.key,
       label: group.label,
       data: group.items,
     }));
-  }, [items, needle, rangedItems]);
+  }, [items, needle, recentItems]);
 
   const openItem = useCallback(
     (item: LibraryItem) => {
@@ -116,13 +118,29 @@ export function LibraryScreen() {
         />
       </View>
     );
-  } else if (sections.every((section) => section.data.length === 0)) {
+  } else if (needle && sections.every((section) => section.data.length === 0)) {
     body = (
       <View style={styles.emptyArea}>
         <EmptyState
           action={<Button label="Borrar búsqueda" onPress={() => setQuery("")} />}
           body="La búsqueda mira el título y el contenido. Prueba con otra palabra."
           title={`Sin resultados para «${needle}».`}
+        />
+      </View>
+    );
+  } else if (recentItems.length === 0) {
+    body = (
+      <View style={styles.emptyArea}>
+        <EmptyState
+          action={
+            <Button
+              label="Ver toda la Biblioteca"
+              onPress={() => router.push("/notes" as Href)}
+              variant="secondary"
+            />
+          }
+          body="Tus capturas anteriores siguen guardadas y disponibles en la Biblioteca."
+          title="Nada nuevo esta semana"
         />
       </View>
     );
@@ -155,7 +173,12 @@ export function LibraryScreen() {
       {searching ? (
         <SearchHeader onCancel={closeSearch} onChange={setQuery} query={query} />
       ) : (
-        <BrowseHeader onOpenSearch={() => setSearching(true)} wordCount={wordCount} />
+        <BrowseHeader
+          hasLibraryItems={items.length > 0}
+          onOpenLibrary={() => router.push("/notes" as Href)}
+          onOpenSearch={() => setSearching(true)}
+          wordCount={wordCount}
+        />
       )}
       {body}
     </SafeAreaView>
@@ -163,9 +186,13 @@ export function LibraryScreen() {
 }
 
 function BrowseHeader({
+  hasLibraryItems,
+  onOpenLibrary,
   onOpenSearch,
   wordCount,
 }: {
+  hasLibraryItems: boolean;
+  onOpenLibrary: () => void;
   onOpenSearch: () => void;
   wordCount: number;
 }) {
@@ -185,6 +212,17 @@ function BrowseHeader({
           <Text style={styles.signalLabel}>palabras capturadas</Text>
         </View>
         <Text style={styles.signalSummary}>De tus apps, el teclado y las reuniones.</Text>
+        {hasLibraryItems ? (
+          <Pressable
+            accessibilityLabel="Ver toda la Biblioteca"
+            accessibilityRole="button"
+            onPress={onOpenLibrary}
+            style={({ pressed }) => [styles.libraryLink, pressed && styles.sunk]}
+          >
+            <Text style={styles.libraryLinkText}>Ver toda la Biblioteca</Text>
+            <Icon color={colors.accent} name="chevronRight" size={15} strokeWidth={2.2} />
+          </Pressable>
+        ) : null}
       </View>
     </View>
   );
@@ -358,6 +396,15 @@ const styles = StyleSheet.create({
   },
   headerIconPressed: { backgroundColor: colors.surfaceMuted, transform: [{ scale: 0.95 }] },
   kicker: { ...typography.label, color: colors.accent, letterSpacing: 1.2 },
+  libraryLink: {
+    alignItems: "center",
+    alignSelf: "flex-start",
+    flexDirection: "row",
+    gap: space.xs,
+    minHeight: hitTarget,
+    marginTop: space.sm,
+  },
+  libraryLinkText: { ...typography.meta, color: colors.accent, fontWeight: "700" },
   list: { paddingBottom: 108, paddingHorizontal: LIST_GUTTER },
   row: {
     alignItems: "center",

@@ -44,8 +44,8 @@ export default function AppLayout() {
         }}
       >
         <Tabs.Screen name="index" options={{ title: "Inicio" }} />
-        <Tabs.Screen name="ask" options={{ title: "Ask" }} />
-        <Tabs.Screen name="notes" options={{ title: "Notas" }} />
+        <Tabs.Screen name="ask" options={{ title: "Preguntar" }} />
+        <Tabs.Screen name="notes" options={{ title: "Biblioteca" }} />
         <Tabs.Screen name="capture" options={{ href: null }} />
         <Tabs.Screen name="studio" options={{ title: "Studio" }} />
         <Tabs.Screen name="dictation" options={{ href: null }} />

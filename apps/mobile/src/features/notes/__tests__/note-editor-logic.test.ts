@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { hasUnsavedNoteChanges, persistedNoteTitle } from "../note-editor-logic";
+import { displayNoteTitle, hasUnsavedNoteChanges, persistedNoteTitle } from "../note-editor-logic";
 
 describe("note editor autosave", () => {
   it("uses the backend's untitled title when the draft title is blank", () => {
@@ -12,6 +12,12 @@ describe("note editor autosave", () => {
         savedBody: "",
       }),
     ).toBe(false);
+  });
+
+  it("presents the backend placeholder in the app language", () => {
+    expect(displayNoteTitle("Untitled note")).toBe("Sin título");
+    expect(displayNoteTitle("  ")).toBe("Sin título");
+    expect(displayNoteTitle("Plan semanal")).toBe("Plan semanal");
   });
 
   it("saves title and body changes", () => {

@@ -1,7 +1,16 @@
 import * as Haptics from "expo-haptics";
 import { type Href, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
-import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
+import {
+  KeyboardAvoidingView,
+  Platform,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from "react-native";
 import Animated, {
   cancelAnimation,
   Easing,
@@ -41,88 +50,94 @@ export function LiveMeetingScreen() {
 
   return (
     <SafeAreaView style={[styles.safeArea, isRecording && styles.captureSafeArea]}>
-      {isRecording ? (
-        <View style={styles.captureHeader}>
-          <Text numberOfLines={1} style={styles.captureMeetingTitle}>
-            {capture.title || "Product sync"}
-          </Text>
-          <View style={styles.liveLabel}>
-            <View style={styles.liveDot} />
-            <Text style={styles.captureLabel}>Grabando</Text>
-          </View>
-          <Text style={styles.captureClock}>{formatMeetingDuration(capture.durationMs)}</Text>
-        </View>
-      ) : (
-        <View style={styles.header}>
-          <Pressable
-            accessibilityLabel="Volver a Library"
-            accessibilityRole="button"
-            hitSlop={8}
-            onPress={() => router.replace("/")}
-            style={styles.headerButton}
-          >
-            <Icon color={colors.textSecondary} name="chevronLeft" size={22} strokeWidth={2.2} />
-          </Pressable>
-          <Text style={styles.headerTitle}>Meeting</Text>
-          <View style={styles.headerButton} />
-        </View>
-      )}
-
-      <ScrollView
-        contentContainerStyle={[styles.content, isRecording && styles.captureContent]}
-        keyboardShouldPersistTaps="handled"
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        style={styles.keyboardRoot}
       >
-        {capture.phase === "ready" ? (
-          <ReadyPhase
-            install={capture.installLocalStt}
-            memoryTier={capture.localSttMemoryTier}
-            modelReady={modelReady}
-            progress={capture.localSttProgress}
-            setTitle={capture.setTitle}
-            sttStatus={capture.localSttStatus}
-            title={capture.title}
-          />
-        ) : null}
-
-        {isRecording ? <RecordingPhase durationMs={capture.durationMs} /> : null}
-
-        {busyPhase ? <BusyPhase durationMs={capture.durationMs} phase={busyPhase} /> : null}
-
-        {capture.phase === "error" ? (
-          <ErrorState
-            body={
-              capture.hasPersistedAudio
-                ? `El audio quedó guardado en este dispositivo: son ${describeMinutes(capture.durationMs)}. Parakeet no pudo terminar de procesarlo.`
-                : "No se pudo confirmar que el audio quedara guardado. No cierres la app e inténtalo de nuevo."
-            }
-            detail={capture.error ?? "local-stt: el runtime no devolvió detalle."}
-            onRetry={() => void capture.retry().then(openMeeting)}
-            title="La transcripción se quedó a medias"
-          />
-        ) : null}
-      </ScrollView>
-
-      <View style={[styles.footer, isRecording && styles.captureFooter]}>
         {isRecording ? (
-          <CaptureBar
-            onFinish={() => void capture.finish().then(openMeeting)}
-            onMark={capture.markMoment}
-          />
-        ) : null}
+          <View style={styles.captureHeader}>
+            <Text numberOfLines={1} style={styles.captureMeetingTitle}>
+              {capture.title || "Product sync"}
+            </Text>
+            <View style={styles.liveLabel}>
+              <View style={styles.liveDot} />
+              <Text style={styles.captureLabel}>Grabando</Text>
+            </View>
+            <Text style={styles.captureClock}>{formatMeetingDuration(capture.durationMs)}</Text>
+          </View>
+        ) : (
+          <View style={styles.header}>
+            <Pressable
+              accessibilityLabel="Volver a Library"
+              accessibilityRole="button"
+              hitSlop={8}
+              onPress={() => router.replace("/")}
+              style={styles.headerButton}
+            >
+              <Icon color={colors.textSecondary} name="chevronLeft" size={22} strokeWidth={2.2} />
+            </Pressable>
+            <Text style={styles.headerTitle}>Meeting</Text>
+            <View style={styles.headerButton} />
+          </View>
+        )}
 
-        {capture.phase === "ready" ? (
-          <Button
-            disabled={!modelReady}
-            label="Empezar meeting"
-            onPress={() => void capture.start()}
-            variant="primary"
-          />
-        ) : null}
+        <ScrollView
+          contentContainerStyle={[styles.content, isRecording && styles.captureContent]}
+          keyboardDismissMode="interactive"
+          keyboardShouldPersistTaps="handled"
+        >
+          {capture.phase === "ready" ? (
+            <ReadyPhase
+              install={capture.installLocalStt}
+              memoryTier={capture.localSttMemoryTier}
+              modelReady={modelReady}
+              progress={capture.localSttProgress}
+              setTitle={capture.setTitle}
+              sttStatus={capture.localSttStatus}
+              title={capture.title}
+            />
+          ) : null}
 
-        {busyPhase === "starting" || busyPhase === "processing" ? (
-          <Text style={styles.footNote}>Se guardará en Library al terminar</Text>
-        ) : null}
-      </View>
+          {isRecording ? <RecordingPhase durationMs={capture.durationMs} /> : null}
+
+          {busyPhase ? <BusyPhase durationMs={capture.durationMs} phase={busyPhase} /> : null}
+
+          {capture.phase === "error" ? (
+            <ErrorState
+              body={
+                capture.hasPersistedAudio
+                  ? `El audio quedó guardado en este dispositivo: son ${describeMinutes(capture.durationMs)}. Parakeet no pudo terminar de procesarlo.`
+                  : "No se pudo confirmar que el audio quedara guardado. No cierres la app e inténtalo de nuevo."
+              }
+              detail={capture.error ?? "local-stt: el runtime no devolvió detalle."}
+              onRetry={() => void capture.retry().then(openMeeting)}
+              title="La transcripción se quedó a medias"
+            />
+          ) : null}
+        </ScrollView>
+
+        <View style={[styles.footer, isRecording && styles.captureFooter]}>
+          {isRecording ? (
+            <CaptureBar
+              onFinish={() => void capture.finish().then(openMeeting)}
+              onMark={capture.markMoment}
+            />
+          ) : null}
+
+          {capture.phase === "ready" ? (
+            <Button
+              disabled={!modelReady}
+              label="Empezar meeting"
+              onPress={() => void capture.start()}
+              variant="primary"
+            />
+          ) : null}
+
+          {busyPhase === "starting" || busyPhase === "processing" ? (
+            <Text style={styles.footNote}>Se guardará en Library al terminar</Text>
+          ) : null}
+        </View>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
@@ -476,6 +491,7 @@ const styles = StyleSheet.create({
   },
   headerTitle: { ...typography.item, color: colors.textSecondary },
   installProgress: { alignItems: "center", gap: space.md, paddingTop: space.sm },
+  keyboardRoot: { flex: 1 },
   liveDot: { backgroundColor: colors.danger, borderRadius: radius.pill, height: 8, width: 8 },
   liveLabel: { alignItems: "center", flexDirection: "row", gap: space.sm },
   momentAt: {

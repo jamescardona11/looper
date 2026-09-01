@@ -9,6 +9,7 @@ import { type Href, useFocusEffect, useLocalSearchParams, useRouter } from "expo
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   Alert,
+  FlatList,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -28,7 +29,12 @@ import { colors } from "@/shared/theme/colors";
 import { hitTarget, radius, space } from "@/shared/theme/layout";
 import { typography } from "@/shared/theme/typography";
 import { sortNotesByUpdatedAt } from "./local-notes-logic";
-import { hasUnsavedNoteChanges, persistedNoteTitle } from "./note-editor-logic";
+import {
+  displayNoteTitle,
+  hasUnsavedNoteChanges,
+  persistedNoteTitle,
+  UNTITLED_NOTE_TITLE,
+} from "./note-editor-logic";
 
 type SaveState = "saved" | "saving" | "error";
 
@@ -58,6 +64,14 @@ export function NotesScreen() {
     } catch {
       Alert.alert("No se pudo crear la nota", "Revisa la conexión e inténtalo de nuevo.");
     }
+  };
+
+  const closeEditor = () => {
+    if (openedId) {
+      setOpenedId(null);
+      return;
+    }
+    goBack(router);
   };
 
   if (!params.id && !openedId) {
@@ -144,7 +158,7 @@ export function NotesScreen() {
     <NoteEditor
       key={note.id}
       note={note}
-      onBack={() => goBack(router)}
+      onBack={closeEditor}
       onDelete={() => confirmDelete(note.id)}
       onDictate={() => router.push("/dictation" as Href)}
       onNew={() => void createNote()}
@@ -174,12 +188,19 @@ function NotesLibrary({
   const rows = useMemo(() => buildNoteRows(notes, meetings), [meetings, notes]);
   const visibleRows = showArchive ? rows : rows.slice(0, 3);
   const hiddenCount = Math.max(0, rows.length - 3);
+  const openMeeting = useCallback((href: Href) => router.push(href), [router]);
+  const renderRow = useCallback(
+    ({ item }: { item: NotesRow }) => (
+      <NotesLibraryRow item={item} onOpen={onOpen} openMeeting={openMeeting} />
+    ),
+    [onOpen, openMeeting],
+  );
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.notesIndexHeader}>
         <View>
-          <Text style={styles.notesIndexKicker}>NOTAS</Text>
-          <Text style={styles.notesIndexTitle}>Reuniones y audios</Text>
+          <Text style={styles.notesIndexKicker}>BIBLIOTECA</Text>
+          <Text style={styles.notesIndexTitle}>Todo lo que guardaste</Text>
         </View>
         <View style={styles.notesIndexActions}>
           <Pressable
@@ -200,94 +221,118 @@ function NotesLibrary({
           </Pressable>
         </View>
       </View>
-      <ScrollView contentContainerStyle={styles.notesIndexContent}>
-        {isLoading ? <EditorSkeleton /> : null}
-        {!isLoading && rows.length === 0 ? (
-          <View style={styles.notesEmpty}>
-            <Text style={styles.notesEmptyTitle}>Todavía no hay notas.</Text>
-            <Text style={styles.notesEmptyBody}>
-              Escribe una idea o captúrala como nota de voz.
-            </Text>
-          </View>
-        ) : null}
-        {visibleRows.length ? (
-          <View style={styles.notesGroupHeader}>
-            <Text style={styles.notesGroupLabel}>ESTA SEMANA</Text>
-            <View style={styles.notesGroupLine} />
-            <Text style={styles.notesGroupCount}>{visibleRows.length}</Text>
-          </View>
-        ) : null}
-        {visibleRows.map((item) =>
-          isMeeting(item) ? (
+      <FlatList
+        contentContainerStyle={styles.notesIndexContent}
+        data={isLoading ? [] : visibleRows}
+        keyExtractor={noteRowKey}
+        ListEmptyComponent={
+          isLoading ? (
+            <EditorSkeleton />
+          ) : (
+            <View style={styles.notesEmpty}>
+              <Text style={styles.notesEmptyTitle}>Todavía no hay notas.</Text>
+              <Text style={styles.notesEmptyBody}>
+                Escribe una idea o captúrala como nota de voz.
+              </Text>
+              <Button label="Escribir una nota" onPress={onCreate} variant="primary" />
+            </View>
+          )
+        }
+        ListFooterComponent={
+          hiddenCount > 0 ? (
             <Pressable
-              accessibilityLabel={`Abrir ${item.title}`}
               accessibilityRole="button"
-              key={`meeting:${item.meetingId}`}
-              onPress={() => router.push(`/meeting/${item.meetingId}` as Href)}
-              style={({ pressed }) => [styles.noteRow, pressed && styles.noteRowPressed]}
+              onPress={onToggleArchive}
+              style={styles.archiveToggle}
             >
-              <View style={styles.noteMark}>
-                <Icon color={colors.accent} name="meeting" size={17} />
-              </View>
-              <View style={styles.noteRowCopy}>
-                <Text numberOfLines={1} style={styles.noteRowTitle}>
-                  {item.title}
-                </Text>
-                <Text numberOfLines={1} style={styles.noteRowMeta}>
-                  {meetingMeta(item)}
-                </Text>
-              </View>
-              <Text style={[styles.noteStatus, item.state === "ended" && styles.noteStatusDone]}>
-                {item.state === "active"
-                  ? "Grabando"
-                  : item.state === "paused"
-                    ? "En pausa"
-                    : "Lista"}
+              <Text style={styles.archiveToggleText}>
+                {showArchive ? "Ver menos" : `Ver ${hiddenCount} elementos anteriores`}
               </Text>
             </Pressable>
-          ) : (
-            <Pressable
-              accessibilityLabel={`Abrir ${persistedNoteTitle(item.title)}`}
-              accessibilityRole="button"
-              key={`note:${item.id}`}
-              onPress={() => onOpen(item.id)}
-              style={({ pressed }) => [styles.noteRow, pressed && styles.noteRowPressed]}
-            >
-              <View style={styles.noteMark}>
-                <Icon
-                  color={colors.accent}
-                  name={item.kind === "dictation" ? "dictado" : "nota"}
-                  size={17}
-                />
-              </View>
-              <View style={styles.noteRowCopy}>
-                <Text numberOfLines={1} style={styles.noteRowTitle}>
-                  {persistedNoteTitle(item.title)}
-                </Text>
-                <Text numberOfLines={1} style={styles.noteRowMeta}>
-                  {noteMeta(item.updatedAt, item.body)}
-                </Text>
-              </View>
-            </Pressable>
-          ),
-        )}
-        {hiddenCount > 0 ? (
-          <Pressable
-            accessibilityRole="button"
-            onPress={onToggleArchive}
-            style={styles.archiveToggle}
-          >
-            <Text style={styles.archiveToggleText}>
-              {showArchive ? "Ver menos" : `Ver ${hiddenCount} notas anteriores`}
-            </Text>
-          </Pressable>
-        ) : null}
-      </ScrollView>
+          ) : null
+        }
+        ListHeaderComponent={
+          visibleRows.length ? (
+            <View style={styles.notesGroupHeader}>
+              <Text style={styles.notesGroupLabel}>{showArchive ? "TODO" : "RECIENTES"}</Text>
+              <View style={styles.notesGroupLine} />
+              <Text style={styles.notesGroupCount}>{visibleRows.length}</Text>
+            </View>
+          ) : null
+        }
+        renderItem={renderRow}
+      />
     </SafeAreaView>
   );
 }
 
 type NotesRow = MeetingSession | Note;
+
+function NotesLibraryRow({
+  item,
+  onOpen,
+  openMeeting,
+}: {
+  item: NotesRow;
+  onOpen: (id: string) => void;
+  openMeeting: (href: Href) => void;
+}) {
+  if (isMeeting(item)) {
+    return (
+      <Pressable
+        accessibilityLabel={`Abrir ${item.title}`}
+        accessibilityRole="button"
+        onPress={() => openMeeting(`/meeting/${item.meetingId}` as Href)}
+        style={({ pressed }) => [styles.noteRow, pressed && styles.noteRowPressed]}
+      >
+        <View style={styles.noteMark}>
+          <Icon color={colors.accent} name="meeting" size={17} />
+        </View>
+        <View style={styles.noteRowCopy}>
+          <Text numberOfLines={1} style={styles.noteRowTitle}>
+            {item.title}
+          </Text>
+          <Text numberOfLines={1} style={styles.noteRowMeta}>
+            {meetingMeta(item)}
+          </Text>
+          <Text style={[styles.noteStatus, item.state === "ended" && styles.noteStatusDone]}>
+            {item.state === "active" ? "Grabando" : item.state === "paused" ? "En pausa" : "Lista"}
+          </Text>
+        </View>
+      </Pressable>
+    );
+  }
+
+  return (
+    <Pressable
+      accessibilityLabel={`Abrir ${displayNoteTitle(item.title)}`}
+      accessibilityRole="button"
+      onPress={() => onOpen(item.id)}
+      style={({ pressed }) => [styles.noteRow, pressed && styles.noteRowPressed]}
+    >
+      <View style={styles.noteMark}>
+        <Icon
+          color={colors.accent}
+          name={item.kind === "dictation" ? "dictado" : "nota"}
+          size={17}
+        />
+      </View>
+      <View style={styles.noteRowCopy}>
+        <Text numberOfLines={1} style={styles.noteRowTitle}>
+          {displayNoteTitle(item.title)}
+        </Text>
+        <Text numberOfLines={1} style={styles.noteRowMeta}>
+          {noteMeta(item.updatedAt, item.body)}
+        </Text>
+      </View>
+    </Pressable>
+  );
+}
+
+function noteRowKey(item: NotesRow): string {
+  return isMeeting(item) ? `meeting:${item.meetingId}` : `note:${item.id}`;
+}
+
 function buildNoteRows(notes: Note[], meetings: MeetingSession[]): NotesRow[] {
   const rows: NotesRow[] = [...notes, ...meetings];
   return rows.sort((left, right) => noteRowTime(right) - noteRowTime(left));
@@ -322,7 +367,7 @@ type NoteEditorProps = {
 
 function NoteEditor({ note, onSave, onBack, onDelete, onNew, onDictate }: NoteEditorProps) {
   const { setTabBarHidden } = useAppChrome();
-  const [title, setTitle] = useState(note.title);
+  const [title, setTitle] = useState(note.title === UNTITLED_NOTE_TITLE ? "" : note.title);
   const [body, setBody] = useState(note.body);
   const [caret, setCaret] = useState({ end: 0, start: 0 });
   const [saveState, setSaveState] = useState<SaveState>("saved");
@@ -398,7 +443,6 @@ function NoteEditor({ note, onSave, onBack, onDelete, onNew, onDictate }: NoteEd
             onChangeText={setTitle}
             placeholder="Título"
             placeholderTextColor={colors.disabled}
-            selectTextOnFocus={note.title === "Untitled note"}
             style={styles.title}
             value={title}
           />
