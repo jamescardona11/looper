@@ -96,7 +96,7 @@ export function ChatComposer({
                 <button
                   type="button"
                   onClick={() => void onStop()}
-                  className="grid size-9 shrink-0 place-items-center rounded-xl bg-foreground text-background transition-all hover:opacity-90 active:scale-95"
+                  className="grid size-11 shrink-0 place-items-center rounded-xl border border-border bg-card text-foreground transition-[background-color,transform] hover:bg-secondary active:scale-95 sm:size-9"
                   aria-label={t("agent.stopGenerating")}
                 >
                   <IconPlayerStopFilled className="size-3.5" />
@@ -109,7 +109,7 @@ export function ChatComposer({
                   onClick={() => void submit()}
                   disabled={!canSend}
                   className={cn(
-                    "grid size-9 shrink-0 place-items-center rounded-xl transition-all",
+                    "grid size-11 shrink-0 place-items-center rounded-xl transition-[background-color,transform] sm:size-9",
                     canSend
                       ? "bg-primary text-primary-foreground hover:bg-primary/90 active:scale-95"
                       : "bg-secondary text-muted-foreground",
@@ -150,7 +150,11 @@ function CreditsHint({
 }) {
   const { t } = useTranslation();
   if (error) {
-    return <p className="mt-1.5 text-center text-destructive text-xs">{error}</p>;
+    return (
+      <p role="alert" className="mt-1.5 text-center text-destructive text-xs">
+        {error}
+      </p>
+    );
   }
   if (byok) {
     return (

@@ -33,6 +33,8 @@ export type AppPrivacyProps = SectionProps<
 export type AppCalendarProps = SectionProps<
   | "calendarMeetingAwarenessEnabled"
   | "onCalendarMeetingAwarenessEnabledChange"
+  | "microphoneMeetingAwarenessEnabled"
+  | "onMicrophoneMeetingAwarenessEnabledChange"
   | "platformCapabilities"
 >;
 

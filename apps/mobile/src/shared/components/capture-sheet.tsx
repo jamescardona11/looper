@@ -30,13 +30,7 @@ const TILE = 44;
 /** Escalonado de entrada. Corto: es una lista de tres, no una cortinilla. */
 const STEP_MS = 45;
 
-export function CaptureSheet({
-  visible,
-  onClose,
-}: {
-  visible: boolean;
-  onClose: () => void;
-}) {
+export function CaptureSheet({ visible, onClose }: { visible: boolean; onClose: () => void }) {
   const insets = useSafeAreaInsets();
 
   function go(href: Href) {

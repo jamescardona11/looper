@@ -5,6 +5,17 @@ export type TranscriptionListEntry =
   | { type: "header"; id: string; label: string }
   | { type: "item"; record: TranscriptionRecord };
 
+/**
+ * These are the history facets the local record actually persists.  Insertion
+ * and clipboard state are deliberately absent: older records cannot prove
+ * either fact, so exposing those filters would produce invented results.
+ */
+export type HistoryTranscriptionFilter =
+  | "all"
+  | "audio"
+  | "cleaned"
+  | "failed";
+
 export type TranscriptionListViewState =
   | { kind: "empty" }
   | { kind: "no-results"; text: string }
@@ -57,6 +68,22 @@ export function visibleTranscriptions(
     (left, right) =>
       direction * ((left.word_count ?? 0) - (right.word_count ?? 0)),
   );
+}
+
+export function filterHistoryTranscriptions(
+  records: TranscriptionRecord[],
+  filter: HistoryTranscriptionFilter,
+): TranscriptionRecord[] {
+  if (filter === "audio") {
+    return records.filter((record) => record.audio_available);
+  }
+  if (filter === "cleaned") {
+    return records.filter((record) => record.llm_cleaned);
+  }
+  if (filter === "failed") {
+    return records.filter((record) => record.status === "error");
+  }
+  return records;
 }
 
 export function transcriptionGroupLabel(

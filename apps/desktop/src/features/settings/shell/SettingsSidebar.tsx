@@ -156,35 +156,32 @@ export function SettingsSidebar({
   const { t } = useLingui();
 
   return (
-    <aside className="flex min-h-0 w-[200px] shrink-0 flex-col border-r border-border-primary bg-surface-surface">
-      <div className="px-4 pt-5 pb-4">
-        <h2 className="ui-text-title-strong ui-color-primary">
-          {t({ id: "settings.modal.title", message: "Settings" })}
-        </h2>
-      </div>
+    <aside className="min-w-0 border-b border-border-primary pb-3 min-[1081px]:border-r min-[1081px]:border-b-0 min-[1081px]:pb-0 min-[1081px]:pr-4">
       <nav
         aria-label={t({
           id: "settings.route.navigation",
-          message: "Settings navigation",
+          message: "Setup navigation",
         })}
-        className="flex-1 space-y-4 overflow-y-auto px-2 pb-2"
+        className="flex max-w-full gap-2 overflow-x-auto min-[1081px]:h-full min-[1081px]:flex-col min-[1081px]:gap-3 min-[1081px]:overflow-y-auto"
       >
         {navigationGroups.map((group) => (
-          <div className="space-y-1" key={group.heading.id}>
-            <p className="px-2.5 pb-1.5 ui-text-uppercase-meta ui-color-disabled font-semibold">
+          <div className="contents min-[1081px]:block" key={group.heading.id}>
+            <p className="mb-1.5 hidden ui-text-uppercase-micro ui-color-muted font-semibold uppercase tracking-[0.085em] min-[1081px]:block">
               {t(group.heading)}
             </p>
-            {group.items.map((item) =>
-              loading && item.hiddenWhileLoading ? null : (
-                <SidebarItem
-                  key={item.section}
-                  icon={item.icon}
-                  label={t(item.label)}
-                  selected={activeSection === item.section}
-                  onSelect={() => onSelect(item.section)}
-                />
-              ),
-            )}
+            <div className="contents min-[1081px]:flex min-[1081px]:flex-col min-[1081px]:gap-0.5">
+              {group.items.map((item) =>
+                loading && item.hiddenWhileLoading ? null : (
+                  <SidebarItem
+                    key={item.section}
+                    icon={item.icon}
+                    label={t(item.label)}
+                    selected={activeSection === item.section}
+                    onSelect={() => onSelect(item.section)}
+                  />
+                ),
+              )}
+            </div>
           </div>
         ))}
       </nav>
@@ -204,16 +201,17 @@ function SidebarItem({
   onSelect: () => void;
 }) {
   const stateClass = selected
-    ? "bg-[var(--color-accent)] ui-color-on-solid shadow-sm"
-    : "ui-color-muted hover:bg-surface-elevated hover:text-content-secondary";
+    ? "bg-[var(--color-accent)] text-white"
+    : "ui-color-secondary hover:bg-surface-elevated hover:text-content-secondary";
 
   return (
     <button
       type="button"
       onClick={onSelect}
-      className={`group flex w-full items-center rounded-lg px-2.5 py-2 text-left ui-text-body-sm-strong transition-[background-color,color,transform] active:scale-[0.98] motion-reduce:transition-none motion-reduce:active:scale-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent-30)] ${stateClass}`}
+      aria-current={selected ? "page" : undefined}
+      className={`group inline-flex h-[31px] w-auto shrink-0 items-center whitespace-nowrap rounded-md px-2 text-left ui-text-body-sm-strong transition-[background-color,color,transform] active:scale-[0.98] motion-reduce:transition-none motion-reduce:active:scale-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent-30)] min-[1081px]:w-full ${stateClass}`}
     >
-      <Icon aria-hidden="true" className="mr-2 shrink-0" size={15} />
+      <Icon aria-hidden="true" className="mr-2 shrink-0" size={14} />
       {label}
     </button>
   );

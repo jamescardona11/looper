@@ -80,6 +80,7 @@ enum Key {
     AutoLaunchEnabled,
     StartInBackground,
     CalendarMeetingAwarenessEnabled,
+    MicrophoneMeetingAwarenessEnabled,
     AutoDeleteTarget,
     AutoDeleteDuration,
     AudioStorageBudgetMb,
@@ -139,6 +140,7 @@ impl Key {
             Self::AutoLaunchEnabled => "auto_launch_enabled",
             Self::StartInBackground => "start_in_background",
             Self::CalendarMeetingAwarenessEnabled => "calendar_meeting_awareness_enabled",
+            Self::MicrophoneMeetingAwarenessEnabled => "microphone_meeting_awareness_enabled",
             Self::AutoDeleteTarget => "auto_delete_target",
             Self::AutoDeleteDuration => "auto_delete_duration",
             Self::AudioStorageBudgetMb => "audio_storage_budget_mb",
@@ -389,6 +391,7 @@ impl SettingsStore {
                 calendar_meeting_awareness_enabled => CalendarMeetingAwarenessEnabled,
                 auto_delete_target => AutoDeleteTarget,
             );
+            migration.load_microphone_meeting_awareness(&reader, &mut settings)?;
             migration.load_auto_delete(&reader, &mut settings)?;
             read_fields!(reader, settings;
                 audio_storage_budget_mb => AudioStorageBudgetMb,
@@ -475,6 +478,7 @@ impl SettingsStore {
             auto_launch_enabled => AutoLaunchEnabled,
             start_in_background => StartInBackground,
             calendar_meeting_awareness_enabled => CalendarMeetingAwarenessEnabled,
+            microphone_meeting_awareness_enabled => MicrophoneMeetingAwarenessEnabled,
             auto_delete_target => AutoDeleteTarget,
             auto_delete_duration => AutoDeleteDuration,
             audio_storage_budget_mb => AudioStorageBudgetMb,
@@ -581,6 +585,26 @@ struct MigrationState {
 }
 
 impl MigrationState {
+    fn load_microphone_meeting_awareness(
+        &mut self,
+        reader: &Reader<'_>,
+        settings: &mut UserSettings,
+    ) -> Result<()> {
+        if let Some(enabled) = reader.optional(Key::MicrophoneMeetingAwarenessEnabled)? {
+            settings.microphone_meeting_awareness_enabled = enabled;
+            return Ok(());
+        }
+
+        // Esta señal es independiente del calendario. Una instalación previa
+        // nunca tuvo una preferencia específica para ella, así que la clave
+        // ausente usa su default `true`; el valor de Calendar se conserva sin
+        // reinterpretarlo. La consulta solo lee el booleano de CoreAudio y no
+        // abre ni captura el micrófono.
+        settings.microphone_meeting_awareness_enabled = true;
+        self.should_persist = true;
+        Ok(())
+    }
+
     fn load_media_action(
         &mut self,
         reader: &Reader<'_>,
@@ -748,6 +772,7 @@ mod tests {
         let store = test_store();
         let mut settings = UserSettings::default();
         settings.calendar_meeting_awareness_enabled = true;
+        settings.microphone_meeting_awareness_enabled = false;
         settings.capture_pill_presentation = crate::pill::capture::CapturePillPresentation::Floating;
         settings.capture_pill_dock_position =
             crate::pill::capture::CapturePillDockPosition::LeftCenter;
@@ -755,6 +780,7 @@ mod tests {
         store.save(&settings).unwrap();
         let loaded = store.load().unwrap();
         assert!(loaded.calendar_meeting_awareness_enabled);
+        assert!(!loaded.microphone_meeting_awareness_enabled);
         assert_eq!(
             loaded.capture_pill_presentation,
             settings.capture_pill_presentation
@@ -764,6 +790,48 @@ mod tests {
             settings.capture_pill_dock_position
         );
         assert_eq!(loaded.app_locale, "en");
+    }
+
+    #[test]
+    fn fresh_installs_enable_microphone_suggestions_without_enabling_calendar() {
+        let store = test_store();
+
+        let loaded = store.load().unwrap();
+
+        assert!(!loaded.calendar_meeting_awareness_enabled);
+        assert!(loaded.microphone_meeting_awareness_enabled);
+        assert!(read(
+            &store,
+            Key::MicrophoneMeetingAwarenessEnabled,
+            false
+        ));
+    }
+
+    #[test]
+    fn existing_calendar_opt_out_does_not_disable_the_new_microphone_mode() {
+        let store = test_store();
+        write(&store, Key::CalendarMeetingAwarenessEnabled.name(), &false);
+
+        let loaded = store.load().unwrap();
+
+        assert!(!loaded.calendar_meeting_awareness_enabled);
+        assert!(loaded.microphone_meeting_awareness_enabled);
+        assert!(read(
+            &store,
+            Key::MicrophoneMeetingAwarenessEnabled,
+            false
+        ));
+    }
+
+    #[test]
+    fn existing_calendar_opt_in_remains_enabled_during_split_migration() {
+        let store = test_store();
+        write(&store, Key::CalendarMeetingAwarenessEnabled.name(), &true);
+
+        let loaded = store.load().unwrap();
+
+        assert!(loaded.calendar_meeting_awareness_enabled);
+        assert!(loaded.microphone_meeting_awareness_enabled);
     }
 
     #[test]
@@ -872,7 +940,7 @@ mod tests {
             .lock()
             .query_row("SELECT COUNT(*) FROM settings", [], |row| row.get(0))
             .unwrap();
-        assert_eq!(count, 54);
+        assert_eq!(count, 55);
     }
 
     #[test]

@@ -7,7 +7,10 @@ import { useState } from "react";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import type { TranscriptionRecord } from "../../../contracts";
 import { currentTimePreset, parseTranscriptionSearch } from "../searchQuery";
-import { TranscriptionListSearchControls } from "../components/transcription-list-search-controls";
+import {
+  HistoryTranscriptionControls,
+  TranscriptionListSearchControls,
+} from "../components/transcription-list-search-controls";
 
 const i18n = setupI18n();
 i18n.loadAndActivate({ locale: "en", messages: {} });
@@ -102,5 +105,33 @@ describe("transcription list search controls", () => {
     fireEvent.change(input, { target: { value: "Manual search" } });
     expect(input.value).toBe("Manual search");
     expect(screen.getByTestId("query-value").textContent).toBe("Manual search");
+  });
+});
+
+describe("history transcription controls", () => {
+  test("keeps the durable filter and search field visible in the route bar", () => {
+    const onFilterChange = vi.fn();
+    const onQueryChange = vi.fn();
+    render(
+      <I18nProvider i18n={i18n}>
+        <HistoryTranscriptionControls
+          query=""
+          filter="all"
+          onFilterChange={onFilterChange}
+          onQueryChange={onQueryChange}
+        />
+      </I18nProvider>,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Has audio" }));
+    fireEvent.change(screen.getByRole("searchbox"), {
+      target: { value: "onboarding" },
+    });
+
+    expect(onFilterChange).toHaveBeenCalledWith("audio");
+    expect(onQueryChange).toHaveBeenCalledWith("onboarding");
+    expect(
+      screen.getByRole("button", { name: "All" }).getAttribute("aria-pressed"),
+    ).toBe("true");
   });
 });

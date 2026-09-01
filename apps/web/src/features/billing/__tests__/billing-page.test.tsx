@@ -39,6 +39,18 @@ describe("BillingPage", () => {
       </I18nProvider>,
     );
 
-    expect(screen.getAllByRole("button", { name: "Billing not configured" })).not.toHaveLength(0);
+    expect(screen.getAllByRole("button", { name: "Billing not configured" })).toHaveLength(2);
+    expect(screen.getAllByText("Billing not configured")).toHaveLength(2);
+  });
+
+  it("keeps the focused mobile plan action comfortably tappable", () => {
+    render(
+      <I18nProvider defaultLocale="en">
+        <BillingPage />
+      </I18nProvider>,
+    );
+
+    const [mobileAction] = screen.getAllByRole("button", { name: "Billing not configured" });
+    expect(mobileAction).toHaveClass("h-11", "sm:h-9");
   });
 });

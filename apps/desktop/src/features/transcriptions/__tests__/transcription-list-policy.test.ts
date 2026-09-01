@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import type { TranscriptionRecord } from "../../../contracts";
 import {
   buildTranscriptionListEntries,
+  filterHistoryTranscriptions,
   transcriptionEntryClassName,
   transcriptionGroupLabel,
   transcriptionListViewState,
@@ -76,6 +77,18 @@ describe("transcription list policy", () => {
         ({ id }) => id,
       ),
     ).toEqual(["short", "new", "old"]);
+  });
+
+  it("filters History only by durable local record facts", () => {
+    const historyRows = [
+      { ...rows[0], audio_available: true },
+      { ...rows[1], llm_cleaned: true },
+      { ...rows[2], status: "error" as const },
+    ];
+    expect(filterHistoryTranscriptions(historyRows, "all")).toEqual(historyRows);
+    expect(filterHistoryTranscriptions(historyRows, "audio").map(({ id }) => id)).toEqual(["new"]);
+    expect(filterHistoryTranscriptions(historyRows, "cleaned").map(({ id }) => id)).toEqual(["old"]);
+    expect(filterHistoryTranscriptions(historyRows, "failed").map(({ id }) => id)).toEqual(["short"]);
   });
 
   it("groups adjacent days with stable header ids", () => {

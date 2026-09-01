@@ -78,23 +78,6 @@
   }
 }
 
-/* Entrada del pill: aparece con spring desde abajo al empezar la captura. */
-@keyframes looper-pill-pop {
-  from {
-    transform: translateY(10px) scale(0.9);
-    opacity: 0;
-  }
-
-  to {
-    transform: translateY(0) scale(1);
-    opacity: 1;
-  }
-}
-
-.looper-pill-enter {
-  animation: looper-pill-pop 480ms cubic-bezier(0.34, 1.4, 0.4, 1) both;
-}
-
 @keyframes looper-recording-signal {
   0%,
   100% {
@@ -134,10 +117,6 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .looper-pill-enter {
-    animation-duration: 1ms;
-  }
-
   .looper-recording-signal > span {
     animation: none;
     opacity: 0.85;

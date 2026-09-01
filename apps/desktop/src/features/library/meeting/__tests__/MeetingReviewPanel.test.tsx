@@ -13,6 +13,10 @@ vi.mock("../MeetingDetail", () => ({
   default: ({ view }: { view: string }) => <div>Meeting detail: {view}</div>,
 }));
 
+vi.mock("../../queries", () => ({
+  useMeetingDetails: () => ({ data: { note_markers: [] } }),
+}));
+
 const i18n = setupI18n();
 i18n.loadAndActivate({ locale: "en", messages: {} });
 
@@ -43,19 +47,25 @@ const renderPanel = (view: MeetingReviewView = "enhanced") => {
 };
 
 describe("MeetingReviewPanel", () => {
-  test("keeps the Granola document anatomy with all four modes", () => {
+  test("keeps the note document anatomy with the three reference modes", () => {
     renderPanel();
 
     expect(
       screen.getByRole("heading", { name: "Design review" }).isConnected,
     ).toBe(true);
     expect(screen.getAllByRole("tab").map((tab) => tab.textContent)).toEqual([
-      "My notes",
-      "Enhanced",
-      "Transcript",
+      "Note",
       "Moments",
+      "Transcript",
     ]);
     expect(screen.getByText("Meeting detail: summary").isConnected).toBe(true);
+    expect(
+      screen.getByRole("main", { name: "Recording document" }).className,
+    ).toContain("overflow-hidden");
+    expect(
+      screen.getByRole("heading", { name: "Design review" }).className,
+    ).toContain("ui-text-document-title");
+    expect(screen.getByRole("tabpanel").className).toContain("min-h-[260px]");
   });
 
   test("renders transcript in the same document instead of a side panel", () => {
@@ -76,8 +86,16 @@ describe("MeetingReviewPanel", () => {
   test("routes Moments to the existing marked-moment view", () => {
     const onViewChange = renderPanel("notes");
 
-    fireEvent.click(screen.getByRole("tab", { name: "Moments" }));
+    fireEvent.click(screen.getByRole("tab", { name: /Moments/ }));
 
     expect(onViewChange).toHaveBeenCalledWith("moments");
+  });
+
+  test("returns from the generated summary to the editable note", () => {
+    const onViewChange = renderPanel("enhanced");
+
+    fireEvent.click(screen.getByRole("button", { name: "Back to note" }));
+
+    expect(onViewChange).toHaveBeenCalledWith("notes");
   });
 });

@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import { UpgradeFromAnonymousForm } from "@/features/auth";
 import { reportError } from "@/lib/errors";
 import { useConfirm } from "@/shared/components/confirm-dialog";
-import { Button, Card } from "@/shared/components/ui";
+import { Button } from "@/shared/components/ui";
 import { SectionHeader } from "../components/section-header";
 import { SettingsField } from "../components/settings-field";
 
@@ -23,31 +23,35 @@ export function ProfileTab() {
         hint={t("settings.profileHint")}
         icon={<IconUser />}
       />
-      <Card className="grid grid-cols-1 gap-5 p-6 md:grid-cols-2">
-        <SettingsField label={t("auth.email")} value={email ?? "—"} />
-        <SettingsField
-          label={t("settings.accountType")}
-          value={isAnonymous ? t("settings.anonymous") : t("settings.verified")}
-          hint={isAnonymous ? t("settings.anonHint") : t("settings.verifiedHint")}
-        />
-      </Card>
+      <div className="web-product-panel overflow-hidden rounded-xl">
+        <section className="grid grid-cols-1 gap-5 p-5 md:grid-cols-2 md:p-6">
+          <SettingsField label={t("auth.email")} value={email ?? "—"} />
+          <SettingsField
+            label={t("settings.accountType")}
+            value={isAnonymous ? t("settings.anonymous") : t("settings.verified")}
+            hint={isAnonymous ? t("settings.anonHint") : t("settings.verifiedHint")}
+          />
+        </section>
 
-      {isAnonymous ? (
-        <Card className="flex flex-col gap-4 p-6">
-          <div>
-            <p className="font-medium text-sm tracking-tight">{t("settings.keepDataTitle")}</p>
-            <p className="mt-1 text-muted-foreground text-xs">{t("settings.keepDataHint")}</p>
-          </div>
-          <UpgradeFromAnonymousForm />
-        </Card>
-      ) : null}
+        {isAnonymous ? (
+          <section className="flex flex-col gap-4 border-border border-t p-5 md:p-6">
+            <div>
+              <p className="font-medium text-sm tracking-tight">{t("settings.keepDataTitle")}</p>
+              <p className="mt-1 text-pretty text-muted-foreground text-xs">
+                {t("settings.keepDataHint")}
+              </p>
+            </div>
+            <UpgradeFromAnonymousForm />
+          </section>
+        ) : null}
 
-      <DataPrivacyCard />
+        <DataPrivacySection />
+      </div>
     </div>
   );
 }
 
-function DataPrivacyCard() {
+function DataPrivacySection() {
   const { t } = useTranslation();
   const { deleteAccount, exportMyData } = useAccountData();
   const confirm = useConfirm();
@@ -93,13 +97,19 @@ function DataPrivacyCard() {
   };
 
   return (
-    <Card className="flex flex-col gap-4 p-6">
+    <section className="flex flex-col gap-4 border-border border-t p-5 md:p-6">
       <div>
         <p className="font-medium text-sm tracking-tight">{t("settings.yourData")}</p>
         <p className="mt-1 text-muted-foreground text-xs">{t("settings.yourDataHint")}</p>
       </div>
       <div className="flex flex-wrap gap-3">
-        <Button variant="secondary" size="sm" onClick={() => void exportData()} disabled={isBusy}>
+        <Button
+          variant="secondary"
+          size="sm"
+          onClick={() => void exportData()}
+          disabled={isBusy}
+          className="min-h-11 sm:min-h-10"
+        >
           {t("settings.exportMyData")}
         </Button>
         <Button
@@ -107,11 +117,11 @@ function DataPrivacyCard() {
           size="sm"
           onClick={() => void deleteUserAccount()}
           disabled={isBusy}
-          className="text-destructive hover:text-destructive"
+          className="min-h-11 text-destructive hover:text-destructive sm:min-h-10"
         >
           {t("settings.deleteAccount")}
         </Button>
       </div>
-    </Card>
+    </section>
   );
 }

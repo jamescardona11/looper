@@ -53,4 +53,39 @@ describe("theme consistency (web): only semantic tokens, no raw Tailwind palette
     expect('className="bg-emerald-500/15 text-indigo-400"'.match(PALETTE_RE)).not.toBeNull();
     expect("bg-primary text-muted-foreground".match(PALETTE_RE)).toBeNull(); // semantic = fine
   });
+
+  it("keeps the frame, workspace, and paper as distinct light surfaces", () => {
+    const tokens = readFileSync(join(SRC, "../app/tokens.css"), "utf8");
+
+    expect(tokens).toContain("--background: var(--web-workspace);");
+    expect(tokens).toMatch(/\.web-product-canvas\s*\{[^}]*background:\s*var\(--web-canvas\)/s);
+    expect(tokens).toMatch(
+      /\.web-product-workspace\s*\{[^}]*background:\s*var\(--web-workspace\)/s,
+    );
+    expect(tokens).toContain("--web-canvas: #ecebe7;");
+    expect(tokens).toContain("--web-workspace: #f7f6f2;");
+    expect(tokens).toContain("--web-paper: #fffefa;");
+  });
+
+  it("does not use near-black blocks for selected navigation chrome", () => {
+    const shell = readFileSync(join(SRC, "../app/authenticated-shell.tsx"), "utf8");
+    const loading = readFileSync(join(SRC, "../shared/components/route-loading-state.tsx"), "utf8");
+
+    expect(shell).not.toContain('"bg-foreground text-card hover:bg-foreground hover:text-card"');
+    expect(loading).not.toContain("bg-[var(--web-ink)]");
+  });
+
+  it("reserves the measured cookie banner inset in full-height product layouts", () => {
+    const tokens = readFileSync(join(SRC, "../app/tokens.css"), "utf8");
+
+    expect(tokens).toMatch(
+      /body\s*\{[^}]*padding-bottom:\s*var\(--cookie-consent-height,\s*0px\)/s,
+    );
+    expect(tokens).toMatch(
+      /\.web-product-canvas\s*\{[^}]*min-height:\s*calc\(100vh\s*-\s*var\(--cookie-consent-height,\s*0px\)\)/s,
+    );
+    expect(tokens).toMatch(
+      /\.web-product-shell\s*\{[^}]*height:\s*calc\(100vh\s*-\s*16px\s*-\s*var\(--cookie-consent-height,\s*0px\)\)/s,
+    );
+  });
 });

@@ -19,9 +19,13 @@ describe("citationsFromAnswer", () => {
 
   it("keeps citations next to the sentence they support", () => {
     expect(answerParts("La decisión fue dejarlo opcional [Meeting: Product sync 08:42].")).toEqual([
-      { kind: "text", value: "La decisión fue dejarlo opcional " },
-      { kind: "citation", citation: { kind: "Meeting", title: "Product sync 08:42" } },
-      { kind: "text", value: "." },
+      { kind: "text", start: 0, value: "La decisión fue dejarlo opcional " },
+      {
+        kind: "citation",
+        start: 33,
+        citation: { kind: "Meeting", title: "Product sync 08:42" },
+      },
+      { kind: "text", start: 62, value: "." },
     ]);
   });
 });

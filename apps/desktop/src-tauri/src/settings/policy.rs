@@ -260,6 +260,7 @@ impl Default for UserSettings {
             auto_launch_enabled: false,
             start_in_background: true,
             calendar_meeting_awareness_enabled: false,
+            microphone_meeting_awareness_enabled: true,
             auto_delete_target: default_auto_delete_target(),
             auto_delete_duration: default_auto_delete_duration(),
             audio_storage_budget_mb: 0,
@@ -464,6 +465,7 @@ mod tests {
         assert!(!settings.auto_launch_enabled);
         assert!(settings.start_in_background);
         assert!(!settings.calendar_meeting_awareness_enabled);
+        assert!(settings.microphone_meeting_awareness_enabled);
         assert_eq!(settings.auto_delete_target, AutoDeleteTarget::Transcripts);
         assert_eq!(settings.auto_delete_duration, RecordingPrunePolicy::Never);
         assert_eq!(settings.audio_storage_budget_mb, 0);

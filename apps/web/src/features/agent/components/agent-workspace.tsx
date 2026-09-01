@@ -24,7 +24,7 @@ export function AgentWorkspace({ activeThreadId }: { activeThreadId: string | nu
   }
 
   return (
-    <PageSurface className="relative flex h-full w-full min-w-0 overflow-hidden">
+    <PageSurface className="web-product-workspace relative flex h-full w-full min-w-0 overflow-hidden">
       <section className="flex h-full min-w-0 flex-1 flex-col">
         <ChatHeader activeThreadId={activeThreadId} />
         {activeThreadId ? (
@@ -59,15 +59,15 @@ function ChatHeader({ activeThreadId }: { activeThreadId: string | null }) {
   };
 
   return (
-    <header className="flex min-h-14 items-center justify-between gap-3 border-border/80 border-b bg-background px-4 sm:px-5">
+    <header className="flex min-h-14 items-center justify-between gap-3 border-border border-b bg-card px-4 sm:px-5">
       <div className="flex min-w-0 items-center gap-3">
         <span className="grid size-8 shrink-0 place-items-center rounded-lg border border-border bg-card text-primary">
           <IconMessageCircle className="size-4" aria-hidden />
         </span>
         <div className="min-w-0">
-          <Eyebrow className="hidden sm:block">{t("nav.workspace")}</Eyebrow>
-          <h1 className="sr-only truncate font-medium text-sm tracking-tight sm:not-sr-only sm:block">
-            {busy ? t("agent.streaming") : t("nav.chat")}
+          <Eyebrow className="hidden sm:block">{t("nav.memory")}</Eyebrow>
+          <h1 className="truncate font-medium text-sm tracking-tight">
+            {busy ? t("agent.streaming") : t("agent.title")}
           </h1>
         </div>
       </div>
@@ -78,7 +78,7 @@ function ChatHeader({ activeThreadId }: { activeThreadId: string | null }) {
               type="button"
               onClick={onExport}
               aria-label={t("agent.exportAsMd")}
-              className="grid size-8 place-items-center rounded-lg border border-border bg-card text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+              className="grid size-11 place-items-center rounded-lg border border-border bg-card text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground sm:size-8"
             >
               <IconDownload className="size-3.5" />
             </button>
@@ -99,7 +99,7 @@ function UpgradeFab() {
   return (
     <Link
       to="/billing"
-      className="group fixed right-20 bottom-6 z-20 hidden items-center gap-2 rounded-full border border-border bg-card/90 px-3.5 py-2 font-medium text-foreground text-xs tracking-tight shadow-lg backdrop-blur transition-all hover:border-primary/40 hover:bg-card sm:inline-flex"
+      className="group fixed right-20 bottom-6 z-20 hidden items-center gap-2 rounded-full border border-border bg-card/90 px-3.5 py-2 font-medium text-foreground text-xs tracking-tight shadow-lg backdrop-blur transition-[border-color,background-color] hover:border-primary/40 hover:bg-card sm:inline-flex"
     >
       <span className="relative grid size-4 place-items-center">
         <span className="absolute inset-0 animate-pulse rounded-full bg-primary/30 blur" />

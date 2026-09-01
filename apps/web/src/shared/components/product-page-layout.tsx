@@ -3,8 +3,8 @@ import { cn } from "@/lib/cn";
 import { PageSurface } from "@/shared/components/page-surface";
 
 const WIDTH_CLASS = {
-  standard: "max-w-6xl",
-  compact: "max-w-5xl",
+  standard: "max-w-[1040px]",
+  compact: "max-w-[860px]",
 } as const;
 
 /**
@@ -23,12 +23,12 @@ export function ProductPageLayout({
   compactTop?: boolean;
 }) {
   return (
-    <PageSurface className="min-h-full">
+    <PageSurface className="web-product-workspace min-h-full">
       <div
         className={cn(
           "mx-auto w-full px-5 sm:px-8",
           WIDTH_CLASS[width],
-          compactTop ? "py-6 md:py-12" : "py-8 sm:py-12",
+          compactTop ? "py-6 md:py-7" : "py-7 sm:py-8",
         )}
       >
         {children}

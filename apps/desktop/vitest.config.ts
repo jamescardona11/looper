@@ -18,5 +18,6 @@ export default defineConfig({
   test: {
     include: ["tests/frontend/**/*.test.{ts,tsx}", "src/**/*.test.{ts,tsx}"],
     environment: "node",
+    setupFiles: ["./tests/setup-browser-globals.ts"],
   },
 });

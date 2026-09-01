@@ -11,7 +11,6 @@ import {
 import { getActiveTodayStatSlide } from "../todayStats";
 
 export interface HomeTodayHeaderProps {
-  readonly transcriptionsFetched: boolean;
   readonly stats: TodayDictationStats;
   readonly active: boolean;
 }

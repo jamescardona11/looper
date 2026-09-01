@@ -19,6 +19,9 @@ type DictionaryVocabularyControlsProps = {
   hasEntries: boolean;
   metaLabel: string;
   hintLabel: string;
+  showSuggestions?: boolean;
+  title?: string;
+  description?: string;
 };
 
 export function DictionaryVocabularyControls(
@@ -33,7 +36,11 @@ export function DictionaryVocabularyControls(
   return (
     <>
       <div className="min-w-0">
-        {props.embedded ? null : (
+        {props.title ? (
+          <p className="ui-text-title-strong ui-color-primary text-balance">
+            {props.title}
+          </p>
+        ) : props.embedded ? null : (
           <p className="ui-text-title-strong ui-color-primary text-balance">
             {t({
               id: "dictionary.section.dictionary_title",
@@ -42,21 +49,25 @@ export function DictionaryVocabularyControls(
           </p>
         )}
         <p className="mt-1 ui-text-body-sm ui-color-muted text-pretty">
-          {t({
-            id: "dictionary.section.dictionary_description",
-            message: "Add custom words Looper should recognize.",
-          })}
+          {props.description ??
+            t({
+              id: "dictionary.section.dictionary_description",
+              message: "Add custom words Looper should recognize.",
+            })}
         </p>
       </div>
-      <DictionarySuggestions
-        suggestions={props.suggestions}
-        itemRowClassName={props.itemRowClassName}
-        deleteButtonClassName={props.deleteButtonClassName}
-        onAccept={props.onAcceptSuggestion}
-        onDismiss={props.onDismissSuggestion}
-      />
+      {props.showSuggestions === false ? null : (
+        <DictionarySuggestions
+          suggestions={props.suggestions}
+          itemRowClassName={props.itemRowClassName}
+          deleteButtonClassName={props.deleteButtonClassName}
+          onAccept={props.onAcceptSuggestion}
+          onDismiss={props.onDismissSuggestion}
+        />
+      )}
       <div className="mt-4 flex h-10 items-center rounded-lg border border-border-primary bg-surface-surface px-3 shadow-sm transition-colors focus-within:border-border-hover">
         <input
+          data-studio-focus="word"
           value={props.value}
           onChange={(event) => props.onValueChange(event.target.value)}
           onKeyDown={addOnEnter}

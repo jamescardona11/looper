@@ -83,10 +83,6 @@ vi.mock("@looper/data", () => ({
   }),
 }));
 
-vi.mock("@/shared/components/voice-tool-nav", () => ({
-  VoiceToolNav: () => null,
-}));
-
 import { DictationPage } from "../dictation-page";
 
 beforeEach(() => {
@@ -134,7 +130,7 @@ describe("DictationPage", () => {
   it("renders dictionary, replacements, snippets, styles and Smart Modes from shared data hooks", () => {
     renderPage();
 
-    expect(screen.getByRole("heading", { name: "Dictation" })).toBeVisible();
+    expect(screen.getByRole("heading", { name: "Shape how Looper writes." })).toBeVisible();
     expect(screen.getByText("Atlas")).toBeVisible();
     expect(screen.getByText("brb")).toBeVisible();
     expect(screen.getByText("be right back")).toBeVisible();
@@ -148,6 +144,9 @@ describe("DictationPage", () => {
       "aria-pressed",
       "true",
     );
+    for (const label of ["Add term", "Add replacement", "Add snippet", "Add style", "Add rule"]) {
+      expect(screen.getByRole("button", { name: label })).toHaveClass("bg-transparent");
+    }
   });
 
   it("adds and removes dictionary terms", async () => {

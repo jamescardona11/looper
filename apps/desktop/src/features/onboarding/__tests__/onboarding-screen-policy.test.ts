@@ -143,6 +143,8 @@ describe("onboarding-screen-policy", () => {
       remote_speech_provider: "custom",
       auto_launch_enabled: false,
       analytics_enabled: false,
+      calendar_meeting_awareness_enabled: true,
+      microphone_meeting_awareness_enabled: false,
     } as StoredSettings;
     const cohere = model("cohere", {
       engine_id: "cohere",
@@ -172,8 +174,26 @@ describe("onboarding-screen-policy", () => {
       meetingAiProvider: "local",
       autoLaunchEnabled: true,
       analyticsEnabled: false,
+      calendarMeetingAwarenessEnabled: true,
+      microphoneMeetingAwarenessEnabled: false,
     });
     expect(result.shortcutBindings.smart[0]?.shortcut).toBe("Alt+Space");
+  });
+
+  it("defaults new microphone suggestions on without opting into Calendar", () => {
+    const result = buildCompletedOnboardingSettings({
+      latest: {} as StoredSettings,
+      smartShortcut: "Fn",
+      transcriptionMode: "local",
+      localModel: "parakeet-v3",
+      localModelInfo: null,
+      autoLaunchEnabled: false,
+      systemLanguage: "en-US",
+      meetingAiProvider: "none",
+    });
+
+    expect(result.calendarMeetingAwarenessEnabled).toBe(false);
+    expect(result.microphoneMeetingAwarenessEnabled).toBe(true);
   });
 
   it("normalizes checkout and activation failures", () => {

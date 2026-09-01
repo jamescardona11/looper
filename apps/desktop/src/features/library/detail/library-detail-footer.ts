@@ -1,7 +1,6 @@
 import type { ComponentProps, Dispatch, SetStateAction } from "react";
 
 import type { LibraryAudioFooter } from "../player/LibraryAudioFooter";
-import type { MeetingReviewView } from "../meeting/MeetingReviewPanel";
 import { isCaptureItem } from "./library-detail-policy";
 import type { LibraryDetailProps } from "./library-detail-types";
 import type { useLibraryPlayer } from "../player/useLibraryPlayer";
@@ -9,8 +8,6 @@ import type { useLibraryPlayer } from "../player/useLibraryPlayer";
 type FooterInput = {
   item: LibraryDetailProps["item"];
   player: ReturnType<typeof useLibraryPlayer>;
-  meetingView: MeetingReviewView;
-  setMeetingView: Dispatch<SetStateAction<MeetingReviewView>>;
   canShowTimestamps: boolean;
   showTimestamps: boolean;
   setShowTimestamps: Dispatch<SetStateAction<boolean>>;
@@ -22,8 +19,6 @@ type FooterInput = {
 export function createLibraryDetailFooter({
   item,
   player,
-  meetingView,
-  setMeetingView,
   canShowTimestamps,
   showTimestamps,
   setShowTimestamps,
@@ -43,11 +38,6 @@ export function createLibraryDetailFooter({
           audioCurrentTime: player.audioCurrentTime,
           audioDuration: player.audioDuration,
           scrubberPercent: player.scrubberPercent,
-          transcriptOpen: meetingView === "transcript",
-          onTranscriptToggle: () =>
-            setMeetingView((current) =>
-              current === "transcript" ? "enhanced" : "transcript",
-            ),
         }
       : undefined,
     playerProps: {

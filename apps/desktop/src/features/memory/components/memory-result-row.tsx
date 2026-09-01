@@ -1,22 +1,9 @@
 import { useState } from "react";
 import { useLingui } from "@lingui/react/macro";
-import {
-  ArrowSquareOut,
-  Books,
-  ChatCircle,
-  Check,
-  Copy,
-  Waveform,
-} from "@phosphor-icons/react";
+import { Check, Copy } from "@phosphor-icons/react";
 
-import type { MemorySearchResult, MemorySource } from "../../../data/memory";
+import type { MemorySearchResult } from "../../../data/memory";
 import { useCopyToClipboard } from "../../../shared/hooks/useCopyToClipboard";
-
-const SOURCE_ICONS: Record<MemorySource, typeof Books> = {
-  dictation: ChatCircle,
-  library: Waveform,
-  meeting: Books,
-};
 
 type MemoryResultRowProps = {
   result: MemorySearchResult;
@@ -34,22 +21,16 @@ export function MemoryResultRow(props: MemoryResultRowProps) {
     showRaw && props.result.raw_text
       ? props.result.raw_text
       : props.result.final_text;
-  const Icon = SOURCE_ICONS[props.result.source];
-
   return (
     <article
       aria-current={props.selected ? "true" : undefined}
       onMouseEnter={props.onSelect}
-      className={`group mx-1 flex items-start gap-3 rounded-lg px-2 py-2.5 transition-colors ${
-        props.selected ? "bg-surface-secondary" : "hover:bg-surface-secondary"
+      className={`group mx-[15px] grid grid-cols-[minmax(0,1fr)_auto] gap-3 border-b border-border-primary px-0 py-3 transition-colors ${
+        props.selected
+          ? "bg-[var(--color-bg-primary)]"
+          : "hover:bg-[var(--color-bg-primary)]"
       }`}
     >
-      <span
-        className="mt-0.5 grid h-7 w-7 shrink-0 place-items-center rounded-md bg-surface-secondary text-content-muted"
-        aria-hidden="true"
-      >
-        <Icon size={13} />
-      </span>
       <div className="min-w-0 flex-1">
         <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
           <h3 className="truncate ui-text-body-sm font-medium ui-color-primary">
@@ -81,7 +62,7 @@ export function MemoryResultRow(props: MemoryResultRowProps) {
         </p>
       </div>
 
-      <div className="flex shrink-0 items-center gap-1 opacity-0 transition-opacity group-focus-within:opacity-100 group-hover:opacity-100">
+      <div className="flex shrink-0 items-center gap-1">
         {props.result.raw_text ? (
           <div
             className="flex h-7 rounded-md border border-border-primary p-0.5"
@@ -135,10 +116,10 @@ export function MemoryResultRow(props: MemoryResultRowProps) {
         <button
           type="button"
           onClick={props.onOpen}
-          className="ui-button-ghost h-7 w-7"
+          className="h-7 rounded-lg px-2.5 ui-text-micro font-semibold text-[var(--color-text-secondary)] transition-colors hover:bg-surface-secondary hover:text-[var(--color-text-primary)]"
           aria-label={`Open ${props.result.title}`}
         >
-          <ArrowSquareOut size={14} />
+          {t({ id: "memory.result.open", message: "Open" })}
         </button>
       </div>
     </article>

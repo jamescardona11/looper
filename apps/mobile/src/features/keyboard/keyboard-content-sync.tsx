@@ -8,9 +8,9 @@ import {
 } from "@looper/data";
 import { type ReactNode, useEffect, useMemo, useRef } from "react";
 import { normalizeStudioSettings } from "@/shared/studio/studio-settings";
+import { buildWidgetSummary } from "../library/widget-summary";
 import { isNativeKeyboardAvailable } from "./native-keyboard";
 import { syncKeyboardContent } from "./sync-keyboard-content";
-import { buildWidgetSummary } from "../library/widget-summary";
 
 export function KeyboardContentSync({ children }: { children: ReactNode }) {
   const dictionary = useDictationDictionary();
@@ -22,7 +22,12 @@ export function KeyboardContentSync({ children }: { children: ReactNode }) {
   const studio = useMemo(() => normalizeStudioSettings(settings.doc?.data), [settings.doc?.data]);
   const lastSynced = useRef<string | null>(null);
   const isLoading =
-    dictionary.isLoading || replacements.isLoading || snippets.isLoading || settings.isLoading || notes.isLoading || meetings.isLoading;
+    dictionary.isLoading ||
+    replacements.isLoading ||
+    snippets.isLoading ||
+    settings.isLoading ||
+    notes.isLoading ||
+    meetings.isLoading;
   const widgetSummary = useMemo(
     () => buildWidgetSummary(notes.notes, meetings.sessions),
     [meetings.sessions, notes.notes],
@@ -53,7 +58,15 @@ export function KeyboardContentSync({ children }: { children: ReactNode }) {
         });
     }, 250);
     return () => clearTimeout(timeout);
-  }, [dictionary.entries, isLoading, replacements.rules, signature, snippets.snippets, studio, widgetSummary]);
+  }, [
+    dictionary.entries,
+    isLoading,
+    replacements.rules,
+    signature,
+    snippets.snippets,
+    studio,
+    widgetSummary,
+  ]);
 
   return children;
 }

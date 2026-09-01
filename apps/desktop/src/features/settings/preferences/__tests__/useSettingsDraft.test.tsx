@@ -55,4 +55,36 @@ describe("settings draft", () => {
     expect(result.current.draft.localModel).toBe("parakeet-v3");
     expect(result.current.draft.textSizeMode).toBe("large");
   });
+
+  test("keeps the same draft reference when hydration is semantically equal", () => {
+    const { result } = renderHook(() => useSettingsDraft("cloud"));
+
+    act(() => result.current.hydrate(storedSettings));
+    const hydrated = result.current.draft;
+    act(() => result.current.hydrate({ ...storedSettings }));
+
+    expect(result.current.draft).toBe(hydrated);
+  });
+
+  test("merges clean external fields without overwriting a local edit", () => {
+    const { result } = renderHook(() => useSettingsDraft("cloud"));
+
+    act(() => result.current.hydrate(storedSettings));
+    act(() => result.current.setters.localModel("local-edit"));
+    act(() =>
+      result.current.hydrate(
+        {
+          ...storedSettings,
+          local_model: "external-edit",
+          language: "fr",
+          microphone_meeting_awareness_enabled: false,
+        },
+        storedSettings,
+      ),
+    );
+
+    expect(result.current.draft.localModel).toBe("local-edit");
+    expect(result.current.draft.language).toBe("fr");
+    expect(result.current.draft.microphoneMeetingAwarenessEnabled).toBe(false);
+  });
 });

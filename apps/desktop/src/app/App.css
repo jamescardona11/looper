@@ -5,75 +5,230 @@
 @import "./styles/utilities.css";
 @import "./styles/surfaces.css";
 
-.onboarding-shell {
+/* Traducción literal de la paleta paper del artefacto desktop púrpura.
+   Son aliases del renderer (no tokens compartidos): Web ya tiene sus aliases
+   equivalentes y Mobile conserva su propia superficie. */
+:root[data-theme="light"] {
+  /* La ventana y el workspace son una sola lámina: el canvas no debe
+     reaparecer como una segunda franja después del borde del shell. */
+  --desktop-canvas: #fbfaf5;
+  --desktop-workspace: #efede7;
+  --desktop-paper: #fbfaf5;
+  --desktop-raised: #ffffff;
+  --desktop-ink: #15161a;
+  --desktop-ink-muted: #3f424a;
+  --desktop-muted: #626671;
+  --desktop-line: #dfddd5;
+  --desktop-line-strong: #c9c6bd;
+  --desktop-accent: #6754e8;
+  --desktop-highlight: #d9d0ff;
+  --desktop-highlight-strong: #b8a3ff;
+  --desktop-depth-line: rgba(21, 22, 26, 0.08);
+  --desktop-answer-divider: rgba(21, 22, 26, 0.12);
+
+  --color-bg-primary: var(--desktop-paper);
+  --color-bg-secondary: var(--desktop-workspace);
+  --color-bg-tertiary: var(--desktop-workspace);
+  --color-bg-surface: var(--desktop-raised);
+  --color-bg-overlay: var(--desktop-raised);
+  --color-bg-elevated: #f4f2ed;
+  --color-bg-elevated-hover: #e9e8e4;
+  --color-bg-hover: #dfddd5;
+  --canvas-top: var(--desktop-workspace);
+  --color-border-primary: var(--desktop-line);
+  --color-border-secondary: var(--desktop-line-strong);
+  --color-border-hover: #a5a198;
+  --color-text-primary: var(--desktop-ink);
+  --color-text-secondary: var(--desktop-ink-muted);
+  --color-text-muted: var(--desktop-muted);
+  --color-text-disabled: #9a9da5;
+  --color-accent: var(--desktop-accent);
+  --color-accent-light: var(--desktop-accent);
+  --color-accent-dark: #5946d8;
+  --color-accent-hover: #5946d8;
+  --color-accent-ink: var(--desktop-accent);
+  --color-accent-5: rgba(103, 84, 232, 0.05);
+  --color-accent-10: rgba(103, 84, 232, 0.12);
+  --color-accent-20: rgba(103, 84, 232, 0.2);
+  --color-accent-30: rgba(103, 84, 232, 0.3);
+  --color-accent-50: rgba(103, 84, 232, 0.5);
+  --color-accent-80: rgba(103, 84, 232, 0.8);
+  --surface-interactive: #efede7;
+  --surface-interactive-strong: #e9e8e4;
+  --surface-interactive-pressed: #dfddd5;
+}
+
+/* El canvas nativo conserva una superficie cálida estable sin depender de una
+   WebView transparente, que macOS puede resolver contra negro. */
+:root[data-theme="light"][data-window-surface="workspace"],
+:root[data-theme="light"][data-window-surface="workspace"] body,
+:root[data-theme="light"][data-window-surface="workspace"] #root {
+  background: var(--desktop-canvas);
+}
+
+/* El shell de escritorio conserva las rutas nativas, pero ahora usa la
+   composición explícita del workspace de referencia: navegación legible a la
+   izquierda y el documento/dictado como centro de atención. */
+.desktop-workspace-shell {
+  position: relative;
   isolation: isolate;
-  background:
-    radial-gradient(
-      circle at 50% -18%,
-      var(--color-accent-20),
-      transparent 34rem
-    ),
-    radial-gradient(circle at 8% 88%, var(--color-local-10), transparent 28rem),
-    var(--color-bg-secondary);
+  box-sizing: border-box;
+  width: 100vw;
+  height: 100vh;
+  margin: 0;
+  border-radius: 25px;
+  background: var(--desktop-paper);
+  box-shadow: none;
 }
 
-.onboarding-shell::before {
+/* El perímetro debe dar definición sin encoger la lámina. Un border normal
+   crea un inset de 1px entre el borde y la app; este anillo se pinta encima
+   del shell, por lo que sidebar y contenido llegan al mismo borde. */
+.desktop-workspace-shell::after {
   position: absolute;
-  z-index: -1;
+  z-index: 50;
   inset: 0;
+  pointer-events: none;
+  border: 0.5px solid var(--desktop-line);
+  border-radius: inherit;
   content: "";
-  opacity: 0.42;
-  background-image:
-    linear-gradient(var(--color-border-primary) 1px, transparent 1px),
-    linear-gradient(90deg, var(--color-border-primary) 1px, transparent 1px);
-  background-size: 44px 44px;
-  mask-image: linear-gradient(to bottom, black, transparent 72%);
 }
 
-.onboarding-atmosphere {
+.desktop-workspace-brand {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 24px;
+  margin-bottom: 14px;
+  padding: 0 8px;
+  color: var(--desktop-ink);
+}
+
+.desktop-workspace-brand-name {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 750;
+  letter-spacing: 0;
+  line-height: 1;
+}
+
+.desktop-workspace-edition {
+  padding: 4px 7px;
+  border-radius: 7px;
+  background: var(--color-text-primary);
+  color: var(--color-bg-primary);
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.desktop-workspace-trust {
+  margin: 16px 14px 14px;
+  padding: 16px;
+  border-radius: 18px;
+  background: var(--desktop-highlight);
+  color: var(--desktop-ink);
+}
+
+.desktop-workspace-trust > span,
+.desktop-workspace-trust > strong,
+.desktop-workspace-trust > p {
+  display: block;
+}
+
+.desktop-workspace-trust > span {
+  color: var(--desktop-ink-muted);
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.desktop-workspace-trust > strong {
+  margin-top: 8px;
+  font-size: 15px;
+  line-height: 1.2;
+}
+
+.desktop-workspace-trust > p {
+  margin: 6px 0 0;
+  color: var(--desktop-ink-muted);
+  font-size: 10px;
+  line-height: 1.5;
+}
+
+.desktop-workspace-nav-item {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 44px;
+  padding: 0 10px;
+  border-radius: 13px;
+  /* WebKit no invalida siempre el píxel negro del item que acaba de perder
+     `data-active` cuando el fondo es transparente. Paper es visualmente el
+     mismo fondo de la barra, pero obliga a repintar cada transición de ruta. */
+  background-color: var(--desktop-paper);
+  color: var(--color-text-secondary);
+  font-size: var(--ui-text-size-body);
+  font-weight: 700;
+  line-height: var(--ui-text-line-body);
+  text-align: left;
+  transition:
+    background-color 140ms ease-out,
+    color 140ms ease-out;
+}
+
+.desktop-workspace-nav-item[data-active="false"] {
+  /* Un selector explícito obliga a WebKit a invalidar el fondo del destino
+     anterior cuando cambia la ruta. Sin él podía conservar el negro de
+     Dictation aunque Studio ya fuese el panel activo. */
+  background-color: var(--desktop-paper);
+  color: var(--color-text-secondary);
+}
+
+.desktop-workspace-nav-item:hover {
+  color: var(--color-text-primary);
+  background: var(--surface-interactive);
+}
+
+.desktop-workspace-nav-item[data-active="true"] {
+  color: var(--color-bg-primary);
+  background: var(--desktop-paper);
+}
+
+.desktop-workspace-nav-active-surface {
   position: absolute;
-  z-index: -1;
   inset: 0;
-  overflow: hidden;
+  z-index: 0;
+  border-radius: inherit;
+  background: var(--color-text-primary);
   pointer-events: none;
 }
 
-.onboarding-atmosphere-orb {
-  position: absolute;
-  width: 20rem;
-  height: 20rem;
-  border-radius: 999px;
-  filter: blur(34px);
-  opacity: 0.3;
-  animation: onboarding-drift 12s ease-in-out infinite alternate;
+.desktop-workspace-nav-item[data-active="true"] svg {
+  color: var(--desktop-highlight-strong);
 }
 
-.onboarding-atmosphere-orb-primary {
-  top: 12%;
-  left: -10rem;
-  background: var(--color-local);
+.ui-canvas {
+  background: var(--desktop-paper);
 }
 
-.onboarding-atmosphere-orb-secondary {
-  right: -12rem;
-  bottom: -7rem;
-  background: var(--color-cloud);
-  animation-delay: -6s;
+.desktop-workspace-nav-item[data-active="true"]::before,
+.desktop-workspace-nav-item::after {
+  display: none;
 }
 
-.onboarding-atmosphere-scanline {
-  position: absolute;
-  top: 18%;
-  right: 13%;
-  width: min(17rem, 34vw);
-  height: min(17rem, 34vw);
-  border: 1px solid var(--color-accent-30);
-  border-radius: 999px;
-  box-shadow:
-    0 0 0 1.1rem var(--color-accent-5),
-    0 0 0 2.4rem var(--color-accent-5);
-  opacity: 0.72;
-  animation: onboarding-breathe 5.2s ease-in-out infinite;
+.desktop-workspace-nav-item:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+.onboarding-shell {
+  isolation: isolate;
+  background: var(--desktop-paper);
 }
 
 .onboarding-content {
@@ -86,54 +241,14 @@
   padding-bottom: 1.5rem;
 }
 
-.onboarding-step-welcome::before {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  z-index: -1;
-  width: 25rem;
-  height: 25rem;
-  border: 1px solid var(--color-local-20);
-  border-radius: 999px;
-  content: "";
-  transform: translate(-50%, -57%);
-  box-shadow:
-    0 0 0 1.75rem var(--color-local-5),
-    0 0 0 4rem var(--color-local-5);
-}
-
 .onboarding-welcome-mark {
   position: relative;
   box-shadow: 0 18px 50px
     color-mix(in srgb, var(--color-local) 20%, transparent);
 }
 
-.onboarding-welcome-mark::after {
-  position: absolute;
-  inset: -0.5rem;
-  border: 1px solid var(--color-local-30);
-  border-radius: inherit;
-  content: "";
-  opacity: 0.65;
-  animation: onboarding-breathe 3.8s ease-in-out infinite;
-}
-
 .onboarding-welcome-wordmark {
-  text-shadow: 0 0 2.5rem var(--color-accent-20);
-}
-
-.onboarding-header::before {
-  display: block;
-  width: 2.5rem;
-  height: 1px;
-  margin-bottom: 1.25rem;
-  content: "";
-  background: linear-gradient(
-    90deg,
-    transparent,
-    var(--color-accent),
-    transparent
-  );
+  text-shadow: none;
 }
 
 .onboarding-header-title {
@@ -276,34 +391,7 @@
   background: var(--surface-interactive);
 }
 
-@keyframes onboarding-drift {
-  from {
-    transform: translate3d(0, 0, 0) scale(0.92);
-  }
-  to {
-    transform: translate3d(2rem, -1.5rem, 0) scale(1.08);
-  }
-}
-
-@keyframes onboarding-breathe {
-  0%,
-  100% {
-    opacity: 0.48;
-    transform: scale(0.96);
-  }
-  50% {
-    opacity: 0.84;
-    transform: scale(1.04);
-  }
-}
-
 @media (prefers-reduced-motion: reduce) {
-  .onboarding-atmosphere-orb,
-  .onboarding-atmosphere-scanline,
-  .onboarding-welcome-mark::after {
-    animation: none;
-  }
-
   .onboarding-primary-action,
   .onboarding-mode-option {
     transition: none;

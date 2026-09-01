@@ -97,6 +97,17 @@ describe("useShortcutEditor", () => {
     expect(result.current.captureActive).toEqual({ mode: "toggle", index: 1 });
     expect(mocks.setCaptureActive).toHaveBeenCalledWith(true);
   });
+
+  test("does not change the snapshot when saved bindings are already current", () => {
+    const { result } = renderEditor();
+    const before = result.current.snapshot;
+
+    act(() =>
+      result.current.acceptSavedBindings(result.current.shortcutBindings),
+    );
+
+    expect(result.current.snapshot).toBe(before);
+  });
 });
 
 function renderEditor(

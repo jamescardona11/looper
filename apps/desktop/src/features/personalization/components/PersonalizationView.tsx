@@ -30,6 +30,7 @@ export function PersonalizationView({
   isActive = true,
   embedded = false,
   showModeRules = true,
+  studio = false,
 }: PersonalizationViewProps) {
   const { t } = useLingui();
   const queryClient = useQueryClient();
@@ -117,6 +118,8 @@ export function PersonalizationView({
           installedApps={installedApps}
           personalities={personalities}
           selectedPersonalityId={selectedId}
+          isActive={isActive}
+          studio={studio}
           websiteIconBySite={websiteIconBySite}
         />
       ) : (

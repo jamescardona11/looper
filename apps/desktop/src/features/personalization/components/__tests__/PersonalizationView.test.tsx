@@ -22,6 +22,7 @@ const mocks = vi.hoisted(() => ({
   queryData: vi.fn(),
   save: vi.fn(),
   setCache: vi.fn(),
+  cleanupEnabled: false,
 }));
 
 vi.mock("../../../../data/personalization", () => ({
@@ -48,6 +49,28 @@ vi.mock("../../queries", () => ({
 
 vi.mock("../../../../shared/hooks/useShiftHeld", () => ({
   useShiftHeld: () => false,
+}));
+
+vi.mock("../../../settings/preferences/queries", () => ({
+  useSettings: (select: (settings: unknown) => unknown) => ({
+    data: select({
+      cleanup_enabled: false,
+      smart_shortcut: "Fn",
+      shortcut_bindings: {
+        smart: [
+          {
+            shortcut: "Fn",
+            temporary: false,
+            cleanup_enabled: mocks.cleanupEnabled,
+          },
+        ],
+        hold: [],
+        toggle: [],
+      },
+    }),
+    error: null,
+    isLoading: false,
+  }),
 }));
 
 vi.mock("../ModeRulesSection", () => ({ default: () => null }));
@@ -97,6 +120,13 @@ const renderWorkspace = (translation = i18n) =>
     </I18nProvider>,
   );
 
+const renderStudio = (translation = i18n) =>
+  render(
+    <I18nProvider i18n={translation}>
+      <PersonalizationView embedded showModeRules={false} studio />
+    </I18nProvider>,
+  );
+
 beforeEach(() => {
   mocks.queryData.mockReturnValue(undefined);
   mocks.save.mockResolvedValue([]);
@@ -111,6 +141,7 @@ afterEach(() => {
   mocks.queryData.mockReset();
   mocks.save.mockReset();
   mocks.setCache.mockReset();
+  mocks.cleanupEnabled = false;
 });
 
 describe("PersonalizationView", () => {
@@ -163,6 +194,46 @@ describe("PersonalizationView", () => {
     expect(
       await screen.findByText("Can you move the meeting to Friday?"),
     ).toBeTruthy();
+  });
+
+  test("Studio Writing derives cleanup and previews from saved configuration", () => {
+    mocks.cleanupEnabled = true;
+    mocks.personalities.mockReturnValue({
+      data: [style("coding", "Coding")],
+      isLoading: false,
+      error: null,
+    });
+
+    renderStudio();
+
+    expect(
+      screen.getByRole("heading", { name: "Writing for the work at hand" }),
+    ).toBeTruthy();
+    expect(screen.getByText("Cleanup level")).toBeTruthy();
+    expect(
+      screen
+        .getByText("Clean up")
+        .closest("[data-active]")
+        ?.getAttribute("data-active"),
+    ).toBe("true");
+    expect(screen.getByRole("heading", { name: "Coding" })).toBeTruthy();
+    expect(screen.getByPlaceholderText(/Type or paste/)).toBeTruthy();
+  });
+
+  test("Studio New mode uses the existing persisted mode action", () => {
+    mocks.personalities.mockReturnValue({
+      data: [style("p1", "Messaging")],
+      isLoading: false,
+      error: null,
+    });
+
+    renderStudio();
+    fireEvent.click(screen.getByRole("button", { name: "New mode" }));
+
+    expect(mocks.setCache).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.arrayContaining([expect.objectContaining({ name: "New Mode" })]),
+    );
   });
 
   test("a failed preview shows the reason instead of a stale result", async () => {

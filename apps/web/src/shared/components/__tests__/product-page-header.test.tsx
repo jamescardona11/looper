@@ -19,7 +19,7 @@ describe("ProductPageHeader", () => {
 
     const header = container.firstElementChild;
     expect(header).toHaveProperty("tagName", "HEADER");
-    expect(header).toHaveClass("mb-8");
+    expect(header).toHaveClass("mb-6", "sm:mb-7");
     expect(header?.children).toHaveLength(2);
 
     const layout = header?.children.item(0);
@@ -44,19 +44,20 @@ describe("ProductPageHeader", () => {
       "tracking-wide",
     );
     expect(copy?.children.item(1)).toHaveClass(
-      "mt-3",
-      "font-medium",
-      "text-3xl",
+      "mt-2",
+      "text-wrap-balance",
+      "font-semibold",
+      "text-2xl",
       "tracking-tight",
-      "sm:text-4xl",
+      "sm:text-[28px]",
     );
     expect(copy?.children.item(2)).toHaveClass(
       "mt-2",
       "max-w-2xl",
+      "text-pretty",
       "text-muted-foreground",
       "text-sm",
       "leading-relaxed",
-      "sm:text-base",
     );
     expect(within(copy as HTMLElement).getByText("Voice tools").tagName).toBe("SPAN");
     expect(within(copy as HTMLElement).getByText("Dictation").tagName).toBe("EM");
@@ -69,7 +70,7 @@ describe("ProductPageHeader", () => {
   });
 
   it("omits optional regions without leaving wrapper elements", () => {
-    const { container } = render(<ProductPageHeader eyebrow="Workspace" title="Home" />);
+    const { container } = render(<ProductPageHeader title="Home" />);
 
     const header = container.firstElementChild;
     expect(header?.children).toHaveLength(1);

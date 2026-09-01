@@ -9,36 +9,41 @@ const SURFACE_HEIGHT: f64 = 72.0;
 const WIDTH: f64 = SURFACE_WIDTH + SHADOW_GUTTER * 2.0;
 const HEIGHT: f64 = SURFACE_HEIGHT + SHADOW_GUTTER * 2.0;
 
-pub fn show(app: &AppHandle<AppRuntime>) {
+pub fn show(app: &AppHandle<AppRuntime>) -> bool {
     if !awareness_is_current(app) {
-        return;
+        return false;
     }
     let toast_visible = toast_is_visible(app);
     let toast_preemptible = crate::toast::meeting_awareness_may_preempt();
     if toast_blocks_awareness(toast_visible, toast_preemptible) {
-        return;
+        return false;
     }
     if toast_visible {
         // Este aviso puede reemplazar el toast de permisos. Ocultar el toast
         // normalmente restaura awareness de forma diferida, pero aquí la
         // presentación debe ser explícita para no perder la primera alerta.
         crate::toast::hide_surface(app);
-        show_window(app);
-        return;
+        return show_window(app);
     }
-    show_window(app);
+    show_window(app)
 }
 
 pub fn restore_after_toast(app: &AppHandle<AppRuntime>) {
     if awareness_is_current(app) {
-        show_window(app);
+        if show_window(app) {
+            // El aviso pudo quedar pendiente mientras el toast era visible. El
+            // refresh permite armar su TTL ahora que la tarjeta sí se presentó.
+            app.state::<AppState>()
+                .meeting_awareness()
+                .request_refresh();
+        }
     }
 }
 
-fn show_window(app: &AppHandle<AppRuntime>) {
+fn show_window(app: &AppHandle<AppRuntime>) -> bool {
     let Some(window) = app.get_webview_window(WINDOW_LABEL) else {
         tracing::error!("Meeting notification window not found");
-        return;
+        return false;
     };
 
     if let Err(error) = window.set_size(tauri::LogicalSize::new(WIDTH, HEIGHT)) {
@@ -57,6 +62,7 @@ fn show_window(app: &AppHandle<AppRuntime>) {
     });
     crate::platform::toast::set_interactive(app, &window, true);
     crate::platform::toast::show(app, &window);
+    true
 }
 
 fn toast_is_visible(app: &AppHandle<AppRuntime>) -> bool {

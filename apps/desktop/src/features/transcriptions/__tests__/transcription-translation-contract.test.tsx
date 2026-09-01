@@ -126,6 +126,7 @@ describe("transcription translation contract", () => {
   });
 
   test("uses catalog messages in search, filters, empty, no-result, and undo states", () => {
+    const onOpenShortcutSettings = vi.fn();
     const { rerender } = render(
       translated(
         <TranscriptionListSearchControls
@@ -151,16 +152,41 @@ describe("transcription translation contract", () => {
     rerender(
       translated(
         <TranscriptionListViewport
+          compact
           state={{ kind: "empty" }}
           shortcutKeys={["Fn"]}
+          entries={[]}
+          computeItemKey={() => "unused"}
+          renderEntry={() => null}
+          onOpenShortcutSettings={onOpenShortcutSettings}
+        />,
+      ),
+    );
+    expect(screen.getByText("EMPTY-TITLE-DISTINCT")).toBeTruthy();
+    expect(
+      screen.getByText(
+        (_, element) =>
+          element?.tagName === "P" &&
+          element.textContent?.includes("SHORTCUT-DISTINCT") === true,
+      ),
+    ).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "See the shortcut" }));
+    expect(onOpenShortcutSettings).toHaveBeenCalledOnce();
+
+    rerender(
+      translated(
+        <TranscriptionListViewport
+          compact
+          state={{ kind: "list", loading: false }}
+          shortcutKeys={[]}
           entries={[]}
           computeItemKey={() => "unused"}
           renderEntry={() => null}
         />,
       ),
     );
-    expect(screen.getByText("EMPTY-TITLE-DISTINCT")).toBeTruthy();
-    expect(screen.getByText("IMPORT-DISTINCT")).toBeTruthy();
+    expect(screen.queryByTestId("transcription-scroll-fade-top")).toBeNull();
+    expect(screen.queryByTestId("transcription-scroll-fade-bottom")).toBeNull();
 
     rerender(
       translated(

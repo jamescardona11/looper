@@ -1,5 +1,4 @@
 import type { DictionaryEntry, ReplacementRule, UserSnippet } from "@looper/data";
-import type { MeetingSession, Note } from "@looper/data";
 import { getConvexRefreshToken } from "@/lib/secure-storage";
 import { type MobileStudioSettings, smartModePrompt } from "@/shared/studio/studio-settings";
 import { buildKeyboardSyncPayload } from "./keyboard-config";

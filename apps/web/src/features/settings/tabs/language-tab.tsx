@@ -21,7 +21,7 @@ export function LanguageTab() {
         hint={t("settings.languageHint")}
         icon={<IconLanguage />}
       />
-      <fieldset className="grid gap-3 sm:grid-cols-2">
+      <fieldset className="web-product-panel overflow-hidden rounded-xl">
         <legend className="sr-only">{t("settings.displayLanguage")}</legend>
         {supportedLocales.map((option) => {
           const selected = locale === option;
@@ -32,10 +32,8 @@ export function LanguageTab() {
               aria-pressed={selected}
               onClick={() => setLocale(option)}
               className={cn(
-                "flex min-h-28 items-center gap-4 rounded-xl border p-5 text-left transition-colors",
-                selected
-                  ? "border-primary/50 bg-primary/5"
-                  : "border-border bg-card hover:border-primary/30",
+                "flex min-h-20 w-full items-center gap-4 border-border border-b p-5 text-left transition-colors last:border-b-0",
+                selected ? "bg-primary/5" : "bg-card hover:bg-secondary/40",
               )}
             >
               <span className="grid size-11 shrink-0 place-items-center rounded-lg border border-border bg-background font-mono text-muted-foreground text-xs uppercase">

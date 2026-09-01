@@ -21,11 +21,13 @@ type TranscriptExchange = {
 };
 
 export function MeetingTranscriptPanel({
+  id,
   meetingId,
   segments,
   pinned,
   onMinimize,
 }: {
+  id?: string;
   meetingId: string;
   segments: MeetingTranscriptSegment[];
   pinned: boolean;
@@ -167,7 +169,7 @@ export function MeetingTranscriptPanel({
     if (!group) continue;
     feed.push(
       <div key={group.id} className="min-w-0">
-        <span className="sticky top-0 z-10 -mx-3.5 mb-1 block bg-[var(--ui-pill-shell-bg)] px-3.5 text-[10px] font-semibold uppercase leading-4 tracking-[0.08em] text-white/45">
+        <span className="mb-1 block text-[10px] font-semibold uppercase leading-4 tracking-[0.08em] text-white/45">
           {group.source === "you"
             ? t({ id: "meeting.transcript.you", message: "You" })
             : t({ id: "meeting.transcript.them", message: "Them" })}
@@ -181,16 +183,15 @@ export function MeetingTranscriptPanel({
 
   return (
     <section
+      id={id}
       aria-label={t({
         id: "meeting.capture.transcript.live",
         message: "Live transcript",
       })}
-      className={`flex h-[300px] w-[320px] flex-col overflow-hidden rounded-[14px] border border-[var(--ui-pill-shell-border)] bg-[var(--ui-pill-shell-bg)] text-white [box-shadow:none] ${
-        pinned ? "pointer-events-auto" : "pointer-events-none"
-      }`}
+      className="pointer-events-auto flex h-[300px] w-[320px] flex-col overflow-hidden rounded-[14px] border border-[var(--ui-pill-shell-border)] bg-[var(--ui-pill-shell-bg)] text-white [box-shadow:none]"
     >
       {onMinimize ? (
-        <header className="flex shrink-0 items-center justify-between border-b border-white/10 py-1.5 pl-3.5 pr-2">
+        <header className="flex h-10 shrink-0 items-center justify-between border-b border-white/10 pl-3.5 pr-1">
           <span className="text-[10px] font-semibold uppercase leading-4 tracking-[0.08em] text-white/45">
             {t({
               id: "meeting.capture.transcript.live",
@@ -204,9 +205,11 @@ export function MeetingTranscriptPanel({
               id: "meeting.capture.transcript.minimize",
               message: "Minimize transcript",
             })}
-            className="grid h-6 w-6 shrink-0 place-items-center rounded-[7px] text-white/45 transition-colors duration-150 hover:bg-white/10 hover:text-white"
+            className="group grid h-10 w-10 shrink-0 place-items-center text-white/45"
           >
-            <CaretDown size={13} weight="bold" />
+            <span className="grid h-6 w-6 place-items-center rounded-[7px] transition-colors duration-150 group-hover:bg-white/10 group-hover:text-white group-focus-visible:bg-white/10 group-focus-visible:text-white">
+              <CaretDown size={13} weight="bold" />
+            </span>
           </button>
         </header>
       ) : null}

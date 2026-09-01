@@ -20,7 +20,7 @@ APP_NAME := looper
 
 .PHONY: help install \
         status diff diff-stat diff-check gitignore-audit review \
-        dev dev-web dev-mobile dev-all build build-debug build-release build-all test-desktop test-mobile \
+        dev dev-web dev-mobile dev-all build build-debug build-debug-signed build-release build-all test-desktop test-mobile \
         typecheck lint lint-desktop lint-fix format format-check check check-fix tokens tokens-check test ci \
         update-deps licenses-audit \
         clean nuke
@@ -93,6 +93,9 @@ build: ## Build an unsigned local Looper.app bundle
 
 build-debug: ## Build an unsigned debug Looper.app bundle
 	@cd $(DESKTOP_DIR) && pnpm tauri build --debug --bundles app --no-sign
+
+build-debug-signed: ## Build signed Looper QA.app so macOS permissions survive rebuilds
+	@cd $(DESKTOP_DIR) && pnpm tauri build --debug --bundles app --config src-tauri/tauri.qa.conf.json
 
 build-release: ## Build signed release bundles (requires signing secrets)
 	@cd $(DESKTOP_DIR) && pnpm tauri build

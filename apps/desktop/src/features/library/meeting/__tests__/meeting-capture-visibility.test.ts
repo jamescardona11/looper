@@ -10,6 +10,7 @@ describe("meeting capture visibility", () => {
     ["starting", false],
     ["recording", true],
     ["finalizing", true],
+    ["processing", true],
     ["error", false],
   ] as const)("keeps %s visibility truthful", (phase, expected) => {
     expect(meetingCaptureIsVisible(phase)).toBe(expected);

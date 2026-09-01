@@ -13,6 +13,7 @@ use crate::{awareness_notification, pill, AppRuntime, AppState};
 const AGENDA_WINDOW_DAYS: i64 = 7;
 const EVENT_MEETING_AWARENESS_STATE: &str = "meeting:awareness_state";
 const POLL_INTERVAL_SECONDS: u64 = 15;
+const MICROPHONE_POLL_INTERVAL_SECONDS: u64 = 2;
 const REMINDER_LEAD_SECONDS: i64 = 60;
 const LATE_JOIN_WINDOW_MINUTES: i64 = 15;
 const CALENDAR_READ_ATTEMPTS: usize = 3;
@@ -61,6 +62,13 @@ pub enum MeetingAwarenessPhase {
     /// Reunión que nadie agendó, deducida de que otra app abrió el micrófono.
     /// No tiene evento asociado, así que el aviso no puede nombrarla.
     Detected,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum MeetingAwarenessSource {
+    Calendar,
+    Microphone,
 }
 
 #[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
@@ -121,7 +129,7 @@ impl MeetingAwarenessManager {
     }
 
     pub fn dismiss(&self, app: &AppHandle<AppRuntime>) {
-        {
+        let dismissed_prompt = {
             let current = self.state.read();
             match current.meeting.as_ref() {
                 Some(meeting) => self.remember_dismissed_event(&meeting.id),
@@ -132,6 +140,15 @@ impl MeetingAwarenessManager {
                 }
                 None => {}
             }
+            current.phase != MeetingAwarenessPhase::Idle
+        };
+        // Cualquier aviso visible consume también el episodio de micrófono
+        // que pueda estar detrás. Hacerlo sin volver a consultar CoreAudio
+        // permite cerrar al instante y evita que un aviso de calendario se
+        // convierta enseguida en una segunda tarjeta genérica. Una lectura
+        // explícita de micrófono libre rearma el siguiente episodio.
+        if dismissed_prompt {
+            self.detected_dismissed.store(true, Ordering::SeqCst);
         }
         self.detected_generation.fetch_add(1, Ordering::SeqCst);
         self.set_state(app, MeetingAwarenessState::default());
@@ -140,6 +157,8 @@ impl MeetingAwarenessManager {
 
     pub fn dismiss_event(&self, app: &AppHandle<AppRuntime>, event_id: &str) {
         self.remember_dismissed_event(event_id);
+        self.detected_dismissed.store(true, Ordering::SeqCst);
+        self.detected_generation.fetch_add(1, Ordering::SeqCst);
         self.set_state(app, MeetingAwarenessState::default());
         hide_prompt_if_safe(app);
     }
@@ -163,18 +182,22 @@ impl MeetingAwarenessManager {
             let refresh_requested = Arc::clone(&refresh_requested);
             move || refresh_requested.notify_one()
         });
+        #[cfg(target_os = "macos")]
+        start_microphone_activity_watcher(app.clone(), Arc::clone(&refresh_requested));
 
         tauri::async_runtime::spawn(async move {
             let mut interval =
                 tokio::time::interval(std::time::Duration::from_secs(POLL_INTERVAL_SECONDS));
             let mut rendered_agenda_day = chrono::Local::now().date_naive();
+            let mut timed_prompt: Option<PromptIdentity> = None;
             loop {
                 tokio::select! {
                     _ = interval.tick() => {}
                     _ = refresh_requested.notified() => {}
                 }
                 let settings = app.state::<AppState>().current_settings();
-                let enabled = settings.calendar_meeting_awareness_enabled;
+                let calendar_enabled = settings.calendar_meeting_awareness_enabled;
+                let microphone_enabled = settings.microphone_meeting_awareness_enabled;
                 let agenda_day = chrono::Local::now().date_naive();
                 if agenda_day != rendered_agenda_day {
                     rendered_agenda_day = agenda_day;
@@ -185,18 +208,22 @@ impl MeetingAwarenessManager {
                 {
                     tracing::warn!("Failed to refresh Calendar menu bar title: {error}");
                 }
-                if !should_check_awareness(enabled) {
+                if !should_check_awareness(calendar_enabled, microphone_enabled) {
                     replace_agenda(&app, &agenda, Vec::new());
                     let was_prompting = state.read().phase != MeetingAwarenessPhase::Idle;
                     update_shared_state(&app, &state, MeetingAwarenessState::default());
                     if was_prompting {
                         hide_prompt_if_safe(&app);
                     }
+                    timed_prompt = None;
                     continue;
                 }
-                let mic = microphone_busy_excluding_self(&app);
+                let mic = microphone_activity_if_enabled(microphone_enabled, || {
+                    microphone_busy_excluding_self(&app)
+                });
+                refresh_detected_dismissal(&detected_dismissed, mic);
 
-                let meetings = if enabled {
+                let meetings = if calendar_enabled {
                     let now = Utc::now();
                     let refreshed = tauri::async_runtime::spawn_blocking(move || {
                         upcoming_calendar_meetings(now)
@@ -227,15 +254,12 @@ impl MeetingAwarenessManager {
                     if was_prompting && !app.state::<AppState>().meeting_capture().is_active() {
                         hide_prompt_if_safe(&app);
                     }
+                    timed_prompt = None;
                     continue;
                 }
 
-                // Cerrar el micrófono cierra el episodio: lo que descartaste
-                // era aquella llamada, no todas las que vengan después.
-                if mic != Some(true) {
-                    detected_dismissed.store(false, Ordering::SeqCst);
-                }
-                let next = select_awareness_state(
+                let candidate_generation = detected_generation.load(Ordering::SeqCst);
+                let candidate = select_awareness_state(
                     AwarenessSignals {
                         meetings: &meetings,
                         microphone_busy: mic,
@@ -244,16 +268,24 @@ impl MeetingAwarenessManager {
                     Utc::now(),
                     &dismissed.lock(),
                 );
+                let (previous_phase, _previous_prompt, next) = commit_awareness_candidate(
+                    &app,
+                    &state,
+                    candidate,
+                    &detected_dismissed,
+                    candidate_generation,
+                    &detected_generation,
+                );
                 let next_phase = next.phase;
                 let should_show = next_phase != MeetingAwarenessPhase::Idle;
-                let (previous_phase, previous_prompt) = {
-                    let current = state.read();
-                    (current.phase, prompt_identity(&current))
-                };
                 let next_prompt = prompt_identity(&next);
-                update_shared_state(&app, &state, next);
                 if should_show && !dictation_busy(&app.state::<AppState>()) {
-                    if next_prompt.is_some() && next_prompt != previous_prompt {
+                    let presented = awareness_notification::show(&app);
+                    if prompt_needs_timeout(
+                        presented,
+                        next_prompt.as_ref(),
+                        timed_prompt.as_ref(),
+                    ) {
                         arm_prompt_timeout(
                             &app,
                             &state,
@@ -261,15 +293,18 @@ impl MeetingAwarenessManager {
                             &detected_dismissed,
                             &detected_generation,
                         );
+                        timed_prompt = next_prompt.clone();
                     }
-                    awareness_notification::show(&app);
                     if let Err(error) = pill::show_idle_sticky(&app) {
                         tracing::error!(
                             "Failed to keep Dictation visible with meeting notice: {error}"
                         );
                     }
                 } else if previous_phase != MeetingAwarenessPhase::Idle && !should_show {
+                    timed_prompt = None;
                     hide_prompt_if_safe(&app);
+                } else if !should_show {
+                    timed_prompt = None;
                 }
             }
         });
@@ -280,8 +315,34 @@ impl MeetingAwarenessManager {
     }
 }
 
-fn should_check_awareness(meeting_notifications_enabled: bool) -> bool {
-    meeting_notifications_enabled
+fn should_check_awareness(calendar_enabled: bool, microphone_enabled: bool) -> bool {
+    calendar_enabled || microphone_enabled
+}
+
+#[cfg(target_os = "macos")]
+fn start_microphone_activity_watcher(app: AppHandle<AppRuntime>, refresh_requested: Arc<Notify>) {
+    tauri::async_runtime::spawn(async move {
+        let mut interval = tokio::time::interval(std::time::Duration::from_secs(
+            MICROPHONE_POLL_INTERVAL_SECONDS,
+        ));
+        interval.set_missed_tick_behavior(tokio::time::MissedTickBehavior::Skip);
+        let mut previous = None;
+
+        loop {
+            interval.tick().await;
+            let enabled = app
+                .state::<AppState>()
+                .current_settings()
+                .microphone_meeting_awareness_enabled;
+            let current = microphone_activity_if_enabled(enabled, || {
+                crate::platform::macos::mic_activity::input_device_in_use()
+            });
+            if previous != Some(current) {
+                previous = Some(current);
+                refresh_requested.notify_one();
+            }
+        }
+    });
 }
 
 fn replace_agenda(
@@ -334,6 +395,35 @@ fn update_shared_state(
     }
 }
 
+fn commit_awareness_candidate(
+    app: &AppHandle<AppRuntime>,
+    state: &parking_lot::RwLock<MeetingAwarenessState>,
+    candidate: MeetingAwarenessState,
+    detected_dismissed: &AtomicBool,
+    candidate_generation: u64,
+    prompt_generation: &AtomicU64,
+) -> (
+    MeetingAwarenessPhase,
+    Option<PromptIdentity>,
+    MeetingAwarenessState,
+) {
+    let mut current = state.write();
+    let previous_phase = current.phase;
+    let previous_prompt = prompt_identity(&current);
+    let next = honor_prompt_dismissal(
+        candidate,
+        detected_dismissed.load(Ordering::SeqCst),
+        candidate_generation == prompt_generation.load(Ordering::SeqCst),
+    );
+    if *current != next {
+        *current = next.clone();
+        if let Err(error) = app.emit(EVENT_MEETING_AWARENESS_STATE, next.clone()) {
+            tracing::warn!("Failed to emit meeting awareness state: {error}");
+        }
+    }
+    (previous_phase, previous_prompt, next)
+}
+
 fn hide_prompt_if_safe(app: &AppHandle<AppRuntime>) {
     awareness_notification::hide(app);
     let state = app.state::<AppState>();
@@ -375,6 +465,14 @@ fn prompt_identity(state: &MeetingAwarenessState) -> Option<PromptIdentity> {
     }
 }
 
+fn prompt_needs_timeout(
+    presented: bool,
+    prompt: Option<&PromptIdentity>,
+    timed_prompt: Option<&PromptIdentity>,
+) -> bool {
+    presented && prompt.is_some() && prompt != timed_prompt
+}
+
 /// Retira el aviso pasado su tiempo de vida, salvo que ya lo haya reemplazado
 /// otro. Se marca como descartado para que el siguiente sondeo no lo levante
 /// otra vez mientras la señal que lo provocó siga ahí: el micrófono abierto o
@@ -403,6 +501,7 @@ fn arm_prompt_timeout(
         match showing {
             PromptIdentity::Event(event_id) => {
                 dismissed_event_ids.lock().insert(event_id);
+                detected_dismissed.store(true, Ordering::SeqCst);
             }
             PromptIdentity::DetectedCall => {
                 detected_dismissed.store(true, Ordering::SeqCst);
@@ -440,6 +539,46 @@ fn microphone_busy_excluding_self(_app: &AppHandle<AppRuntime>) -> Option<bool> 
 #[cfg(not(target_os = "macos"))]
 fn microphone_busy_excluding_self(_app: &AppHandle<AppRuntime>) -> Option<bool> {
     None
+}
+
+fn microphone_activity_if_enabled(
+    enabled: bool,
+    probe: impl FnOnce() -> Option<bool>,
+) -> Option<bool> {
+    if !enabled {
+        return None;
+    }
+    probe()
+}
+
+/// Solo una lectura explícita de micrófono libre termina el episodio. `None`
+/// significa que CoreAudio no pudo responder; tratarlo como libre haría que
+/// un aviso descartado reapareciera cuando la siguiente lectura volviera a
+/// reportar el mismo uso activo.
+fn refresh_detected_dismissal(
+    detected_dismissed: &AtomicBool,
+    microphone_busy: Option<bool>,
+) {
+    if microphone_busy == Some(false) {
+        detected_dismissed.store(false, Ordering::SeqCst);
+    }
+}
+
+/// El descarte puede ocurrir mientras el bucle ya calculó un candidato. Esta
+/// comprobación se ejecuta bajo el mismo lock que publica el estado, de modo
+/// que un candidato obsoleto nunca puede volver a abrir el aviso después de
+/// que `dismiss` lo dejó en `Idle`.
+fn honor_prompt_dismissal(
+    candidate: MeetingAwarenessState,
+    detected_dismissed: bool,
+    generation_is_current: bool,
+) -> MeetingAwarenessState {
+    if !generation_is_current
+        || (detected_dismissed && candidate.phase == MeetingAwarenessPhase::Detected)
+    {
+        return MeetingAwarenessState::default();
+    }
+    candidate
 }
 
 fn select_awareness_state(
@@ -626,14 +765,15 @@ mod platform;
 #[cfg(test)]
 mod tests {
     use super::{
-        is_meeting_url, meeting_url, prompt_identity, prune_dismissed_events, recurring_identity,
-        retry_calendar_read, select_awareness_state, should_check_awareness, AwarenessSignals,
-        CalendarMeeting, MeetingAwarenessManager, MeetingAwarenessPhase, MeetingAwarenessState,
-        PromptIdentity,
+        honor_prompt_dismissal, is_meeting_url, meeting_url, microphone_activity_if_enabled,
+        prompt_identity, prompt_needs_timeout, prune_dismissed_events, recurring_identity,
+        refresh_detected_dismissal, retry_calendar_read, select_awareness_state,
+        should_check_awareness, AwarenessSignals, CalendarMeeting, MeetingAwarenessManager,
+        MeetingAwarenessPhase, MeetingAwarenessState, PromptIdentity,
     };
     use chrono::{Duration, TimeZone, Utc};
     use std::collections::HashSet;
-    use std::sync::atomic::{AtomicUsize, Ordering};
+    use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
     use std::sync::Arc;
 
     fn signals<'a>(
@@ -721,6 +861,26 @@ mod tests {
     }
 
     #[test]
+    fn a_calendar_prompt_blocked_by_a_toast_keeps_its_timeout_pending() {
+        let prompt = PromptIdentity::Event("event-1".into());
+
+        assert!(!prompt_needs_timeout(false, Some(&prompt), None));
+        assert!(prompt_needs_timeout(true, Some(&prompt), None));
+    }
+
+    #[test]
+    fn a_presented_prompt_does_not_restart_its_timeout_on_refresh() {
+        let prompt = PromptIdentity::Event("event-1".into());
+
+        assert!(!prompt_needs_timeout(
+            true,
+            Some(&prompt),
+            Some(&prompt),
+        ));
+        assert!(!prompt_needs_timeout(true, None, Some(&prompt)));
+    }
+
+    #[test]
     fn an_open_microphone_is_enough_to_offer_recording() {
         let now = Utc.with_ymd_and_hms(2026, 7, 21, 15, 0, 0).unwrap();
 
@@ -735,8 +895,32 @@ mod tests {
 
     #[test]
     fn an_external_call_does_not_require_calendar_awareness() {
-        assert!(!should_check_awareness(false));
-        assert!(should_check_awareness(true));
+        assert!(should_check_awareness(false, true));
+        assert!(should_check_awareness(true, false));
+        assert!(!should_check_awareness(false, false));
+    }
+
+    #[test]
+    fn disabled_microphone_awareness_does_not_probe_core_audio() {
+        let calls = AtomicUsize::new(0);
+
+        assert_eq!(
+            microphone_activity_if_enabled(false, || {
+                calls.fetch_add(1, Ordering::SeqCst);
+                Some(true)
+            }),
+            None
+        );
+        assert_eq!(calls.load(Ordering::SeqCst), 0);
+
+        assert_eq!(
+            microphone_activity_if_enabled(true, || {
+                calls.fetch_add(1, Ordering::SeqCst);
+                Some(true)
+            }),
+            Some(true)
+        );
+        assert_eq!(calls.load(Ordering::SeqCst), 1);
     }
 
     #[test]
@@ -756,6 +940,69 @@ mod tests {
         );
 
         assert_eq!(state.phase, MeetingAwarenessPhase::Idle);
+    }
+
+    #[test]
+    fn a_dismissed_microphone_episode_rearms_only_after_an_observed_idle_sample() {
+        let dismissed = AtomicBool::new(true);
+
+        refresh_detected_dismissal(&dismissed, Some(true));
+        assert!(dismissed.load(Ordering::SeqCst));
+
+        refresh_detected_dismissal(&dismissed, None);
+        assert!(
+            dismissed.load(Ordering::SeqCst),
+            "una lectura desconocida no demuestra que el episodio terminó"
+        );
+
+        refresh_detected_dismissal(&dismissed, Some(true));
+        assert!(dismissed.load(Ordering::SeqCst));
+
+        refresh_detected_dismissal(&dismissed, Some(false));
+        assert!(!dismissed.load(Ordering::SeqCst));
+
+        let next_episode = select_awareness_state(
+            AwarenessSignals {
+                meetings: &[],
+                microphone_busy: Some(true),
+                detected_dismissed: dismissed.load(Ordering::SeqCst),
+            },
+            Utc.with_ymd_and_hms(2026, 7, 21, 15, 0, 0).unwrap(),
+            &HashSet::new(),
+        );
+        assert_eq!(next_episode.phase, MeetingAwarenessPhase::Detected);
+    }
+
+    #[test]
+    fn a_stale_candidate_cannot_reopen_after_dismiss() {
+        let stale_candidate = MeetingAwarenessState {
+            phase: MeetingAwarenessPhase::Detected,
+            meeting: None,
+            seconds_until_start: None,
+        };
+
+        assert_eq!(
+            honor_prompt_dismissal(stale_candidate.clone(), true, true).phase,
+            MeetingAwarenessPhase::Idle
+        );
+        assert_eq!(
+            honor_prompt_dismissal(stale_candidate, false, true).phase,
+            MeetingAwarenessPhase::Detected
+        );
+
+        let stale_calendar_candidate = MeetingAwarenessState {
+            phase: MeetingAwarenessPhase::Upcoming,
+            meeting: Some(event(30)),
+            seconds_until_start: Some(30),
+        };
+        assert_eq!(
+            honor_prompt_dismissal(stale_calendar_candidate.clone(), false, false).phase,
+            MeetingAwarenessPhase::Idle
+        );
+        assert_eq!(
+            honor_prompt_dismissal(stale_calendar_candidate, false, true).phase,
+            MeetingAwarenessPhase::Upcoming
+        );
     }
 
     #[test]

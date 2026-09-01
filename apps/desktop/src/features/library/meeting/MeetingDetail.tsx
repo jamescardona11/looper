@@ -24,6 +24,7 @@ const MeetingNotesEditor = ({
   const { t } = useLingui();
   const updateNotes = useUpdateMeetingNotes();
   const [notes, setNotes] = useState(details.notes);
+  const [editing, setEditing] = useState(() => !details.notes.trim());
   const [saveError, setSaveError] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const savedNotes = useRef(details.notes);
@@ -119,31 +120,57 @@ const MeetingNotesEditor = ({
   });
 
   return (
-    <div className="flex h-full w-full flex-col py-6">
-      <textarea
-        value={notes}
-        onChange={(event) => {
-          const nextNotes = event.target.value;
-          latestNotes.current = nextNotes;
-          setNotes(nextNotes);
-          setSaveError(null);
-          clearSaveTimer();
-          saveTimer.current = window.setTimeout(
-            () => queueNotesSaveRef.current(nextNotes),
-            600,
-          );
-        }}
-        onBlur={() => {
-          clearSaveTimer();
-          queueNotesSave(latestNotes.current);
-        }}
-        placeholder={t({
-          id: "meeting.detail.notes_placeholder",
-          message: "Write notes, decisions, and follow-ups while you listen...",
-        })}
-        className="min-h-72 flex-1 w-full resize-none border-l-2 border-transparent bg-transparent px-3 py-1 ui-text-body-lg text-content-secondary leading-relaxed outline-none transition-colors placeholder:text-content-disabled focus:border-[var(--color-toggle-on)] custom-scrollbar"
-      />
-      <div className="mt-3 flex min-h-4 items-center justify-between px-3 ui-text-micro text-content-disabled">
+    <div className="flex h-full w-full flex-col py-3">
+      {editing ? (
+        <textarea
+          value={notes}
+          onChange={(event) => {
+            const nextNotes = event.target.value;
+            latestNotes.current = nextNotes;
+            setNotes(nextNotes);
+            setSaveError(null);
+            clearSaveTimer();
+            saveTimer.current = window.setTimeout(
+              () => queueNotesSaveRef.current(nextNotes),
+              600,
+            );
+          }}
+          onBlur={() => {
+            clearSaveTimer();
+            queueNotesSave(latestNotes.current);
+          }}
+          placeholder={t({
+            id: "meeting.detail.notes_placeholder",
+            message:
+              "Write notes, decisions, and follow-ups while you listen...",
+          })}
+          className="min-h-[230px] flex-1 w-full resize-none border-l-2 border-transparent bg-transparent px-0 py-2 ui-text-body-sm text-content-secondary leading-relaxed outline-none transition-colors placeholder:text-content-disabled focus:border-[var(--color-toggle-on)] custom-scrollbar"
+        />
+      ) : (
+        <button
+          type="button"
+          onClick={() => setEditing(true)}
+          className="flex min-h-[230px] w-full max-w-3xl flex-col items-start cursor-text px-0 py-2 text-left ui-text-body-sm leading-relaxed text-content-secondary outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-toggle-on)]"
+          aria-label="Edit meeting notes"
+        >
+          <ReactMarkdown
+            components={{
+              h2: ({ children }) => (
+                <h2 className="mt-5 ui-text-body-lg font-semibold text-content-primary">
+                  {children}
+                </h2>
+              ),
+              p: ({ children }) => <p className="mb-3 max-w-3xl">{children}</p>,
+              ul: ({ children }) => (
+                <ul className="ml-5 list-disc space-y-1">{children}</ul>
+              ),
+            }}
+          >
+            {notes}
+          </ReactMarkdown>
+        </button>
+      )}
+      <div className="mt-3 flex min-h-4 items-center px-0 ui-text-micro text-content-disabled">
         <span>
           {details.recovered
             ? t({
@@ -163,16 +190,11 @@ const MeetingNotesEditor = ({
               {t({ id: "meeting.detail.retry_notes", message: "Retry save" })}
             </button>
           </span>
-        ) : (
+        ) : isSaving || updateNotes.isPending ? (
           <span>
-            {isSaving || updateNotes.isPending
-              ? t({ id: "meeting.detail.saving_notes", message: "Saving..." })
-              : t({
-                  id: "meeting.detail.notes_saved",
-                  message: "Notes saved locally",
-                })}
+            {t({ id: "meeting.detail.saving_notes", message: "Saving..." })}
           </span>
-        )}
+        ) : null}
       </div>
     </div>
   );
@@ -192,17 +214,40 @@ const MeetingDetail = ({
   onPlayNote: (startMs: number) => void;
 }) => {
   const { t } = useLingui();
-  const { data: details, isLoading } = useMeetingDetails(id);
+  const { data: details, isLoading, refetch } = useMeetingDetails(id);
   const generateSummary = useGenerateMeetingSummary();
   const askMeeting = useAskMeeting();
   const { data: meetingAiStatus } = useMeetingAiStatus();
   const [question, setQuestion] = useState("");
   const [answer, setAnswer] = useState("");
 
-  if (isLoading || !details) {
+  if (isLoading) {
     return (
       <div className="flex h-full items-center justify-center ui-text-meta text-content-muted">
         {t({ id: "meeting.detail.loading", message: "Loading..." })}
+      </div>
+    );
+  }
+
+  if (!details) {
+    return (
+      <div
+        className="flex h-full flex-col items-center justify-center gap-3 text-center"
+        role="alert"
+      >
+        <p className="ui-text-body-sm text-content-muted">
+          {t({
+            id: "meeting.detail.load_error",
+            message: "Couldn’t load this recording.",
+          })}
+        </p>
+        <button
+          type="button"
+          onClick={() => void refetch()}
+          className="inline-flex h-9 items-center rounded-[10px] px-3 ui-text-body-sm-strong text-[var(--color-toggle-on)] transition-colors hover:bg-surface-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-toggle-on)]"
+        >
+          {t({ id: "library.modal.retry", message: "Retry" })}
+        </button>
       </div>
     );
   }
@@ -213,7 +258,7 @@ const MeetingDetail = ({
 
   if (view === "moments") {
     return (
-      <div className="h-full overflow-y-auto py-6 custom-scrollbar">
+      <div className="h-full overflow-y-auto py-3 custom-scrollbar">
         {details.note_markers.length > 0 ? (
           <CapturedMeetingNotes
             markers={details.note_markers}
@@ -223,13 +268,18 @@ const MeetingDetail = ({
             onPlay={onPlayNote}
           />
         ) : (
-          <p className="border-l-2 border-border-secondary px-4 py-2 ui-text-body-sm text-content-muted">
-            {t({
-              id: "meeting.detail.no_moments",
-              message:
-                "Moments are clips you mark while recording. Hold Fn to save the preceding audio; each moment appears here with a playable timestamp.",
-            })}
-          </p>
+          <div className="max-w-2xl border-l-2 border-[var(--color-toggle-on)] px-4 py-1">
+            <p className="ui-text-body-sm-strong text-content-primary">
+              {t({ id: "meeting.detail.moments", message: "Moments" })}
+            </p>
+            <p className="mt-1 ui-text-body-sm text-content-muted">
+              {t({
+                id: "meeting.detail.no_moments",
+                message:
+                  "Moments are clips you mark while recording. Hold Fn to save the preceding audio; each moment appears here with a playable timestamp.",
+              })}
+            </p>
+          </div>
         )}
       </div>
     );
@@ -253,7 +303,7 @@ const MeetingDetail = ({
                   message: "Generated on this Mac · review before sharing",
                 })}
               </p>
-              <div className="prose prose-invert max-w-none ui-text-body text-content-secondary prose-headings:text-content-primary prose-li:my-1">
+              <div className="prose max-w-none ui-text-body text-content-secondary prose-headings:text-content-primary prose-li:my-1">
                 <ReactMarkdown>{answer}</ReactMarkdown>
               </div>
             </div>
@@ -265,7 +315,7 @@ const MeetingDetail = ({
                   ? t({
                       id: "meeting.detail.ask_help",
                       message:
-                        "Ask about decisions, owners, dates, or anything said in this recording. Answers cite the relevant timestamps.",
+                        "Ask about decisions, owners, dates, or anything said in this recording. Answers are generated from this recording.",
                     })
                   : (meetingAiStatus?.actionableMessage ??
                     "Meeting intelligence is not ready.")}
@@ -291,7 +341,7 @@ const MeetingDetail = ({
             }}
             placeholder={t({
               id: "meeting.detail.ask_placeholder",
-              message: "Ask this recording…",
+              message: "Ask this note…",
             })}
             disabled={!meetingAiReady}
             className="min-h-10 flex-1 resize-none bg-transparent px-2 py-1.5 ui-text-body-sm text-content-primary outline-none placeholder:text-content-disabled"
@@ -344,7 +394,7 @@ const MeetingDetail = ({
               })}
             </p>
           </div>
-          <div className="prose prose-invert max-w-none ui-text-body-lg text-content-secondary prose-headings:mb-2 prose-headings:mt-7 prose-headings:text-content-primary prose-headings:ui-text-title-strong prose-p:leading-relaxed prose-li:my-1.5 prose-li:leading-relaxed">
+          <div className="prose max-w-none ui-text-body-sm text-content-secondary prose-headings:mb-2 prose-headings:mt-7 prose-headings:text-content-primary prose-headings:ui-text-title-strong prose-p:leading-relaxed prose-li:my-1.5 prose-li:leading-relaxed">
             <ReactMarkdown>{details.summary}</ReactMarkdown>
           </div>
           {details.note_markers.length > 0 ? (

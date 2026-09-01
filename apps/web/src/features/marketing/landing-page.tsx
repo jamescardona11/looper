@@ -10,11 +10,11 @@ import { buttonVariants } from "@/shared/components/ui/button";
 
 // "Buy" stays in-app (/pricing) so the landing page enters the real checkout
 // flow (Stripe/Polar).
-// The marketing surface keeps a dark campaign treatment while reusing the
-// product's semantic tokens, typography, controls, and radius scale.
+// The marketing surface shares the paper workspace direction with the product
+// while reusing its semantic tokens, typography, controls, and radius scale.
 export function LandingPage() {
   return (
-    <div className="dark relative min-h-screen overflow-x-clip bg-background text-foreground">
+    <div className="relative min-h-screen overflow-x-clip bg-background text-foreground">
       <GrainOverlay />
       <Nav />
       <PageSurface>
@@ -84,7 +84,7 @@ function Window({
   );
 }
 
-/** Paper-grain overlay (sales landing body::before). Scoped to the `.dark`
+/** Paper-grain overlay (sales landing body::before). Scoped to the landing
  *  marketing subtree, not global, so the in-app surfaces stay clean. Data-URI
  *  SVG noise, no color literal, so it passes j11/no-color-literal. */
 function GrainOverlay() {
@@ -119,7 +119,7 @@ function Nav() {
   return (
     <header className="sticky top-0 z-50 border-border/60 border-b bg-background/90 backdrop-blur">
       <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-6">
-        <a href="#top" className="flex items-center gap-2.5">
+        <a href="#top" className="flex min-h-11 items-center gap-2.5 sm:min-h-10">
           <span className="grid size-7 place-items-center rounded-lg bg-primary text-primary-foreground">
             <LooperMark className="size-3.5" />
           </span>
@@ -151,7 +151,7 @@ function Nav() {
             className={buttonVariants({
               variant: "primary",
               size: "sm",
-              className: "rounded-lg",
+              className: "min-h-11 rounded-lg sm:min-h-10",
             })}
           >
             {t("landing.getStarted")}
@@ -161,7 +161,7 @@ function Nav() {
             onClick={() => setMenuOpen((v) => !v)}
             aria-label={menuOpen ? t("landing.nav.closeMenu") : t("landing.nav.openMenu")}
             aria-expanded={menuOpen}
-            className="text-muted-foreground transition-colors hover:text-foreground md:hidden"
+            className="touch-target relative grid size-8 place-items-center rounded-md text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground md:hidden"
           >
             {menuOpen ? <IconX className="size-5" /> : <IconMenu2 className="size-5" />}
           </button>
@@ -176,7 +176,7 @@ function Nav() {
               key={l.label}
               href={l.href}
               onClick={close}
-              className="rounded-lg px-2 py-2 text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+              className="flex min-h-11 items-center rounded-lg px-2 py-2 text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
             >
               {l.label}
             </a>
@@ -184,14 +184,14 @@ function Nav() {
           <Link
             to="/pricing"
             onClick={close}
-            className="rounded-lg px-2 py-2 text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+            className="flex min-h-11 items-center rounded-lg px-2 py-2 text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
           >
             {t("landing.nav.buy")}
           </Link>
           <Link
             to="/sign-in"
             onClick={close}
-            className="rounded-lg px-2 py-2 text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+            className="flex min-h-11 items-center rounded-lg px-2 py-2 text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
           >
             {t("auth.signIn")}
           </Link>
@@ -407,7 +407,7 @@ function ProofSection() {
               <span className="text-primary">packages/</span>
               {"\n"}
               {"│   ├── theme/      "}
-              <span className="text-muted-foreground">semantic tokens · light + dark</span>
+              <span className="text-muted-foreground">semantic tokens · light</span>
               {"\n"}
               {"│   └── i18n/       "}
               <span className="text-muted-foreground">en + es, parity-checked</span>

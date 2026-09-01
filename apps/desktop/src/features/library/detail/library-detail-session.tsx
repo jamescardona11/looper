@@ -45,7 +45,9 @@ import {
 } from "../shared/library-utils";
 import { useLibraryExport } from "../export/useLibraryExport";
 import { useLibraryPlayer } from "../player/useLibraryPlayer";
+import { getMeetingDetails } from "../../../data/library";
 import { resolveSpeechModelLabel } from "../../settings/models/models-queries";
+import { useGenerateMeetingSummary } from "../queries";
 import { useClickOutside } from "../../../shared/hooks/useClickOutside";
 import { useCopyToClipboard } from "../../../shared/hooks/useCopyToClipboard";
 import type {
@@ -85,6 +87,7 @@ export function LibraryDetailSession(props: LibraryDetailProps) {
   const setSpeakerFilter = fieldSetter(setStoredState, "speakerFilter");
   const setFilterMenuOpen = fieldSetter(setStoredState, "filterMenuOpen");
   const setMeetingView = fieldSetter(setStoredState, "meetingView");
+  const generateMeetingSummary = useGenerateMeetingSummary();
 
   const refs = {
     tagMenu: useRef<HTMLDivElement>(null),
@@ -196,6 +199,24 @@ export function LibraryDetailSession(props: LibraryDetailProps) {
     await props.onUpdate({ name });
     setIsEditingName(false);
   };
+  const handleSummarize = useCallback(() => {
+    setMeetingView("enhanced");
+    if (!isCaptureItem(item) || generateMeetingSummary.isPending) return;
+
+    void getMeetingDetails(item.id)
+      .then((details) => {
+        if (
+          details.ended_at != null &&
+          details.summary == null &&
+          details.summary_status !== "running"
+        ) {
+          generateMeetingSummary.mutate(item.id);
+        }
+      })
+      .catch((error: unknown) => {
+        console.error("Could not load meeting details for summary:", error);
+      });
+  }, [generateMeetingSummary, item, setMeetingView]);
   const handleAddTag = async (requested?: string) => {
     const tag = (requested ?? state.tagInput).trim();
     if (!tag) return;
@@ -410,6 +431,8 @@ export function LibraryDetailSession(props: LibraryDetailProps) {
       transcriptDraft={state.transcriptDraft}
       setTranscriptDraft={transcriptDraft}
       transcriptAvailable={transcriptAvailable}
+      copyConfirmed={copyConfirmed}
+      onCopy={() => copyTranscript(state.transcriptDraft)}
     />
   );
 
@@ -417,6 +440,7 @@ export function LibraryDetailSession(props: LibraryDetailProps) {
     <div className="relative flex h-full w-full min-h-0 flex-col">
       <LibraryDetailHeader
         {...props}
+        onSummarize={handleSummarize}
         nameDraft={state.nameDraft}
         isEditingName={state.isEditingName}
         setNameDraft={setNameDraft}
@@ -493,8 +517,6 @@ export function LibraryDetailSession(props: LibraryDetailProps) {
         footer={createLibraryDetailFooter({
           item,
           player,
-          meetingView: state.meetingView,
-          setMeetingView,
           canShowTimestamps,
           showTimestamps: state.showTimestamps,
           setShowTimestamps,

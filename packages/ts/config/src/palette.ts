@@ -239,6 +239,28 @@ export const MOBILE_MINIMAL = {
   secondary: "#3f424a",
 } as const;
 
+/**
+ * Colores de arranque que viven fuera de React y no pueden consumir los
+ * tokens generados. Se declaran aquí para que sus tests detecten deriva sin
+ * obligar a Web, Desktop y el teclado a compartir una superficie equivocada.
+ */
+export const PRODUCT_BOOT = {
+  desktopSettingsBackground: MOBILE_MINIMAL.paper,
+  mobileKeyboard: {
+    backgroundSecondary: "#1c1e26",
+    accent: MOBILE_MINIMAL.accent,
+  },
+  web: {
+    page: MOBILE_MINIMAL.canvas,
+    ink: MOBILE_MINIMAL.ink,
+    muted: "#626671",
+    iconBorder: MOBILE_MINIMAL.accentLight,
+    iconSurface: "#efedff",
+    accent: MOBILE_MINIMAL.accent,
+    theme: MOBILE_MINIMAL.soft,
+  },
+} as const;
+
 export type Mode = "dark" | "light";
 
 export type Palette = {

@@ -1,4 +1,3 @@
-use self::hover_intent::{HoverDecision, HoverIntent};
 use crate::permissions;
 use crate::{
     accessibility_context, assistive,
@@ -7,7 +6,7 @@ use crate::{
     recorder::RecorderManager,
     screen_vocabulary,
     settings::{MediaAction, Personality, TranscriptionMode, UserSettings},
-    toast, AppRuntime, AppState, AudioSpectrumPayload, EVENT_AUDIO_SPECTRUM, MAIN_WINDOW_LABEL,
+    toast, AppRuntime, AppState, MAIN_WINDOW_LABEL,
 };
 use capture::{
     clamp_coordinates as clamp_overlay_coordinates, closest_monitor_index, logical_pixels,
@@ -16,7 +15,6 @@ use capture::{
 };
 use chrono::{DateTime, Local};
 use parking_lot::Mutex;
-use rustfft::{num_complex::Complex, FftPlanner};
 use serde::Serialize;
 use std::sync::{
     atomic::{AtomicBool, AtomicU64, Ordering},
@@ -27,12 +25,19 @@ use tauri::{AppHandle, Emitter, LogicalSize, Manager, Rect, WebviewWindow};
 
 pub(crate) mod capture;
 mod controller_state;
+mod emitters;
 mod hover_intent;
+mod idle_sticky;
 mod layout;
 
+pub use idle_sticky::show as show_idle_sticky;
+
+use emitters::{AudioSpectrumEmitter, PillHoverEmitter, PillHoverPayload};
+#[cfg(test)]
+use emitters::{SpectrumAnalyzer, SPECTRUM_OUTPUT_COUNT, SPECTRUM_SAMPLE_COUNT};
 use layout::{
     canonical_from_dictation_origin, canonical_meeting_overlay_origin,
-    dictation_origin_from_canonical, meeting_overlay_geometry,
+    dictation_origin_from_canonical, meeting_overlay_geometry, meeting_overlay_logical_size,
 };
 
 const MIN_RECORDING_DURATION_MS: i64 = 300;
@@ -42,19 +47,17 @@ const MAX_RECORDING_DURATION: Duration = Duration::from_secs(30 * 60);
 const CAPTURE_ARM_DELAY: Duration = Duration::from_millis(280);
 const DICTATION_OVERLAY_WIDTH: f64 = 300.0;
 const DICTATION_OVERLAY_HEIGHT: f64 = 260.0;
-const STICKY_OVERLAY_WIDTH: f64 = 260.0;
-const STICKY_OVERLAY_HEIGHT: f64 = 60.0;
-const STICKY_LANGUAGE_MENU_HEIGHT: f64 = 254.0;
-const PREFLIGHT_OVERLAY_WIDTH: f64 = 260.0;
-const PREFLIGHT_OVERLAY_HEIGHT: f64 = 48.0;
-const PREFLIGHT_LANGUAGE_MENU_HEIGHT: f64 = 242.0;
+const PREFLIGHT_OVERLAY_WIDTH: f64 = capture::WINDOW_WIDTH;
+const PREFLIGHT_OVERLAY_HEIGHT: f64 = capture::WINDOW_HEIGHT;
+const PREFLIGHT_LANGUAGE_MENU_HEIGHT: f64 = capture::LANGUAGE_MENU_WINDOW_HEIGHT;
 const PREFLIGHT_TRAY_GAP: f64 = 6.0;
 const PREFLIGHT_HIDE_AFTER_LEAVE_MS: u64 = 180;
 const MEETING_TRANSCRIPT_WIDTH: f64 = 320.0;
 const MEETING_TRANSCRIPT_HEIGHT: f64 = 300.0;
 const MEETING_PILL_SLOT_WIDTH: f64 = 260.0;
 const MEETING_PILL_HEIGHT: f64 = 48.0;
-const MEETING_COMPACT_PILL_SIZE: f64 = 42.0;
+const MEETING_COMPACT_PILL_WIDTH: f64 = 128.0;
+const MEETING_COMPACT_PILL_HEIGHT: f64 = 36.0;
 const MEETING_OVERLAY_GAP: f64 = 4.0;
 const MEETING_PILL_GUTTER: f64 = 4.0;
 const MEETING_OVERLAY_WIDTH: f64 = MEETING_PILL_SLOT_WIDTH + MEETING_PILL_GUTTER * 2.0;
@@ -106,6 +109,63 @@ pub(crate) const PILL_TONE_ASK_RESULT: &str = "ask_result";
 pub(crate) const PILL_TONE_COPY_RESULT: &str = "copy_result";
 pub(crate) const PILL_TONE_INSERTED_RESULT: &str = "inserted_result";
 
+fn dictation_anchor_correction(
+    scale: f64,
+    presentation: CapturePillPresentation,
+    dock_position: CapturePillDockPosition,
+) -> (i32, i32) {
+    let legacy_origin = dictation_origin_from_canonical((0, 0), scale);
+    let compact =
+        capture::sticky_window_frame((0, 0), scale, presentation, dock_position, false, false);
+    let compact_center = (
+        compact.origin.0 + logical_pixels(compact.logical_size.0 / 2.0, scale),
+        compact.origin.1 + logical_pixels(compact.logical_size.1 / 2.0, scale),
+    );
+    let dictation_center = (
+        legacy_origin.0 + logical_pixels(DICTATION_OVERLAY_WIDTH / 2.0, scale),
+        legacy_origin.1
+            + logical_pixels(
+                DICTATION_OVERLAY_HEIGHT
+                    - DICTATION_PILL_INSET_BOTTOM
+                    - capture::COMPACT_WINDOW_HEIGHT / 2.0,
+                scale,
+            ),
+    );
+
+    (
+        compact_center.0 - dictation_center.0,
+        compact_center.1 - dictation_center.1,
+    )
+}
+
+fn dictation_origin_from_capture_anchor(
+    canonical: (i32, i32),
+    scale: f64,
+    presentation: CapturePillPresentation,
+    dock_position: CapturePillDockPosition,
+) -> (i32, i32) {
+    let origin = dictation_origin_from_canonical(canonical, scale);
+    let correction = dictation_anchor_correction(scale, presentation, dock_position);
+    (
+        origin.0.saturating_add(correction.0),
+        origin.1.saturating_add(correction.1),
+    )
+}
+
+fn canonical_from_capture_dictation_origin(
+    origin: (i32, i32),
+    scale: f64,
+    presentation: CapturePillPresentation,
+    dock_position: CapturePillDockPosition,
+) -> (i32, i32) {
+    let canonical = canonical_from_dictation_origin(origin, scale);
+    let correction = dictation_anchor_correction(scale, presentation, dock_position);
+    (
+        canonical.0.saturating_sub(correction.0),
+        canonical.1.saturating_sub(correction.1),
+    )
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
 #[serde(rename_all = "lowercase")]
 pub enum PillStatus {
@@ -141,6 +201,15 @@ struct MeetingOverlayPresentation {
     transcript_pinned: bool,
     placement: MeetingTranscriptPlacement,
     side_alignment: MeetingTranscriptSideAlignment,
+}
+
+impl MeetingOverlayPresentation {
+    fn initial_capture() -> Self {
+        Self {
+            compact: true,
+            ..Self::default()
+        }
+    }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -225,157 +294,6 @@ pub struct PillInsertedPayload {
     pub can_undo: bool,
 }
 
-const SPECTRUM_SAMPLE_COUNT: usize = 512;
-const SPECTRUM_OUTPUT_COUNT: usize = SPECTRUM_SAMPLE_COUNT / 2;
-const SPECTRUM_MEMORY: f32 = 0.8;
-const SPECTRUM_FLOOR_DB: f32 = -100.0;
-const SPECTRUM_CEILING_DB: f32 = -30.0;
-
-struct SpectrumAnalyzer {
-    transform: Arc<dyn rustfft::Fft<f32>>,
-    taper: Vec<f32>,
-    workspace: Vec<Complex<f32>>,
-    levels: Vec<f32>,
-}
-
-impl SpectrumAnalyzer {
-    fn new() -> Self {
-        let mut plans = FftPlanner::<f32>::new();
-        let last_sample = (SPECTRUM_SAMPLE_COUNT - 1) as f32;
-        let taper = (0..SPECTRUM_SAMPLE_COUNT)
-            .map(|sample| {
-                let phase = 2.0 * std::f32::consts::PI * sample as f32 / last_sample;
-                (1.0 - phase.cos()) / 2.0
-            })
-            .collect();
-
-        Self {
-            transform: plans.plan_fft_forward(SPECTRUM_SAMPLE_COUNT),
-            taper,
-            workspace: vec![Complex::new(0.0, 0.0); SPECTRUM_SAMPLE_COUNT],
-            levels: vec![0.0; SPECTRUM_OUTPUT_COUNT],
-        }
-    }
-
-    fn frame(&mut self, samples: Option<&[f32]>) -> Vec<u8> {
-        match samples {
-            Some(samples) => {
-                for sample_index in 0..samples.len() {
-                    self.workspace[sample_index] =
-                        Complex::new(samples[sample_index] * self.taper[sample_index], 0.0);
-                }
-                self.transform.process(&mut self.workspace);
-                for bin_index in 0..self.levels.len() {
-                    let amplitude = self.workspace[bin_index].norm() / SPECTRUM_SAMPLE_COUNT as f32;
-                    let decibels = 20.0 * amplitude.max(1e-10).log10();
-                    let scaled = ((decibels - SPECTRUM_FLOOR_DB)
-                        / (SPECTRUM_CEILING_DB - SPECTRUM_FLOOR_DB))
-                        .clamp(0.0, 1.0);
-                    self.levels[bin_index] =
-                        SPECTRUM_MEMORY * self.levels[bin_index] + (1.0 - SPECTRUM_MEMORY) * scaled;
-                }
-            }
-            None => self
-                .levels
-                .iter_mut()
-                .for_each(|level| *level *= SPECTRUM_MEMORY),
-        }
-
-        self.levels
-            .iter()
-            .map(|level| (level * 255.0).round().clamp(0.0, 255.0) as u8)
-            .collect()
-    }
-}
-
-struct AudioSpectrumEmitter {
-    stop: Arc<AtomicBool>,
-    handle: Option<std::thread::JoinHandle<()>>,
-}
-
-impl AudioSpectrumEmitter {
-    fn start(app: AppHandle<AppRuntime>, recorder: Arc<RecorderManager>) -> Self {
-        let cancellation = Arc::new(AtomicBool::new(false));
-        let worker_cancellation = Arc::clone(&cancellation);
-        let worker = std::thread::spawn(move || {
-            let mut analyzer = SpectrumAnalyzer::new();
-            while !worker_cancellation.load(Ordering::Relaxed) {
-                let samples = recorder.spectrum_snapshot();
-                let payload = AudioSpectrumPayload {
-                    bins: analyzer.frame(samples.as_deref()),
-                };
-                emit_event(&app, EVENT_AUDIO_SPECTRUM, payload);
-                std::thread::sleep(Duration::from_millis(40));
-            }
-        });
-        Self {
-            stop: cancellation,
-            handle: Some(worker),
-        }
-    }
-
-    fn stop(mut self) {
-        self.stop.store(true, Ordering::Relaxed);
-        if let Some(handle) = self.handle.take() {
-            std::thread::spawn(move || {
-                let _ = handle.join();
-            });
-        }
-    }
-}
-
-#[derive(Serialize, Clone)]
-pub struct PillHoverPayload {
-    pub hovering: bool,
-}
-
-struct PillHoverEmitter;
-
-impl PillHoverEmitter {
-    fn start(app: AppHandle<AppRuntime>) -> Self {
-        std::thread::spawn(move || {
-            let interval = Duration::from_millis(50);
-            let started = Instant::now();
-            let mut intent = HoverIntent::default();
-            let mut last: Option<HoverDecision> = None;
-            loop {
-                // A drag owns the pill until the pointer is released. Polling
-                // through it would collapse the pill mid-drag and, worse, hand
-                // the panel back to click-through while the user still holds it.
-                if app.state::<AppState>().pill().is_dragging() {
-                    intent.forget_travel();
-                    std::thread::sleep(interval);
-                    continue;
-                }
-                let now_ms = started.elapsed().as_millis() as u64;
-                // Mouse-query failures must fail closed. Keeping the previous
-                // interactive state can leave an invisible NSPanel consuming
-                // clicks after the pointer has moved away from the pill.
-                let decision = match cursor_over_pill_window(&app) {
-                    Some((inside, cursor)) => intent.observe(inside, cursor, now_ms),
-                    None => intent.abandon(),
-                };
-                let previous = last.replace(decision);
-
-                // The window takes the pointer the moment it arrives, while
-                // expanding waits for the pointer to settle. Coupling them
-                // would either lose a fast click or expand at every crossing.
-                if previous.map(|last| last.interactive) != Some(decision.interactive) {
-                    set_overlay_interactive(&app, decision.interactive);
-                }
-                if previous.map(|last| last.hovering) != Some(decision.hovering) {
-                    let hovering = decision.hovering;
-                    tracing::debug!(hovering, "Capture pill hover changed");
-                    app.state::<AppState>().pill().set_hovering(hovering);
-                    emit_event(&app, EVENT_PILL_HOVER, PillHoverPayload { hovering });
-                }
-                std::thread::sleep(interval);
-            }
-        });
-        Self
-    }
-}
-
 /// A point in logical screen coordinates.
 type Point = (f64, f64);
 
@@ -418,7 +336,7 @@ fn primary_scale_factor(window: &WebviewWindow<AppRuntime>) -> f64 {
 /// Reports whether the cursor is on the pill, and where it is. The position
 /// travels with the answer because hover intent is judged from how fast the
 /// pointer is moving, not only from where it ended up.
-fn cursor_over_pill_window(app: &AppHandle<AppRuntime>) -> Option<(bool, (f64, f64))> {
+fn cursor_over_pill_window(app: &AppHandle<AppRuntime>) -> Option<(bool, bool, (f64, f64))> {
     let window = app.get_webview_window(MAIN_WINDOW_LABEL)?;
     // Everything below is in logical points. See `to_shared_points`: the
     // toolkit scales the cursor and the window frame differently once two
@@ -433,62 +351,60 @@ fn cursor_over_pill_window(app: &AppHandle<AppRuntime>) -> Option<(bool, (f64, f
     let state = app.state::<AppState>();
     let meeting_overlay_active = state.meeting_capture().is_active();
     if meeting_overlay_active {
-        return Some((cursor_over_meeting_overlay_bounds(
+        let inside = cursor_over_meeting_overlay_bounds(
             cursor,
             pos,
             size,
             scale,
             state.pill().meeting_overlay_presentation(),
-        ), cursor));
+        );
+        // La ventana de reunión ya se ajusta al contenido visible: 136×44 en
+        // compacto y al transcript + rail cuando está expandida. Mantenerla
+        // interactiva evita que macOS deje los controles del borde en
+        // click-through mientras el cursor cruza entre ambas superficies.
+        return Some((true, inside, cursor));
     }
 
     if state.pill().status() == PillStatus::Preflight {
-        return Some((
-            point_in_rect(
-                cursor,
-                pos,
-                size,
-            ),
-            cursor,
-        ));
+        let inside = point_in_rect(cursor, pos, size);
+        return Some((inside, inside, cursor));
     }
 
     if state.pill().status() == PillStatus::Idle {
         let settings = state.current_settings_unmasked();
         if *state.pill().preflight_language_menu_open.lock() {
-            return Some((
-                point_in_rect(
-                    cursor,
-                    pos,
-                    size,
-                ),
-                cursor,
-            ));
+            let inside = point_in_rect(cursor, pos, size);
+            return Some((inside, inside, cursor));
         }
-        return Some((
-            capture::hit_test(
-            (cursor.0 - pos.0, cursor.1 - pos.1),
+        let relative_cursor = (cursor.0 - pos.0, cursor.1 - pos.1);
+        let interactive = capture::hit_test(
+            relative_cursor,
             size,
             scale,
-                settings.capture_pill_presentation,
-                settings.capture_pill_dock_position,
-                state.pill().is_hovering(),
-            ),
-            cursor,
-        ));
+            settings.capture_pill_presentation,
+            settings.capture_pill_dock_position,
+            state.pill().is_hovering(),
+        );
+        let hover_target = capture::hover_target(
+            relative_cursor,
+            size,
+            scale,
+            settings.capture_pill_presentation,
+            settings.capture_pill_dock_position,
+            state.pill().is_hovering(),
+        );
+        return Some((interactive, hover_target, cursor));
     }
 
-    Some((
-        cursor_over_pill_bounds(
+    let inside = cursor_over_pill_bounds(
             cursor,
             pos,
             size,
             scale,
             state.pill().is_expanded(),
             state.pill().pill_hit_size(),
-        ),
-        cursor,
-    ))
+        );
+    Some((inside, inside, cursor))
 }
 
 fn cursor_over_meeting_overlay_bounds(
@@ -499,11 +415,15 @@ fn cursor_over_meeting_overlay_bounds(
     presentation: MeetingOverlayPresentation,
 ) -> bool {
     let pill_width = if presentation.compact {
-        MEETING_COMPACT_PILL_SIZE * scale
+        MEETING_COMPACT_PILL_WIDTH * scale
     } else {
         MEETING_PILL_SLOT_WIDTH * scale
     };
-    let pill_height = MEETING_PILL_HEIGHT * scale;
+    let pill_height = if presentation.compact {
+        MEETING_COMPACT_PILL_HEIGHT * scale
+    } else {
+        MEETING_PILL_HEIGHT * scale
+    };
     let left = match (presentation.transcript_visible, presentation.placement) {
         (true, MeetingTranscriptPlacement::Left) => {
             window_origin.0
@@ -525,8 +445,16 @@ fn cursor_over_meeting_overlay_bounds(
         window_origin.1 + window_size.1 - (MEETING_PILL_GUTTER * scale) - pill_height
     };
 
-    let cursor_over_pill = point_in_rect(cursor, (left, top), (pill_width, pill_height));
-    if cursor_over_pill || !presentation.transcript_visible || !presentation.transcript_pinned {
+    // El gutter nativo también responde, sin agrandar el pill visible.
+    let hit_slop = (!presentation.transcript_visible)
+        .then_some(MEETING_PILL_GUTTER * scale)
+        .unwrap_or_default();
+    let cursor_over_pill = point_in_rect(
+        cursor,
+        (left - hit_slop, top - hit_slop),
+        (pill_width + hit_slop * 2.0, pill_height + hit_slop * 2.0),
+    );
+    if cursor_over_pill || !presentation.transcript_visible {
         return cursor_over_pill;
     }
 
@@ -676,7 +604,8 @@ impl PillController {
             let state = app_handle.state::<AppState>();
             let pill = state.pill();
             if pill.status() == PillStatus::Preflight
-                && !cursor_over_pill_window(&app_handle).is_some_and(|(inside, _)| inside)
+                && !cursor_over_pill_window(&app_handle)
+                    .is_some_and(|(inside, _, _)| inside)
             {
                 pill.transition_to(&app_handle, PillStatus::Idle);
             }
@@ -1742,26 +1671,55 @@ pub fn set_overlay_position(
         .scale_factor()
         .map_err(|err| format!("Failed to read overlay scale: {err}"))?;
     let sticky_menu_open = idle_sticky && *app_state.pill().preflight_language_menu_open.lock();
-    let sticky_height = if sticky_menu_open {
-        STICKY_LANGUAGE_MENU_HEIGHT
+    let sticky_expanded = idle_sticky && app_state.pill().is_hovering();
+    let settings = app_state.current_settings_unmasked();
+    let sticky_frame = idle_sticky.then(|| {
+        capture::sticky_window_frame(
+            (x, y),
+            scale,
+            settings.capture_pill_presentation,
+            settings.capture_pill_dock_position,
+            sticky_expanded,
+            sticky_menu_open,
+        )
+    });
+    let meeting_frame = if meeting_surface {
+        let presentation = app_state.pill().meeting_overlay_presentation();
+        let monitor = monitor_for_overlay_origin(&window, (x, y))
+            .ok_or_else(|| "No display is available for the overlay.".to_string())?;
+        Some(meeting_overlay_geometry(
+            (x, y),
+            scale,
+            presentation.compact,
+            presentation.transcript_visible,
+            (monitor.position().x, monitor.position().y),
+            (monitor.size().width, monitor.size().height),
+        ))
     } else {
-        STICKY_OVERLAY_HEIGHT
+        None
     };
-    let sticky_menu_inset = logical_pixels(sticky_height - STICKY_OVERLAY_HEIGHT, scale);
     // Lo que llega es la posición canónica: es la que este mismo comando
     // devolvió y la que el frontend guardó. Colocarla tal cual como origen de
     // ventana desplazaba la píldora en cada restauración.
-    let requested = if meeting_surface {
-        (x, y)
-    } else if idle_sticky {
-        (x, y - sticky_menu_inset)
+    let requested = if let Some(frame) = meeting_frame {
+        frame.origin
+    } else if let Some(frame) = sticky_frame {
+        frame.origin
     } else {
-        dictation_origin_from_canonical((x, y), scale)
+        dictation_origin_from_capture_anchor(
+            (x, y),
+            scale,
+            settings.capture_pill_presentation,
+            settings.capture_pill_dock_position,
+        )
     };
-    let logical_size = if meeting_surface {
-        (MEETING_OVERLAY_WIDTH, MEETING_OVERLAY_HEIGHT)
-    } else if idle_sticky {
-        (STICKY_OVERLAY_WIDTH, sticky_height)
+    let logical_size = if let Some(frame) = meeting_frame {
+        (
+            f64::from(frame.logical_size.0),
+            f64::from(frame.logical_size.1),
+        )
+    } else if let Some(frame) = sticky_frame {
+        frame.logical_size
     } else {
         (DICTATION_OVERLAY_WIDTH, DICTATION_OVERLAY_HEIGHT)
     };
@@ -1797,6 +1755,18 @@ pub fn set_overlay_position(
         clamp_overlay_position(&window, requested.0, requested.1, physical_size)
     }
     .ok_or_else(|| "No display is available for the overlay.".to_string())?;
+    if let Some(frame) = meeting_frame {
+        window
+            .set_size(LogicalSize::new(
+                f64::from(frame.logical_size.0),
+                f64::from(frame.logical_size.1),
+            ))
+            .map_err(|err| format!("Failed to resize the overlay: {err}"))?;
+    } else if let Some(frame) = sticky_frame {
+        window
+            .set_size(LogicalSize::new(frame.logical_size.0, frame.logical_size.1))
+            .map_err(|err| format!("Failed to resize the overlay: {err}"))?;
+    }
     if window
         .outer_position()
         .map(|current| (current.x, current.y) != position)
@@ -1813,9 +1783,21 @@ pub fn set_overlay_position(
             app_state.pill().meeting_overlay_presentation(),
         )
     } else if idle_sticky {
-        (position.0, position.1 + sticky_menu_inset)
+        capture::canonical_sticky_origin(
+            position,
+            scale,
+            settings.capture_pill_presentation,
+            settings.capture_pill_dock_position,
+            sticky_expanded,
+            sticky_menu_open,
+        )
     } else {
-        canonical_from_dictation_origin(position, scale)
+        canonical_from_capture_dictation_origin(
+            position,
+            scale,
+            settings.capture_pill_presentation,
+            settings.capture_pill_dock_position,
+        )
     };
     app_state.pill().set_overlay_position(canonical_position);
     Ok(OverlayPositionPayload {
@@ -1847,22 +1829,19 @@ pub fn persist_overlay_position(
         .scale_factor()
         .map_err(|err| format!("Failed to read overlay scale: {err}"))?;
     let sticky_menu_open = idle_sticky && *app_state.pill().preflight_language_menu_open.lock();
-    let sticky_height = if sticky_menu_open {
-        STICKY_LANGUAGE_MENU_HEIGHT
-    } else {
-        STICKY_OVERLAY_HEIGHT
-    };
-    let sticky_menu_inset = logical_pixels(sticky_height - STICKY_OVERLAY_HEIGHT, scale);
+    let sticky_expanded = idle_sticky && app_state.pill().is_hovering();
+    let settings = app_state.current_settings_unmasked();
     let logical_size = if meeting_surface {
-        (MEETING_OVERLAY_WIDTH, MEETING_OVERLAY_HEIGHT)
+        meeting_overlay_logical_size(app_state.pill().meeting_overlay_presentation())
     } else if idle_sticky {
-        (STICKY_OVERLAY_WIDTH, sticky_height)
+        capture::sticky_window_size(sticky_expanded, sticky_menu_open)
     } else {
         (DICTATION_OVERLAY_WIDTH, DICTATION_OVERLAY_HEIGHT)
     };
+    let physical_size = physical_overlay_size(logical_size, scale);
     // Y aunque esté en pantalla, tiene que caber en un display real antes de
     // convertirse en la posición canónica.
-    let (x, y) = clamp_overlay_position(&window, x, y, physical_overlay_size(logical_size, scale))
+    let (x, y) = clamp_overlay_position(&window, x, y, physical_size)
         .ok_or_else(|| "No display is available for the overlay.".to_string())?;
     let canonical_position = if meeting_surface {
         canonical_meeting_overlay_origin(
@@ -1871,9 +1850,21 @@ pub fn persist_overlay_position(
             app_state.pill().meeting_overlay_presentation(),
         )
     } else if idle_sticky {
-        (x, y + sticky_menu_inset)
+        capture::canonical_sticky_origin(
+            (x, y),
+            scale,
+            settings.capture_pill_presentation,
+            settings.capture_pill_dock_position,
+            sticky_expanded,
+            sticky_menu_open,
+        )
     } else {
-        canonical_from_dictation_origin((x, y), scale)
+        canonical_from_capture_dictation_origin(
+            (x, y),
+            scale,
+            settings.capture_pill_presentation,
+            settings.capture_pill_dock_position,
+        )
     };
     app_state.pill().set_overlay_position(canonical_position);
     Ok(OverlayPositionPayload {
@@ -1892,7 +1883,7 @@ pub fn set_pill_hit_size(width: f64, height: f64, app: AppHandle<AppRuntime>) {
 }
 
 #[tauri::command]
-pub fn set_meeting_overlay_presentation(
+pub async fn set_meeting_overlay_presentation(
     compact: bool,
     transcript_visible: bool,
     transcript_pinned: bool,
@@ -1924,18 +1915,16 @@ pub fn set_meeting_overlay_presentation(
         (monitor.size().width, monitor.size().height),
     );
 
-    window
-        .set_size(LogicalSize::new(
+    platform::overlay::set_frame(
+        &app,
+        &window,
+        (
             f64::from(geometry.logical_size.0),
             f64::from(geometry.logical_size.1),
-        ))
-        .map_err(|err| format!("Failed to resize meeting overlay: {err}"))?;
-    window
-        .set_position(tauri::PhysicalPosition::new(
-            geometry.origin.0,
-            geometry.origin.1,
-        ))
-        .map_err(|err| format!("Failed to position meeting overlay: {err}"))?;
+        ),
+        geometry.origin,
+    )
+    .await?;
 
     let presentation = MeetingOverlayPresentation {
         compact,
@@ -2164,114 +2153,6 @@ pub(crate) fn start_qa_dictation(app: &AppHandle<AppRuntime>) -> Result<(), Stri
     }
 }
 
-pub fn show_idle_sticky(app: &AppHandle<AppRuntime>) -> Result<(), String> {
-    let state = app.state::<AppState>();
-    if state.pill().status() != PillStatus::Idle || state.meeting_capture().is_active() {
-        return Ok(());
-    }
-
-    let window = app
-        .get_webview_window(MAIN_WINDOW_LABEL)
-        .ok_or_else(|| "Dictation sticky window not found.".to_string())?;
-    let settings = state.current_settings_unmasked();
-    let language_menu_open = *state.pill().preflight_language_menu_open.lock();
-    let logical_height = if language_menu_open {
-        STICKY_LANGUAGE_MENU_HEIGHT
-    } else {
-        STICKY_OVERLAY_HEIGHT
-    };
-    let logical_size = (STICKY_OVERLAY_WIDTH, logical_height);
-    let scale = window.scale_factor().unwrap_or(1.0);
-    let physical_size = physical_overlay_size(logical_size, scale);
-    let menu_inset = logical_pixels(logical_height - STICKY_OVERLAY_HEIGHT, scale);
-
-    window
-        .set_size(LogicalSize::new(logical_size.0, logical_size.1))
-        .map_err(|error| format!("Failed to resize Dictation sticky: {error}"))?;
-    // AppKit can restore the NSPanel's previous frame when it is shown. Make
-    // the panel visible first, then apply the canonical dock/floating anchor.
-    platform::overlay::show(app, &window, true);
-
-    let placed = match settings.capture_pill_presentation {
-        CapturePillPresentation::Dock => preferred_capture_monitor(&window)
-            .map(|monitor| {
-                let work_area = monitor.work_area();
-                let monitor_scale = monitor.scale_factor();
-                let base_size = physical_overlay_size(
-                    (capture::WINDOW_WIDTH, capture::WINDOW_HEIGHT),
-                    monitor_scale,
-                );
-                let base_origin = capture::dock_origin(
-                    (work_area.position.x, work_area.position.y),
-                    (work_area.size.width, work_area.size.height),
-                    base_size,
-                    logical_pixels(capture::EDGE_MARGIN, monitor_scale),
-                    settings.capture_pill_dock_position,
-                );
-                let dock_menu_inset =
-                    logical_pixels(logical_height - STICKY_OVERLAY_HEIGHT, monitor_scale);
-                let position = if language_menu_open
-                    && settings.capture_pill_dock_position != CapturePillDockPosition::TopCenter
-                {
-                    (base_origin.0, base_origin.1 - dock_menu_inset)
-                } else {
-                    base_origin
-                };
-                tracing::debug!(
-                    presentation = ?settings.capture_pill_presentation,
-                    dock_position = ?settings.capture_pill_dock_position,
-                    work_x = work_area.position.x,
-                    work_y = work_area.position.y,
-                    work_width = work_area.size.width,
-                    work_height = work_area.size.height,
-                    window_x = position.0,
-                    window_y = position.1,
-                    "Positioning Capture pill"
-                );
-                let _ = window.set_position(tauri::PhysicalPosition::new(position.0, position.1));
-            })
-            .is_some(),
-        CapturePillPresentation::Floating => state
-            .pill()
-            .overlay_position()
-            .and_then(|canonical| {
-                clamp_overlay_position(
-                    &window,
-                    canonical.0,
-                    canonical.1 - menu_inset,
-                    physical_size,
-                )
-            })
-            .or_else(|| {
-                let monitor = preferred_capture_monitor(&window)?;
-                let work_area = monitor.work_area();
-                let monitor_scale = monitor.scale_factor();
-                let base_size = physical_overlay_size(
-                    (capture::WINDOW_WIDTH, capture::WINDOW_HEIGHT),
-                    monitor_scale,
-                );
-                Some(capture::dock_origin(
-                    (work_area.position.x, work_area.position.y),
-                    (work_area.size.width, work_area.size.height),
-                    base_size,
-                    logical_pixels(85.0, monitor_scale),
-                    CapturePillDockPosition::BottomCenter,
-                ))
-            })
-            .map(|position| {
-                let _ = window.set_position(tauri::PhysicalPosition::new(position.0, position.1));
-            })
-            .is_some(),
-    };
-
-    if !placed {
-        position_overlay_on_cursor_screen(&window, logical_size);
-    }
-
-    state.pill().start_hover_emitter(app);
-    Ok(())
-}
-
 pub fn show_overlay(app: &AppHandle<AppRuntime>) {
     if let Some(window) = app.get_webview_window(MAIN_WINDOW_LABEL) {
         let app_state = app.state::<AppState>();
@@ -2280,13 +2161,14 @@ pub fn show_overlay(app: &AppHandle<AppRuntime>) {
         if meeting_active {
             app_state
                 .pill()
-                .set_meeting_overlay_presentation(MeetingOverlayPresentation::default());
+                .set_meeting_overlay_presentation(MeetingOverlayPresentation::initial_capture());
         }
+        let settings = app_state.current_settings_unmasked();
         // Una posición guardada puede haber dejado de existir: basta desconectar
         // el monitor en el que estaba. Antes eso hacía que no se colocara nada y
         // la ventana se mostrase donde la dejó el último `hide` — fuera de la
         // pantalla. La píldora estaba visible y en ninguna parte.
-        let placed = if let Some((x, y)) = app_state.pill().overlay_position() {
+        let frame = if let Some((x, y)) = app_state.pill().overlay_position() {
             if interactive {
                 if let (Ok(scale), Some(monitor)) = (
                     window.scale_factor(),
@@ -2301,53 +2183,67 @@ pub fn show_overlay(app: &AppHandle<AppRuntime>) {
                         (monitor.position().x, monitor.position().y),
                         (monitor.size().width, monitor.size().height),
                     );
-                    let _ = window.set_size(LogicalSize::new(
-                        f64::from(geometry.logical_size.0),
-                        f64::from(geometry.logical_size.1),
-                    ));
-                    let _ = window.set_position(tauri::PhysicalPosition::new(
-                        geometry.origin.0,
-                        geometry.origin.1,
-                    ));
-                    true
+                    Some((
+                        (
+                            f64::from(geometry.logical_size.0),
+                            f64::from(geometry.logical_size.1),
+                        ),
+                        geometry.origin,
+                    ))
                 } else {
-                    false
+                    None
                 }
             } else {
-                let _ = window.set_size(LogicalSize::new(
-                    DICTATION_OVERLAY_WIDTH,
-                    DICTATION_OVERLAY_HEIGHT,
-                ));
                 let scale = window.scale_factor().unwrap_or(1.0);
-                let origin = dictation_origin_from_canonical((x, y), scale);
+                let origin = dictation_origin_from_capture_anchor(
+                    (x, y),
+                    scale,
+                    settings.capture_pill_presentation,
+                    settings.capture_pill_dock_position,
+                );
                 let physical = physical_overlay_size(
                     (DICTATION_OVERLAY_WIDTH, DICTATION_OVERLAY_HEIGHT),
                     scale,
                 );
-                if let Some(position) =
-                    clamp_overlay_position(&window, origin.0, origin.1, physical)
-                {
-                    let _ =
-                        window.set_position(tauri::PhysicalPosition::new(position.0, position.1));
-                    true
-                } else {
-                    false
-                }
+                clamp_overlay_position(&window, origin.0, origin.1, physical).map(|position| {
+                    (
+                        (DICTATION_OVERLAY_WIDTH, DICTATION_OVERLAY_HEIGHT),
+                        position,
+                    )
+                })
             }
         } else {
-            false
+            None
         };
 
-        if !placed {
+        let frame = frame.or_else(|| {
             let logical_size = if interactive {
                 (MEETING_OVERLAY_WIDTH, MEETING_OVERLAY_HEIGHT)
             } else {
                 (DICTATION_OVERLAY_WIDTH, DICTATION_OVERLAY_HEIGHT)
             };
-            let _ = window.set_size(LogicalSize::new(logical_size.0, logical_size.1));
-            position_overlay_on_cursor_screen(&window, logical_size);
+            default_overlay_position(&window, logical_size).map(|origin| (logical_size, origin))
+        });
+
+        // El sticky Idle ya está visible. Volver a llamar `show` permite que
+        // AppKit restaure su frame compacto después del resize solicitado y
+        // produce el salto antes de Listening. Si estaba oculto, se revela
+        // primero; en ambos casos el frame definitivo se aplica al final.
+        if window.is_visible().unwrap_or(false) {
+            platform::overlay::set_interactive(app, &window, interactive);
+        } else {
+            platform::overlay::show(app, &window, interactive);
         }
-        platform::overlay::show(app, &window, interactive);
+
+        if let Some((logical_size, origin)) = frame {
+            if let Err(error) =
+                platform::overlay::schedule_frame(app, &window, logical_size, origin)
+            {
+                tracing::error!("Failed to schedule overlay frame before showing it: {error}");
+                let _ = window.set_size(LogicalSize::new(logical_size.0, logical_size.1));
+                let _ = window.set_position(tauri::PhysicalPosition::new(origin.0, origin.1));
+            }
+        }
         app_state.pill().start_hover_emitter(app);
         if !app.state::<AppState>().pill().is_expanded() {
             collapse_expanded_pill(app);
@@ -2430,8 +2326,12 @@ fn clamp_overlay_position(
     ))
 }
 
-fn position_overlay(window: &WebviewWindow<AppRuntime>, logical_size: (f64, f64)) {
-    if let Ok(Some(monitor)) = window.current_monitor() {
+fn default_overlay_position(
+    window: &WebviewWindow<AppRuntime>,
+    logical_size: (f64, f64),
+) -> Option<(i32, i32)> {
+    cursor_screen_overlay_position(window, logical_size).or_else(|| {
+        let monitor = window.current_monitor().ok()??;
         let scale_factor = monitor.scale_factor();
         let size = physical_overlay_size(logical_size, scale_factor);
         let screen = monitor.size();
@@ -2439,15 +2339,13 @@ fn position_overlay(window: &WebviewWindow<AppRuntime>, logical_size: (f64, f64)
         let x = mon_pos.x + (screen.width.saturating_sub(size.0) / 2) as i32;
         let bottom_padding_physical = (85.0 * scale_factor) as i32;
         let y = mon_pos.y + screen.height as i32 - size.1 as i32 - bottom_padding_physical;
-        let _ = window.set_position(tauri::PhysicalPosition::new(x, y));
-    }
+        Some((x, y))
+    })
 }
 
 fn position_overlay_on_cursor_screen(window: &WebviewWindow<AppRuntime>, logical_size: (f64, f64)) {
-    if let Some((x, y)) = cursor_screen_overlay_position(window, logical_size) {
+    if let Some((x, y)) = default_overlay_position(window, logical_size) {
         let _ = window.set_position(tauri::PhysicalPosition::new(x, y));
-    } else {
-        position_overlay(window, logical_size);
     }
 }
 
@@ -2639,13 +2537,89 @@ mod meeting_overlay_tests {
     use super::*;
 
     #[test]
-    fn the_canonical_origin_survives_a_round_trip_on_a_retina_display() {
+    fn meeting_capture_starts_compact_without_the_transcript() {
+        let presentation = MeetingOverlayPresentation::initial_capture();
+
+        assert!(presentation.compact);
+        assert!(!presentation.transcript_visible);
+        assert!(!presentation.transcript_pinned);
+        assert_eq!(meeting_overlay_logical_size(presentation), (136.0, 44.0));
+    }
+
+    #[test]
+    fn the_capture_aligned_dictation_origin_round_trips_on_a_retina_display() {
         let canonical = (1_040, 1_820);
 
         assert_eq!(
-            canonical_from_dictation_origin(dictation_origin_from_canonical(canonical, 2.0), 2.0),
+            canonical_from_capture_dictation_origin(
+                dictation_origin_from_capture_anchor(
+                    canonical,
+                    2.0,
+                    CapturePillPresentation::Floating,
+                    CapturePillDockPosition::BottomCenter,
+                ),
+                2.0,
+                CapturePillPresentation::Floating,
+                CapturePillDockPosition::BottomCenter,
+            ),
             canonical
         );
+    }
+
+    #[test]
+    fn recording_keeps_the_compact_capture_pill_center_for_every_placement() {
+        let canonical = (1_040, 1_820);
+        let cases = [
+            (
+                CapturePillPresentation::Floating,
+                CapturePillDockPosition::BottomCenter,
+            ),
+            (
+                CapturePillPresentation::Dock,
+                CapturePillDockPosition::TopCenter,
+            ),
+            (
+                CapturePillPresentation::Dock,
+                CapturePillDockPosition::LeftCenter,
+            ),
+            (
+                CapturePillPresentation::Dock,
+                CapturePillDockPosition::RightCenter,
+            ),
+            (
+                CapturePillPresentation::Dock,
+                CapturePillDockPosition::BottomCenter,
+            ),
+        ];
+
+        for (presentation, dock_position) in cases {
+            let compact = capture::sticky_window_frame(
+                canonical,
+                2.0,
+                presentation,
+                dock_position,
+                false,
+                false,
+            );
+            let compact_center = (
+                compact.origin.0 + logical_pixels(compact.logical_size.0 / 2.0, 2.0),
+                compact.origin.1 + logical_pixels(compact.logical_size.1 / 2.0, 2.0),
+            );
+            let dictation_origin =
+                dictation_origin_from_capture_anchor(canonical, 2.0, presentation, dock_position);
+            let dictation_center = (
+                dictation_origin.0 + logical_pixels(DICTATION_OVERLAY_WIDTH / 2.0, 2.0),
+                dictation_origin.1
+                    + logical_pixels(
+                        DICTATION_OVERLAY_HEIGHT
+                            - DICTATION_PILL_INSET_BOTTOM
+                            - capture::COMPACT_WINDOW_HEIGHT / 2.0,
+                        2.0,
+                    ),
+            );
+
+            assert_eq!(dictation_center, compact_center);
+        }
     }
 
     #[test]
@@ -2748,7 +2722,7 @@ mod meeting_overlay_tests {
             size,
             scale,
             false,
-            Some((260.0, 48.0)),
+            Some((264.0, 48.0)),
         ));
 
         // Y una píldora expandida de 90 deja de tragarse el hueco vacío que la
@@ -2796,13 +2770,26 @@ mod meeting_overlay_tests {
     }
 
     #[test]
+    fn meeting_transcript_keeps_a_safe_gutter_at_the_horizontal_screen_edges() {
+        let right_edge =
+            meeting_overlay_geometry((1_780, 500), 1.0, false, true, (0, 0), (1_920, 1_080));
+        let left_edge =
+            meeting_overlay_geometry((0, 500), 1.0, false, true, (0, 0), (1_920, 1_080));
+
+        assert_eq!(right_edge.placement, MeetingTranscriptPlacement::Above);
+        assert_eq!(right_edge.origin, (1_584, 192));
+        assert_eq!(left_edge.placement, MeetingTranscriptPlacement::Above);
+        assert_eq!(left_edge.origin, (8, 192));
+    }
+
+    #[test]
     fn meeting_transcript_falls_right_and_aligns_top_near_screen_top() {
         let geometry = meeting_overlay_geometry((100, 0), 1.0, false, true, (0, 0), (1_920, 1_080));
 
         assert_eq!(geometry.placement, MeetingTranscriptPlacement::Right);
         assert_eq!(geometry.side_alignment, MeetingTranscriptSideAlignment::Top,);
         assert_eq!(geometry.logical_size, (592, 308));
-        assert_eq!(geometry.origin, (96, 0));
+        assert_eq!(geometry.origin, (96, 8));
         assert_eq!(
             canonical_meeting_overlay_origin(
                 geometry.origin,
@@ -2814,7 +2801,7 @@ mod meeting_overlay_tests {
                     ..MeetingOverlayPresentation::default()
                 },
             ),
-            (100, 4),
+            (100, 12),
         );
     }
 
@@ -2841,23 +2828,30 @@ mod meeting_overlay_tests {
     }
 
     #[test]
-    fn compact_meeting_hit_testing_does_not_capture_the_old_full_pill_area() {
+    fn compact_meeting_hit_testing_includes_only_the_small_native_gutter() {
         let presentation = MeetingOverlayPresentation {
             compact: true,
             ..MeetingOverlayPresentation::default()
         };
 
         assert!(cursor_over_meeting_overlay_bounds(
-            (1_120.0, 520.0),
-            (1_105.0, 496.0),
-            (50.0, 50.0),
+            (1_100.0, 520.0),
+            (1_062.0, 496.0),
+            (136.0, 44.0),
+            1.0,
+            presentation,
+        ));
+        assert!(cursor_over_meeting_overlay_bounds(
+            (1_063.0, 498.0),
+            (1_062.0, 496.0),
+            (136.0, 44.0),
             1.0,
             presentation,
         ));
         assert!(!cursor_over_meeting_overlay_bounds(
-            (1_050.0, 520.0),
-            (1_105.0, 496.0),
-            (50.0, 50.0),
+            (1_061.0, 520.0),
+            (1_062.0, 496.0),
+            (136.0, 44.0),
             1.0,
             presentation,
         ));
@@ -2871,8 +2865,8 @@ mod meeting_overlay_tests {
 
         let compact =
             meeting_overlay_geometry((100, 500), 1.0, true, false, (0, 0), (1_920, 1_080));
-        assert_eq!(compact.logical_size, (50, 50));
-        assert_eq!(compact.origin, (205, 496));
+        assert_eq!(compact.logical_size, (136, 44));
+        assert_eq!(compact.origin, (162, 496));
         assert_eq!(
             canonical_meeting_overlay_origin(
                 compact.origin,
@@ -2891,6 +2885,31 @@ mod meeting_overlay_tests {
         let presentation = MeetingOverlayPresentation {
             transcript_visible: true,
             transcript_pinned: true,
+            placement: MeetingTranscriptPlacement::Above,
+            ..MeetingOverlayPresentation::default()
+        };
+
+        assert!(cursor_over_meeting_overlay_bounds(
+            (1_100.0, 520.0),
+            (1_000.0, 500.0),
+            (328.0, 360.0),
+            1.0,
+            presentation,
+        ));
+        assert!(!cursor_over_meeting_overlay_bounds(
+            (1_001.0, 505.0),
+            (1_000.0, 500.0),
+            (328.0, 360.0),
+            1.0,
+            presentation,
+        ));
+    }
+
+    #[test]
+    fn hover_transcript_preview_makes_the_visible_surface_interactive() {
+        let presentation = MeetingOverlayPresentation {
+            transcript_visible: true,
+            transcript_pinned: false,
             placement: MeetingTranscriptPlacement::Above,
             ..MeetingOverlayPresentation::default()
         };

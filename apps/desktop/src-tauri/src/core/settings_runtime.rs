@@ -173,6 +173,8 @@ fn apply_product_preferences(next: &mut UserSettings, args: &UpdateSettingsArgs)
     next.auto_launch_enabled = args.product.auto_launch_enabled;
     next.start_in_background = args.product.auto_launch_enabled && args.product.start_in_background;
     next.calendar_meeting_awareness_enabled = args.product.calendar_meeting_awareness_enabled;
+    next.microphone_meeting_awareness_enabled =
+        args.product.microphone_meeting_awareness_enabled;
     next.auto_delete_target = args.product.auto_delete_target;
     next.auto_delete_duration = args.product.auto_delete_duration;
     next.audio_storage_budget_mb = args.product.audio_storage_budget_mb;
@@ -201,7 +203,10 @@ fn finalize_update(
 }
 
 fn refresh_meeting_awareness(state: &AppState, previous: &UserSettings, current: &UserSettings) {
-    if previous.calendar_meeting_awareness_enabled != current.calendar_meeting_awareness_enabled {
+    if previous.calendar_meeting_awareness_enabled != current.calendar_meeting_awareness_enabled
+        || previous.microphone_meeting_awareness_enabled
+            != current.microphone_meeting_awareness_enabled
+    {
         state.meeting_awareness().request_refresh();
     }
 }
@@ -223,7 +228,9 @@ fn refresh_shortcuts_and_menus(
         || previous.remote_speech_model != current.remote_speech_model
         || previous.microphone_device != current.microphone_device
         || previous.calendar_meeting_awareness_enabled
-            != current.calendar_meeting_awareness_enabled;
+            != current.calendar_meeting_awareness_enabled
+        || previous.microphone_meeting_awareness_enabled
+            != current.microphone_meeting_awareness_enabled;
     if !should_refresh {
         return;
     }

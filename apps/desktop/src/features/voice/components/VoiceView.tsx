@@ -1,6 +1,6 @@
 import { useLingui } from "@lingui/react/macro";
-import { motion, useReducedMotion } from "framer-motion";
-import { useState } from "react";
+import { useReducedMotion } from "framer-motion";
+import { useRef, useState } from "react";
 
 import DictionaryView from "../../dictionary/components/DictionaryView";
 import PersonalizationView from "../../personalization/components/PersonalizationView";
@@ -10,13 +10,12 @@ import { useInstalledApps } from "../../personalization/queries";
 // Voice reúne todo lo que el usuario le enseña a Looper, en el orden en que
 // ocurre: primero te oye (Vocabulary), luego decide cómo escribirlo (Styles),
 // y al final aplica reglas mecánicas (Rules, Snippets).
-type VoiceStep = "vocabulary" | "styles" | "rules" | "snippets" | "automations";
+type VoiceStep = "vocabulary" | "styles" | "building-blocks" | "automations";
 
 const STEPS: VoiceStep[] = [
   "vocabulary",
   "styles",
-  "rules",
-  "snippets",
+  "building-blocks",
   "automations",
 ];
 
@@ -24,41 +23,39 @@ const VoiceView = ({ isActive = true }: { isActive?: boolean }) => {
   const { t } = useLingui();
   const reduceMotion = useReducedMotion();
   const [step, setStep] = useState<VoiceStep>("vocabulary");
+  const panelRef = useRef<HTMLDivElement>(null);
   const { data: installedApps = [] } = useInstalledApps(
     isActive && step === "automations",
   );
   const stepLabel = (voiceStep: VoiceStep) => {
     switch (voiceStep) {
       case "vocabulary":
-        return t({ id: "voice.step.vocabulary", message: "Vocabulary" });
+        return t({ id: "voice.step.vocabulary", message: "Words" });
       case "styles":
-        return t({ id: "voice.step.styles", message: "Styles" });
-      case "rules":
-        return t({ id: "voice.step.rules", message: "Rules" });
-      case "snippets":
-        return t({ id: "voice.step.snippets", message: "Snippets" });
+        return t({ id: "voice.step.styles", message: "Writing" });
+      case "building-blocks":
+        return t({
+          id: "voice.step.building_blocks",
+          message: "Building blocks",
+        });
       case "automations":
-        return t({ id: "voice.step.automations", message: "Automations" });
+        return t({ id: "voice.step.automations", message: "Flows" });
     }
   };
 
   return (
-    <div className="mx-auto flex h-full w-full min-w-0 max-w-[760px] flex-col px-0 pt-8 text-left">
+    <div className="flex h-full w-full min-w-0 max-w-5xl flex-col px-0 text-left">
       <header className="shrink-0">
-        <h1 className="ui-text-display ui-color-primary">
-          {t({ id: "voice.title", message: "Teach Looper how you sound" })}
-        </h1>
-        <p className="mt-1.5 max-w-xl ui-text-body ui-color-muted">
-          {t({
-            id: "voice.description",
-            message:
-              "Five lists, one consistent place to shape what Looper hears and how it writes.",
-          })}
+        <p className="ui-text-uppercase-micro ui-color-accent">
+          {t({ id: "voice.eyebrow", message: "Studio" })}
         </p>
+        <h1 className="mt-1 font-display ui-text-screen-title font-semibold tracking-normal ui-color-primary">
+          {t({ id: "voice.title", message: "Shape how Looper writes." })}
+        </h1>
 
         <nav
           role="tablist"
-          className="mt-5 flex items-center gap-1 border-b border-border-primary"
+          className="mt-[22px] flex w-fit max-w-full items-center gap-[3px] overflow-x-auto rounded-[15px] bg-[var(--desktop-workspace)] p-1"
           aria-label={t({ id: "voice.steps", message: "Voice sections" })}
         >
           {STEPS.map((id, index) => (
@@ -82,25 +79,15 @@ const VoiceView = ({ isActive = true }: { isActive?: boolean }) => {
                   setStep(nextStep);
                   document.getElementById(`voice-tab-${nextStep}`)?.focus();
                 }}
-                className={`relative flex h-10 items-center px-3 ui-text-body-sm transition-colors ${
+                className={`relative flex h-9 items-center rounded-[11px] px-[13px] ui-text-body-sm ${
+                  reduceMotion ? "transition-none" : "transition-colors"
+                } ${
                   step === id
-                    ? "font-semibold ui-color-primary"
-                    : "ui-color-muted hover:text-content-primary"
+                    ? "bg-[var(--color-text-primary)] font-semibold text-white"
+                    : "ui-color-muted hover:bg-[var(--surface-interactive-strong)] hover:text-content-primary"
                 }`}
               >
                 {stepLabel(id)}
-                {step === id ? (
-                  <motion.span
-                    layoutId="voice-active-tab"
-                    transition={
-                      reduceMotion
-                        ? { duration: 0 }
-                        : { duration: 0.22, ease: [0.2, 0.8, 0.2, 1] }
-                    }
-                    className="absolute inset-x-2 -bottom-px h-0.5 rounded-full bg-[var(--color-accent)]"
-                    aria-hidden="true"
-                  />
-                ) : null}
               </button>
             </div>
           ))}
@@ -108,10 +95,11 @@ const VoiceView = ({ isActive = true }: { isActive?: boolean }) => {
       </header>
 
       <div
+        ref={panelRef}
         id="voice-tabpanel"
         role="tabpanel"
         aria-labelledby={`voice-tab-${step}`}
-        className="mt-5 min-h-0 max-w-4xl flex-1 overflow-y-auto pb-6"
+        className="mt-[22px] min-h-0 w-full max-w-[790px] flex-1 overflow-y-auto pb-6"
       >
         {step === "automations" ? (
           <ModeRulesSection
@@ -124,17 +112,100 @@ const VoiceView = ({ isActive = true }: { isActive?: boolean }) => {
             isActive={isActive && step === "styles"}
             embedded
             showModeRules={false}
+            studio
           />
+        ) : step === "building-blocks" ? (
+          <>
+            <StudioSectionHeader
+              title={t({
+                id: "voice.building_blocks.title",
+                message: "Reusable blocks",
+              })}
+              description={t({
+                id: "voice.building_blocks.description",
+                message:
+                  "Keep quick replacements separate from longer spoken templates.",
+              })}
+              actionLabel={t({
+                id: "voice.building_blocks.new",
+                message: "New block",
+              })}
+              onAction={() =>
+                panelRef.current
+                  ?.querySelector<HTMLInputElement>(
+                    '[data-studio-focus="block"]',
+                  )
+                  ?.focus()
+              }
+            />
+            <DictionaryView
+              isActive={isActive && step === "building-blocks"}
+              embedded
+              section="building-blocks"
+            />
+          </>
         ) : (
-          <DictionaryView
-            isActive={isActive}
-            embedded
-            section={step === "vocabulary" ? "vocabulary" : step}
-          />
+          <>
+            <StudioSectionHeader
+              title={t({
+                id: "voice.words.title",
+                message: "Words Looper should get right",
+              })}
+              description={t({
+                id: "voice.words.description",
+                message:
+                  "Keep vocabulary and review correction suggestions in one place.",
+              })}
+              actionLabel={t({
+                id: "voice.words.add",
+                message: "Add word",
+              })}
+              onAction={() =>
+                panelRef.current
+                  ?.querySelector<HTMLInputElement>(
+                    '[data-studio-focus="word"]',
+                  )
+                  ?.focus()
+              }
+            />
+            <DictionaryView isActive={isActive} embedded section="words" />
+          </>
         )}
       </div>
     </div>
   );
 };
+
+function StudioSectionHeader({
+  title,
+  description,
+  actionLabel,
+  onAction,
+}: {
+  title: string;
+  description: string;
+  actionLabel: string;
+  onAction: () => void;
+}) {
+  return (
+    <div className="mb-[18px] flex items-start justify-between gap-[18px] border-b border-border-primary pb-4">
+      <div className="min-w-0">
+        <h2 className="ui-text-title-strong ui-color-primary text-balance">
+          {title}
+        </h2>
+        <p className="mt-1 ui-text-body-sm ui-color-muted text-pretty">
+          {description}
+        </p>
+      </div>
+      <button
+        className="h-9 shrink-0 rounded-[11px] bg-[var(--color-accent)] px-4 ui-text-button font-semibold text-white transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent-30)]"
+        onClick={onAction}
+        type="button"
+      >
+        {actionLabel}
+      </button>
+    </div>
+  );
+}
 
 export default VoiceView;

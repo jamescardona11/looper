@@ -6,6 +6,7 @@ import {
   type MeetingAwarenessState,
 } from "../../data/meeting/meeting-awareness";
 import MeetingAwarenessOverlay from "../../features/library/meeting/MeetingAwarenessOverlay";
+import { meetingCaptureIsVisible } from "../../features/library/meeting/meeting-capture-visibility";
 import { useMeetingCapture } from "../../features/library/queries";
 import PillOverlay from "../../features/pill/PillOverlay";
 import { useOverlayPosition } from "../../features/pill/useOverlayPosition";
@@ -17,8 +18,7 @@ const centeredWindowClass =
 export function MainOverlayWindow() {
   const meeting = useMeetingCapture().data;
   const meetingActive =
-    meeting != null &&
-    (meeting.phase === "recording" || meeting.phase === "finalizing");
+    meeting != null && meetingCaptureIsVisible(meeting.phase);
   useOverlayPosition(true);
 
   return (

@@ -70,6 +70,9 @@ function desktopTokens(mode) {
   const n = Object.fromEntries(
     Object.entries(p.neutrals).map(([k, v]) => [k, hex(v)]),
   );
+  const pillNeutrals = Object.fromEntries(
+    Object.entries(PALETTE.dark.neutrals).map(([k, v]) => [k, hex(v)]),
+  );
   const accent = hex(p.accent.base);
   const accentLight = hex(p.accent.light);
   const accentDark = hex(p.accent.dark);
@@ -178,10 +181,10 @@ function desktopTokens(mode) {
       `rgba(${inkOnLight}, ${isDark ? 0.12 : 0.13})`,
     ],
 
-    /* El pill es un overlay nativo: se mantiene oscuro en los dos modos,
-       porque flota sobre el escritorio del usuario y no sobre la app. */
-    ["--ui-pill-shell-bg", oklchToHex(PALETTE.dark.neutrals.bgPrimary)],
-    ["--ui-pill-shell-border", oklchToHex(PALETTE.dark.neutrals.borderPrimary)],
+    /* El pill es un overlay nativo oscuro en ambos modos: se lee sobre el
+       escritorio y conserva contraste con una capa de controles clara. */
+    ["--ui-pill-shell-bg", pillNeutrals.bgPrimary],
+    ["--ui-pill-shell-border", pillNeutrals.borderPrimary],
     ["--ui-fn-ring-track", "rgba(255, 255, 255, 0.14)"],
     ["--color-pill-preview-text", "rgba(255, 255, 255, 0.85)"],
     ["--color-pill-control-text", "rgba(255, 255, 255, 0.55)"],
@@ -202,10 +205,10 @@ function desktopTokens(mode) {
     /* El halo hereda del propio verde de captura. Antes estaba fijado al verde
        del modo claro, así que en claro el punto y su halo eran el mismo color
        y el halo desaparecía. */
-    ["--ui-capture-fg-strong", n.textPrimary],
-    ["--ui-capture-fg", n.textSecondary],
-    ["--ui-capture-muted", n.textMuted],
-    ["--ui-capture-key-bg", n.bgTertiary],
+    ["--ui-capture-fg-strong", pillNeutrals.textPrimary],
+    ["--ui-capture-fg", pillNeutrals.textSecondary],
+    ["--ui-capture-muted", pillNeutrals.textMuted],
+    ["--ui-capture-key-bg", pillNeutrals.bgTertiary],
     [
       "--ui-capture-dot-halo",
       "color-mix(in srgb, var(--color-success) 25%, transparent)",

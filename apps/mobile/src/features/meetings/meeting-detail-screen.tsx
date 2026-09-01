@@ -11,8 +11,8 @@ import { SectionLabel } from "@/shared/components/section-label";
 import { colors } from "@/shared/theme/colors";
 import { hitTarget, radius, relief, space } from "@/shared/theme/layout";
 import { typography } from "@/shared/theme/typography";
-import { formatMeetingDuration } from "./meeting-capture-logic";
 import { localMeetingAudioUri } from "./meeting-audio-store";
+import { formatMeetingDuration } from "./meeting-capture-logic";
 
 /** Título de la nota donde la captura guarda los momentos marcados. */
 const MOMENTS_NOTE = "Momentos marcados";
@@ -195,12 +195,19 @@ function MeetingAudioPlayer({
         onPress={togglePlayback}
         style={[styles.playerPlay, !audioUri && styles.playerPlayDisabled]}
       >
-        <Icon color={colors.onAccent} name={status.playing ? "pause" : "play"} size={14} strokeWidth={2.4} />
+        <Icon
+          color={colors.onAccent}
+          name={status.playing ? "pause" : "play"}
+          size={14}
+          strokeWidth={2.4}
+        />
       </Pressable>
       <View style={styles.playerCopy}>
         <Text numberOfLines={1} style={styles.playerTitle}>{`${title} · grabación local`}</Text>
         <Text style={styles.playerDuration}>
-          {audioUri ? `${formatMeetingDuration(position)} / ${formatMeetingDuration(recordedDuration)}` : "Audio local no disponible"}
+          {audioUri
+            ? `${formatMeetingDuration(position)} / ${formatMeetingDuration(recordedDuration)}`
+            : "Audio local no disponible"}
         </Text>
         <View style={styles.playerTrack}>
           <View style={[styles.playerProgress, { width: `${progress * 100}%` }]} />
@@ -365,7 +372,12 @@ function MomentsSection({
           ]}
         >
           <View style={styles.momentAtGroup}>
-            <Icon color={onPlayMoment ? colors.accent : colors.muted} name="play" size={13} strokeWidth={2.2} />
+            <Icon
+              color={onPlayMoment ? colors.accent : colors.muted}
+              name="play"
+              size={13}
+              strokeWidth={2.2}
+            />
             <Text style={styles.momentAt}>{formatMeetingDuration(timestamp)}</Text>
           </View>
           <Text style={styles.momentText}>

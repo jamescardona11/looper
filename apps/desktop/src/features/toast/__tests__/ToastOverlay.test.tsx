@@ -71,19 +71,28 @@ describe("ToastOverlay", () => {
     vi.useRealTimers();
   });
 
-  test("keeps only the three newest notifications", async () => {
+  test("replaces the current notification instead of stacking", async () => {
     await renderOverlay();
-    for (const message of ["One", "Two", "Three", "Four"]) {
-      showToast({ type: "update", message });
-    }
+    showToast({ type: "info", message: "Recovering your last recording..." });
+    showToast({
+      type: "warning",
+      message: "No words detected. Recording deleted.",
+    });
 
-    expect(screen.getByText("One").closest("section")?.className).toContain(
-      "animate-toast-out",
-    );
+    expect(
+      screen.getByText("Recovering your last recording...").closest("section")
+        ?.className,
+    ).toContain("animate-toast-out");
+    expect(
+      screen.queryByText("No words detected. Recording deleted."),
+    ).toBeNull();
+
     act(() => vi.advanceTimersByTime(120));
-    expect(screen.queryByText("One")).toBeNull();
-    expect(screen.getAllByRole("status")).toHaveLength(3);
-    expect(screen.getByText("Four").isConnected).toBe(true);
+    expect(screen.queryByText("Recovering your last recording...")).toBeNull();
+    expect(
+      screen.getByText("No words detected. Recording deleted.").isConnected,
+    ).toBe(true);
+    expect(screen.getAllByRole("status")).toHaveLength(1);
   });
 
   test("uses alert only for errors and status for other notifications", async () => {
@@ -94,7 +103,20 @@ describe("ToastOverlay", () => {
     expect(screen.getByRole("alert").textContent).toContain(
       "Microphone unavailable",
     );
+    act(() => vi.advanceTimersByTime(120));
     expect(screen.getByRole("status").textContent).toContain("Saved");
+  });
+
+  test("uses readable overlay text and omits an empty action row", async () => {
+    await renderOverlay();
+    showToast({ type: "info", message: "Processing" });
+
+    const message = screen.getByText("Processing");
+    expect(message.className).toContain("text-[var(--ui-capture-fg-strong)]");
+    expect(message.parentElement?.children).toHaveLength(1);
+
+    const close = screen.getByRole("button", { name: "Close notification" });
+    expect(close.className).toContain("text-[var(--ui-capture-muted)]");
   });
 
   test("pauses auto-dismiss on hover and restarts at 2.5 seconds", async () => {

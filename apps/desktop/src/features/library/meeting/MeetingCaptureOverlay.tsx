@@ -5,9 +5,7 @@ import {
   Key,
   Sparkle,
   Stop,
-  TextAlignLeft,
 } from "@phosphor-icons/react";
-import { getCurrentWindow } from "@tauri-apps/api/window";
 import {
   type PointerEvent as ReactPointerEvent,
   useEffect,
@@ -15,6 +13,7 @@ import {
   useState,
 } from "react";
 import type { MeetingCaptureState } from "../../../contracts";
+import { beginOverlayDrag } from "../../../data/capture/dictation";
 import { useMountEffect } from "../../../shared/hooks/useMountEffect";
 import { SignalRail } from "../../pill/SignalRail";
 import { useMeetingDetails, useStopMeetingCapture } from "../queries";
@@ -33,7 +32,20 @@ import { selectedDurationMs } from "./meeting-note-duration";
 import { MeetingTranscriptPanel } from "./MeetingTranscriptPanel";
 
 const NOTE_SAVED_VISIBLE_MS = 2_400;
-const PERMISSION_NOTICE_VISIBLE_MS = 6_000;
+const TRANSCRIPT_PANEL_ID = "meeting-live-transcript";
+
+const beginMeetingDrag = (event: ReactPointerEvent<HTMLDivElement>) => {
+  const target = event.target;
+  if (
+    event.button !== 0 ||
+    (target instanceof Element && target.closest("button"))
+  ) {
+    return;
+  }
+  void beginOverlayDrag().catch((error) =>
+    console.error("Failed to drag meeting pill:", error),
+  );
+};
 
 const RecordingSignal = () => (
   <span
@@ -64,10 +76,7 @@ const MeetingCaptureOverlay = ({ state }: { state: MeetingCaptureState }) => {
   const [visibleMarkerId, setVisibleMarkerId] = useState<string | null>(
     markerId,
   );
-  const [compact, setCompact] = useState(false);
-  const [transcriptHovered, setTranscriptHovered] = useState(false);
-  const [transcriptPinned, setTranscriptPinned] = useState(false);
-  const [suppressHoverUntilLeave, setSuppressHoverUntilLeave] = useState(false);
+  const [compact, setCompact] = useState(true);
   const [placement, setPlacement] =
     useState<MeetingTranscriptPlacement>("above");
   const [sideAlignment, setSideAlignment] =
@@ -75,38 +84,12 @@ const MeetingCaptureOverlay = ({ state }: { state: MeetingCaptureState }) => {
   const [shortcutPermission, setShortcutPermission] = useState<boolean | null>(
     null,
   );
-  const [permissionNoticeVisible, setPermissionNoticeVisible] = useState(false);
-  const compactPointer = useRef<{
-    x: number;
-    y: number;
-    dragged: boolean;
-  } | null>(null);
-  const suppressCompactClick = useRef(false);
-  const permissionNoticeTimer = useRef<number | null>(null);
-
-  const hidePermissionNotice = () => {
-    if (permissionNoticeTimer.current != null) {
-      window.clearTimeout(permissionNoticeTimer.current);
-      permissionNoticeTimer.current = null;
-    }
-    setPermissionNoticeVisible(false);
-  };
-
-  const showPermissionNotice = () => {
-    if (permissionNoticeTimer.current != null) {
-      window.clearTimeout(permissionNoticeTimer.current);
-    }
-    setPermissionNoticeVisible(true);
-    permissionNoticeTimer.current = window.setTimeout(() => {
-      permissionNoticeTimer.current = null;
-      setPermissionNoticeVisible(false);
-    }, PERMISSION_NOTICE_VISIBLE_MS);
-  };
+  const presentationRequestInFlight = useRef(false);
+  const signalButtonRef = useRef<HTMLButtonElement>(null);
 
   useMountEffect(() => {
     let cancelled = false;
     let shortcutWasReady = false;
-    let reportedMissingPermission = false;
     let pollTimer: number | null = null;
 
     const refreshShortcutPermission = async () => {
@@ -124,19 +107,11 @@ const MeetingCaptureOverlay = ({ state }: { state: MeetingCaptureState }) => {
             window.clearInterval(pollTimer);
             pollTimer = null;
           }
-          hidePermissionNotice();
-        } else if (!reportedMissingPermission) {
-          reportedMissingPermission = true;
-          showPermissionNotice();
         }
       } catch (error) {
         if (!cancelled) {
           shortcutWasReady = false;
           setShortcutPermission(false);
-          if (!reportedMissingPermission) {
-            reportedMissingPermission = true;
-            showPermissionNotice();
-          }
           console.error("Failed to verify meeting shortcut:", error);
         }
       }
@@ -147,16 +122,10 @@ const MeetingCaptureOverlay = ({ state }: { state: MeetingCaptureState }) => {
     return () => {
       cancelled = true;
       if (pollTimer != null) window.clearInterval(pollTimer);
-      if (permissionNoticeTimer.current != null) {
-        window.clearTimeout(permissionNoticeTimer.current);
-        permissionNoticeTimer.current = null;
-      }
     };
   });
 
-  const transcriptVisible =
-    !compact &&
-    (transcriptPinned || (transcriptHovered && !suppressHoverUntilLeave));
+  const transcriptVisible = !compact;
 
   const applyOverlayPresentation = (
     next: Parameters<typeof setMeetingOverlayPresentation>[0],
@@ -173,108 +142,31 @@ const MeetingCaptureOverlay = ({ state }: { state: MeetingCaptureState }) => {
       });
   };
 
-  const showTranscriptPreview = () => {
-    if (compact || suppressHoverUntilLeave) return;
-    setTranscriptHovered(true);
-    void applyOverlayPresentation({
-      compact: false,
-      transcriptVisible: true,
-      transcriptPinned,
-    });
-  };
+  const toggleCompact = async () => {
+    if (presentationRequestInFlight.current) return;
+    presentationRequestInFlight.current = true;
+    try {
+      if (compact) {
+        const applied = await applyOverlayPresentation({
+          compact: false,
+          transcriptVisible: true,
+          transcriptPinned: true,
+        });
+        if (applied) setCompact(false);
+        return;
+      }
 
-  const hideTranscriptPreview = () => {
-    setSuppressHoverUntilLeave(false);
-    if (transcriptPinned) return;
-    void applyOverlayPresentation({
-      compact: false,
-      transcriptVisible: false,
-      transcriptPinned: false,
-    }).then(() => setTranscriptHovered(false));
-  };
-
-  const togglePinnedTranscript = () => {
-    if (transcriptPinned) {
-      setSuppressHoverUntilLeave(true);
-      void applyOverlayPresentation({
-        compact: false,
+      setCompact(true);
+      const applied = await applyOverlayPresentation({
+        compact: true,
         transcriptVisible: false,
         transcriptPinned: false,
-      }).then(() => {
-        setTranscriptPinned(false);
-        setTranscriptHovered(false);
-        setSuppressHoverUntilLeave(false);
       });
-      return;
+      if (!applied) setCompact(false);
+      else requestAnimationFrame(() => signalButtonRef.current?.focus());
+    } finally {
+      presentationRequestInFlight.current = false;
     }
-
-    setTranscriptPinned(true);
-    setSuppressHoverUntilLeave(false);
-    void applyOverlayPresentation({
-      compact: false,
-      transcriptVisible: true,
-      transcriptPinned: true,
-    });
-  };
-
-  const toggleCompact = () => {
-    const nextCompact = !compact;
-    hidePermissionNotice();
-    setCompact(nextCompact);
-    setTranscriptHovered(false);
-    setTranscriptPinned(false);
-    setSuppressHoverUntilLeave(false);
-    void applyOverlayPresentation({
-      compact: nextCompact,
-      transcriptVisible: false,
-      transcriptPinned: false,
-    });
-  };
-
-  const beginCompactPointerGesture = (
-    event: ReactPointerEvent<HTMLButtonElement>,
-  ) => {
-    if (!compact || event.button !== 0) return;
-    compactPointer.current = {
-      x: event.clientX,
-      y: event.clientY,
-      dragged: false,
-    };
-    suppressCompactClick.current = false;
-    event.currentTarget.setPointerCapture?.(event.pointerId);
-  };
-
-  const continueCompactPointerGesture = (
-    event: ReactPointerEvent<HTMLButtonElement>,
-  ) => {
-    const pointer = compactPointer.current;
-    if (!compact || !pointer || pointer.dragged) return;
-    if (Math.hypot(event.clientX - pointer.x, event.clientY - pointer.y) < 4) {
-      return;
-    }
-
-    pointer.dragged = true;
-    suppressCompactClick.current = true;
-    void getCurrentWindow()
-      .startDragging()
-      .catch((error) => console.error("Failed to drag meeting pill:", error));
-  };
-
-  const endCompactPointerGesture = (
-    event: ReactPointerEvent<HTMLButtonElement>,
-  ) => {
-    if (event.currentTarget.hasPointerCapture?.(event.pointerId)) {
-      event.currentTarget.releasePointerCapture(event.pointerId);
-    }
-    compactPointer.current = null;
-  };
-
-  const activateSignal = () => {
-    if (compact && suppressCompactClick.current) {
-      suppressCompactClick.current = false;
-      return;
-    }
-    toggleCompact();
   };
 
   useEffect(() => {
@@ -298,25 +190,23 @@ const MeetingCaptureOverlay = ({ state }: { state: MeetingCaptureState }) => {
   const noteSaved = visibleMarkerId != null && !selection && !importantMoment;
   const importantMomentSaved =
     noteSaved && state.last_note_marker?.kind === "important_moment";
+  const visuallyCompact = compact;
   const shortcutBlocked =
     shortcutPermission === false &&
-    permissionNoticeVisible &&
     state.phase === "recording" &&
     !selection &&
     !importantMoment &&
     !noteSaved;
-  const forceExpanded =
-    shortcutBlocked || Boolean(selection || importantMoment || noteSaved);
-  const visuallyCompact = compact && !forceExpanded;
+  const shortcutWarningVisible = shortcutBlocked && !visuallyCompact;
   const progress = selection
     ? Math.min(100, (selectedMs / selection.max_duration_ms) * 100)
     : 0;
   const title = processing
     ? t({ id: "meeting.capture.summarizing", message: "Summarizing…" })
-    : shortcutBlocked
+    : shortcutWarningVisible
       ? t({
           id: "meeting.capture.shortcut_unavailable",
-          message: "macOS is blocking Fn",
+          message: "Fn blocked",
         })
       : importantMoment
         ? t({
@@ -343,7 +233,7 @@ const MeetingCaptureOverlay = ({ state }: { state: MeetingCaptureState }) => {
     : t({ id: "meeting.capture.active", message: "Meeting recording" });
   const recordingSignal = processing ? (
     <Sparkle size={16} weight="fill" className="animate-pulse text-white/70" />
-  ) : shortcutBlocked ? (
+  ) : shortcutWarningVisible ? (
     <Key size={16} weight="bold" className="text-amber-300" />
   ) : importantMoment ? (
     <BookmarkSimple size={16} weight="fill" className="text-red-400" />
@@ -377,8 +267,11 @@ const MeetingCaptureOverlay = ({ state }: { state: MeetingCaptureState }) => {
 
   const signal = (
     <button
+      ref={signalButtonRef}
       type="button"
       data-overlay-drag-handle
+      aria-controls={TRANSCRIPT_PANEL_ID}
+      aria-expanded={!visuallyCompact}
       aria-label={
         visuallyCompact
           ? t({
@@ -390,15 +283,9 @@ const MeetingCaptureOverlay = ({ state }: { state: MeetingCaptureState }) => {
               message: "Collapse recording pill",
             })
       }
-      onClick={activateSignal}
-      onPointerDown={beginCompactPointerGesture}
-      onPointerMove={continueCompactPointerGesture}
-      onPointerUp={endCompactPointerGesture}
-      onPointerCancel={endCompactPointerGesture}
+      onClick={toggleCompact}
       className={`grid place-items-center rounded-full transition-colors hover:bg-white/10 ${
-        visuallyCompact
-          ? "h-10 w-10 cursor-grab active:cursor-grabbing"
-          : "h-7 w-7"
+        visuallyCompact ? "h-9 w-10" : "h-7 w-7"
       }`}
     >
       {recordingSignal}
@@ -422,55 +309,53 @@ const MeetingCaptureOverlay = ({ state }: { state: MeetingCaptureState }) => {
       : [previewSegment];
   const transcriptPanel = transcriptVisible ? (
     <MeetingTranscriptPanel
+      id={TRANSCRIPT_PANEL_ID}
       meetingId={meetingId}
       segments={transcriptSegments}
-      pinned={transcriptPinned}
-      onMinimize={transcriptPinned ? togglePinnedTranscript : undefined}
+      pinned
+      onMinimize={toggleCompact}
     />
   ) : null;
 
-  if (visuallyCompact) {
-    return (
-      <div className="relative flex h-full w-full select-none items-center justify-center">
-        <section
-          aria-label={captureAriaLabel}
-          className="ui-pill-shell grid h-[42px] w-[42px] place-items-center rounded-full border border-[var(--ui-pill-shell-border)] text-white"
-        >
-          {signal}
-        </section>
-      </div>
-    );
-  }
-
   const meetingInfoVisible = Boolean(
-    selection || importantMoment || noteSaved || shortcutBlocked,
+    selection || importantMoment || noteSaved || shortcutWarningVisible,
   );
+  const compactCopy =
+    meetingInfoVisible || processing
+      ? title
+      : formatDuration(state.elapsed_seconds);
 
   const pill = (
-    <div className="flex w-[260px] justify-center">
+    <div
+      onPointerDown={beginMeetingDrag}
+      className={`relative z-10 flex justify-center ${visuallyCompact ? "w-[128px]" : "w-[260px]"}`}
+    >
       <SignalRail
         dragTitle={t({ id: "meeting.capture.drag", message: "Drag to move" })}
         ariaLabel={captureAriaLabel}
         signal={signal}
-        title={title}
+        title={visuallyCompact ? null : title}
         progress={undefined}
         // Una captura dura minutos u horas: el cronómetro solo no dice qué se
         // está grabando, así que aquí el título se queda fijo en vez de esperar
         // al hover como en Dictation.
         meta={
-          meetingInfoVisible || processing
+          visuallyCompact || meetingInfoVisible || processing
             ? undefined
             : formatDuration(state.elapsed_seconds)
         }
-        infoVisible={meetingInfoVisible}
-        actionsVisible={shortcutBlocked}
+        compactExtra={visuallyCompact ? compactCopy : undefined}
+        infoVisible={!visuallyCompact}
+        revealOnGroupInteraction={false}
+        nativeDragRegions={false}
+        actionsVisible={!visuallyCompact}
         className={
-          meetingInfoVisible
-            ? "!w-[260px]"
-            : "!w-[150px] hover:!w-[260px] focus-within:!w-[260px]"
+          visuallyCompact
+            ? "!h-[36px] !w-[128px] !transition-colors hover:!w-[128px] focus-within:!w-[128px]"
+            : "!w-[260px] !transition-colors hover:!w-[260px] focus-within:!w-[260px]"
         }
         actions={
-          processing ? null : shortcutBlocked ? (
+          processing ? null : shortcutWarningVisible ? (
             <>
               <button
                 type="button"
@@ -501,38 +386,17 @@ const MeetingCaptureOverlay = ({ state }: { state: MeetingCaptureState }) => {
               </button>
             </>
           ) : (
-            <>
-              <button
-                type="button"
-                title={t({
-                  id: "meeting.capture.transcript.toggle",
-                  message: "Show or hide transcript",
-                })}
-                aria-label={t({
-                  id: "meeting.capture.transcript.toggle",
-                  message: "Show or hide transcript",
-                })}
-                aria-pressed={transcriptPinned}
-                onMouseEnter={showTranscriptPreview}
-                onMouseLeave={() => setSuppressHoverUntilLeave(false)}
-                onClick={togglePinnedTranscript}
-                className="inline-flex h-7 w-7 items-center justify-center rounded-[9px] border border-white/10 bg-white/5 text-white/65 transition-colors duration-150 hover:bg-white/10 hover:text-white"
-              >
-                <TextAlignLeft size={14} weight="bold" />
-              </button>
-
-              <button
-                type="button"
-                onClick={() => stop.mutate()}
-                disabled={stop.isPending || state.phase === "finalizing"}
-                className="inline-flex h-7 shrink-0 items-center gap-1 rounded-[9px] border border-white/10 bg-white/5 px-2 text-[10px] font-semibold text-white/75 transition-colors duration-150 hover:border-red-400/30 hover:bg-red-500 hover:text-white disabled:opacity-50"
-              >
-                <Stop size={10} weight="fill" />
-                {state.phase === "finalizing"
-                  ? t({ id: "meeting.capture.saving", message: "Saving..." })
-                  : t({ id: "meeting.capture.stop", message: "Stop" })}
-              </button>
-            </>
+            <button
+              type="button"
+              onClick={() => stop.mutate()}
+              disabled={stop.isPending || state.phase === "finalizing"}
+              className="inline-flex h-7 shrink-0 items-center gap-1 rounded-[9px] border border-white/10 bg-white/5 px-2 text-[10px] font-semibold text-white/75 transition-colors duration-150 hover:border-red-400/30 hover:bg-red-500 hover:text-white disabled:opacity-50"
+            >
+              <Stop size={10} weight="fill" />
+              {state.phase === "finalizing"
+                ? t({ id: "meeting.capture.saving", message: "Saving..." })
+                : t({ id: "meeting.capture.stop", message: "Stop" })}
+            </button>
           )
         }
       />
@@ -541,13 +405,22 @@ const MeetingCaptureOverlay = ({ state }: { state: MeetingCaptureState }) => {
 
   return (
     <div
-      onMouseLeave={hideTranscriptPreview}
       className={`relative flex h-full w-full select-none justify-end gap-1 p-1 ${
         placement === "above"
           ? "flex-col items-center"
           : `flex-row ${sideAlignment === "top" ? "items-start" : "items-end"}`
       }`}
     >
+      {visuallyCompact ? (
+        <button
+          type="button"
+          tabIndex={-1}
+          aria-hidden="true"
+          data-testid="meeting-compact-hit-slop"
+          onClick={toggleCompact}
+          className="absolute inset-0 rounded-[22px]"
+        />
+      ) : null}
       {placement === "above" ? (
         <>
           {transcriptPanel}

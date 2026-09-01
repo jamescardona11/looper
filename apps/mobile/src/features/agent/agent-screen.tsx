@@ -1,4 +1,10 @@
-import { type ChatMessage, type MeetingSession, type Note, useMeetingSessions, useNotes } from "@looper/data";
+import {
+  type ChatMessage,
+  type MeetingSession,
+  type Note,
+  useMeetingSessions,
+  useNotes,
+} from "@looper/data";
 import { type Href, useRouter } from "expo-router";
 import { useRef, useState } from "react";
 import {
@@ -14,11 +20,10 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Icon, type IconName } from "@/shared/components/icon";
 import { ErrorState } from "@/shared/components/screen-states";
-import { SectionLabel } from "@/shared/components/section-label";
 import { colors } from "@/shared/theme/colors";
 import { hitTarget, radius, relief, space } from "@/shared/theme/layout";
 import { typography } from "@/shared/theme/typography";
-import { answerParts, type AgentCitation } from "./agent-logic";
+import { type AgentCitation, answerParts } from "./agent-logic";
 import { useMobileAgent } from "./use-mobile-agent";
 
 const SUGGESTIONS = [
@@ -141,9 +146,7 @@ export function AgentScreen({ meetingId }: { meetingId?: string }) {
               multiline
               onChangeText={setDraft}
               onSubmitEditing={() => void submit()}
-              placeholder={
-                messages.length === 0 ? "Pregunta otra cosa…" : "Sigue preguntando…"
-              }
+              placeholder={messages.length === 0 ? "Pregunta otra cosa…" : "Sigue preguntando…"}
               placeholderTextColor={colors.muted}
               style={styles.input}
               value={draft}
@@ -309,14 +312,18 @@ function AnswerBody({
   return (
     <View style={styles.answerBubble}>
       <View style={styles.answerParts}>
-        {answerParts(answer).map((part, index) =>
+        {answerParts(answer).map((part) =>
           part.kind === "text" ? (
-            <Text key={`${index}:${part.value}`} style={styles.answerText}>{part.value}</Text>
+            <Text key={`text:${part.start}`} style={styles.answerText}>
+              {part.value}
+            </Text>
           ) : (
             <CitationChip
               citation={part.citation}
-              key={`${index}:${part.citation.kind}:${part.citation.title}`}
-              onPress={resolveCitation(part.citation) ? () => onOpenCitation(part.citation) : undefined}
+              key={`citation:${part.start}`}
+              onPress={
+                resolveCitation(part.citation) ? () => onOpenCitation(part.citation) : undefined
+              }
             />
           ),
         )}
@@ -338,13 +345,7 @@ function SearchingBubble({ count }: { count: number }) {
   );
 }
 
-function CitationChip({
-  citation,
-  onPress,
-}: {
-  citation: AgentCitation;
-  onPress?: () => void;
-}) {
+function CitationChip({ citation, onPress }: { citation: AgentCitation; onPress?: () => void }) {
   const [title, at] = splitTimestamp(citation.title);
   const contents = (
     <>
@@ -356,7 +357,11 @@ function CitationChip({
     </>
   );
   if (!onPress) {
-    return <View accessibilityLabel={`Fuente: ${title}`} style={styles.citationChip}>{contents}</View>;
+    return (
+      <View accessibilityLabel={`Fuente: ${title}`} style={styles.citationChip}>
+        {contents}
+      </View>
+    );
   }
   return (
     <Pressable
@@ -382,8 +387,7 @@ function citationTarget(
   }
   const note = notes.find(
     (candidate) =>
-      candidate.title === title &&
-      (citation.kind === "Note" || candidate.kind === "dictation"),
+      candidate.title === title && (citation.kind === "Note" || candidate.kind === "dictation"),
   );
   return note ? (`/notes?id=${encodeURIComponent(note.id)}` as Href) : null;
 }

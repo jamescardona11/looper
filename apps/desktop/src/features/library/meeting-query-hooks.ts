@@ -65,6 +65,12 @@ export function useStartMeetingCapture() {
   );
 }
 
+export function useStartVoiceNoteCapture() {
+  return useCaptureMutation<MeetingCaptureState, void>(() =>
+    libraryApi.startNoteFromDock(),
+  );
+}
+
 export function useResumeCapture() {
   return useCaptureMutation((id: string) => libraryApi.resumeCapture(id));
 }

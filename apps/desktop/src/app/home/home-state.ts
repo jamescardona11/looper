@@ -2,7 +2,15 @@ import type { MemorySearchResult } from "../../data/memory";
 import type { SignalStage } from "../../features/transcriptions/components/CaptureStatusCard";
 
 export type HomeView =
-  "home" | "voice" | "library" | "memory" | "feature-lab" | "settings";
+  | "home"
+  | "history"
+  | "import"
+  | "voice"
+  | "library"
+  | "memory"
+  | "insights"
+  | "feature-lab"
+  | "settings";
 
 export type HomeSettingsTab =
   "general" | "account" | "models" | "providers" | "about" | "app";
@@ -18,6 +26,7 @@ export type HomeState = {
   libraryFocus: LibraryFocus | null;
   memoryPrefill: string | null;
   pendingImportPaths: string[] | null;
+  scratchpadOpen: boolean;
   settingsTab: HomeSettingsTab;
   signalStage: SignalStage;
   supportMenuOpen: boolean;
@@ -32,6 +41,7 @@ export type HomeAction =
   | { type: "license-changed"; licensed: boolean }
   | { type: "open-faq" }
   | { type: "open-import"; paths: string[] }
+  | { type: "set-scratchpad-open"; open: boolean }
   | { type: "open-memory-result"; result: MemorySearchResult }
   | { type: "open-memory-shortcut" }
   | { type: "open-meeting"; item: LibraryFocus }
@@ -53,13 +63,12 @@ export function createHomeState(licensed: boolean): HomeState {
     libraryFocus: null,
     memoryPrefill: null,
     pendingImportPaths: null,
+    scratchpadOpen: false,
     settingsTab: "general",
     signalStage: "ready",
     supportMenuOpen: false,
   };
 }
-
-const protectedViews = new Set<HomeView>(["voice", "library", "memory"]);
 
 function leaveTransientRouteState(state: HomeState): HomeState {
   return {
@@ -76,13 +85,11 @@ export function reduceHomeState(
 ): HomeState {
   switch (action.type) {
     case "activate-view":
-      return protectedViews.has(action.view) && !state.licensed
-        ? state
-        : { ...state, activeView: action.view };
+      return { ...state, activeView: action.view };
     case "ask-memory":
       return {
         ...state,
-        activeView: state.licensed ? "memory" : "home",
+        activeView: "memory",
         memoryPrefill: action.query,
       };
     case "clear-memory-prefill":
@@ -93,49 +100,39 @@ export function reduceHomeState(
       return { ...state, dragActive: false };
     case "license-changed": {
       if (action.licensed === state.licensed) return state;
-      const licensedState = { ...state, licensed: action.licensed };
-      if (action.licensed || !protectedViews.has(state.activeView)) {
-        return licensedState;
-      }
-      return {
-        ...licensedState,
-        activeView: "home",
-        dragActive: false,
-        pendingImportPaths: null,
-      };
+      return { ...state, licensed: action.licensed };
     }
     case "open-faq":
       return { ...state, faqOpen: true, supportMenuOpen: false };
     case "open-import":
-      if (!state.licensed) return state;
       return {
         ...state,
-        activeView: "library",
+        activeView: "import",
         pendingImportPaths: [...new Set(action.paths)],
       };
+    case "set-scratchpad-open":
+      return { ...state, scratchpadOpen: action.open };
     case "open-memory-result":
       return action.result.open_target === "history"
         ? {
             ...state,
-            activeView: "home",
+            activeView: "history",
             historyFocusId: action.result.id,
           }
         : {
             ...state,
-            activeView: state.licensed ? "library" : "home",
+            activeView: "library",
             libraryFocus: {
               id: action.result.id,
               query: action.result.title,
             },
           };
     case "open-memory-shortcut":
-      return state.licensed
-        ? { ...state, activeView: "memory", memoryPrefill: null }
-        : state;
+      return { ...state, activeView: "memory", memoryPrefill: null };
     case "open-meeting":
       return {
         ...state,
-        activeView: state.licensed ? "library" : "home",
+        activeView: "library",
         libraryFocus: action.item,
       };
     case "open-settings":
@@ -154,9 +151,7 @@ export function reduceHomeState(
         pendingImportPaths: null,
       };
     case "set-drag-active":
-      return action.active && !state.licensed
-        ? state
-        : { ...state, dragActive: action.active };
+      return { ...state, dragActive: action.active };
     case "set-import-paths":
       return { ...state, pendingImportPaths: action.paths };
     case "set-signal-stage":

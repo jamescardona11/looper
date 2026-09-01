@@ -233,22 +233,32 @@ pub async fn resume_capture(
         .await
 }
 
-/// El aviso llega por dos caminos: un evento del calendario o un micrófono que
-/// abrió otra aplicación. Exigir evento aquí rompía el segundo, que es
-/// precisamente el que no tiene ninguno: el botón fallaba con "The calendar
-/// meeting is no longer available" sobre una llamada que sí se podía grabar.
+#[tauri::command]
+pub async fn start_calendar_meeting_capture(
+    app: AppHandle<AppRuntime>,
+    state: tauri::State<'_, AppState>,
+    event_id: String,
+) -> Result<MeetingCaptureState, String> {
+    let meeting = state
+        .meeting_awareness()
+        .meeting_by_id(&event_id)
+        .ok_or_else(|| "The calendar meeting is no longer available.".to_string())?;
+    start_calendar_meeting(&app, &state, meeting).await
+}
+
+/// Este comando pertenece exclusivamente al aviso sin calendario que produce
+/// la detección del micrófono. Calendar envía su ID al comando dedicado para
+/// que un cambio de prompt no pueda sustituir silenciosamente la reunión.
 #[tauri::command]
 pub async fn start_prompted_meeting_capture(
     app: AppHandle<AppRuntime>,
     state: tauri::State<'_, AppState>,
 ) -> Result<MeetingCaptureState, String> {
     let awareness = state.meeting_awareness().state();
-    match awareness.meeting {
-        Some(meeting) => start_calendar_meeting(&app, &state, meeting).await,
-        None if awareness.phase == MeetingAwarenessPhase::Detected => {
-            start_unscheduled_meeting(&app, &state).await
-        }
-        None => Err("The meeting prompt is no longer available.".to_string()),
+    if awareness.phase == MeetingAwarenessPhase::Detected && awareness.meeting.is_none() {
+        start_unscheduled_meeting(&app, &state).await
+    } else {
+        Err("The detected call prompt is no longer available.".to_string())
     }
 }
 

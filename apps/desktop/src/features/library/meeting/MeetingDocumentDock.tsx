@@ -1,18 +1,12 @@
 import { useLingui } from "@lingui/react/macro";
-import {
-  ArrowUp,
-  EnvelopeSimple,
-  Pause,
-  Play,
-  Sparkle,
-  TextAlignLeft,
-} from "@phosphor-icons/react";
+import { ArrowUp, Pause, Play, Sparkle } from "@phosphor-icons/react";
 import { useState } from "react";
+
 import { useMeetingAiStatus } from "../../settings/models/local-llm-queries";
 import { useAskMeeting } from "../queries";
 import { formatDuration } from "../shared/library-utils";
 
-type MeetingDocumentDockProps = {
+export type MeetingDocumentDockProps = {
   id: string;
   audioReady: boolean;
   audioError: string | null;
@@ -21,29 +15,143 @@ type MeetingDocumentDockProps = {
   audioCurrentTime: number;
   audioDuration: number;
   scrubberPercent: number;
-  transcriptOpen: boolean;
-  onTranscriptToggle: () => void;
 };
 
-export function MeetingDocumentDock({
-  id,
+const WAVEFORM_HEIGHTS = [
+  12, 18, 27, 34, 24, 38, 29, 42, 31, 22, 36, 26, 40, 28, 34, 20, 30, 16,
+];
+
+type MeetingAudioSourceState = "loading" | "retained" | "unavailable";
+
+function getMeetingAudioSourceState({
+  audioReady,
+  audioError,
+  isPlaying,
+}: Pick<
+  MeetingDocumentDockProps,
+  "audioReady" | "audioError" | "isPlaying"
+>): MeetingAudioSourceState {
+  if (audioError) return "unavailable";
+  if (audioReady || isPlaying) return "retained";
+  return "loading";
+}
+
+export function MeetingAudioSource({
   audioReady,
   audioError,
   isPlaying,
   onTogglePlayback,
   audioCurrentTime,
   audioDuration,
-  scrubberPercent,
-  transcriptOpen,
-  onTranscriptToggle,
-}: MeetingDocumentDockProps) {
+}: Omit<MeetingDocumentDockProps, "id">) {
+  const { t } = useLingui();
+  const sourceState = getMeetingAudioSourceState({
+    audioReady,
+    audioError,
+    isPlaying,
+  });
+  const audioUnavailable = sourceState !== "retained";
+  const sourceStatus = {
+    loading: {
+      label: t({
+        id: "meeting.detail.source_loading",
+        message: "Loading source…",
+      }),
+      tone: "text-content-muted",
+      dot: "bg-content-disabled animate-pulse motion-reduce:animate-none",
+    },
+    retained: {
+      label: t({
+        id: "meeting.detail.source_retained",
+        message: "Source retained",
+      }),
+      tone: "text-[var(--color-toggle-on)]",
+      dot: "bg-[var(--color-toggle-on)]",
+    },
+    unavailable: {
+      label: t({
+        id: "meeting.detail.source_unavailable",
+        message: "Source unavailable",
+      }),
+      tone: "ui-color-error-soft",
+      dot: "bg-[var(--color-error)]",
+    },
+  }[sourceState];
+
+  return (
+    <section
+      data-ui-dock="meeting-source"
+      className="grid grid-cols-[44px_minmax(130px,1fr)_minmax(150px,260px)_auto] items-center gap-x-4 gap-y-2 rounded-[18px] bg-[color-mix(in_srgb,var(--color-toggle-on)_24%,var(--color-bg-secondary))] px-4 py-3.5"
+      aria-label="Original audio"
+    >
+      <button
+        type="button"
+        onClick={onTogglePlayback}
+        disabled={audioUnavailable}
+        className="grid h-11 w-11 shrink-0 place-items-center rounded-[14px] bg-content-primary text-surface-primary transition-[filter,transform] duration-150 hover:brightness-110 active:scale-[0.96] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-toggle-on)] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-40 motion-reduce:transition-none"
+        aria-label={
+          isPlaying
+            ? t({ id: "library.modal.pause_audio", message: "Pause audio" })
+            : t({ id: "library.modal.play_audio", message: "Play audio" })
+        }
+      >
+        {isPlaying ? (
+          <Pause size={15} weight="fill" />
+        ) : (
+          <Play size={15} weight="fill" className="translate-x-px" />
+        )}
+      </button>
+
+      <div className="min-w-0">
+        <p className="ui-text-body-sm-strong text-content-primary">
+          Original audio
+        </p>
+        <p className="mt-0.5 ui-text-micro tabular-nums text-content-secondary">
+          {formatDuration(audioDuration)} · recorded locally
+        </p>
+      </div>
+
+      <div
+        className="hidden min-w-0 items-center justify-end gap-1.5 md:flex"
+        aria-hidden="true"
+      >
+        {WAVEFORM_HEIGHTS.map((height, index) => (
+          <span
+            key={`${height}-${index}`}
+            className="w-1 shrink-0 rounded-full bg-[var(--color-toggle-on)]/70"
+            style={{ height }}
+          />
+        ))}
+      </div>
+
+      <div
+        role="status"
+        aria-live="polite"
+        data-state={sourceState}
+        className={`flex items-center gap-1.5 whitespace-nowrap ui-text-micro font-medium ${sourceStatus.tone}`}
+      >
+        <span
+          className={`h-1.5 w-1.5 rounded-full ${sourceStatus.dot}`}
+          aria-hidden="true"
+        />
+        {sourceStatus.label}
+      </div>
+      <span className="sr-only">
+        {formatDuration(audioCurrentTime)} elapsed
+      </span>
+    </section>
+  );
+}
+
+export function MeetingQuestionComposer({
+  id,
+}: Pick<MeetingDocumentDockProps, "id">) {
   const { t } = useLingui();
   const askMeeting = useAskMeeting();
   const { data: meetingAiStatus } = useMeetingAiStatus();
   const [question, setQuestion] = useState("");
   const [answer, setAnswer] = useState("");
   const meetingAiReady = meetingAiStatus?.state === "ready";
-  const audioUnavailable = !audioReady || Boolean(audioError);
 
   const submitQuestion = () => {
     const trimmed = question.trim();
@@ -60,17 +168,10 @@ export function MeetingDocumentDock({
   };
 
   return (
-    <footer
-      data-ui-dock="meeting-document"
-      className="pointer-events-none absolute inset-x-0 bottom-0 z-30 px-5 pb-3 pt-10"
-      style={{
-        background:
-          "linear-gradient(to top, var(--color-bg-tertiary) 34%, transparent)",
-      }}
-    >
+    <section className="max-w-3xl border-t border-border-primary pt-3">
       {answer || askMeeting.isPending ? (
         <div
-          className="meeting-answer-enter pointer-events-auto mx-auto mb-2 max-w-3xl rounded-xl border border-[color-mix(in_srgb,var(--color-toggle-on)_32%,transparent)] bg-surface-elevated px-4 py-3 shadow-xl"
+          className="mb-2 rounded-xl border border-[color-mix(in_srgb,var(--color-toggle-on)_32%,transparent)] bg-surface-elevated px-4 py-3"
           role="status"
         >
           <div className="flex items-center gap-2 ui-text-micro font-medium text-[var(--color-toggle-on)]">
@@ -96,38 +197,8 @@ export function MeetingDocumentDock({
         </div>
       ) : null}
 
-      <div className="pointer-events-auto mx-auto flex min-h-14 max-w-3xl items-center gap-2 rounded-2xl border border-border-hover bg-surface-overlay/95 p-2 shadow-2xl backdrop-blur-xl">
-        <button
-          type="button"
-          onClick={onTogglePlayback}
-          disabled={audioUnavailable}
-          className="grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-border-secondary bg-surface-elevated text-content-primary transition-[background-color,transform] duration-150 hover:bg-surface-surface active:scale-95 disabled:cursor-not-allowed disabled:opacity-40 motion-reduce:transition-none"
-          aria-label={
-            isPlaying
-              ? t({ id: "library.modal.pause_audio", message: "Pause audio" })
-              : t({ id: "library.modal.play_audio", message: "Play audio" })
-          }
-        >
-          {isPlaying ? (
-            <Pause size={15} weight="fill" />
-          ) : (
-            <Play size={15} weight="fill" />
-          )}
-        </button>
-
-        <div className="w-24 shrink-0 px-1">
-          <span className="ui-text-micro tabular-nums text-content-muted">
-            {formatDuration(audioCurrentTime)} / {formatDuration(audioDuration)}
-          </span>
-          <div className="mt-1.5 h-0.5 overflow-hidden rounded-full bg-border-secondary">
-            <div
-              className="h-full rounded-full bg-[var(--color-toggle-on)] transition-[width] duration-300 motion-reduce:transition-none"
-              style={{ width: `${scrubberPercent}%` }}
-            />
-          </div>
-        </div>
-
-        <label className="min-w-0 flex-1 px-1">
+      <div className="flex min-h-11 items-center gap-2 rounded-xl bg-surface-secondary px-3 focus-within:ring-2 focus-within:ring-[var(--color-toggle-on)]/35">
+        <label className="min-w-0 flex-1">
           <input
             value={question}
             onChange={(event) => setQuestion(event.target.value)}
@@ -142,67 +213,25 @@ export function MeetingDocumentDock({
               meetingAiReady
                 ? t({
                     id: "meeting.detail.ask_placeholder",
-                    message: "Ask this recording…",
+                    message: "Ask this note…",
                   })
-                : (meetingAiStatus?.actionableMessage ??
-                  t({
+                : t({
                     id: "meeting.detail.ai_unavailable",
                     message: "Meeting intelligence unavailable",
-                  }))
+                  })
             }
             className="w-full bg-transparent ui-text-body-sm text-content-primary outline-none placeholder:text-content-disabled disabled:cursor-not-allowed"
             aria-label={t({
               id: "meeting.detail.ask_placeholder",
-              message: "Ask this recording…",
+              message: "Ask this note…",
             })}
           />
-          <span className="mt-0.5 block ui-text-nano text-content-disabled">
-            {t({
-              id: "meeting.detail.ask_context",
-              message: "Using this recording · private by default",
-            })}
-          </span>
         </label>
-
-        <button
-          type="button"
-          onClick={() =>
-            setQuestion(
-              "Draft a concise follow-up with the decision and owners",
-            )
-          }
-          disabled={!meetingAiReady}
-          className="hidden h-9 shrink-0 items-center gap-1.5 rounded-lg border border-border-primary px-2.5 ui-text-micro text-content-secondary transition-colors hover:border-border-hover hover:bg-surface-elevated hover:text-content-primary disabled:opacity-40 xl:flex"
-        >
-          <EnvelopeSimple size={13} />
-          {t({
-            id: "meeting.detail.draft_follow_up",
-            message: "Draft follow-up",
-          })}
-        </button>
-
-        <button
-          type="button"
-          onClick={onTranscriptToggle}
-          className={`grid h-9 w-9 shrink-0 place-items-center rounded-lg border transition-colors ${
-            transcriptOpen
-              ? "border-[color-mix(in_srgb,var(--color-toggle-on)_36%,transparent)] bg-[color-mix(in_srgb,var(--color-toggle-on)_12%,transparent)] text-[var(--color-toggle-on)]"
-              : "border-border-primary text-content-muted hover:border-border-hover hover:bg-surface-elevated hover:text-content-primary"
-          }`}
-          aria-label={t({
-            id: "meeting.detail.transcript",
-            message: "Transcript",
-          })}
-          aria-pressed={transcriptOpen}
-        >
-          <TextAlignLeft size={15} />
-        </button>
-
         <button
           type="button"
           onClick={submitQuestion}
           disabled={!meetingAiReady || !question.trim() || askMeeting.isPending}
-          className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-[var(--color-toggle-on)] text-surface-primary transition-[filter,transform] hover:brightness-110 active:scale-95 disabled:cursor-not-allowed disabled:opacity-35 motion-reduce:transition-none"
+          className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-[var(--color-toggle-on)] text-surface-primary transition-[filter,transform] duration-150 hover:brightness-110 active:scale-[0.96] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-toggle-on)] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-35 motion-reduce:transition-none"
           aria-label={t({
             id: "meeting.detail.ask_submit",
             message: "Ask recording",
@@ -215,12 +244,31 @@ export function MeetingDocumentDock({
           )}
         </button>
       </div>
-
+      <p className="mt-1.5 pl-1 ui-text-nano text-content-disabled">
+        {t({
+          id: "meeting.detail.ask_scope",
+          message: "Answers are generated from this recording.",
+        })}
+      </p>
       {askMeeting.error ? (
-        <p className="pointer-events-auto mx-auto mt-1 max-w-3xl text-center ui-text-micro ui-color-error-tint">
+        <p className="mt-1 ui-text-micro ui-color-error-tint">
           {String(askMeeting.error)}
         </p>
       ) : null}
-    </footer>
+    </section>
+  );
+}
+
+/**
+ * Kept as a composed export for direct consumers and tests. The document
+ * workspace uses the source card and composer separately to place them beside
+ * the content they act on.
+ */
+export function MeetingDocumentDock(props: MeetingDocumentDockProps) {
+  return (
+    <div data-ui-dock="meeting-document">
+      <MeetingAudioSource {...props} />
+      <MeetingQuestionComposer id={props.id} />
+    </div>
   );
 }

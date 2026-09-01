@@ -30,7 +30,9 @@ pub fn emit_toast(app: &AppHandle<AppRuntime>, payload: Payload) {
     let _ = app.emit(EVENT_SHOW, payload);
 
     #[cfg(target_os = "macos")]
-    permission_watch.monitor(app.clone());
+    if let Some(permission_watch) = permission_watch {
+        permission_watch.monitor(app.clone());
+    }
 }
 
 pub fn show(app: &AppHandle<AppRuntime>, toast_type: &str, title: Option<&str>, message: &str) {
@@ -59,8 +61,7 @@ pub fn hide(app: &AppHandle<AppRuntime>) {
 pub(crate) fn hide_surface(app: &AppHandle<AppRuntime>) {
     MEETING_AWARENESS_MAY_PREEMPT.store(false, Ordering::SeqCst);
     #[cfg(target_os = "macos")]
-    permission_watch::invalidate();
-
+    permission_watch::mark_toast_hidden();
     let _ = app.emit(EVENT_HIDE, ());
     if let Some(window) = app.get_webview_window(WINDOW_LABEL) {
         crate::platform::toast::hide(app, &window);

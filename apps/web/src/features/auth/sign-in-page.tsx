@@ -194,7 +194,7 @@ function SocialButtons() {
                 toast.error(friendlyError(e, t("signIn.signInError")));
               });
             }}
-            className="flex w-full items-center justify-center gap-2.5 rounded-lg border border-border bg-background px-3 py-2.5 text-foreground text-sm transition-colors hover:bg-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-60"
+            className="flex h-11 w-full items-center justify-center gap-2.5 rounded-lg border border-border bg-background px-3 text-foreground text-sm transition-colors hover:bg-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-60 sm:h-10"
           >
             {isPending ? (
               <span className="size-4 rounded-full border-2 border-muted border-t-foreground motion-safe:animate-spin motion-reduce:animate-none" />

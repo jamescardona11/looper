@@ -29,7 +29,7 @@ describe("WorkspaceRoute", () => {
     );
 
     expect(screen.getByText("Visible content")).toBeTruthy();
-    expect(container.firstElementChild?.className).toContain("max-w-[820px]");
+    expect(container.firstElementChild?.className).toContain("max-w-[1040px]");
   });
 
   test("keeps an explicit full-width escape hatch for meeting detail", () => {

@@ -15,7 +15,9 @@ export function buildWidgetSummary(notes: Note[], meetings: MeetingSession[]): W
     .reduce((total, item) => total + wordCount(item.preview), 0);
   const latest = [...items].sort((left, right) => right.updatedAt - left.updatedAt)[0];
   return {
-    lastCaptureDetail: latest ? `Última captura · ${kindLabel(latest.kind)}` : "Aún no hay capturas",
+    lastCaptureDetail: latest
+      ? `Última captura · ${kindLabel(latest.kind)}`
+      : "Aún no hay capturas",
     lastCaptureTitle: latest?.title ?? null,
     weeklyWordCount,
   };

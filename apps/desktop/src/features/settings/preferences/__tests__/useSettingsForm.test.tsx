@@ -98,6 +98,7 @@ const settings: StoredSettings = {
   auto_launch_enabled: false,
   start_in_background: false,
   calendar_meeting_awareness_enabled: false,
+  microphone_meeting_awareness_enabled: true,
   auto_delete_target: "transcripts",
   auto_delete_duration: "never",
   audio_storage_budget_mb: 0,

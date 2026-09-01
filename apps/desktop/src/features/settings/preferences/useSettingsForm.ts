@@ -86,6 +86,7 @@ export function useSettingsForm({
     autoLaunchEnabled,
     startInBackground,
     calendarMeetingAwarenessEnabled,
+    microphoneMeetingAwarenessEnabled,
     autoDeleteTarget,
     autoDeleteDuration,
     audioStorageBudgetMb,
@@ -124,6 +125,7 @@ export function useSettingsForm({
     autoLaunchEnabled: setAutoLaunchEnabledState,
     startInBackground: setStartInBackground,
     calendarMeetingAwarenessEnabled: setCalendarMeetingAwarenessEnabled,
+    microphoneMeetingAwarenessEnabled: setMicrophoneMeetingAwarenessEnabled,
     autoDeleteTarget: setAutoDeleteTarget,
     autoDeleteDuration: setAutoDeleteDuration,
     audioStorageBudgetMb: setAudioStorageBudgetMb,
@@ -276,9 +278,10 @@ export function useSettingsForm({
   clearShortcutErrorRef.current = clearErrorIfValid;
 
   const hydrateFromSettings = useCallback(
-    (settings: StoredSettings) => {
-      hydrateSettingsDraft(settings);
-      hydrateShortcuts(settings);
+    (settings: StoredSettings, previous?: StoredSettings) => {
+      const draftChanged = hydrateSettingsDraft(settings, previous);
+      const shortcutsChanged = hydrateShortcuts(settings, previous);
+      return draftChanged || shortcutsChanged;
     },
     [hydrateSettingsDraft, hydrateShortcuts],
   );
@@ -361,6 +364,14 @@ export function useSettingsForm({
     cancelScheduledSave: clearPendingSettingsSave,
     flushScheduledSave: flushPendingSettingsSave,
   };
+
+  const handleCalendarMeetingAwarenessEnabledChange = useCallback(
+    (enabled: boolean) => {
+      setCalendarMeetingAwarenessEnabled(enabled);
+      void saveSettingsNow({ calendarMeetingAwarenessEnabled: enabled });
+    },
+    [saveSettingsNow, setCalendarMeetingAwarenessEnabled],
+  );
 
   useEffect(() => {
     if (!aiFeaturesReady) setEditModeEnabled(false);
@@ -525,7 +536,10 @@ export function useSettingsForm({
         onStartInBackgroundChange: setStartInBackground,
         calendarMeetingAwarenessEnabled,
         onCalendarMeetingAwarenessEnabledChange:
-          setCalendarMeetingAwarenessEnabled,
+          handleCalendarMeetingAwarenessEnabledChange,
+        microphoneMeetingAwarenessEnabled,
+        onMicrophoneMeetingAwarenessEnabledChange:
+          setMicrophoneMeetingAwarenessEnabled,
         autoDeleteTarget,
         onAutoDeleteTargetChange: setAutoDeleteTarget,
         autoDeleteDuration,

@@ -136,4 +136,15 @@ describe("settings update model", () => {
       "fr",
     );
   });
+
+  test("can persist Calendar awareness before the draft render catches up", () => {
+    const context = createContext();
+    context.draft.calendarMeetingAwarenessEnabled = false;
+
+    expect(
+      buildSettingsUpdateArgs(context, {
+        calendarMeetingAwarenessEnabled: true,
+      }).calendarMeetingAwarenessEnabled,
+    ).toBe(true);
+  });
 });

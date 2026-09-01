@@ -9,6 +9,7 @@ import { generate } from "../generate.mjs";
 import {
   BRAND_MARK,
   PALETTE,
+  PRODUCT_BOOT,
   neutralChroma,
   oklchToHex,
   oklchToRgb,
@@ -171,7 +172,7 @@ describe("native config mirrors the palette", () => {
     {
       file: "apps/desktop/src-tauri/tauri.conf.json",
       label: "Tauri window background",
-      expected: () => oklchToHex(PALETTE.dark.neutrals.bgSecondary),
+      expected: () => PRODUCT_BOOT.desktopSettingsBackground,
     },
     {
       file: "apps/mobile/targets/widgets/expo-target.config.js",
@@ -208,12 +209,22 @@ describe("the iOS keyboard extension mirrors the palette", () => {
       "utf8",
     );
 
-  const floats = (color) =>
-    oklchToRgb(color).map((channel) => (channel / 255).toFixed(3));
+  const floats = (color) => {
+    const channels =
+      typeof color === "string"
+        ? [0, 2, 4].map((offset) =>
+            Number.parseInt(color.slice(1 + offset, 3 + offset), 16),
+          )
+        : oklchToRgb(color);
+    return channels.map((channel) => (channel / 255).toFixed(3));
+  };
 
   const roles = [
     ["background", () => PALETTE.dark.neutrals.bgPrimary],
-    ["backgroundSecondary", () => PALETTE.dark.neutrals.bgSecondary],
+    [
+      "backgroundSecondary",
+      () => PRODUCT_BOOT.mobileKeyboard.backgroundSecondary,
+    ],
     ["surfaceMuted", () => PALETTE.dark.neutrals.bgTertiary],
     ["surface", () => PALETTE.dark.neutrals.bgSurface],
     ["surfaceElevated", () => PALETTE.dark.neutrals.bgElevated],
@@ -221,7 +232,7 @@ describe("the iOS keyboard extension mirrors the palette", () => {
     ["text", () => PALETTE.dark.neutrals.textPrimary],
     ["textSecondary", () => PALETTE.dark.neutrals.textSecondary],
     ["muted", () => PALETTE.dark.neutrals.textMuted],
-    ["accent", () => PALETTE.dark.accent.base],
+    ["accent", () => PRODUCT_BOOT.mobileKeyboard.accent],
   ];
 
   for (const [role, resolve] of roles) {
@@ -247,28 +258,22 @@ describe("the iOS keyboard extension mirrors the palette", () => {
 
 describe("the web boot splash mirrors the palette", () => {
   // index.html paints before the stylesheet exists, so it cannot read tokens
-  // and has to inline its colors. It used to carry an entirely separate warm
-  // palette (#f8f5f2 page, #b14b25 accent) that predated the brand.
+  // and has to inline the light-only Web boot palette.
   const html = () => readFileSync(join(ROOT, "apps/web/index.html"), "utf8");
 
   const roles = [
-    ["light page", () => PALETTE.light.neutrals.bgPrimary],
-    ["light ink", () => PALETTE.light.neutrals.textPrimary],
-    ["light muted", () => PALETTE.light.neutrals.textMuted],
-    ["light border", () => PALETTE.light.neutrals.borderPrimary],
-    ["light skeleton", () => PALETTE.light.neutrals.bgElevated],
-    ["light accent", () => PALETTE.light.accent.ink],
-    ["dark page", () => PALETTE.dark.neutrals.bgPrimary],
-    ["dark panel", () => PALETTE.dark.neutrals.bgSecondary],
-    ["dark skeleton", () => PALETTE.dark.neutrals.bgSurface],
-    ["dark border", () => PALETTE.dark.neutrals.borderSecondary],
-    ["dark ink", () => PALETTE.dark.neutrals.textPrimary],
-    ["dark muted", () => PALETTE.dark.neutrals.textMuted],
+    ["page", () => PRODUCT_BOOT.web.page],
+    ["ink", () => PRODUCT_BOOT.web.ink],
+    ["muted text", () => PRODUCT_BOOT.web.muted],
+    ["icon border", () => PRODUCT_BOOT.web.iconBorder],
+    ["icon surface", () => PRODUCT_BOOT.web.iconSurface],
+    ["accent", () => PRODUCT_BOOT.web.accent],
+    ["browser theme", () => PRODUCT_BOOT.web.theme],
   ];
 
   for (const [label, resolve] of roles) {
     test(`${label} uses the current palette`, () => {
-      const value = oklchToHex(resolve());
+      const value = resolve();
       assert.ok(
         html().toLowerCase().includes(value),
         `index.html should reference ${value} for ${label}`,

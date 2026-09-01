@@ -22,6 +22,7 @@
         "alwaysOnTop": true,
         "skipTaskbar": true,
         "transparent": true,
+        "backgroundColor": "#00000000",
         "shadow": false,
         "center": false,
         "focus": false,
@@ -30,15 +31,16 @@
       {
         "label": "settings",
         "title": "Looper",
-        "width": 900,
-        "height": 750,
+        "width": 1350,
+        "height": 830,
         "minWidth": 900,
         "minHeight": 750,
         "resizable": true,
         "visible": false,
         "hiddenTitle": true,
         "titleBarStyle": "Overlay",
-        "backgroundColor": "#0a0a0a"
+        "backgroundColor": "#fbfaf5",
+        "shadow": false
       },
       {
         "label": "toast",

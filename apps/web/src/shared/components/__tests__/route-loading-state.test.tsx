@@ -17,4 +17,21 @@ describe("RouteLoadingState", () => {
     expect(screen.getAllByText("Image")).toHaveLength(2);
     expect(screen.getByRole("status")).toHaveTextContent("Loading");
   });
+
+  it("shares the product shell geometry while authenticated chrome loads", () => {
+    render(
+      <I18nProvider defaultLocale="en">
+        <RouteLoadingState shellLabel="Home" />
+      </I18nProvider>,
+    );
+
+    const status = screen.getByRole("status");
+    const sidebar = screen.getByText("Looper").closest("aside");
+
+    expect(status.closest(".web-product-canvas")).not.toBeNull();
+    expect(status.closest(".web-product-shell")).not.toBeNull();
+    expect(status.closest(".web-product-content-shell")).not.toBeNull();
+    expect(sidebar).toHaveClass("web-product-sidebar");
+    expect(sidebar?.querySelector(".web-product-brand")).not.toBeNull();
+  });
 });

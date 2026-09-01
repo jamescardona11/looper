@@ -13,8 +13,8 @@ export interface AgentCitation {
 }
 
 export type AnswerPart =
-  | { kind: "text"; value: string }
-  | { kind: "citation"; citation: AgentCitation };
+  | { kind: "text"; start: number; value: string }
+  | { kind: "citation"; start: number; citation: AgentCitation };
 
 const CITATION_PATTERN = /\[(Note|Dictation|Meeting):\s*([^\]]+)]/g;
 
@@ -39,18 +39,23 @@ export function answerParts(answer: string): AnswerPart[] {
   let cursor = 0;
   for (const match of answer.matchAll(CITATION_PATTERN)) {
     const index = match.index ?? cursor;
-    if (index > cursor) parts.push({ kind: "text", value: answer.slice(cursor, index) });
+    if (index > cursor) {
+      parts.push({ kind: "text", start: cursor, value: answer.slice(cursor, index) });
+    }
     const title = match[2]?.trim();
     if (title) {
       parts.push({
         kind: "citation",
+        start: index,
         citation: { kind: match[1] as AgentCitation["kind"], title },
       });
     } else {
-      parts.push({ kind: "text", value: match[0] });
+      parts.push({ kind: "text", start: index, value: match[0] });
     }
     cursor = index + match[0].length;
   }
-  if (cursor < answer.length) parts.push({ kind: "text", value: answer.slice(cursor) });
-  return parts.length ? parts : [{ kind: "text", value: answer }];
+  if (cursor < answer.length) {
+    parts.push({ kind: "text", start: cursor, value: answer.slice(cursor) });
+  }
+  return parts.length ? parts : [{ kind: "text", start: 0, value: answer }];
 }

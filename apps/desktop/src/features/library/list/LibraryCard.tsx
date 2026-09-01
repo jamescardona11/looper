@@ -43,58 +43,64 @@ export function LibraryCard(props: LibraryCardProps) {
   };
 
   return (
-    <div
-      role="button"
-      tabIndex={0}
-      onClick={openIfIdle}
-      onKeyDown={(event) => {
-        if (event.key !== "Enter" && event.key !== " ") return;
-        event.preventDefault();
-        openIfIdle();
-      }}
+    <article
+      data-testid={`library-card-${item.id}`}
       onContextMenu={(event) => {
         event.preventDefault();
         if (shiftHeld) runAction(onDelete);
         else setMenuOpen(true);
       }}
-      className={`group grid min-h-[88px] w-full min-w-0 grid-cols-[64px_minmax(0,1fr)_auto] items-center gap-3 overflow-visible rounded-xl border border-transparent px-2.5 py-2 outline-none transition-[background-color,border-color] hover:border-border-primary hover:bg-surface-secondary focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-border-hover ${
+      className={`group relative grid min-h-16 w-full min-w-0 grid-cols-[44px_minmax(0,1fr)_auto] items-center gap-3 border-b border-border-primary px-1 py-2 outline-none transition-[background-color,color] hover:bg-surface-secondary ${
         shiftHeld
           ? "!border-[var(--color-error)]/30 !bg-[var(--color-error)]/5"
           : ""
       }`}
     >
-      <LibraryCardMedia item={item} transcribing={status.transcribing} />
-      <LibraryCardBody
-        item={item}
-        editingName={editingName}
-        editingNameDraft={editingNameDraft}
-        onChangeNameDraft={onChangeNameDraft}
-        onCommitNameEdit={onCommitNameEdit}
-        onCancelNameEdit={onCancelNameEdit}
-        editingTag={editingTag}
-        tagDraft={tagDraft}
-        onStartTagEdit={onStartTagEdit}
-        onChangeTagDraft={onChangeTagDraft}
-        onCommitTagAdd={onCommitTagAdd}
-        onCancelTagEdit={onCancelTagEdit}
-        onRemoveTag={onRemoveTag}
-        onClickTag={onClickTag}
-        shiftHeld={shiftHeld}
+      <button
+        aria-label={`Open ${item.name}`}
+        className="absolute inset-0 z-0 rounded-none outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-border-hover"
+        onClick={openIfIdle}
+        type="button"
       />
-      <LibraryCardActions
-        item={item}
-        menuOpen={menuOpen}
-        setMenuOpen={setMenuOpen}
-        progress={status.progress}
-        transcribing={status.transcribing}
-        shiftHeld={shiftHeld}
-        onStartNameEdit={onStartNameEdit}
-        runAction={runAction}
-        onRetry={onRetry}
-        onCancel={onCancel}
-        onDelete={onDelete}
-      />
-    </div>
+      <div className="pointer-events-none relative z-10">
+        <LibraryCardMedia item={item} transcribing={status.transcribing} />
+      </div>
+      <div className="pointer-events-none relative z-10 [&_button]:pointer-events-auto [&_input]:pointer-events-auto">
+        <LibraryCardBody
+          item={item}
+          editingName={editingName}
+          editingNameDraft={editingNameDraft}
+          onChangeNameDraft={onChangeNameDraft}
+          onCommitNameEdit={onCommitNameEdit}
+          onCancelNameEdit={onCancelNameEdit}
+          editingTag={editingTag}
+          tagDraft={tagDraft}
+          onStartTagEdit={onStartTagEdit}
+          onChangeTagDraft={onChangeTagDraft}
+          onCommitTagAdd={onCommitTagAdd}
+          onCancelTagEdit={onCancelTagEdit}
+          onRemoveTag={onRemoveTag}
+          onClickTag={onClickTag}
+          shiftHeld={shiftHeld}
+        />
+      </div>
+      <div className="relative z-10">
+        <LibraryCardActions
+          item={item}
+          onOpen={onOpen}
+          menuOpen={menuOpen}
+          setMenuOpen={setMenuOpen}
+          progress={status.progress}
+          transcribing={status.transcribing}
+          shiftHeld={shiftHeld}
+          onStartNameEdit={onStartNameEdit}
+          runAction={runAction}
+          onRetry={onRetry}
+          onCancel={onCancel}
+          onDelete={onDelete}
+        />
+      </div>
+    </article>
   );
 }
 

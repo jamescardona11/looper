@@ -15,6 +15,7 @@ import {
   type TimePreset,
   type TranscriptionSort,
 } from "../searchQuery";
+import type { HistoryTranscriptionFilter } from "../transcription-list-policy";
 import {
   FocusRecordSearchBridge,
   SearchInputFocus,
@@ -324,6 +325,91 @@ export function TranscriptionListSearchControls(props: {
           <CollapsedSearchButton onOpen={() => setSearchVisible(true)} />
         )}
       </Presence>
+    </div>
+  );
+}
+
+/**
+ * The full History route keeps its query and its durable local facets in one
+ * visible route bar.  The compact Home list deliberately retains the quieter
+ * icon-only search control above.
+ */
+export function HistoryTranscriptionControls(props: {
+  query: string;
+  filter: HistoryTranscriptionFilter;
+  onFilterChange: (filter: HistoryTranscriptionFilter) => void;
+  onQueryChange: (query: string) => void;
+}) {
+  const { t } = useSearchTranslations();
+  const filters: Array<{
+    value: HistoryTranscriptionFilter;
+    label: string;
+  }> = [
+    {
+      value: "all",
+      label: t({ id: "transcriptions.history.filter.all", message: "All" }),
+    },
+    {
+      value: "audio",
+      label: t({
+        id: "transcriptions.history.filter.audio",
+        message: "Has audio",
+      }),
+    },
+    {
+      value: "cleaned",
+      label: t({
+        id: "transcriptions.history.filter.cleaned",
+        message: "Cleaned",
+      }),
+    },
+    {
+      value: "failed",
+      label: t({
+        id: "transcriptions.history.filter.failed",
+        message: "Failed",
+      }),
+    },
+  ];
+  return (
+    <div className="mt-5 flex shrink-0 items-center gap-2 border-b border-border-primary pb-3">
+      <div className="flex min-w-0 items-center gap-2 overflow-x-auto pb-px">
+        {filters.map((filter) => {
+          const active = props.filter === filter.value;
+          return (
+            <button
+              key={filter.value}
+              type="button"
+              aria-pressed={active}
+              onClick={() => props.onFilterChange(filter.value)}
+              className={`relative h-7 shrink-0 rounded-lg border px-2.5 ui-text-body-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent-30)] ${
+                active
+                  ? "border-[var(--color-accent-30)] bg-[var(--color-accent-10)] text-[var(--color-toggle-on)]"
+                  : "border-border-primary bg-surface-surface text-content-muted hover:border-border-hover hover:text-content-primary"
+              }`}
+            >
+              {filter.label}
+            </button>
+          );
+        })}
+      </div>
+      <label className="ml-auto flex h-8 w-[min(280px,34%)] min-w-[180px] items-center gap-2 rounded-lg border border-border-primary bg-surface-surface px-2.5 focus-within:border-border-hover focus-within:ring-2 focus-within:ring-[var(--color-accent-30)]">
+        <SearchIcon size={12} aria-hidden="true" className="shrink-0 text-content-disabled" />
+        <input
+          type="search"
+          value={props.query}
+          onChange={(event) => props.onQueryChange(event.target.value)}
+          placeholder={t({
+            id: "transcriptions.list.search.history_placeholder",
+            message: "Search past dictation…",
+          })}
+          aria-label={t({
+            id: "transcriptions.list.search.aria",
+            message: "Search transcriptions",
+          })}
+          className="min-w-0 flex-1 bg-transparent ui-text-body-sm text-content-primary outline-none placeholder:text-content-disabled"
+        />
+      </label>
     </div>
   );
 }

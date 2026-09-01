@@ -45,24 +45,32 @@ export function GeneralProcessingSection(props: GeneralProcessingProps) {
           </button>
         }
       >
-        {t({ id: "settings.general.processing", message: "Processing" })}
+        {t({
+          id: "settings.modal.tab.processing_models",
+          message: "Processing & Models",
+        })}
       </SectionLabel>
 
       <div
-        className="grid grid-cols-2 gap-3"
-        role="radiogroup"
-        aria-label={t({
-          id: "settings.general.processing_mode",
-          message: "Processing Mode",
-        })}
+        data-settings-card="processing"
+        className="max-w-[630px] rounded-[16px] bg-surface-surface p-4 shadow-[0_1px_0_var(--desktop-depth-line)]"
       >
-        {choices.map(({ mode, ...choice }) => (
-          <ProcessingChoice
-            key={mode}
-            {...choice}
-            onSelect={() => props.onTranscriptionModeChange(mode)}
-          />
-        ))}
+        <div
+          className="grid grid-cols-2 gap-3"
+          role="radiogroup"
+          aria-label={t({
+            id: "settings.general.processing_mode",
+            message: "Processing Mode",
+          })}
+        >
+          {choices.map(({ mode, ...choice }) => (
+            <ProcessingChoice
+              key={mode}
+              {...choice}
+              onSelect={() => props.onTranscriptionModeChange(mode)}
+            />
+          ))}
+        </div>
       </div>
 
       <AnimatePresence>
@@ -120,12 +128,12 @@ function ProcessingChoice({
 }: Omit<ProcessingChoiceProps, "mode">) {
   const selectedClass =
     tone === "cloud"
-      ? "border-cloud-30 bg-cloud-5 shadow-[var(--shadow-action-card-cloud-selected)]"
-      : "border-local-30 bg-local-5 shadow-[var(--shadow-action-card-local-selected)]";
+      ? "border-cloud-30 bg-cloud-5"
+      : "border-local-30 bg-local-5";
   const restClass =
     tone === "cloud"
-      ? "border-border-primary bg-surface-surface shadow-[var(--shadow-action-card-rest)] hover:border-cloud-30 hover:bg-cloud-5"
-      : "border-border-primary bg-surface-surface shadow-[var(--shadow-action-card-rest)] hover:border-local-30 hover:bg-local-5 hover:shadow-[var(--shadow-action-card-local-hover)]";
+      ? "border-border-primary bg-surface-elevated hover:border-cloud-30 hover:bg-cloud-5"
+      : "border-border-primary bg-surface-elevated hover:border-local-30 hover:bg-local-5";
   const activeTone = tone === "cloud" ? "ui-color-cloud" : "ui-color-local";
   const detailTone = tone === "cloud" ? "text-cloud-50" : "text-local-50";
 
@@ -136,7 +144,7 @@ function ProcessingChoice({
       role="radio"
       aria-checked={selected}
       aria-label={accessibleLabel}
-      className={`rounded-lg border px-3.5 py-3 text-left transition-[box-shadow,border-color,background-color] duration-100 active:translate-y-[2px] active:shadow-none motion-reduce:transition-none ${
+      className={`rounded-xl border px-3.5 py-3 text-left transition-[border-color,background-color] duration-100 active:translate-y-[1px] motion-reduce:transition-none ${
         selected ? selectedClass : restClass
       }`}
     >

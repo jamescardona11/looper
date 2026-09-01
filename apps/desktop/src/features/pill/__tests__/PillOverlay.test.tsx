@@ -293,6 +293,9 @@ describe("PillOverlay result", () => {
 
     const shell = document.querySelector<HTMLElement>(".ui-pill-shell");
     expect(shell?.style.height).toBe("172px");
+    expect(shell?.style.transition).not.toMatch(
+      /(?:^|,|\s)(?:width|height|border-radius|padding|flex)\b/,
+    );
     expect(document.body.textContent).toContain(pillState.expandedText);
   });
 
@@ -442,6 +445,26 @@ describe("PillOverlay result", () => {
     expect(actions.finishRecording).toHaveBeenCalledTimes(1);
   });
 
+  test("enters Listening without replaying a pill entrance animation", () => {
+    pillState.pillStatus = "listening";
+    pillState.isExpanded = false;
+    pillState.expandedText = "";
+    pillState.pillTone = "default";
+    pillState.isHovered = false;
+
+    const { container } = render(
+      <I18nProvider i18n={i18n}>
+        <PillOverlay />
+      </I18nProvider>,
+    );
+
+    const shell = container.querySelector<HTMLElement>(".ui-pill-shell");
+    expect(shell).toBeTruthy();
+    expect(shell?.style.opacity).not.toBe("0");
+    expect(shell?.style.transform).not.toMatch(/translate|scale/);
+    expect(container.querySelector(".looper-pill-enter")).toBeNull();
+  });
+
   test("keeps recording actions hidden until the native hover expands the rail", () => {
     pillState.pillStatus = "listening";
     pillState.isExpanded = false;
@@ -456,10 +479,7 @@ describe("PillOverlay result", () => {
     );
 
     const actionsContainer = container.querySelector("[data-signal-actions]");
-    expect(actionsContainer?.className).toContain("max-w-0");
-    expect(actionsContainer?.className).not.toContain(
-      "group-hover/signal:max-w-[148px]",
-    );
+    expect(actionsContainer).toBeNull();
   });
 
   test("keeps the same window alive when recording is cancelled", () => {
@@ -504,7 +524,7 @@ describe("PillOverlay result", () => {
     ).toBeNull();
   });
 
-  test("renders the edge handle until native hover reveals the full dock", async () => {
+  test("renders the compact black launcher until native hover reveals the full dock", async () => {
     pillState.pillStatus = "idle";
     pillState.isExpanded = false;
     pillState.isHovered = false;
@@ -516,7 +536,7 @@ describe("PillOverlay result", () => {
     );
     await act(async () => {});
 
-    expect(document.querySelector(".ui-sticky-launcher")).toBeNull();
+    expect(document.querySelector(".ui-sticky-launcher")).toBeTruthy();
     expect(
       screen.queryByRole("group", { name: "Dictation controls" }),
     ).toBeNull();
@@ -530,7 +550,7 @@ describe("PillOverlay result", () => {
     const dock = screen.getByRole("group", { name: "Dictation controls" });
     expect(dock.className).toContain("ui-pill-shell");
     expect(dock.className).toContain("ui-capture-dock");
-    expect(dock.className).toContain("w-[260px]");
+    expect(dock.className).toContain("h-12 w-[264px]");
     expect(
       screen.queryByRole("button", { name: "Move Dictation dock" }),
     ).toBeNull();
@@ -576,8 +596,8 @@ describe("PillOverlay result", () => {
     fireEvent.click(screen.getByRole("button", { name: "Dictation language" }));
     await act(async () => {});
     const languageOptions = screen.getAllByRole("menuitemradio");
-    expect(screen.getByText("Fn").className).toContain("text-[10px]");
-    expect(languageOptions[0].className).toContain("text-[11px]");
+    expect(screen.getByText("Fn").className).toContain("ui-text-meta");
+    expect(languageOptions[0].className).toContain("ui-text-label");
     expect(languageOptions.map((option) => option.textContent)).toEqual([
       "Español",
       "English",
@@ -590,5 +610,31 @@ describe("PillOverlay result", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "New note" }));
     expect(actions.startNoteFromDock).toHaveBeenCalledTimes(1);
+  });
+
+  test("keeps a six-dot drag handle in the expanded capture dock", () => {
+    pillState.pillStatus = "preflight";
+
+    render(
+      <I18nProvider i18n={i18n}>
+        <PillOverlay />
+      </I18nProvider>,
+    );
+
+    expect(document.querySelectorAll("[data-pill-drag-dot]")).toHaveLength(6);
+    expect(document.querySelector("[data-pill-drag-logo]")).toBeNull();
+    expect(
+      screen.getByRole("button", { name: "Move Capture pill" }).className,
+    ).toContain("px-2");
+    expect(
+      screen.getByRole("group", { name: "Dictation controls" }).className,
+    ).toContain("h-12 w-[264px]");
+    expect(screen.getByText("Fn").isConnected).toBe(true);
+    expect(
+      document.querySelectorAll("[data-pill-drag-dot]")[0]?.className,
+    ).toContain("h-0.5");
+    expect(
+      screen.getByRole("button", { name: "Move Capture pill" }),
+    ).toBeTruthy();
   });
 });

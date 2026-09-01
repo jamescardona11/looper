@@ -37,6 +37,7 @@ const mocks = vi.hoisted(() => ({
   retryItem: vi.fn(),
   exportItem: vi.fn(),
   startMeeting: vi.fn(),
+  startNote: vi.fn(),
   resumeCapture: vi.fn(),
   resetMeeting: vi.fn(),
   fetchNextPage: vi.fn(),
@@ -66,6 +67,11 @@ vi.mock("../../queries", () => ({
     reset: mocks.resetMeeting,
     isPending: mocks.meetingPending,
     error: mocks.meetingError,
+  }),
+  useStartVoiceNoteCapture: () => ({
+    mutateAsync: mocks.startNote,
+    isPending: false,
+    error: null,
   }),
 }));
 
@@ -263,7 +269,6 @@ i18n.loadAndActivate({
   locale: "contract",
   messages: {
     "library.view.title": "LIBRARY-TITLE-UNIQUE",
-    "library.view.description": "LIBRARY-DESCRIPTION-UNIQUE",
     "library.view.search_placeholder": "LIBRARY-SEARCH-UNIQUE",
     "library.filter.aria_label": "LIBRARY-FILTERS-UNIQUE",
     "library.filter.transcribing": "ACTIVE-FILTER-UNIQUE",
@@ -273,6 +278,7 @@ i18n.loadAndActivate({
     "library.group.earlier": "EARLIER-UNIQUE",
     "library.view.import_button": "IMPORT-FILE-UNIQUE",
     "library.youtube.add": "YOUTUBE-UNIQUE",
+    "library.view.start_note": "NOTE-UNIQUE",
     "meeting.start.title": "MEETING-UNIQUE",
     "library.view.load_more": "LOAD-MORE-UNIQUE",
   },
@@ -381,6 +387,7 @@ beforeEach(() => {
   mocks.retryItem.mockResolvedValue(undefined);
   mocks.exportItem.mockResolvedValue(undefined);
   mocks.startMeeting.mockResolvedValue({ phase: "recording" });
+  mocks.startNote.mockResolvedValue({ phase: "recording" });
   mocks.openDialog.mockResolvedValue(null);
   mocks.showToast.mockResolvedValue(undefined);
 });
@@ -405,9 +412,16 @@ describe("LibraryView contract", () => {
     expect(container.firstElementChild?.className).toBe(
       "relative flex h-full min-h-0 min-w-0 flex-1 flex-col",
     );
-    expect(screen.getByText("LIBRARY-TITLE-UNIQUE")).toBeTruthy();
-    expect(screen.getByText("LIBRARY-DESCRIPTION-UNIQUE")).toBeTruthy();
-    expect(screen.getByText("THIS-WEEK-UNIQUE")).toBeTruthy();
+    const title = screen.getByRole("heading", {
+      name: "LIBRARY-TITLE-UNIQUE",
+    });
+    expect(title).toBeTruthy();
+    expect(title.closest("header")?.parentElement?.className).not.toContain(
+      "md:-mt-6",
+    );
+    expect(screen.getByText("Notes")).toBeTruthy();
+    expect(screen.getByText("Inbox")).toBeTruthy();
+    expect(screen.getByText("Recent recordings")).toBeTruthy();
     expect(screen.getByText("EARLIER-UNIQUE")).toBeTruthy();
     expect(
       screen.getByRole("alert").getAttribute("data-notification-position"),
@@ -420,22 +434,56 @@ describe("LibraryView contract", () => {
       expect(latest).toMatchObject({ search: "quarterly", status: null });
     });
 
-    const active = screen.getByRole("button", { name: "ACTIVE-FILTER-UNIQUE" });
-    fireEvent.click(active);
-    expect(active.getAttribute("aria-pressed")).toBe("true");
+    const filter = screen.getByRole("combobox", {
+      name: "LIBRARY-FILTERS-UNIQUE",
+    });
+    expect(
+      within(filter.closest("header") as HTMLElement).getByRole("heading", {
+        name: "Recent recordings",
+      }),
+    ).toBeTruthy();
+    expect(filter.closest("header")?.textContent).toContain("Inbox");
+    fireEvent.change(filter, { target: { value: "active" } });
     await waitFor(() => {
       const latest = mocks.useLibraryItems.mock.calls.at(-1)?.[0];
       expect(latest).toMatchObject({ status: "active" });
     });
-    fireEvent.click(
-      screen.getByRole("button", { name: /ACTIVE-FILTER-UNIQUE/ }),
-    );
+    fireEvent.change(filter, { target: { value: "all" } });
     await waitFor(() => {
       const latest = mocks.useLibraryItems.mock.calls.at(-1)?.[0];
       expect(latest).toMatchObject({ status: null });
     });
     fireEvent.click(screen.getByRole("button", { name: "LOAD-MORE-UNIQUE" }));
     expect(mocks.fetchNextPage).toHaveBeenCalledOnce();
+  });
+
+  test("keeps the Inbox hierarchy when every visible recording is older", () => {
+    mocks.useLibraryItems.mockReturnValue({
+      data: {
+        pages: [
+          {
+            items: [
+              completeItem({
+                id: "older-recording",
+                created_at: "2000-01-01T00:00:00.000Z",
+              }),
+            ],
+            has_more: false,
+          },
+        ],
+      },
+      isLoading: false,
+      isFetchingNextPage: false,
+      hasNextPage: false,
+      fetchNextPage: mocks.fetchNextPage,
+      error: null,
+    });
+
+    renderLibrary();
+
+    expect(screen.getByText("Inbox")).toBeTruthy();
+    expect(screen.getByText("Recent recordings")).toBeTruthy();
+    expect(screen.queryByText("EARLIER-UNIQUE")).toBeNull();
   });
 
   test("opens focused and clicked items and forwards detail callbacks", async () => {
@@ -573,6 +621,27 @@ describe("LibraryView contract", () => {
       expect.stringContaining("1"),
     );
     expect(setImportPaths).toHaveBeenLastCalledWith(null);
+  });
+
+  test("opens the import workspace instead of the file picker when a route is available", () => {
+    const onOpenImportRoute = vi.fn();
+    renderLibrary({ onOpenImportRoute });
+
+    fireEvent.click(screen.getByRole("button", { name: "IMPORT-FILE-UNIQUE" }));
+
+    expect(onOpenImportRoute).toHaveBeenCalledOnce();
+    expect(mocks.openDialog).not.toHaveBeenCalled();
+  });
+
+  test("starts a personal note directly and keeps meeting options explicit", async () => {
+    renderLibrary();
+
+    fireEvent.click(screen.getByRole("button", { name: "NOTE-UNIQUE" }));
+    await waitFor(() => expect(mocks.startNote).toHaveBeenCalledOnce());
+    expect(screen.queryByTestId("meeting-modal")).toBeNull();
+
+    fireEvent.click(screen.getByRole("button", { name: "MEETING-UNIQUE" }));
+    expect(screen.getByTestId("meeting-modal")).toBeTruthy();
   });
 
   test("preserves YouTube and meeting modal lifecycles", async () => {

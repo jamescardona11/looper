@@ -60,11 +60,9 @@ const SWITCH_MOTION = {
 } as const;
 
 function CompletionButton({
-  verified,
   completing,
   onComplete,
 }: {
-  verified: boolean;
   completing: boolean;
   onComplete: () => void;
 }) {
@@ -73,7 +71,7 @@ function CompletionButton({
     <button
       type="button"
       onClick={onComplete}
-      disabled={completing || !verified}
+      disabled={completing}
       aria-busy={completing}
       className={primaryActionClassName}
     >
@@ -378,7 +376,6 @@ export function ReadyStep(props: ReadyStepProps) {
   };
   const footer = (
     <CompletionButton
-      verified={insertionVerified}
       completing={props.isCompleting}
       onComplete={props.onComplete}
     />

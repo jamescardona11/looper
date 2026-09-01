@@ -1,32 +1,47 @@
 import { useLingui } from "@lingui/react/macro";
 import {
   ArrowCircleUp,
+  ArrowLeft,
   Books,
   CardsThree,
+  ChartBar,
   ClockCounterClockwise,
   Flask,
   GearSix,
   House,
   Info,
+  Note,
   Question,
   X,
   type Icon as PhosphorIcon,
 } from "@phosphor-icons/react";
 import { AnimatePresence, motion } from "framer-motion";
-import { lazy, Suspense, useRef, type Dispatch, type RefObject } from "react";
+import {
+  lazy,
+  Suspense,
+  useRef,
+  useState,
+  type Dispatch,
+  type RefObject,
+} from "react";
 
 import SettingsRoute from "../../features/settings/shell/SettingsRoute";
 import type { FeatureDiagnostic } from "../../features/feature-lab/types";
 import { HomeMeetingActivity } from "../../features/library/meeting/HomeMeetingActivity";
 import LibraryView from "../../features/library/list/LibraryView";
+import ImportView from "../../features/library/import/ImportView";
 import MemoryView from "../../features/memory/components/MemoryView";
+import ScratchpadPanel from "../../features/scratchpad/components/ScratchpadPanel";
 import CaptureStatusCard from "../../features/transcriptions/components/CaptureStatusCard";
 import HomeAskBar from "../../features/transcriptions/components/HomeAskBar";
 import HomeTodayHeader from "../../features/transcriptions/components/HomeTodayHeader";
+import InsightsView from "../../features/transcriptions/components/InsightsView";
 import TranscriptionList from "../../features/transcriptions/components/TranscriptionList";
 import VoiceView from "../../features/voice/components/VoiceView";
 import type { HomeAction, HomeState, HomeView } from "./home-state";
+import type { WeeklyDictationActivity } from "../../features/transcriptions/todayStats";
 import { useClickOutside } from "../../shared/hooks/useClickOutside";
+import { formatShortcutForDisplay } from "../../shared/lib/shortcuts";
 import FAQModal from "../../shared/ui/FAQModal";
 import { LooperLogo } from "../../shared/ui/LooperLogo";
 import WindowControls from "../../shared/ui/WindowControls";
@@ -40,16 +55,16 @@ const DevelopmentFeatureLab = import.meta.env.DEV
 type HomePresentationProps = {
   appVersion: string;
   dispatch: Dispatch<HomeAction>;
-  licenseGateActive: boolean;
+  hasHistory: boolean;
   reduceMotion: boolean | null;
   runDiagnostics: () => Promise<FeatureDiagnostic[]>;
   settingsShortcut?: string;
   showCleanupButtons: boolean;
   state: HomeState;
   todayStats: TodayDictationStats;
-  todayStatsFetched: boolean;
   transcriptionMode: TranscriptionMode;
   updateAvailable: boolean;
+  weeklyActivity: WeeklyDictationActivity;
 };
 
 type RailItemProps = {
@@ -61,8 +76,8 @@ type RailItemProps = {
 };
 
 const railButtonClass = [
-  "ui-nav-item group mb-1 h-10 w-11",
-  "justify-center p-0 disabled:pointer-events-none disabled:opacity-45",
+  "desktop-workspace-nav-item group",
+  "disabled:pointer-events-none disabled:opacity-45",
 ].join(" ");
 
 function RailItem({
@@ -81,9 +96,20 @@ function RailItem({
       disabled={disabled}
       onClick={onClick}
     >
-      <div className="flex items-center justify-center shrink-0">
-        <Icon size={18} weight="regular" />
-      </div>
+      {active ? (
+        <span
+          aria-hidden="true"
+          className="desktop-workspace-nav-active-surface"
+          data-nav-active-surface
+        />
+      ) : null}
+      <Icon
+        aria-hidden="true"
+        className="relative z-[1]"
+        size={16}
+        weight="regular"
+      />
+      <span className="relative z-[1]">{label}</span>
     </button>
   );
 }
@@ -91,7 +117,6 @@ function RailItem({
 type SidebarProps = {
   appVersion: string;
   dispatch: Dispatch<HomeAction>;
-  licenseGateActive: boolean;
   reduceMotion: boolean | null;
   state: HomeState;
   transcriptionMode: TranscriptionMode;
@@ -109,7 +134,6 @@ type NavigationEntry = {
 function HomeSidebar({
   appVersion,
   dispatch,
-  licenseGateActive,
   reduceMotion,
   state,
   transcriptionMode,
@@ -128,28 +152,35 @@ function HomeSidebar({
       activeView: "home",
       disabled: false,
       icon: House,
-      label: t({ id: "home.sidebar.home", message: "Home" }),
+      label: t({ id: "home.sidebar.home", message: "Dictation" }),
       visible: true,
     },
     {
       activeView: "library",
-      disabled: !licenseGateActive,
+      disabled: false,
       icon: Books,
-      label: t({ id: "home.sidebar.library", message: "Meetings" }),
+      label: t({ id: "home.sidebar.library", message: "Notes" }),
       visible: true,
     },
     {
       activeView: "memory",
-      disabled: !licenseGateActive,
+      disabled: false,
       icon: ClockCounterClockwise,
       label: t({ id: "home.sidebar.memory", message: "Memory" }),
       visible: true,
     },
     {
       activeView: "voice",
-      disabled: !licenseGateActive,
+      disabled: false,
       icon: CardsThree,
-      label: t({ id: "home.sidebar.voice", message: "Voice" }),
+      label: t({ id: "home.sidebar.voice", message: "Studio" }),
+      visible: true,
+    },
+    {
+      activeView: "insights",
+      disabled: false,
+      icon: ChartBar,
+      label: t({ id: "home.sidebar.insights", message: "Insights" }),
       visible: true,
     },
     {
@@ -167,14 +198,14 @@ function HomeSidebar({
 
   return (
     <aside
-      className="relative z-30 flex w-[68px] shrink-0 flex-col items-center bg-[var(--color-bg-primary)]/85 backdrop-blur-2xl after:absolute after:inset-y-0 after:left-full after:top-12 after:w-px after:bg-[var(--color-border-primary)]"
+      className="desktop-workspace-sidebar relative z-30 flex w-[224px] shrink-0 flex-col bg-[var(--color-bg-primary)] after:absolute after:inset-y-0 after:left-full after:w-px after:bg-[var(--color-border-primary)]"
       data-app-sidebar
     >
-      <div className="h-12 w-full shrink-0" data-tauri-drag-region />
-      <div className="pb-6 pt-1">
-        <div className="flex h-6 items-center justify-center">
-          <LooperLogo size="sm" />
-        </div>
+      <div className="h-9 w-full shrink-0" data-tauri-drag-region />
+      <div className="desktop-workspace-brand">
+        <LooperLogo size="md" />
+        <span className="desktop-workspace-brand-name">Looper</span>
+        <span className="desktop-workspace-edition">Free</span>
       </div>
 
       <nav
@@ -182,9 +213,9 @@ function HomeSidebar({
           id: "home.navigation.main",
           message: "Main navigation",
         })}
-        className="flex flex-1 flex-col items-center"
+        className="flex flex-1 flex-col px-[14px] pt-3"
       >
-        <div>
+        <div className="flex flex-col gap-[5px]">
           {navigationEntries.map((entry) =>
             entry.visible ? (
               <RailItem
@@ -202,8 +233,14 @@ function HomeSidebar({
         </div>
       </nav>
 
-      <div className="w-full shrink-0">
-        <div className="flex flex-col items-center gap-1 border-t border-border-primary py-2">
+      <section className="desktop-workspace-trust" aria-label="Local dictation">
+        <span>Local dictation</span>
+        <strong>Free forever</strong>
+        <p>No quota. Original audio stays available on this Mac.</p>
+      </section>
+
+      <div className="w-full shrink-0 px-[14px] pb-4">
+        <div className="flex flex-col gap-1 border-t border-border-primary pt-3">
           <SupportMenu
             appVersion={appVersion}
             dispatch={dispatch}
@@ -212,13 +249,20 @@ function HomeSidebar({
             open={state.supportMenuOpen}
             reduceMotion={reduceMotion ?? false}
           />
+          <RailItem
+            icon={Note}
+            label="Scratchpad"
+            onClick={() =>
+              dispatch({ type: "set-scratchpad-open", open: true })
+            }
+          />
           {updateAvailable ? (
             <button
               aria-label={t({
                 id: "home.update_available",
                 message: "Update available",
               })}
-              className="group flex h-10 w-10 items-center justify-center rounded-lg transition-colors hover:bg-surface-elevated"
+              className="desktop-workspace-nav-item group"
               onClick={() => dispatch({ type: "open-settings", tab: "about" })}
               style={{ color: "var(--color-accent)" }}
               title={t({
@@ -226,15 +270,19 @@ function HomeSidebar({
                 message: "Update available",
               })}
             >
-              <div className="flex items-center justify-center shrink-0">
-                <ArrowCircleUp size={16} weight="regular" />
-              </div>
+              <ArrowCircleUp aria-hidden="true" size={16} weight="regular" />
+              <span>
+                {t({
+                  id: "home.update_available",
+                  message: "Update available",
+                })}
+              </span>
             </button>
           ) : null}
           <RailItem
             active={state.activeView === "settings"}
             icon={GearSix}
-            label={t({ id: "home.sidebar.settings", message: "Settings" })}
+            label={t({ id: "home.sidebar.settings", message: "Setup" })}
             onClick={() =>
               dispatch({ type: "activate-view", view: "settings" })
             }
@@ -280,19 +328,18 @@ function SupportMenu({
           id: "home.support.menu_aria",
           message: "Support menu",
         })}
-        className="group flex h-10 w-10 items-center justify-center rounded-lg text-content-muted transition-colors hover:bg-surface-elevated hover:text-content-secondary"
+        className="desktop-workspace-nav-item group"
         onClick={toggleMenu}
       >
-        <div className="flex items-center justify-center group-hover:text-content-secondary">
-          <Info size={16} weight="regular" />
-        </div>
+        <Info aria-hidden="true" size={16} weight="regular" />
+        <span>{t({ id: "home.support.title", message: "Support" })}</span>
       </button>
 
       <AnimatePresence>
         {open ? (
           <motion.div
             animate={{ opacity: 1, scale: 1, y: 0 }}
-            className="ui-surface-menu absolute bottom-0 left-12 z-[60] w-56"
+            className="ui-surface-menu absolute bottom-10 left-0 z-[60] w-56"
             exit={
               reduceMotion ? { opacity: 0 } : { opacity: 0, scale: 0.95, y: 8 }
             }
@@ -305,7 +352,7 @@ function SupportMenu({
             <div className="px-3 pt-3 pb-1">
               <div className="flex items-center justify-between">
                 <span className="ui-text-body-sm-strong ui-color-primary">
-                  {t({ id: "home.support.title", message: "Get Support" })}
+                  {t({ id: "home.support.menu_title", message: "Get Support" })}
                 </span>
                 <button
                   aria-label={t({
@@ -375,138 +422,300 @@ function SupportMenu({
 type WorkspaceProps = Pick<
   HomePresentationProps,
   | "dispatch"
-  | "licenseGateActive"
+  | "hasHistory"
   | "runDiagnostics"
   | "settingsShortcut"
   | "showCleanupButtons"
   | "state"
   | "todayStats"
-  | "todayStatsFetched"
   | "transcriptionMode"
+  | "weeklyActivity"
 >;
+
+function HomeDictationContext({
+  onOpenHistory,
+  onOpenSetup,
+  shortcut,
+  transcriptionMode,
+}: {
+  onOpenHistory: () => void;
+  onOpenSetup: () => void;
+  shortcut?: string;
+  transcriptionMode: TranscriptionMode;
+}) {
+  const { t } = useLingui();
+  const isLocal = transcriptionMode === "local";
+  const shortcutLabel = formatShortcutForDisplay(shortcut ?? "Fn");
+
+  return (
+    <aside className="hidden min-[1180px]:block" aria-label="Dictation context">
+      <section className="mt-[55px] flex h-[253px] flex-col rounded-[20px] bg-[var(--color-text-primary)] p-5 text-[var(--color-bg-primary)]">
+        <p className="ui-text-uppercase-micro text-[var(--desktop-highlight)]">
+          {t({ id: "home.context.eyebrow", message: "Dictation" })}
+        </p>
+        <div className="mt-4 flex items-start gap-2.5">
+          <span
+            aria-hidden="true"
+            className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-[var(--desktop-highlight)]"
+          />
+          <div className="min-w-0">
+            <p className="ui-text-body-sm font-semibold text-white">
+              {isLocal
+                ? t({
+                    id: "home.context.local_title",
+                    message: "On-device model selected",
+                  })
+                : t({
+                    id: "home.context.cloud_title",
+                    message: "Cloud transcription selected",
+                  })}
+            </p>
+            <p className="mt-1 ui-text-micro text-[var(--color-text-disabled)]">
+              {isLocal
+                ? t({
+                    id: "home.context.local_detail",
+                    message: `Local processing · This Mac · ${{ shortcut: shortcutLabel }} enabled`,
+                  })
+                : t({
+                    id: "home.context.cloud_detail",
+                    message: `Remote processing · ${{ shortcut: shortcutLabel }} enabled`,
+                  })}
+            </p>
+          </div>
+        </div>
+        <p className="mt-2.5 ui-text-micro text-[var(--color-text-disabled)]">
+          {isLocal
+            ? t({
+                id: "home.context.local_proof",
+                message: "Audio and transcript stay on this Mac.",
+              })
+            : t({
+                id: "home.context.cloud_proof",
+                message: "Provider settings live in Setup.",
+              })}
+        </p>
+        <button
+          className="mt-2.5 -ml-2 flex min-h-10 w-max items-center rounded-lg px-2 ui-text-label font-semibold text-[var(--desktop-highlight)] transition-colors hover:bg-white/10 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent-30)]"
+          onClick={onOpenSetup}
+          type="button"
+        >
+          {t({
+            id: "home.context.setup",
+            message: "View model details",
+          })}
+          <span aria-hidden="true"> →</span>
+        </button>
+
+        <div className="mt-auto flex items-center gap-2.5 border-t border-white/10 pt-[15px]">
+          <span className="grid h-7 w-7 shrink-0 place-items-center rounded-lg bg-[var(--desktop-highlight)] text-[var(--color-text-primary)]">
+            <ClockCounterClockwise aria-hidden="true" size={14} />
+          </span>
+          <div className="min-w-0 flex-1">
+            <p className="truncate ui-text-body-sm font-semibold text-white">
+              {t({
+                id: "home.context.history_title",
+                message: "Dictation history",
+              })}
+            </p>
+            <p className="mt-0.5 truncate ui-text-micro text-[var(--color-text-disabled)]">
+              {t({
+                id: "home.context.history_detail",
+                message: "Original audio stays available.",
+              })}
+            </p>
+          </div>
+          <button
+            className="flex min-h-10 shrink-0 items-center rounded-lg px-1.5 ui-text-label font-semibold text-[var(--desktop-highlight)] transition-colors hover:bg-white/10 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent-30)]"
+            onClick={onOpenHistory}
+            type="button"
+          >
+            {t({ id: "home.context.history_action", message: "Open" })}
+          </button>
+        </div>
+      </section>
+    </aside>
+  );
+}
+
+function HistoryView({
+  focusRecordId,
+  isActive,
+  onReturn,
+  showCleanupButtons,
+}: {
+  focusRecordId: string | null;
+  isActive: boolean;
+  onReturn: () => void;
+  showCleanupButtons: boolean;
+}) {
+  return (
+    <>
+      <div className="shrink-0 border-b border-border-primary pb-6">
+        <button
+          className="-ml-2 flex h-8 items-center gap-1 rounded-lg px-2 ui-text-body-sm ui-color-muted transition-colors hover:bg-surface-elevated hover:ui-color-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent-30)]"
+          onClick={onReturn}
+          type="button"
+        >
+          <ArrowLeft aria-hidden="true" size={14} />
+          Dictation
+        </button>
+        <p className="mt-5 ui-text-uppercase-micro ui-color-accent">History</p>
+        <h1 className="mt-2 ui-text-display ui-color-primary">
+          Everything you have said.
+        </h1>
+      </div>
+      <TranscriptionList
+        focusRecordId={focusRecordId}
+        isActive={isActive}
+        showLlmButtons={showCleanupButtons}
+        historyRoute
+      />
+      <p className="shrink-0 border-t border-border-primary pt-4 ui-text-body-sm ui-color-muted">
+        <span
+          aria-hidden="true"
+          className="mr-2 inline-block h-1.5 w-1.5 rounded-full bg-[var(--color-accent)]"
+        />
+        <strong className="ui-color-secondary">
+          All of this is on this Mac.
+        </strong>{" "}
+        Deleting a dictation removes its transcript and original audio.
+      </p>
+    </>
+  );
+}
 
 function HomeWorkspace({
   dispatch,
-  licenseGateActive,
+  hasHistory,
   runDiagnostics,
   settingsShortcut,
   showCleanupButtons,
   state,
   todayStats,
-  todayStatsFetched,
   transcriptionMode,
+  weeklyActivity,
 }: WorkspaceProps) {
   const { t } = useLingui();
+  const [libraryDetailVisible, setLibraryDetailVisible] = useState(false);
   const homeActive = state.activeView === "home";
-  const protectedRouteActive = (route: HomeView) =>
-    state.activeView === route && licenseGateActive;
+  const protectedRouteActive = (route: HomeView) => state.activeView === route;
+  const showGlobalAskMemory = !(
+    state.activeView === "library" && libraryDetailVisible
+  );
 
   return (
     <main className="ui-canvas flex flex-1 flex-col min-w-0 overflow-hidden relative will-change-contents">
       <header
-        className="flex h-12 w-full shrink-0 items-center justify-between border-b border-border-primary px-5"
+        className="pointer-events-none absolute inset-x-0 top-0 z-10 flex h-[84px] w-full shrink-0 items-center justify-between px-7"
         data-tauri-drag-region
       >
-        {state.activeView === "settings" ? (
-          <div className="flex items-center gap-2 ui-text-body-sm">
-            <button
-              aria-label={t({
-                id: "settings.route.return_home",
-                message: "Return to Home",
-              })}
-              className="flex h-8 items-center gap-2 rounded-lg px-2 ui-color-muted transition-[background-color,color] hover:bg-surface-elevated hover:ui-color-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent-30)]"
-              onClick={() => dispatch({ type: "return-home" })}
-              type="button"
-            >
-              <House aria-hidden="true" size={15} />
-              {t({ id: "home.sidebar.home", message: "Home" })}
-            </button>
-            <span aria-hidden="true" className="ui-color-disabled">
-              /
-            </span>
-            <span className="ui-color-primary">
-              {t({ id: "settings.route.title", message: "Settings" })}
-            </span>
-          </div>
-        ) : (
-          <span className="font-display ui-text-nav-brand ui-color-primary">
-            Looper
-          </span>
-        )}
-        {state.activeView === "settings" ? (
-          <span
-            aria-live="polite"
-            className="flex items-center gap-2 ui-text-micro ui-color-muted"
-            role="status"
-          >
-            <span
-              aria-hidden="true"
-              className="h-1.5 w-1.5 rounded-full bg-[var(--color-success)]"
-            />
-            {t({
-              id: "settings.route.saved_automatically",
-              message: "Saved automatically",
-            })}
-          </span>
-        ) : (
+        <span aria-hidden="true" />
+        {showGlobalAskMemory ? (
           <button
-            className="flex h-8 items-center gap-2 rounded-lg border border-border-primary bg-surface-surface px-3 ui-text-body-sm ui-color-secondary transition-[background-color,border-color,color] hover:border-border-hover hover:bg-surface-elevated hover:text-content-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent-30)] disabled:pointer-events-none disabled:opacity-45"
-            disabled={!licenseGateActive}
+            className="pointer-events-auto flex h-10 w-[112px] items-center justify-center gap-2 rounded-xl bg-[var(--color-text-primary)] px-0 ui-text-label font-semibold text-[var(--color-bg-primary)] transition-opacity hover:opacity-85 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent-30)] disabled:pointer-events-none disabled:opacity-45"
             onClick={() => dispatch({ type: "ask-memory", query: null })}
             type="button"
           >
             {t({ id: "home.ask_memory", message: "Ask Memory" })}
-            <kbd className="ui-text-micro ui-color-muted">⌘K</kbd>
+            <kbd className="ui-text-micro text-white/60">⌘K</kbd>
           </button>
-        )}
+        ) : null}
       </header>
 
       <div
-        className={`flex-1 flex flex-col px-10 min-h-0 ${homeActive ? "pb-3" : "pb-6"}`}
+        className={`flex min-h-0 flex-1 flex-col px-10 ${
+          state.activeView === "settings" ? "pt-0" : "pt-[38px]"
+        } ${homeActive ? "pb-3" : "pb-6"}`}
       >
-        <WorkspaceRoute active={homeActive}>
-          <HomeTodayHeader
-            active={homeActive}
-            stats={todayStats}
-            transcriptionsFetched={todayStatsFetched}
-          />
-          <CaptureStatusCard
-            shortcut={settingsShortcut}
-            stage={state.signalStage}
-            stats={todayStats}
-          />
-          <HomeMeetingActivity
-            isActive={homeActive && licenseGateActive}
-            onOpen={(item) =>
-              dispatch({
-                type: "open-meeting",
-                item: { id: item.id, query: item.name },
-              })
-            }
-          />
-          <TranscriptionList
+        <WorkspaceRoute active={homeActive} paddedTop={false}>
+          <div className="grid min-h-0 w-full gap-6 min-[1180px]:grid-cols-[minmax(0,1fr)_264px]">
+            <div className="flex min-h-0 flex-col">
+              <HomeTodayHeader active={homeActive} stats={todayStats} />
+              <CaptureStatusCard
+                shortcut={settingsShortcut}
+                stage={state.signalStage}
+                weeklyActivity={weeklyActivity}
+              />
+              <HomeMeetingActivity
+                isActive={homeActive}
+                onOpen={(item) =>
+                  dispatch({
+                    type: "open-meeting",
+                    item: { id: item.id, query: item.name },
+                  })
+                }
+              />
+              <TranscriptionList
+                focusRecordId={state.historyFocusId}
+                isActive={homeActive}
+                onOpenShortcutSettings={() =>
+                  dispatch({ type: "activate-view", view: "settings" })
+                }
+                showLlmButtons={showCleanupButtons}
+                todayOnly
+              />
+              {hasHistory ? (
+                <div className="mt-6 shrink-0">
+                  <button
+                    className="flex w-full items-center justify-center gap-2 rounded-xl border border-dashed border-border-secondary py-3 ui-text-body-sm ui-color-muted transition-colors hover:border-border-hover hover:text-content-secondary"
+                    onClick={() =>
+                      dispatch({ type: "activate-view", view: "history" })
+                    }
+                    type="button"
+                  >
+                    All history <span aria-hidden="true">→</span>
+                  </button>
+                  <HomeAskBar
+                    onAsk={(query) => dispatch({ type: "ask-memory", query })}
+                  />
+                </div>
+              ) : null}
+            </div>
+            <HomeDictationContext
+              onOpenHistory={() =>
+                dispatch({ type: "activate-view", view: "history" })
+              }
+              onOpenSetup={() =>
+                dispatch({ type: "activate-view", view: "settings" })
+              }
+              shortcut={settingsShortcut}
+              transcriptionMode={transcriptionMode}
+            />
+          </div>
+        </WorkspaceRoute>
+
+        <WorkspaceRoute
+          active={state.activeView === "history"}
+          paddedTop={false}
+        >
+          <HistoryView
             focusRecordId={state.historyFocusId}
-            isActive={homeActive}
-            showLlmButtons={showCleanupButtons}
-            todayOnly
-          />
-          <button
-            className="mt-2 flex w-full items-center justify-center gap-2 rounded-xl border border-dashed border-border-secondary py-3 ui-text-body-sm ui-color-muted transition-colors hover:border-border-hover hover:text-content-secondary"
-            onClick={() => dispatch({ type: "activate-view", view: "memory" })}
-            type="button"
-          >
-            {t({
-              id: "home.archive_handoff",
-              message: "Everything before today lives in Memory",
-            })}
-            <span aria-hidden="true">→</span>
-          </button>
-          <HomeAskBar
-            onAsk={(query) => dispatch({ type: "ask-memory", query })}
+            isActive={protectedRouteActive("history")}
+            onReturn={() => dispatch({ type: "activate-view", view: "home" })}
+            showCleanupButtons={showCleanupButtons}
           />
         </WorkspaceRoute>
 
-        <WorkspaceRoute active={state.activeView === "voice"}>
+        <WorkspaceRoute
+          active={state.activeView === "import"}
+          paddedTop={false}
+        >
+          <ImportView
+            selectedPaths={state.pendingImportPaths}
+            onBack={() => {
+              dispatch({ type: "set-import-paths", paths: null });
+              dispatch({ type: "activate-view", view: "library" });
+            }}
+            onUpdatePaths={(paths) =>
+              dispatch({ type: "set-import-paths", paths })
+            }
+            onReviewImport={() =>
+              dispatch({ type: "activate-view", view: "library" })
+            }
+          />
+        </WorkspaceRoute>
+
+        <WorkspaceRoute active={state.activeView === "voice"} paddedTop={false}>
           <VoiceView isActive={protectedRouteActive("voice")} />
         </WorkspaceRoute>
         <WorkspaceRoute
@@ -517,13 +726,20 @@ function HomeWorkspace({
           <LibraryView
             focusItem={state.libraryFocus}
             isActive={protectedRouteActive("library")}
+            onDetailVisibilityChange={setLibraryDetailVisible}
+            onOpenImportRoute={() =>
+              dispatch({ type: "activate-view", view: "import" })
+            }
             onSetImportPaths={(paths) =>
               dispatch({ type: "set-import-paths", paths })
             }
             pendingImportPaths={state.pendingImportPaths}
           />
         </WorkspaceRoute>
-        <WorkspaceRoute active={state.activeView === "memory"}>
+        <WorkspaceRoute
+          active={state.activeView === "memory"}
+          paddedTop={false}
+        >
           <MemoryView
             isActive={protectedRouteActive("memory")}
             onOpenResult={(result) =>
@@ -531,6 +747,18 @@ function HomeWorkspace({
             }
             onPrefillConsumed={() => dispatch({ type: "clear-memory-prefill" })}
             prefillQuery={state.memoryPrefill}
+          />
+        </WorkspaceRoute>
+        <WorkspaceRoute
+          active={state.activeView === "insights"}
+          paddedTop={false}
+        >
+          <InsightsView
+            transcriptionMode={transcriptionMode}
+            isActive={protectedRouteActive("insights")}
+            onOpenStudio={() =>
+              dispatch({ type: "activate-view", view: "voice" })
+            }
           />
         </WorkspaceRoute>
         <WorkspaceRoute active={state.activeView === "settings"} width="full">
@@ -632,24 +860,23 @@ function DragImportOverlay({
 export function HomePresentation({
   appVersion,
   dispatch,
-  licenseGateActive,
+  hasHistory,
   reduceMotion,
   runDiagnostics,
   settingsShortcut,
   showCleanupButtons,
   state,
   todayStats,
-  todayStatsFetched,
   transcriptionMode,
   updateAvailable,
+  weeklyActivity,
 }: HomePresentationProps) {
   return (
-    <div className="flex h-screen w-screen overflow-hidden bg-transparent font-sans ui-color-on-solid select-none">
+    <div className="desktop-workspace-shell flex overflow-hidden bg-transparent font-sans text-content-primary select-none">
       <WindowControls />
       <HomeSidebar
         appVersion={appVersion}
         dispatch={dispatch}
-        licenseGateActive={licenseGateActive}
         reduceMotion={reduceMotion}
         state={state}
         transcriptionMode={transcriptionMode}
@@ -657,14 +884,14 @@ export function HomePresentation({
       />
       <HomeWorkspace
         dispatch={dispatch}
-        licenseGateActive={licenseGateActive}
+        hasHistory={hasHistory}
         runDiagnostics={runDiagnostics}
         settingsShortcut={settingsShortcut}
         showCleanupButtons={showCleanupButtons}
         state={state}
         todayStats={todayStats}
-        todayStatsFetched={todayStatsFetched}
         transcriptionMode={transcriptionMode}
+        weeklyActivity={weeklyActivity}
       />
       <DragImportOverlay
         active={state.dragActive}
@@ -673,6 +900,10 @@ export function HomePresentation({
       <FAQModal
         isOpen={state.faqOpen}
         onClose={() => dispatch({ type: "close-faq" })}
+      />
+      <ScratchpadPanel
+        open={state.scratchpadOpen}
+        onClose={() => dispatch({ type: "set-scratchpad-open", open: false })}
       />
     </div>
   );

@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   ACCOUNT_DESTINATIONS,
+  APP_DESTINATIONS,
   COMMAND_DESTINATIONS,
   MANAGE_DESTINATIONS,
   VOICE_DESTINATIONS,
@@ -25,8 +26,14 @@ describe("app navigation groups", () => {
   });
 
   it("keeps global launchers aligned with the sidebar journey", () => {
-    const expected = ["home", "agent", "library", "dictation", "usage", "billing", "settings"];
+    const expected = ["home", "library", "agent", "dictation", "usage", "billing", "settings"];
 
     expect(ids(COMMAND_DESTINATIONS)).toEqual(expected);
+  });
+
+  it("labels the home destination as home in the sidebar", () => {
+    expect(APP_DESTINATIONS.find((destination) => destination.id === "home")?.sidebarLabelKey).toBe(
+      "nav.home",
+    );
   });
 });

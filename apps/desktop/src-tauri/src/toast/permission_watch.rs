@@ -5,7 +5,10 @@ use std::{
 };
 use tauri::AppHandle;
 
-static ACTIVE_GENERATION: AtomicU64 = AtomicU64::new(0);
+static ACCESSIBILITY_GENERATION: AtomicU64 = AtomicU64::new(0);
+static MICROPHONE_GENERATION: AtomicU64 = AtomicU64::new(0);
+static NEXT_TOAST_ID: AtomicU64 = AtomicU64::new(0);
+static ACTIVE_TOAST_ID: AtomicU64 = AtomicU64::new(0);
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 enum PermissionKind {
@@ -16,22 +19,33 @@ enum PermissionKind {
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub(super) struct Watch {
     generation: u64,
-    permission: Option<PermissionKind>,
+    permission: PermissionKind,
+    toast_id: u64,
 }
 
 impl Watch {
-    pub(super) fn begin(action: Option<&str>) -> Self {
-        Self {
-            generation: ACTIVE_GENERATION.fetch_add(1, Ordering::SeqCst) + 1,
-            permission: PermissionKind::from_action(action),
-        }
+    pub(super) fn begin(action: Option<&str>) -> Option<Self> {
+        let Some(permission) = PermissionKind::from_action(action) else {
+            mark_toast_hidden();
+            return None;
+        };
+        let watch = Self {
+            generation: permission.bump_generation(),
+            permission,
+            toast_id: NEXT_TOAST_ID.fetch_add(1, Ordering::SeqCst) + 1,
+        };
+        ACTIVE_TOAST_ID.store(watch.toast_id, Ordering::SeqCst);
+        Some(watch)
     }
 
     pub(super) fn monitor(self, app: AppHandle<AppRuntime>) {
-        let Some(permission) = self.permission else {
-            return;
-        };
-        std::thread::spawn(move || wait_until_resolved(app, permission, self.generation));
+        std::thread::spawn(move || wait_until_resolved(app, self));
+    }
+
+    fn take_visible_toast(self) -> bool {
+        ACTIVE_TOAST_ID
+            .compare_exchange(self.toast_id, 0, Ordering::SeqCst, Ordering::SeqCst)
+            .is_ok()
     }
 }
 
@@ -50,27 +64,42 @@ impl PermissionKind {
             Self::Microphone => crate::permissions::check_microphone_permission(),
         }
     }
+
+    fn generation(self) -> &'static AtomicU64 {
+        match self {
+            Self::Accessibility => &ACCESSIBILITY_GENERATION,
+            Self::Microphone => &MICROPHONE_GENERATION,
+        }
+    }
+
+    fn bump_generation(self) -> u64 {
+        self.generation().fetch_add(1, Ordering::SeqCst) + 1
+    }
 }
 
-pub(super) fn invalidate() {
-    ACTIVE_GENERATION.fetch_add(1, Ordering::SeqCst);
+pub(super) fn mark_toast_hidden() {
+    ACTIVE_TOAST_ID.store(0, Ordering::SeqCst);
 }
 
-fn wait_until_resolved(app: AppHandle<AppRuntime>, permission: PermissionKind, generation: u64) {
+fn wait_until_resolved(app: AppHandle<AppRuntime>, watch: Watch) {
     loop {
         std::thread::sleep(Duration::from_millis(500));
-        if generation_is_stale(generation) {
+        if generation_is_stale(watch.permission, watch.generation) {
             return;
         }
-        if permission.has_resolved(&app) && !generation_is_stale(generation) {
-            super::hide(&app);
+        if watch.permission.has_resolved(&app)
+            && !generation_is_stale(watch.permission, watch.generation)
+        {
+            if watch.take_visible_toast() {
+                super::hide(&app);
+            }
             return;
         }
     }
 }
 
-fn generation_is_stale(generation: u64) -> bool {
-    ACTIVE_GENERATION.load(Ordering::SeqCst) != generation
+fn generation_is_stale(permission: PermissionKind, generation: u64) -> bool {
+    permission.generation().load(Ordering::SeqCst) != generation
 }
 
 fn accessibility_ready(app: &AppHandle<AppRuntime>) -> bool {
@@ -88,7 +117,7 @@ fn accessibility_ready(app: &AppHandle<AppRuntime>) -> bool {
 
 #[cfg(test)]
 mod tests {
-    use super::PermissionKind;
+    use super::{generation_is_stale, mark_toast_hidden, PermissionKind, Watch};
 
     #[test]
     fn maps_only_supported_settings_actions_to_permissions() {
@@ -105,5 +134,55 @@ mod tests {
             None
         );
         assert_eq!(PermissionKind::from_action(None), None);
+    }
+
+    #[test]
+    fn permission_monitors_have_independent_lifecycles() {
+        let accessibility = Watch::begin(Some("open_accessibility_settings")).unwrap();
+        assert!(accessibility.take_visible_toast());
+
+        let accessibility = Watch::begin(Some("open_accessibility_settings")).unwrap();
+        let microphone = Watch::begin(Some("open_microphone_settings")).unwrap();
+
+        assert!(!generation_is_stale(
+            PermissionKind::Accessibility,
+            accessibility.generation,
+        ));
+        assert!(!generation_is_stale(
+            PermissionKind::Microphone,
+            microphone.generation,
+        ));
+
+        mark_toast_hidden();
+        assert!(!microphone.take_visible_toast());
+        assert!(!generation_is_stale(
+            PermissionKind::Accessibility,
+            accessibility.generation,
+        ));
+        assert!(!generation_is_stale(
+            PermissionKind::Microphone,
+            microphone.generation,
+        ));
+
+        let replacement = Watch::begin(Some("open_accessibility_settings")).unwrap();
+        assert!(generation_is_stale(
+            PermissionKind::Accessibility,
+            accessibility.generation,
+        ));
+        assert!(!generation_is_stale(
+            PermissionKind::Accessibility,
+            replacement.generation,
+        ));
+        assert!(!generation_is_stale(
+            PermissionKind::Microphone,
+            microphone.generation,
+        ));
+
+        assert!(Watch::begin(Some("retry_transcription")).is_none());
+        assert!(!replacement.take_visible_toast());
+        assert!(!generation_is_stale(
+            PermissionKind::Accessibility,
+            replacement.generation,
+        ));
     }
 }

@@ -1,6 +1,9 @@
 use crate::AppRuntime;
 use tauri::{AppHandle, Manager, WebviewWindow};
 
+#[cfg(not(target_os = "macos"))]
+use tauri::{LogicalSize, PhysicalPosition};
+
 const PROTECTED_WINDOW_LABELS: [&str; 3] = [
     crate::MAIN_WINDOW_LABEL,
     crate::toast::WINDOW_LABEL,
@@ -86,4 +89,68 @@ pub fn set_interactive(
 
     #[cfg(not(any(target_os = "macos", target_os = "windows")))]
     let _ = (app, overlay_window, interactive);
+}
+
+pub async fn set_frame(
+    app: &AppHandle<AppRuntime>,
+    overlay_window: &WebviewWindow<AppRuntime>,
+    logical_size: (f64, f64),
+    physical_origin: (i32, i32),
+) -> Result<(), String> {
+    #[cfg(target_os = "macos")]
+    {
+        return crate::platform::macos::overlay::set_frame(
+            app,
+            overlay_window,
+            logical_size,
+            physical_origin,
+        )
+        .await
+        .map_err(|error| format!("Failed to update macOS overlay frame: {error}"));
+    }
+
+    #[cfg(not(target_os = "macos"))]
+    {
+        let _ = app;
+        overlay_window
+            .set_size(LogicalSize::new(logical_size.0, logical_size.1))
+            .map_err(|error| format!("Failed to resize overlay: {error}"))?;
+        overlay_window
+            .set_position(PhysicalPosition::new(
+                physical_origin.0,
+                physical_origin.1,
+            ))
+            .map_err(|error| format!("Failed to position overlay: {error}"))?;
+        Ok(())
+    }
+}
+
+pub fn schedule_frame(
+    app: &AppHandle<AppRuntime>,
+    overlay_window: &WebviewWindow<AppRuntime>,
+    logical_size: (f64, f64),
+    physical_origin: (i32, i32),
+) -> Result<(), String> {
+    #[cfg(target_os = "macos")]
+    {
+        return crate::platform::macos::overlay::schedule_frame(
+            app,
+            overlay_window,
+            logical_size,
+            physical_origin,
+        )
+        .map_err(|error| format!("Failed to schedule macOS overlay frame: {error}"));
+    }
+
+    #[cfg(not(target_os = "macos"))]
+    {
+        let _ = app;
+        overlay_window
+            .set_size(LogicalSize::new(logical_size.0, logical_size.1))
+            .map_err(|error| format!("Failed to resize overlay: {error}"))?;
+        overlay_window
+            .set_position(PhysicalPosition::new(physical_origin.0, physical_origin.1))
+            .map_err(|error| format!("Failed to position overlay: {error}"))?;
+        Ok(())
+    }
 }

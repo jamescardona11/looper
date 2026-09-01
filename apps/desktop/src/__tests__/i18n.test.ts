@@ -7,9 +7,7 @@ describe("English catalog", () => {
 
     // El aviso ya no promete que activar la casilla baste: el sistema puede
     // enseñarla marcada y seguir negando el permiso.
-    expect(i18n._("meeting.capture.shortcut_unavailable")).toBe(
-      "macOS is blocking Fn",
-    );
+    expect(i18n._("meeting.capture.shortcut_unavailable")).toBe("Fn blocked");
     expect(i18n._("meeting.capture.shortcut_enable_hint")).toBe(
       "Accessibility needed",
     );

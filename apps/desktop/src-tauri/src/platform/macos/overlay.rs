@@ -24,6 +24,7 @@ struct PanelPolicy {
     floating: bool,
     hides_on_deactivate: bool,
     shadow: bool,
+    transparent: bool,
     alpha: f64,
 }
 
@@ -34,6 +35,7 @@ impl PanelPolicy {
             floating: true,
             hides_on_deactivate: false,
             shadow: false,
+            transparent: true,
             alpha: 1.0,
         }
     }
@@ -78,6 +80,10 @@ pub fn init(app: &AppHandle<AppRuntime>, overlay_window: &WebviewWindow<AppRunti
     panel.set_floating_panel(policy.floating);
     panel.set_hides_on_deactivate(policy.hides_on_deactivate);
     panel.set_has_shadow(policy.shadow);
+    // `to_panel` sustituye la superficie transparente que Tauri configuró en
+    // la WebviewWindow. Sin restaurarla, macOS pinta el frame completo del
+    // overlay alrededor de la pill.
+    panel.set_transparent(policy.transparent);
     panel.set_ignores_mouse_events(PointerPolicy::PassThrough.ignores_mouse_events());
     Ok(())
 }
@@ -129,6 +135,115 @@ pub fn set_interactive(app: &AppHandle<AppRuntime>, interactive: bool) -> Result
     Ok(())
 }
 
+pub async fn set_frame(
+    app: &AppHandle<AppRuntime>,
+    overlay_window: &WebviewWindow<AppRuntime>,
+    logical_size: (f64, f64),
+    physical_origin: (i32, i32),
+) -> Result<()> {
+    let current_origin = overlay_window
+        .outer_position()
+        .context("read current macOS overlay position")?;
+    let scale = overlay_window
+        .scale_factor()
+        .context("read macOS overlay scale")?;
+    let app_handle = app.clone();
+    let (sender, receiver) = tokio::sync::oneshot::channel();
+
+    app.run_on_main_thread(move || {
+        let result = apply_frame(
+            &app_handle,
+            (current_origin.x, current_origin.y),
+            logical_size,
+            physical_origin,
+            scale,
+        );
+        let _ = sender.send(result);
+    })
+    .context("schedule macOS overlay frame update")?;
+
+    receiver
+        .await
+        .context("wait for macOS overlay frame update")?
+}
+
+/// Enqueues one AppKit frame mutation before the webview receives its next
+/// visual state. Unlike separate Tauri size and position calls, macOS cannot
+/// paint an intermediate frame while the compact pill becomes the recorder.
+pub fn schedule_frame(
+    app: &AppHandle<AppRuntime>,
+    overlay_window: &WebviewWindow<AppRuntime>,
+    logical_size: (f64, f64),
+    physical_origin: (i32, i32),
+) -> Result<()> {
+    let current_origin = overlay_window
+        .outer_position()
+        .context("read current macOS overlay position")?;
+    let scale = overlay_window
+        .scale_factor()
+        .context("read macOS overlay scale")?;
+    let app_handle = app.clone();
+
+    app.run_on_main_thread(move || {
+        if let Err(error) = apply_frame(
+            &app_handle,
+            (current_origin.x, current_origin.y),
+            logical_size,
+            physical_origin,
+            scale,
+        ) {
+            tracing::error!("Failed to apply scheduled macOS overlay frame: {error}");
+        }
+    })
+    .context("schedule macOS overlay frame update")
+}
+
+fn apply_frame(
+    app: &AppHandle<AppRuntime>,
+    current_tauri_origin: (i32, i32),
+    logical_size: (f64, f64),
+    physical_origin: (i32, i32),
+    scale: f64,
+) -> Result<()> {
+    let panel = app
+        .get_webview_panel(crate::MAIN_WINDOW_LABEL)
+        .map_err(|error| anyhow!(format!("{error:?}")))
+        .context("get macOS overlay panel")?;
+    let current_frame = panel.as_panel().frame();
+    let target_frame = panel_frame_for_tauri_target(
+        current_frame,
+        current_tauri_origin,
+        physical_origin,
+        logical_size,
+        scale,
+    );
+    panel.as_panel().setFrame_display(target_frame, true);
+    Ok(())
+}
+
+fn panel_frame_for_tauri_target(
+    current_frame: NSRect,
+    current_tauri_origin: (i32, i32),
+    target_tauri_origin: (i32, i32),
+    target_logical_size: (f64, f64),
+    scale: f64,
+) -> NSRect {
+    let delta_x = f64::from(target_tauri_origin.0 - current_tauri_origin.0) / scale;
+    let delta_y = f64::from(target_tauri_origin.1 - current_tauri_origin.1) / scale;
+    let target_x = current_frame.origin.x + delta_x;
+
+    // Tauri mide Y hacia abajo desde la esquina superior; AppKit, hacia arriba
+    // desde la inferior. Conservamos el punto superior mientras cambia el alto.
+    let current_top = current_frame.origin.y + current_frame.size.height;
+    let target_top = current_top - delta_y;
+    let target_y = target_top - target_logical_size.1;
+
+    NSRect::new(
+        NSPoint::new(target_x, target_y),
+        NSSize::new(target_logical_size.0, target_logical_size.1),
+    )
+}
+
 fn schedule_pointer_policy(app: &AppHandle<AppRuntime>, pointer: PointerPolicy) {
     let app_handle = app.clone();
     let _ = app.run_on_main_thread(move || {
@@ -149,6 +264,7 @@ mod tests {
         assert!(policy.floating);
         assert!(!policy.hides_on_deactivate);
         assert!(!policy.shadow);
+        assert!(policy.transparent);
         assert_eq!(policy.alpha, 1.0);
     }
 
@@ -161,5 +277,21 @@ mod tests {
         assert!(passive.ignores_mouse_events());
         assert_eq!(active, PointerPolicy::Interactive);
         assert!(!active.ignores_mouse_events());
+    }
+
+    #[test]
+    fn panel_frame_updates_size_and_top_left_in_one_step() {
+        let current = NSRect::new(NSPoint::new(100.0, 500.0), NSSize::new(268.0, 56.0));
+
+        let target = panel_frame_for_tauri_target(
+            current,
+            (200, 300),
+            (170, -4),
+            (328.0, 360.0),
+            2.0,
+        );
+
+        assert_eq!(target.origin, NSPoint::new(85.0, 348.0));
+        assert_eq!(target.size, NSSize::new(328.0, 360.0));
     }
 }

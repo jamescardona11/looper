@@ -1,6 +1,6 @@
 import { useAudioUsage } from "@looper/data";
 import { useTranslation } from "@looper/i18n/react";
-import { IconClock, IconCloud, IconDatabase, IconMicrophone } from "@tabler/icons-react";
+import { IconMicrophone } from "@tabler/icons-react";
 import { Link } from "@tanstack/react-router";
 import { Eyebrow } from "@/shared/components/eyebrow";
 import { ProductPageHeader } from "@/shared/components/product-page-header";
@@ -17,9 +17,9 @@ export function UsageDashboard() {
   return (
     <ProductPageLayout>
       <ProductPageHeader
-        eyebrow={t("usage.cloudScope")}
-        title={t("usage.audioTitle")}
-        description={t("usage.audioSubtitle")}
+        eyebrow={t("nav.insights")}
+        title={t("web.insights.title")}
+        description={t("web.insights.subtitle")}
       />
 
       {isLoading ? (
@@ -28,34 +28,55 @@ export function UsageDashboard() {
         <UsageEmpty />
       ) : (
         <>
-          <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            <MetricCard
-              icon={IconMicrophone}
-              label={t("usage.transcriptions")}
-              value={formatNumber(usage.month.transcriptions, locale)}
-              detail={t("usage.completedDetail", {
-                completed: usage.month.completed,
-                failed: usage.month.failed,
-              })}
-            />
-            <MetricCard
-              icon={IconClock}
-              label={t("usage.audioDuration")}
-              value={formatDuration(usage.month.durationMs, locale)}
-              detail={t("usage.knownDurationHint")}
-            />
-            <MetricCard
-              icon={IconCloud}
-              label={t("usage.processedAudio")}
-              value={formatBytes(usage.month.processedBytes, locale)}
-              detail={t("usage.processedAudioHint")}
-            />
-            <MetricCard
-              icon={IconDatabase}
-              label={t("usage.storedAudio")}
-              value={formatBytes(usage.month.storedBytes, locale)}
-              detail={t("usage.storedAudioHint")}
-            />
+          <section aria-labelledby="usage-month-title">
+            <h2 id="usage-month-title" className="sr-only">
+              {t("usage.audioTitle")}
+            </h2>
+            <Card className="overflow-hidden">
+              <dl className="grid lg:grid-cols-[minmax(15rem,2fr)_minmax(0,3fr)]">
+                <div
+                  data-testid="usage-primary-metric"
+                  className="border-border border-b bg-secondary/25 p-5 sm:p-6 lg:border-r lg:border-b-0"
+                >
+                  <dt>
+                    <span className="grid size-9 place-items-center rounded-lg bg-[var(--web-highlight)] text-primary">
+                      <IconMicrophone className="size-4" aria-hidden />
+                    </span>
+                    <span className="mt-5 block font-mono text-[11px] text-muted-foreground uppercase tracking-wide">
+                      {t("usage.transcriptions")}
+                    </span>
+                  </dt>
+                  <dd className="mt-2">
+                    <span className="block font-display text-4xl tabular-nums tracking-tight">
+                      {formatNumber(usage.month.transcriptions, locale)}
+                    </span>
+                    <span className="mt-2 block text-muted-foreground text-xs leading-relaxed">
+                      {t("usage.completedDetail", {
+                        completed: usage.month.completed,
+                        failed: usage.month.failed,
+                      })}
+                    </span>
+                  </dd>
+                </div>
+                <div data-testid="usage-secondary-metrics" className="divide-y divide-border">
+                  <SummaryMetric
+                    label={t("usage.audioDuration")}
+                    value={formatDuration(usage.month.durationMs, locale)}
+                    detail={t("usage.knownDurationHint")}
+                  />
+                  <SummaryMetric
+                    label={t("usage.processedAudio")}
+                    value={formatBytes(usage.month.processedBytes, locale)}
+                    detail={t("usage.processedAudioHint")}
+                  />
+                  <SummaryMetric
+                    label={t("usage.storedAudio")}
+                    value={formatBytes(usage.month.storedBytes, locale)}
+                    detail={t("usage.storedAudioHint")}
+                  />
+                </div>
+              </dl>
+            </Card>
           </section>
 
           <section className="mt-8 grid gap-6 lg:grid-cols-[minmax(0,3fr)_minmax(18rem,2fr)]">
@@ -149,26 +170,17 @@ export function UsageDashboard() {
   );
 }
 
-function MetricCard({
-  icon: Icon,
-  label,
-  value,
-  detail,
-}: {
-  icon: typeof IconMicrophone;
-  label: string;
-  value: string;
-  detail: string;
-}) {
+function SummaryMetric({ label, value, detail }: { label: string; value: string; detail: string }) {
   return (
-    <Card className="p-5">
-      <span className="grid size-9 place-items-center rounded-lg bg-secondary text-primary">
-        <Icon className="size-4" aria-hidden />
-      </span>
-      <Eyebrow className="mt-5">{label}</Eyebrow>
-      <p className="mt-2 font-display text-3xl tabular-nums tracking-tight">{value}</p>
-      <p className="mt-2 text-muted-foreground text-xs leading-relaxed">{detail}</p>
-    </Card>
+    <div className="grid grid-cols-[minmax(0,1fr)_auto] gap-4 px-5 py-4 sm:px-6">
+      <dt className="min-w-0">
+        <span className="block font-medium text-sm">{label}</span>
+        <span className="mt-1 block max-w-md text-pretty text-muted-foreground text-xs leading-relaxed">
+          {detail}
+        </span>
+      </dt>
+      <dd className="font-display text-xl tabular-nums tracking-tight">{value}</dd>
+    </div>
   );
 }
 
@@ -184,31 +196,44 @@ function UsageRow({ label, value }: { label: string; value: string }) {
 function UsageEmpty() {
   const { t } = useTranslation();
   return (
-    <Card className="flex min-h-80 flex-col items-start justify-center p-8 sm:p-12">
-      <span className="grid size-11 place-items-center rounded-xl bg-secondary text-primary">
-        <IconMicrophone className="size-5" aria-hidden />
-      </span>
-      <h2 className="mt-5 font-medium text-2xl tracking-tight">{t("usage.emptyAudioTitle")}</h2>
-      <p className="mt-2 max-w-xl text-muted-foreground text-sm leading-relaxed">
-        {t("usage.emptyAudioHint")}
-      </p>
-      <Link
-        to="/library"
-        className="mt-6 inline-flex h-10 items-center rounded-full bg-primary px-5 font-medium text-primary-foreground text-sm"
-      >
-        {t("usage.viewLibrary")}
-      </Link>
-    </Card>
+    <section
+      aria-labelledby="usage-empty-title"
+      className="web-product-panel max-w-3xl rounded-xl p-6 sm:p-7"
+    >
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+        <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-secondary text-primary">
+          <IconMicrophone className="size-4" aria-hidden />
+        </span>
+        <div className="min-w-0 flex-1">
+          <h2 id="usage-empty-title" className="font-medium text-xl tracking-tight">
+            {t("usage.emptyAudioTitle")}
+          </h2>
+          <p className="mt-1 max-w-lg text-muted-foreground text-sm leading-relaxed">
+            {t("usage.emptyAudioHint")}
+          </p>
+        </div>
+        <Link
+          to="/library"
+          search={{ note: undefined }}
+          className="inline-flex h-11 shrink-0 items-center rounded-lg bg-primary px-4 font-semibold text-primary-foreground text-sm transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:h-10"
+        >
+          {t("usage.viewLibrary")}
+        </Link>
+      </div>
+    </section>
   );
 }
 
 function UsageLoading() {
   return (
-    <section className="grid animate-pulse gap-3 sm:grid-cols-2 lg:grid-cols-4">
-      {["transcriptions", "duration", "audio", "storage"].map((metric) => (
-        <Card key={metric} className="h-44 bg-secondary/30" />
-      ))}
-    </section>
+    <Card className="grid animate-pulse overflow-hidden lg:grid-cols-[minmax(15rem,2fr)_minmax(0,3fr)]">
+      <div className="h-48 border-border border-b bg-secondary/30 lg:border-r lg:border-b-0" />
+      <div className="divide-y divide-border">
+        {["duration", "audio", "storage"].map((metric) => (
+          <div key={metric} className="h-16 bg-secondary/20" />
+        ))}
+      </div>
+    </Card>
   );
 }
 

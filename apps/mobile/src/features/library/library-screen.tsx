@@ -52,15 +52,11 @@ export function LibraryScreen() {
   const meetings = useMeetingSessions();
   const [searching, setSearching] = useState(false);
   const [query, setQuery] = useState("");
-  const rangeDays = 7;
+  const [rangeStart] = useState(() => Date.now() - 7 * 24 * 60 * 60 * 1_000);
 
   const items = useMemo(
     () => buildLibraryItems(notes.notes, meetings.sessions, "all"),
     [meetings.sessions, notes.notes],
-  );
-  const rangeStart = useMemo(
-    () => Date.now() - rangeDays * 24 * 60 * 60 * 1_000,
-    [rangeDays],
   );
   const rangedItems = useMemo(
     () => items.filter((item) => item.updatedAt >= rangeStart),
@@ -76,13 +72,11 @@ export function LibraryScreen() {
       const hits = searchLibraryItems(items, needle);
       return [{ key: "results", label: resultsLabel(hits.length, needle), data: hits }];
     }
-    return groupLibraryItemsByDay(rangedItems.slice(0, 2), Date.now()).map(
-      (group) => ({
-        key: group.key,
-        label: group.label,
-        data: group.items,
-      }),
-    );
+    return groupLibraryItemsByDay(rangedItems.slice(0, 2), Date.now()).map((group) => ({
+      key: group.key,
+      label: group.label,
+      data: group.items,
+    }));
   }, [items, needle, rangedItems]);
 
   const openItem = useCallback(
@@ -134,18 +128,22 @@ export function LibraryScreen() {
     );
   } else {
     body = (
-        <SectionList
+      <SectionList
         contentContainerStyle={styles.list}
         keyboardDismissMode="on-drag"
         keyboardShouldPersistTaps="handled"
         keyExtractor={(item) => `${item.kind}:${item.id}`}
         ListHeaderComponent={null}
         renderItem={renderItem}
-        renderSectionHeader={needle ? ({ section }) => (
-          <View style={styles.sectionHeader}>
-            <SectionLabel>{section.label}</SectionLabel>
-          </View>
-        ) : undefined}
+        renderSectionHeader={
+          needle
+            ? ({ section }) => (
+                <View style={styles.sectionHeader}>
+                  <SectionLabel>{section.label}</SectionLabel>
+                </View>
+              )
+            : undefined
+        }
         sections={sections}
         stickySectionHeadersEnabled={false}
       />
@@ -157,10 +155,7 @@ export function LibraryScreen() {
       {searching ? (
         <SearchHeader onCancel={closeSearch} onChange={setQuery} query={query} />
       ) : (
-        <BrowseHeader
-          onOpenSearch={() => setSearching(true)}
-          wordCount={wordCount}
-        />
+        <BrowseHeader onOpenSearch={() => setSearching(true)} wordCount={wordCount} />
       )}
       {body}
     </SafeAreaView>
@@ -386,7 +381,13 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     width: 40,
   },
-  rowTitle: { ...typography.body, color: colors.text, fontSize: 14.5, fontWeight: "600", lineHeight: 19 },
+  rowTitle: {
+    ...typography.body,
+    color: colors.text,
+    fontSize: 14.5,
+    fontWeight: "600",
+    lineHeight: 19,
+  },
   safeArea: { backgroundColor: colors.background, flex: 1 },
   signal: {
     backgroundColor: colors.accentLight,
@@ -396,7 +397,12 @@ const styles = StyleSheet.create({
   },
   signalEyebrow: { ...typography.label, color: colors.textSecondary, letterSpacing: 1 },
   signalLabel: { ...typography.item, color: colors.text, fontSize: 15, lineHeight: 19 },
-  signalMetric: { alignItems: "baseline", flexDirection: "row", gap: space.sm, marginTop: space.sm },
+  signalMetric: {
+    alignItems: "baseline",
+    flexDirection: "row",
+    gap: space.sm,
+    marginTop: space.sm,
+  },
   signalSummary: { ...typography.meta, color: colors.textSecondary, marginTop: 6 },
   signalValue: {
     ...typography.display,

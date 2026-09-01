@@ -25,11 +25,20 @@ export function AnonymousButton() {
 
   return (
     <div className="w-full">
-      <Button variant="secondary" onClick={onClick} disabled={submitting} className="w-full">
+      <Button
+        variant="secondary"
+        onClick={onClick}
+        disabled={submitting}
+        className="h-11 w-full sm:h-9"
+      >
         {submitting ? t("auth.starting") : t("auth.continueAnonymously")}
         <IconArrowRight className="size-3.5" />
       </Button>
-      {error ? <p className="mt-2 text-center text-destructive text-xs">{error}</p> : null}
+      {error ? (
+        <p role="alert" className="mt-2 text-center text-destructive text-xs">
+          {error}
+        </p>
+      ) : null}
     </div>
   );
 }

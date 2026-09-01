@@ -16,7 +16,7 @@ import { useMountEffect } from "../../shared/hooks/useMountEffect";
 import DotMatrix from "../../shared/ui/DotMatrix";
 import type { ToastPayload, ToastType } from "../../contracts";
 
-const MAX_VISIBLE_TOASTS = 3;
+const MAX_VISIBLE_TOASTS = 1;
 const RESUME_DISMISS_MS = 2_500;
 const LEAVE_ANIMATION_MS = 120;
 
@@ -333,7 +333,7 @@ const ToastOverlay: React.FC = () => {
                   id: "toast.close",
                   message: "Close notification",
                 })}
-                className="absolute right-1 top-1 z-10 grid size-10 place-items-center rounded-xl ui-text-body-sm ui-color-gray-500 transition-colors ui-hover-on-solid"
+                className="absolute right-1 top-1 z-10 grid size-10 place-items-center rounded-xl ui-text-body-sm text-[var(--ui-capture-muted)] transition-colors hover:text-[var(--ui-capture-fg-strong)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-white"
               >
                 <span aria-hidden="true">✕</span>
               </button>
@@ -359,88 +359,101 @@ const ToastOverlay: React.FC = () => {
                       LOOPER
                     </p>
                   ) : null}
-                  <p className="break-words ui-text-body leading-relaxed ui-color-gray-200">
+                  <p className="break-words ui-text-body leading-relaxed text-[var(--ui-capture-fg-strong)]">
                     {toast.message}
                   </p>
-                  <div className="mt-2 flex min-h-8 items-center gap-3">
-                    {showRetry ? (
-                      <button
-                        type="button"
-                        disabled={retryingId === toast.id}
-                        onClick={async () => {
-                          if (!toast.retryId) return;
-                          setRetryingId(toast.id);
-                          try {
-                            await retryTranscription(toast.retryId);
-                          } catch (error) {
-                            setRetryingId(null);
-                            setToasts((current) =>
-                              current.map((currentToast) =>
-                                currentToast.id === toast.id
-                                  ? {
-                                      ...currentToast,
-                                      type: "error",
-                                      message:
-                                        error instanceof Error
-                                          ? error.message
-                                          : String(error),
-                                    }
-                                  : currentToast,
-                              ),
-                            );
-                          }
-                        }}
-                        className="min-h-10 ui-text-body-sm ui-color-info-strong transition-colors ui-hover-on-solid"
-                      >
-                        {retryingId === toast.id
-                          ? t({ id: "toast.retrying", message: "Retrying..." })
-                          : t({
-                              id: "toast.retry_transcription",
-                              message: "Retry transcription",
-                            })}
-                      </button>
-                    ) : null}
-                    {toast.action && toast.actionLabel ? (
-                      <button
-                        type="button"
-                        onClick={() =>
-                          void handleToastAction(toast, toast.action!)
-                        }
-                        className="min-h-10 ui-text-body-sm font-medium ui-color-info-strong transition-colors ui-hover-on-solid"
-                      >
-                        {toast.actionLabel} →
-                      </button>
-                    ) : null}
-                    {toast.secondaryAction && toast.secondaryActionLabel ? (
-                      <button
-                        type="button"
-                        onClick={() =>
-                          void handleToastAction(toast, toast.secondaryAction!)
-                        }
-                        className={`min-h-10 ui-text-body-sm font-medium transition-colors ${copySecondary ? "ui-color-info-strong ui-hover-on-solid" : "ui-color-error-soft ui-hover-error-strong"}`}
-                      >
-                        {copySecondary ? <Copy size={12} aria-hidden /> : null}
-                        {toast.secondaryActionLabel}
-                      </button>
-                    ) : null}
-                    {showCopy ? (
-                      <button
-                        type="button"
-                        onClick={() => copy(toast.message)}
-                        aria-label={
-                          copied
-                            ? t({ id: "toast.copied", message: "Copied" })
-                            : t({
-                                id: "toast.copy_message",
-                                message: "Copy message",
+                  {showRetry ||
+                  (toast.action && toast.actionLabel) ||
+                  (toast.secondaryAction && toast.secondaryActionLabel) ||
+                  showCopy ? (
+                    <div className="mt-2 flex min-h-8 items-center gap-3">
+                      {showRetry ? (
+                        <button
+                          type="button"
+                          disabled={retryingId === toast.id}
+                          onClick={async () => {
+                            if (!toast.retryId) return;
+                            setRetryingId(toast.id);
+                            try {
+                              await retryTranscription(toast.retryId);
+                            } catch (error) {
+                              setRetryingId(null);
+                              setToasts((current) =>
+                                current.map((currentToast) =>
+                                  currentToast.id === toast.id
+                                    ? {
+                                        ...currentToast,
+                                        type: "error",
+                                        message:
+                                          error instanceof Error
+                                            ? error.message
+                                            : String(error),
+                                      }
+                                    : currentToast,
+                                ),
+                              );
+                            }
+                          }}
+                          className="min-h-10 ui-text-body-sm ui-color-info-strong transition-colors ui-hover-on-solid"
+                        >
+                          {retryingId === toast.id
+                            ? t({
+                                id: "toast.retrying",
+                                message: "Retrying...",
                               })
-                        }
-                        className="ml-auto grid size-10 place-items-center rounded-xl ui-color-gray-500 transition-colors ui-hover-on-solid"
-                      >
-                        {copied ? <Check size={12} /> : <Copy size={12} />}
-                      </button>
-                    ) : null}
-                  </div>
+                            : t({
+                                id: "toast.retry_transcription",
+                                message: "Retry transcription",
+                              })}
+                        </button>
+                      ) : null}
+                      {toast.action && toast.actionLabel ? (
+                        <button
+                          type="button"
+                          onClick={() =>
+                            void handleToastAction(toast, toast.action!)
+                          }
+                          className="min-h-10 ui-text-body-sm font-medium ui-color-info-strong transition-colors ui-hover-on-solid"
+                        >
+                          {toast.actionLabel} →
+                        </button>
+                      ) : null}
+                      {toast.secondaryAction && toast.secondaryActionLabel ? (
+                        <button
+                          type="button"
+                          onClick={() =>
+                            void handleToastAction(
+                              toast,
+                              toast.secondaryAction!,
+                            )
+                          }
+                          className={`min-h-10 ui-text-body-sm font-medium transition-colors ${copySecondary ? "ui-color-info-strong ui-hover-on-solid" : "ui-color-error-soft ui-hover-error-strong"}`}
+                        >
+                          {copySecondary ? (
+                            <Copy size={12} aria-hidden />
+                          ) : null}
+                          {toast.secondaryActionLabel}
+                        </button>
+                      ) : null}
+                      {showCopy ? (
+                        <button
+                          type="button"
+                          onClick={() => copy(toast.message)}
+                          aria-label={
+                            copied
+                              ? t({ id: "toast.copied", message: "Copied" })
+                              : t({
+                                  id: "toast.copy_message",
+                                  message: "Copy message",
+                                })
+                          }
+                          className="ml-auto grid size-10 place-items-center rounded-xl text-[var(--ui-capture-muted)] transition-colors hover:text-[var(--ui-capture-fg-strong)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-white"
+                        >
+                          {copied ? <Check size={12} /> : <Copy size={12} />}
+                        </button>
+                      ) : null}
+                    </div>
+                  ) : null}
                 </div>
               </div>
             </section>

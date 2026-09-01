@@ -34,7 +34,6 @@ import { usePillInteractions } from "./use-pill-interactions";
 import {
   measureResultCard,
   PILL_EXPANDED_WIDTH,
-  PILL_EXPAND_TRANSITION,
   resolvePillShellGeometry,
 } from "./pill-shell-model";
 import { usePillVisualizer } from "./use-pill-visualizer";
@@ -47,7 +46,6 @@ const tenPixelTextClass = `text-[${10}px]`;
 const elevenPixelTextClass = `text-[${11}px]`;
 
 const RESULT_AUTO_DISMISS_MS = 10_000;
-const WARM_ENTRY_IDLE_MS = 5 * 1000;
 const EXPANDED_TEXT_TOP_FADE = "var(--ui-pill-expanded-text-mask)";
 const PILL_STATUS_COPY = {
   listening: { id: "pill.status.listening", message: "Listening..." },
@@ -185,17 +183,6 @@ const DictationPillOverlay: React.FC<PillOverlayProps> = ({
       sensitivity,
       decay,
     });
-  const hasShownPillRef = useRef(false);
-  const lastIdleAtRef = useRef(0);
-
-  useEffect(() => {
-    if (pillStatus === "idle") {
-      if (hasShownPillRef.current) lastIdleAtRef.current = performance.now();
-    } else {
-      hasShownPillRef.current = true;
-    }
-  }, [pillStatus]);
-
   const { listeningTimer, cancelCurrentRecording } = usePillInteractions({
     status: pillStatus,
     dismiss,
@@ -235,49 +222,10 @@ const DictationPillOverlay: React.FC<PillOverlayProps> = ({
   }, [shell.width, shell.height]);
 
   const expandedContentTransition = isExpanded
-    ? "opacity 0.24s ease 0.1s, flex 0.42s cubic-bezier(0.2, 0.82, 0.18, 1)"
-    : "none";
-  const expandedPaddingTransition = isExpanded
-    ? "padding 0.42s cubic-bezier(0.2, 0.82, 0.18, 1)"
-    : "none";
+    ? "opacity 0.18s ease-out 0.04s"
+    : "opacity 0.1s ease-in";
   const topFadeTransition = isExpanded ? "opacity 0.2s ease" : "none";
   const bgOpacityTransition = isExpanded ? "opacity 0.32s ease 0.08s" : "none";
-  const isWarmEntry =
-    pillStatus !== "idle" &&
-    hasShownPillRef.current &&
-    performance.now() - lastIdleAtRef.current <= WARM_ENTRY_IDLE_MS;
-  const pillInitial = isWarmEntry
-    ? {
-        opacity: 0,
-        scaleX: 0.95,
-        scaleY: 0.98,
-        y: 2,
-        filter: "blur(2px)",
-      }
-    : {
-        opacity: 0,
-        scaleX: 0.78,
-        scaleY: 0.94,
-        y: 5,
-        filter: "blur(5px)",
-      };
-  const pillTransition = isWarmEntry
-    ? {
-        type: "spring" as const,
-        stiffness: 680,
-        damping: 36,
-        mass: 0.32,
-        filter: { duration: 0.08, ease: "easeOut" },
-        opacity: { duration: 0.08, ease: "easeOut" },
-      }
-    : {
-        type: "spring" as const,
-        stiffness: 760,
-        damping: 32,
-        mass: 0.36,
-        filter: { duration: 0.14, ease: "easeOut" },
-        opacity: { duration: 0.12, ease: "easeOut" },
-      };
 
   if (pillStatus === "preflight") {
     return <CapturePreflight />;
@@ -297,7 +245,7 @@ const DictationPillOverlay: React.FC<PillOverlayProps> = ({
         {statusCopy ? t(statusCopy) : ""}
       </div>
       <div className="relative flex flex-col items-center pb-2">
-        <AnimatePresence>
+        <AnimatePresence initial={false}>
           {(pillStatus !== "idle" || inserted) && (
             <motion.div
               onPointerDown={isResultDraggable ? drag.onPointerDown : undefined}
@@ -305,7 +253,7 @@ const DictationPillOverlay: React.FC<PillOverlayProps> = ({
                 isResultDraggable ? drag.onClickCapture : undefined
               }
               className={`${SIGNAL_RAIL_SHELL_CLASS} flex-col ${pillTone === "cleanup" ? "pill-shell-cleanup" : ""} ${isErrorFlashing ? "animate-shake" : ""}`}
-              initial={pillInitial}
+              initial={false}
               animate={{
                 opacity: 1,
                 scaleX: 1,
@@ -328,13 +276,6 @@ const DictationPillOverlay: React.FC<PillOverlayProps> = ({
                   opacity: { duration: 0.12, ease: "easeIn" },
                 },
               }}
-              transition={{
-                ...pillTransition,
-                opacity: {
-                  duration: 0.18,
-                  ease: "easeOut",
-                },
-              }}
               style={{
                 width: shell.width,
                 height: shell.height,
@@ -342,7 +283,6 @@ const DictationPillOverlay: React.FC<PillOverlayProps> = ({
                 backgroundColor: "var(--ui-pill-shell-bg)",
                 borderColor: "var(--ui-pill-shell-border)",
                 boxShadow: "var(--ui-pill-shell-shadow)",
-                transition: PILL_EXPAND_TRANSITION,
                 transformOrigin: "bottom center",
               }}
             >
@@ -366,7 +306,6 @@ const DictationPillOverlay: React.FC<PillOverlayProps> = ({
                   className="h-full w-full flex flex-col"
                   style={{
                     padding: isExpanded ? "14px 16px 14px" : "0 16px",
-                    transition: expandedPaddingTransition,
                     position: "relative",
                   }}
                 >
@@ -790,7 +729,7 @@ const DictationPillOverlay: React.FC<PillOverlayProps> = ({
               </div>
 
               {!isExpanded && (
-                <div className="looper-pill-enter absolute inset-0 z-[2] flex items-center justify-center">
+                <div className="absolute inset-0 z-[2] flex items-center justify-center">
                   <SignalRailContent
                     revealOnGroupInteraction={false}
                     actionsVisible={

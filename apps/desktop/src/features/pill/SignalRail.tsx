@@ -26,6 +26,9 @@ interface SignalRailContentProps {
    * En Dictation el ancho lo controla el estado nativo, así que revelar antes
    * las acciones las recortaría dentro del rail compacto. */
   revealOnGroupInteraction?: boolean;
+  /** Desactiva las regiones declarativas cuando el consumidor entrega el
+   * arrastre nativo desde una superficie que también contiene controles. */
+  nativeDragRegions?: boolean;
 }
 
 export function SignalRailContent({
@@ -38,6 +41,7 @@ export function SignalRailContent({
   compactExtra,
   infoVisible = false,
   revealOnGroupInteraction = true,
+  nativeDragRegions = true,
 }: SignalRailContentProps) {
   const revealActions = actionsVisible
     ? "pointer-events-auto max-w-[148px] opacity-100"
@@ -54,6 +58,8 @@ export function SignalRailContent({
   const compactExtraInteraction = revealOnGroupInteraction
     ? "group-hover/signal:max-w-0 group-hover/signal:opacity-0 group-focus-within/signal:max-w-0 group-focus-within/signal:opacity-0"
     : "";
+  const renderActions =
+    actions != null && (actionsVisible || revealOnGroupInteraction);
 
   return (
     <>
@@ -66,7 +72,7 @@ export function SignalRailContent({
           // cuanto `meta` se muestra, repetiría el mismo cronómetro, así que
           // se retira con la misma transición con la que entra la info.
           <span
-            data-tauri-drag-region
+            data-tauri-drag-region={nativeDragRegions ? true : undefined}
             className={`shrink-0 overflow-hidden text-[12px] font-medium tabular-nums text-white/90 transition-[max-width,opacity] duration-200 ease-out ${compactExtraInteraction} ${
               infoVisible ? "max-w-0 opacity-0" : "max-w-[64px] opacity-100"
             }`}
@@ -75,25 +81,25 @@ export function SignalRailContent({
           </span>
         ) : null}
         <div
-          data-tauri-drag-region
+          data-tauri-drag-region={nativeDragRegions ? true : undefined}
           className={`min-w-0 flex-1 cursor-grab overflow-hidden transition-[max-width,opacity] duration-200 ease-out active:cursor-grabbing ${meta == null ? "flex h-full items-center" : ""} ${revealInfo}`}
         >
           <p
-            data-tauri-drag-region
+            data-tauri-drag-region={nativeDragRegions ? true : undefined}
             className="truncate text-[12px] font-semibold leading-[14px] tracking-[-0.01em]"
           >
             {title}
           </p>
           {meta != null ? (
             <p
-              data-tauri-drag-region
+              data-tauri-drag-region={nativeDragRegions ? true : undefined}
               className="truncate text-[10px] leading-[13px] text-white/60 tabular-nums"
             >
               {meta}
             </p>
           ) : null}
         </div>
-        {actions ? (
+        {renderActions ? (
           <div
             data-signal-actions
             className={`flex shrink-0 items-center gap-1.5 overflow-hidden transition-[max-width,opacity] duration-150 ease-out ${revealActions}`}
@@ -129,6 +135,7 @@ export function SignalRail({
   dragTitle,
   className = "",
   shadow = true,
+  nativeDragRegions = true,
   ...content
 }: SignalRailProps) {
   return (
@@ -138,7 +145,7 @@ export function SignalRail({
       style={shadow ? undefined : { boxShadow: "none" }}
       className={`${SIGNAL_RAIL_SHELL_CLASS} h-[48px] w-[176px] rounded-full transition-[width,border-color] duration-200 ease-out hover:w-[260px] focus-within:w-[260px] ${className}`}
     >
-      <SignalRailContent {...content} />
+      <SignalRailContent {...content} nativeDragRegions={nativeDragRegions} />
     </section>
   );
 }

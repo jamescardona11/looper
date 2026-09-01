@@ -57,7 +57,7 @@ export function ToggleGroup<T extends string>({
           aria-label={item["aria-label"]}
           className={cn(
             "inline-flex items-center justify-center gap-1.5 rounded-md font-medium text-muted-foreground outline-none transition-colors",
-            size === "sm" ? "h-7 px-2.5 text-xs" : "h-8 px-3 text-sm",
+            size === "sm" ? "h-11 px-2.5 text-xs sm:h-10" : "h-11 px-3 text-sm sm:h-10",
             "hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring",
             "data-[pressed]:bg-card data-[pressed]:text-foreground data-[pressed]:shadow-sm",
             "data-[disabled]:pointer-events-none data-[disabled]:opacity-50",

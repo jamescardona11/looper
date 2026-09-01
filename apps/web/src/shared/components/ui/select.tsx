@@ -45,7 +45,7 @@ export function Select<T extends string>({
         id={id}
         aria-label={ariaLabel}
         className={cn(
-          "flex h-10 w-full select-none items-center justify-between gap-2 rounded-md border border-input bg-background px-3 text-foreground text-sm transition-colors",
+          "flex h-11 w-full select-none items-center justify-between gap-2 rounded-md border border-input bg-background px-3 text-foreground text-sm transition-colors sm:h-10",
           "hover:bg-secondary/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
           "data-[disabled]:cursor-not-allowed data-[popup-open]:bg-secondary/40 data-[disabled]:opacity-50",
           className,
@@ -80,7 +80,7 @@ export function Select<T extends string>({
                 value={item.value}
                 disabled={item.disabled}
                 className={cn(
-                  "flex cursor-default select-none items-center justify-between gap-2 rounded-md px-3 py-2 text-sm outline-none",
+                  "flex min-h-11 cursor-default select-none items-center justify-between gap-2 rounded-md px-3 py-2 text-sm outline-none sm:min-h-10",
                   "data-[highlighted]:bg-secondary data-[highlighted]:text-foreground",
                   "data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
                 )}

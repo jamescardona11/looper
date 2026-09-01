@@ -10,6 +10,7 @@ export type PersonalizationViewProps = {
   isActive?: boolean;
   embedded?: boolean;
   showModeRules?: boolean;
+  studio?: boolean;
 };
 
 export type PersonalityChange =

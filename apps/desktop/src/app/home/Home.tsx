@@ -1,14 +1,20 @@
 import { useReducedMotion } from "framer-motion";
-import { useReducer } from "react";
+import { useMemo, useReducer } from "react";
 
 import { useLicenseGate } from "../../features/license/queries";
 import {
   useAppInfo,
   useSettings,
 } from "../../features/settings/preferences/queries";
-import { useTodayDictationStats } from "../../features/transcriptions/queries";
+import {
+  useTodayDictationStats,
+  useTranscriptionList,
+} from "../../features/transcriptions/queries";
 import { useTimeOfDayPeriodTick } from "../../features/transcriptions/homeGreeting";
-import { EMPTY_TODAY_DICTATION_STATS } from "../../features/transcriptions/todayStats";
+import {
+  deriveWeeklyDictationActivity,
+  EMPTY_TODAY_DICTATION_STATS,
+} from "../../features/transcriptions/todayStats";
 import { useUpdateStatus } from "../../features/updates/queries";
 import { createHomeDiagnostics } from "./home-diagnostics";
 import {
@@ -35,6 +41,12 @@ function Home() {
   const homeActive = state.activeView === "home";
   const periodTick = useTimeOfDayPeriodTick(homeActive);
   const todayQuery = useTodayDictationStats(homeActive, periodTick);
+  const transcriptionListQuery = useTranscriptionList(homeActive);
+  const retainedTranscriptions = transcriptionListQuery.data ?? [];
+  const weeklyActivity = useMemo(
+    () => deriveWeeklyDictationActivity(retainedTranscriptions),
+    [retainedTranscriptions],
+  );
   const transcriptionMode: TranscriptionMode =
     settings?.transcription_mode ?? "local";
   const cloudTranscription = transcriptionMode === "cloud";
@@ -47,24 +59,20 @@ function Home() {
 
   return (
     <>
-      <HomeKeyboardBridge
-        dispatch={dispatch}
-        key={licenseGateActive ? "licensed" : "restricted"}
-        licensed={licenseGateActive}
-      />
+      <HomeKeyboardBridge dispatch={dispatch} />
       <HomePresentation
         appVersion={appInfo?.version ?? "-"}
         dispatch={dispatch}
-        licenseGateActive={licenseGateActive}
+        hasHistory={retainedTranscriptions.length > 0}
         reduceMotion={reduceMotion}
         runDiagnostics={createHomeDiagnostics(settings)}
         settingsShortcut={settings?.smart_shortcut}
         showCleanupButtons={cleanupAvailable}
         state={state}
         todayStats={todayQuery.data ?? EMPTY_TODAY_DICTATION_STATS}
-        todayStatsFetched={todayQuery.isFetched}
         transcriptionMode={transcriptionMode}
         updateAvailable={updateStatus?.available ?? false}
+        weeklyActivity={weeklyActivity}
       />
     </>
   );

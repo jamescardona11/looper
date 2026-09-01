@@ -14,7 +14,7 @@ export function LibraryAudioFooter({
   playerProps,
 }: LibraryAudioFooterProps) {
   if (meetingId && meetingDockProps) {
-    return <MeetingDocumentDock id={meetingId} {...meetingDockProps} />;
+    return null;
   }
 
   return <LibraryPlayerFooter {...playerProps} />;

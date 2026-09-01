@@ -99,18 +99,18 @@ afterEach(() => {
 });
 
 describe("ReadyStep", () => {
-  it("requires native insertion evidence and content in its target field", async () => {
+  it("keeps native insertion evidence optional and visible", async () => {
     renderReady();
     const complete = screen.getByRole("button", { name: "Start dictating" });
-    expect((complete as HTMLButtonElement).disabled).toBe(true);
+    expect((complete as HTMLButtonElement).disabled).toBe(false);
 
     await emitInsertion(12, false);
-    expect((complete as HTMLButtonElement).disabled).toBe(true);
+    expect((complete as HTMLButtonElement).disabled).toBe(false);
     fireEvent.change(screen.getByLabelText("First dictation test field"), {
       target: { value: "Hello world" },
     });
     await emitInsertion(11, false);
-    expect((complete as HTMLButtonElement).disabled).toBe(true);
+    expect((complete as HTMLButtonElement).disabled).toBe(false);
     await emitInsertion(11, true);
 
     await waitFor(() =>
@@ -146,13 +146,13 @@ describe("ReadyStep", () => {
     expect(props.onOpenLicense).toHaveBeenCalledOnce();
   });
 
-  it("shows completion state and only completes after verification", async () => {
+  it("lets people finish setup before verification", async () => {
     const onComplete = vi.fn();
     renderReady({ onComplete, completionError: "Try again" });
     expect(screen.getByText("Try again")).toBeTruthy();
     const complete = screen.getByRole("button", { name: "Start dictating" });
     fireEvent.click(complete);
-    expect(onComplete).not.toHaveBeenCalled();
+    expect(onComplete).toHaveBeenCalledOnce();
 
     fireEvent.change(screen.getByLabelText("First dictation test field"), {
       target: { value: "Inserted" },
@@ -162,7 +162,7 @@ describe("ReadyStep", () => {
       expect((complete as HTMLButtonElement).disabled).toBe(false),
     );
     fireEvent.click(complete);
-    expect(onComplete).toHaveBeenCalledOnce();
+    expect(onComplete).toHaveBeenCalledTimes(2);
   });
 
   it("disposes the native insertion listener when unmounted", async () => {

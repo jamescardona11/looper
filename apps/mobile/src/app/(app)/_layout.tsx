@@ -1,5 +1,5 @@
 import { Tabs, useSegments } from "expo-router";
-import { useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import { AppChromeContext } from "@/shared/components/app-chrome-context";
 import { CaptureSheet } from "@/shared/components/capture-sheet";
 import { TabBar } from "@/shared/components/tab-bar";
@@ -12,22 +12,19 @@ import { TabBar } from "@/shared/components/tab-bar";
 const TAB_ROUTES = ["index", "notes", "ask", "studio"];
 
 export default function AppLayout() {
-  const [captureOpen, setCaptureOpen] = useState(false);
+  const [captureOrigin, setCaptureOrigin] = useState<string | null>(null);
   const [tabBarHidden, setTabBarHidden] = useState(false);
   const segments = useSegments();
+  const routeKey = segments.join("/");
+  const captureOpen = captureOrigin === routeKey && !tabBarHidden;
 
-  // La hoja pertenece al destino desde el que se abrió. Un enlace profundo o
-  // una navegación de detalle no puede dejarla cubriendo la nueva pantalla.
-  useEffect(() => {
-    setCaptureOpen(false);
-  }, [segments]);
-
-  useEffect(() => {
-    if (tabBarHidden) setCaptureOpen(false);
-  }, [tabBarHidden]);
+  const updateTabBarVisibility = useCallback((hidden: boolean) => {
+    setTabBarHidden(hidden);
+    if (hidden) setCaptureOrigin(null);
+  }, []);
 
   return (
-    <AppChromeContext.Provider value={{ setTabBarHidden }}>
+    <AppChromeContext.Provider value={{ setTabBarHidden: updateTabBarVisibility }}>
       <Tabs
         screenOptions={{ headerShown: false }}
         tabBar={({ state, navigation }) => {
@@ -40,7 +37,7 @@ export default function AppLayout() {
             <TabBar
               activeRoute={route}
               captureOpen={captureOpen}
-              onCapture={() => setCaptureOpen(true)}
+              onCapture={() => setCaptureOrigin(routeKey)}
               onSelect={(next) => navigation.navigate(next)}
             />
           );
@@ -56,10 +53,7 @@ export default function AppLayout() {
         <Tabs.Screen name="import" options={{ href: null }} />
         <Tabs.Screen name="meeting/[id]" options={{ href: null }} />
       </Tabs>
-      <CaptureSheet
-        onClose={() => setCaptureOpen(false)}
-        visible={captureOpen}
-      />
+      <CaptureSheet onClose={() => setCaptureOrigin(null)} visible={captureOpen} />
     </AppChromeContext.Provider>
   );
 }

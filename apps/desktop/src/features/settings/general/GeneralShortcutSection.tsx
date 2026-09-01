@@ -83,7 +83,10 @@ export function GeneralShortcutSection(props: GeneralShortcutProps) {
         {t({ id: "settings.general.shortcuts", message: "Shortcuts" })}
       </SectionLabel>
 
-      <div className="relative space-y-3 rounded-lg bg-surface-surface p-2.5">
+      <div
+        data-settings-card="shortcuts"
+        className="relative space-y-3 rounded-[16px] bg-surface-surface p-2.5 shadow-[0_1px_0_var(--desktop-depth-line)]"
+      >
         {modes.map((item) => (
           <ShortcutRow
             key={item.mode}

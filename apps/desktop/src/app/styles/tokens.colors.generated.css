@@ -243,10 +243,10 @@
   --ui-pill-dot-highlight-rgb: 255, 255, 255;
   --ui-pill-dot-error-rgb: 185, 28, 28;
   --ui-pill-cleanup-rgb: 88, 83, 250;
-  --ui-capture-fg-strong: #000000;
-  --ui-capture-fg: #4a4a4a;
-  --ui-capture-muted: #696969;
-  --ui-capture-key-bg: #f5f5f5;
+  --ui-capture-fg-strong: #ffffff;
+  --ui-capture-fg: #bebebe;
+  --ui-capture-muted: #868686;
+  --ui-capture-key-bg: #151515;
   --ui-capture-dot-halo: color-mix(in srgb, var(--color-success) 25%, transparent);
   --color-scrollbar-thumb: rgba(26, 23, 22, 0.18);
   --color-scrollbar-thumb-hover: rgba(26, 23, 22, 0.32);

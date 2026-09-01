@@ -5,7 +5,9 @@ import {
   Check,
   Copy,
   DotsThreeVertical,
+  PencilSimple,
   Record,
+  SlidersHorizontal,
   Trash,
   Translate,
 } from "@phosphor-icons/react";
@@ -31,6 +33,7 @@ type ActionsProps = Pick<
   | "overflowOpen"
   | "overflowMenuRef"
   | "setExportOpen"
+  | "setIsEditingName"
   | "setOverflowOpen"
   | "setShowDeleteConfirm"
   | "setShowRetranscribe"
@@ -50,7 +53,17 @@ const MENU_ACTION_ENABLED =
 const DELETE_ACTION =
   "w-full flex items-center gap-2 px-3 py-1.5 text-left ui-text-meta ui-color-error-soft hover:bg-[var(--color-error)]/10 transition-colors border-t border-border-primary";
 
-export function LibraryDetailActions(props: ActionsProps) {
+export function LibraryDetailActions(
+  props: ActionsProps & { compact?: boolean; onOpenDetails?: () => void },
+) {
+  if (props.compact) {
+    return (
+      <div className="flex items-center justify-end">
+        <OverflowAction {...props} compact />
+      </div>
+    );
+  }
+
   return (
     <div className="col-start-3 row-start-1 flex items-center justify-end gap-1">
       <CopyAction {...props} />
@@ -116,7 +129,9 @@ function ExportAction(props: ActionsProps) {
   );
 }
 
-function OverflowAction(props: ActionsProps) {
+function OverflowAction(
+  props: ActionsProps & { compact?: boolean; onOpenDetails?: () => void },
+) {
   const { t } = useLingui();
   const open = (target: "translation" | "retranscription" | "delete") => {
     props.setOverflowOpen(false);
@@ -152,6 +167,69 @@ function OverflowAction(props: ActionsProps) {
         className={MORE_MENU}
         motionStyle="drop"
       >
+        {props.compact ? (
+          <>
+            <button
+              onClick={() => {
+                props.setIsEditingName(true);
+                props.setOverflowOpen(false);
+              }}
+              className={MENU_ACTION}
+            >
+              <PencilSimple size={11} />
+              {t({ id: "library.detail.rename", message: "Rename meeting" })}
+            </button>
+            {props.onOpenDetails ? (
+              <button
+                onClick={() => {
+                  props.onOpenDetails?.();
+                  props.setOverflowOpen(false);
+                }}
+                className={MENU_ACTION}
+              >
+                <SlidersHorizontal size={11} />
+                {t({
+                  id: "library.detail.recording_tools",
+                  message: "Recording tools",
+                })}
+              </button>
+            ) : null}
+          </>
+        ) : null}
+        {props.compact ? (
+          <button
+            onClick={() => {
+              props.handleCopy();
+              props.setOverflowOpen(false);
+            }}
+            disabled={!props.transcriptAvailable}
+            className={MENU_ACTION}
+          >
+            <Copy size={11} />
+            {t({ id: "library.modal.copy", message: "Copy" })}
+          </button>
+        ) : null}
+        {props.compact
+          ? EXPORT_FORMATS.map((format) => (
+              <button
+                key={format}
+                onClick={() => {
+                  void props.handleExport(format);
+                  props.setOverflowOpen(false);
+                }}
+                disabled={
+                  props.isExporting ||
+                  !props.transcriptAvailable ||
+                  ((format === "srt" || format === "vtt") &&
+                    !props.item.segments?.length)
+                }
+                className={MENU_ACTION}
+              >
+                <Copy size={11} />
+                Export {format.toUpperCase()}
+              </button>
+            ))
+          : null}
         <button
           onClick={() => open("translation")}
           disabled={!props.transcriptAvailable}

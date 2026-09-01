@@ -1,7 +1,7 @@
 import {
   type ReplacementRule,
-  useDictationDictionary,
-  useDictationReplacements,
+  type useDictationDictionary,
+  type useDictationReplacements,
   useDictationSettings,
 } from "@looper/data";
 import { useRouter } from "expo-router";
@@ -115,11 +115,7 @@ export function StudioScreen() {
   );
 }
 
-function VocabularyTab({
-  dictionary,
-}: {
-  dictionary: ReturnType<typeof useDictationDictionary>;
-}) {
+function VocabularyTab({ dictionary }: { dictionary: ReturnType<typeof useDictationDictionary> }) {
   const [draft, setDraft] = useState("");
   const add = () => {
     const term = draft.trim();
@@ -159,7 +155,12 @@ function VocabularyTab({
           style={styles.addWordInput}
           value={draft}
         />
-        <Pressable accessibilityLabel="Guardar palabra" accessibilityRole="button" onPress={add} style={styles.addWordButton}>
+        <Pressable
+          accessibilityLabel="Guardar palabra"
+          accessibilityRole="button"
+          onPress={add}
+          style={styles.addWordButton}
+        >
           <Text style={styles.addWordButtonText}>Añadir</Text>
         </Pressable>
       </View>
@@ -180,7 +181,9 @@ function ReplacementTab({
       </View>
       <Text style={styles.cardHint}>Se aplican al terminar cada transcripción.</Text>
       {replacements.rules.length ? (
-        replacements.rules.map((rule) => <ReplacementRow key={rule.id} replacements={replacements} rule={rule} />)
+        replacements.rules.map((rule) => (
+          <ReplacementRow key={rule.id} replacements={replacements} rule={rule} />
+        ))
       ) : (
         <Text style={styles.emptyInline}>
           {replacements.isLoading ? "Cargando correcciones…" : "Aún no hay correcciones guardadas."}
@@ -204,7 +207,9 @@ function ReplacementRow({
       onPress={() => void replacements.remove(rule.id)}
       style={styles.replacementRow}
     >
-      <Text style={styles.replacementText}>{rule.source} → {rule.destination}</Text>
+      <Text style={styles.replacementText}>
+        {rule.source} → {rule.destination}
+      </Text>
       <Text style={styles.wordRemove}>×</Text>
     </Pressable>
   );
@@ -570,7 +575,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
   },
   addWordButtonText: { ...typography.meta, color: colors.accent, fontWeight: "700" },
-  addWordInput: { ...typography.body, color: colors.text, flex: 1, minHeight: 42, paddingHorizontal: 12 },
+  addWordInput: {
+    ...typography.body,
+    color: colors.text,
+    flex: 1,
+    minHeight: 42,
+    paddingHorizontal: 12,
+  },
   addWordRow: {
     alignItems: "center",
     borderColor: colors.border,
@@ -601,7 +612,13 @@ const styles = StyleSheet.create({
   },
   content: { gap: space.lg, paddingBottom: 108, paddingHorizontal: space.lg },
   cleaningHint: { ...typography.meta, color: colors.muted, marginTop: 3 },
-  cleaningCard: { backgroundColor: colors.surface, borderRadius: radius.lg, gap: 13, marginTop: 6, padding: 15 },
+  cleaningCard: {
+    backgroundColor: colors.surface,
+    borderRadius: radius.lg,
+    gap: 13,
+    marginTop: 6,
+    padding: 15,
+  },
   cleaningHead: { alignItems: "center", flexDirection: "row" },
   cleaningIntro: { gap: 2 },
   cleaningLabel: { ...typography.item, color: colors.text },

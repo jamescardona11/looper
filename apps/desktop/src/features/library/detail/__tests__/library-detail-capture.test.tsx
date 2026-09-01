@@ -2,7 +2,13 @@
 
 import { setupI18n } from "@lingui/core";
 import { I18nProvider } from "@lingui/react";
-import { cleanup, render, screen } from "@testing-library/react";
+import {
+  cleanup,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+} from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 
 import type { LibraryItem, MeetingDetails } from "../../../../contracts";
@@ -23,11 +29,22 @@ const details: MeetingDetails = {
   live_transcript: [],
 };
 
+const summaryMutation = vi.hoisted(() => ({
+  error: null as unknown,
+  isPending: false,
+  mutate: vi.fn(),
+}));
+const getMeetingDetails = vi.hoisted(() => vi.fn());
+
 vi.mock("../../queries", () => ({
   useMeetingDetails: () => ({ data: details, isLoading: false }),
   useAskMeeting: () => ({ mutate: vi.fn(), isPending: false, error: null }),
   useUpdateMeetingNotes: () => ({ mutate: vi.fn(), isPending: false }),
-  useGenerateMeetingSummary: () => ({ mutate: vi.fn(), isPending: false }),
+  useGenerateMeetingSummary: () => summaryMutation,
+}));
+
+vi.mock("../../../../data/library", () => ({
+  getMeetingDetails,
 }));
 
 vi.mock("../../../settings/models/local-llm-queries", () => ({
@@ -123,21 +140,35 @@ const renderDetail = (kind: LibraryItem["kind"]) =>
     </I18nProvider>,
   );
 
-beforeEach(() => i18n.loadAndActivate({ locale: "en", messages: {} }));
-afterEach(cleanup);
+beforeEach(() => {
+  i18n.loadAndActivate({ locale: "en", messages: {} });
+  getMeetingDetails.mockResolvedValue({
+    ...details,
+    summary: null,
+    summary_status: "idle",
+  });
+});
+afterEach(() => {
+  cleanup();
+  summaryMutation.mutate.mockReset();
+  getMeetingDetails.mockReset();
+});
 
 describe("LibraryDetail for a recorded note", () => {
   test("opens the same review document and chat as a meeting", () => {
     renderDetail("recording");
 
     expect(screen.getAllByRole("tab").map((tab) => tab.textContent)).toEqual([
-      "My notes",
-      "Enhanced",
-      "Transcript",
+      "Note",
       "Moments",
+      "Transcript",
     ]);
-    expect(screen.getByText("Tres decisiones y un pendiente.")).toBeTruthy();
-    expect(screen.getByPlaceholderText("Ask this recording…").isConnected).toBe(
+    expect(
+      screen.getByPlaceholderText(
+        "Write notes, decisions, and follow-ups while you listen...",
+      ),
+    ).toBeTruthy();
+    expect(screen.getByPlaceholderText("Ask this note…").isConnected).toBe(
       true,
     );
   });
@@ -146,7 +177,36 @@ describe("LibraryDetail for a recorded note", () => {
     renderDetail("import");
 
     expect(screen.queryAllByRole("tab")).toHaveLength(0);
-    expect(screen.queryByPlaceholderText("Ask this recording…")).toBeNull();
+    expect(screen.queryByPlaceholderText("Ask this note…")).toBeNull();
     expect(screen.getByTestId("transcript-panel").isConnected).toBe(true);
+  });
+
+  test("starts the summary from the header when it is not available", async () => {
+    renderDetail("recording");
+
+    fireEvent.click(screen.getByRole("button", { name: "Summarize" }));
+
+    await waitFor(() => {
+      expect(getMeetingDetails).toHaveBeenCalledWith("capture-one");
+      expect(summaryMutation.mutate).toHaveBeenCalledWith("capture-one");
+    });
+  });
+
+  test("keeps rename, search, tags, and speakers reachable from the quiet header", () => {
+    renderDetail("recording");
+
+    fireEvent.click(screen.getByRole("button", { name: "More actions" }));
+    fireEvent.click(screen.getByRole("button", { name: "Rename meeting" }));
+    expect(
+      screen.getByRole("textbox", { name: "Edit meeting name" }).isConnected,
+    ).toBe(true);
+
+    fireEvent.click(screen.getByRole("button", { name: "More actions" }));
+    fireEvent.click(screen.getByRole("button", { name: "Recording tools" }));
+    expect(
+      screen.getByRole("textbox", { name: "Search transcript" }),
+    ).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Add tag" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: /Speakers/ })).toBeTruthy();
   });
 });

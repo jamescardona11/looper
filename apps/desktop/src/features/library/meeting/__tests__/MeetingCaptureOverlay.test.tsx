@@ -8,6 +8,7 @@ import {
   fireEvent,
   render,
   screen,
+  waitFor,
 } from "@testing-library/react";
 import { afterEach, describe, expect, test, vi } from "vitest";
 import type { MeetingCaptureState } from "../../../../contracts";
@@ -35,7 +36,7 @@ const llmSettings = vi.hoisted(() => ({
   llm_endpoint: "https://openrouter.ai/api/v1",
   llm_model: "openai/gpt-5.4-mini",
 }));
-const windowDrag = vi.hoisted(() => ({ startDragging: vi.fn() }));
+const meetingDrag = vi.hoisted(() => vi.fn(async () => undefined));
 const shortcutPermission = vi.hoisted(() => ({
   allowed: true,
   check: vi.fn(async () => shortcutPermission.allowed),
@@ -110,8 +111,8 @@ vi.mock("../../../../data/capture/overlay", () => ({
   setMeetingOverlayPresentation: overlayPresentation,
 }));
 
-vi.mock("@tauri-apps/api/window", () => ({
-  getCurrentWindow: () => windowDrag,
+vi.mock("../../../../data/capture/dictation", () => ({
+  beginOverlayDrag: meetingDrag,
 }));
 
 vi.mock("../../../../data/capture/shortcuts", () => ({
@@ -149,7 +150,7 @@ i18n.loadAndActivate({
     "note.capture.active": "Note recording",
     "note.capture.rail_title": "Note",
     "note.capture.source": "Microphone",
-    "meeting.capture.shortcut_unavailable": "macOS is blocking Fn",
+    "meeting.capture.shortcut_unavailable": "Fn blocked",
     "meeting.capture.shortcut_enable_hint": "Accessibility needed",
     "meeting.capture.shortcut_enable": "Why?",
     "meeting.capture.note.release_max_compact": "Release to save",
@@ -188,6 +189,15 @@ const renderOverlay = (state: MeetingCaptureState) =>
     </I18nProvider>,
   );
 
+const settlePresentation = () => act(async () => Promise.resolve());
+
+const expandOverlay = async () => {
+  fireEvent.click(
+    screen.getByRole("button", { name: "Expand recording pill" }),
+  );
+  await settlePresentation();
+};
+
 afterEach(() => {
   cleanup();
   stopMutation.mutate.mockReset();
@@ -201,8 +211,7 @@ afterEach(() => {
   llmSettings.llm_endpoint = "https://openrouter.ai/api/v1";
   llmSettings.llm_model = "openai/gpt-5.4-mini";
   overlayPresentation.mockClear();
-  windowDrag.startDragging.mockReset();
-  windowDrag.startDragging.mockResolvedValue(undefined);
+  meetingDrag.mockClear();
   shortcutPermission.allowed = true;
   shortcutPermission.check.mockClear();
   shortcutPermission.retry.mockClear();
@@ -214,7 +223,36 @@ afterEach(() => {
 });
 
 describe("MeetingCaptureOverlay", () => {
-  test("shows missing Accessibility inside the recording pill", async () => {
+  test("expands the compact capsule directly into the transcript workspace", async () => {
+    renderOverlay(recordingState());
+
+    const expandButton = screen.getByRole("button", {
+      name: "Expand recording pill",
+    });
+    expect(expandButton.getAttribute("aria-expanded")).toBe("false");
+    expect(expandButton.getAttribute("aria-controls")).toBe(
+      "meeting-live-transcript",
+    );
+    expect(screen.queryByText("Recording")).toBeNull();
+
+    await expandOverlay();
+
+    expect(screen.getByLabelText("Live transcript").id).toBe(
+      "meeting-live-transcript",
+    );
+    expect(
+      screen
+        .getByRole("button", { name: "Collapse recording pill" })
+        .getAttribute("aria-expanded"),
+    ).toBe("true");
+    expect(overlayPresentation).toHaveBeenLastCalledWith({
+      compact: false,
+      transcriptVisible: true,
+      transcriptPinned: true,
+    });
+  });
+
+  test("keeps compact recording identity when Accessibility is missing", async () => {
     shortcutPermission.allowed = false;
     renderOverlay(recordingState());
 
@@ -223,9 +261,17 @@ describe("MeetingCaptureOverlay", () => {
     });
 
     const pill = screen.getByLabelText("Meeting recording");
-    expect(pill.textContent).toContain("macOS is blocking Fn");
+    expect(pill.textContent).toContain("1:24");
+    expect(pill.textContent).not.toContain("Fn blocked");
     expect(pill.textContent).not.toContain("Accessibility needed");
-    expect(pill.className).toContain("hover:w-[260px]");
+    expect(pill.className).toContain("!w-[128px]");
+    expect(screen.queryByRole("button", { name: "Why?" })).toBeNull();
+
+    await expandOverlay();
+    expect(screen.getByText("Fn blocked")).toBeTruthy();
+    expect(screen.getByLabelText("Meeting recording").className).toContain(
+      "!w-[260px]",
+    );
 
     fireEvent.click(screen.getByRole("button", { name: "Why?" }));
     expect(shortcutPermission.help).toHaveBeenCalledTimes(1);
@@ -239,25 +285,29 @@ describe("MeetingCaptureOverlay", () => {
     await act(async () => {
       await Promise.resolve();
     });
-    expect(screen.getByText("macOS is blocking Fn")).toBeTruthy();
+    expect(screen.queryByText("Fn blocked")).toBeNull();
+    expect(screen.getByText("1:24")).toBeTruthy();
+
+    const compactPill = screen.getByLabelText("Meeting recording");
+    expect(compactPill.className).toContain("!h-[36px]");
+    expect(compactPill.className).toContain("!w-[128px]");
+    expect(compactPill.className).toContain("!transition-colors");
+    expect(
+      screen.getByRole("button", { name: "Expand recording pill" }).className,
+    ).toContain("h-9 w-10");
+    await expandOverlay();
+    expect(screen.getByText("Fn blocked")).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Why?" })).toBeTruthy();
+    expect(screen.getByLabelText("Live transcript")).toBeTruthy();
 
     fireEvent.click(
       screen.getByRole("button", { name: "Collapse recording pill" }),
     );
-    expect(screen.queryByText("macOS is blocking Fn")).toBeNull();
-    expect(
-      screen.getByRole("button", { name: "Expand recording pill" }),
-    ).toBeTruthy();
     expect(overlayPresentation).toHaveBeenLastCalledWith({
       compact: true,
       transcriptVisible: false,
       transcriptPinned: false,
     });
-
-    fireEvent.click(
-      screen.getByRole("button", { name: "Expand recording pill" }),
-    );
-    expect(screen.getByText("Recording")).toBeTruthy();
   });
 
   test("re-registers Fn after Accessibility becomes available", async () => {
@@ -268,7 +318,9 @@ describe("MeetingCaptureOverlay", () => {
     await act(async () => {
       await Promise.resolve();
     });
-    expect(screen.getByText("macOS is blocking Fn")).toBeTruthy();
+    expect(screen.queryByText("Fn blocked")).toBeNull();
+    await expandOverlay();
+    expect(screen.getByText("Fn blocked")).toBeTruthy();
 
     shortcutPermission.allowed = true;
     await act(async () => {
@@ -276,13 +328,29 @@ describe("MeetingCaptureOverlay", () => {
     });
 
     expect(shortcutPermission.retry).toHaveBeenCalledTimes(1);
-    expect(screen.queryByText("macOS is blocking Fn")).toBeNull();
-    expect(screen.getByText("Recording")).toBeTruthy();
+    expect(screen.queryByText("Fn blocked")).toBeNull();
+    expect(screen.getByText("1:24")).toBeTruthy();
 
     await act(async () => {
       await vi.advanceTimersByTimeAsync(4_500);
     });
     expect(shortcutPermission.check).toHaveBeenCalledTimes(2);
+  });
+
+  test("keeps the Accessibility warning visible while Fn remains blocked", async () => {
+    vi.useFakeTimers();
+    shortcutPermission.allowed = false;
+    renderOverlay(recordingState());
+
+    await act(async () => {
+      await Promise.resolve();
+      await vi.advanceTimersByTimeAsync(12_000);
+    });
+
+    expect(screen.queryByText("Fn blocked")).toBeNull();
+    await expandOverlay();
+    expect(screen.getByText("Fn blocked")).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Why?" })).toBeTruthy();
   });
 
   test("does not poll again when Accessibility is already available", async () => {
@@ -296,28 +364,28 @@ describe("MeetingCaptureOverlay", () => {
 
     expect(shortcutPermission.check).toHaveBeenCalledTimes(1);
     expect(shortcutPermission.retry).toHaveBeenCalledTimes(1);
-    expect(screen.queryByText("macOS is blocking Fn")).toBeNull();
+    expect(screen.queryByText("Fn blocked")).toBeNull();
   });
 
-  test("shows recording state and stops from the same draggable pill", () => {
+  test("shows recording state and stops from the same draggable pill", async () => {
     renderOverlay(recordingState());
+    await expandOverlay();
 
     expect(
       screen.getByText("Recording").hasAttribute("data-tauri-drag-region"),
-    ).toBe(true);
+    ).toBe(false);
     expect(screen.queryByText("1:24 · You + Them")).toBeNull();
     expect(screen.queryByText("You + Them")).toBeNull();
-    // Una captura larga tiene que decir qué graba sin esperar al hover: título
-    // y cronómetro se ven juntos, y el rail se ciñe a ellos porque las acciones
-    // solo aparecen al pasar por encima.
+    // El estado completo no depende del hover: identidad, tiempo y acciones
+    // se leen juntos desde que aparece la reunión.
     expect(screen.getByText("1:24")).toBeTruthy();
     const railInfo = screen.getByText("Recording").parentElement;
     expect(railInfo?.className).toContain("opacity-100");
     expect(railInfo?.className).not.toContain("max-w-0");
     const dragSurface = screen.getByTitle("Drag to move");
     expect(dragSurface.hasAttribute("data-tauri-drag-region")).toBe(false);
-    expect(dragSurface.className).toContain("!w-[150px]");
-    expect(dragSurface.className).toContain("hover:!w-[260px]");
+    expect(dragSurface.className).toContain("!w-[260px]");
+    expect(dragSurface.className).not.toContain("!w-[150px]");
     expect(dragSurface.className).toContain("ui-pill-shell");
     expect(dragSurface.style.boxShadow).toBe("");
 
@@ -328,13 +396,14 @@ describe("MeetingCaptureOverlay", () => {
     expect(stopMutation.mutate).toHaveBeenCalledTimes(1);
   });
 
-  test("labels a manual long recording as a note", () => {
+  test("labels a manual long recording as a note", async () => {
     renderOverlay(
       recordingState({
         capture_intent: "voice_note",
         system_audio_enabled: false,
       }),
     );
+    await expandOverlay();
 
     expect(screen.getByLabelText("Note recording")).toBeTruthy();
     expect(screen.getByText("Note")).toBeTruthy();
@@ -348,109 +417,106 @@ describe("MeetingCaptureOverlay", () => {
 
     // Una nota tiene la misma superficie que una reunión: transcript en vivo y
     // Fn para marcar momentos, así que también comprueba el permiso.
-    expect(
-      screen.getByRole("button", { name: "Show or hide transcript" })
-        .isConnected,
-    ).toBe(true);
+    expect(screen.getByLabelText("Live transcript")).toBeTruthy();
     expect(shortcutPermission.check).toHaveBeenCalled();
   });
 
-  test("keeps the transcript visible while the pointer remains in the overlay", async () => {
-    renderOverlay(recordingState());
-
-    const transcriptButton = screen.getByRole("button", {
-      name: "Show or hide transcript",
-    });
-    fireEvent.mouseEnter(transcriptButton);
-    expect(screen.getByTitle("Drag to move").className).toContain(
-      "hover:w-[260px]",
+  test("waits for the native frame before revealing the transcript", async () => {
+    let resolvePresentation:
+      | ((value: { placement: "above"; sideAlignment: "bottom" }) => void)
+      | undefined;
+    overlayPresentation.mockImplementationOnce(
+      () =>
+        new Promise((resolve) => {
+          resolvePresentation = resolve;
+        }),
     );
-    expect(
-      screen.getByText(
-        "We should ship the transcript first. Then validate reconnect behavior.",
-      ),
-    ).toBeTruthy();
-    expect(overlayPresentation).toHaveBeenLastCalledWith({
-      compact: false,
-      transcriptVisible: true,
-      transcriptPinned: false,
-    });
-
-    const overlay =
-      screen.getByLabelText("Meeting recording").parentElement?.parentElement;
-    expect(overlay).toBeTruthy();
-    fireEvent.mouseLeave(transcriptButton, { relatedTarget: overlay });
-    expect(
-      screen.getByText(
-        "We should ship the transcript first. Then validate reconnect behavior.",
-      ),
-    ).toBeTruthy();
-
-    fireEvent.mouseLeave(overlay!, { relatedTarget: document.body });
-    await act(async () => Promise.resolve());
-    expect(
-      screen.queryByText(
-        "We should ship the transcript first. Then validate reconnect behavior.",
-      ),
-    ).toBeNull();
-  });
-
-  test("pins on first click and hides after the native window resizes", async () => {
     renderOverlay(recordingState());
 
-    const transcriptButton = screen.getByRole("button", {
-      name: "Show or hide transcript",
-    });
-
-    fireEvent.click(transcriptButton);
-    expect(screen.getByTitle("Drag to move").className).toContain(
-      "hover:w-[260px]",
+    fireEvent.click(
+      screen.getByRole("button", { name: "Expand recording pill" }),
     );
-    expect(screen.getByText("I will own the QA pass.")).toBeTruthy();
-    expect(overlayPresentation).toHaveBeenLastCalledWith({
-      compact: false,
-      transcriptVisible: true,
-      transcriptPinned: true,
-    });
-
-    fireEvent.mouseEnter(transcriptButton);
-    fireEvent.click(transcriptButton);
-    await act(async () => Promise.resolve());
-    expect(screen.queryByText("I will own the QA pass.")).toBeNull();
-    expect(overlayPresentation).toHaveBeenLastCalledWith({
-      compact: false,
-      transcriptVisible: false,
-      transcriptPinned: false,
-    });
-  });
-
-  test("restores hover after closing a pinned transcript", async () => {
-    renderOverlay(recordingState());
-    const transcriptButton = screen.getByRole("button", {
-      name: "Show or hide transcript",
-    });
-
-    fireEvent.click(transcriptButton);
-    fireEvent.click(transcriptButton);
-    await act(async () => Promise.resolve());
     expect(screen.queryByLabelText("Live transcript")).toBeNull();
 
-    fireEvent.mouseEnter(transcriptButton);
+    await act(async () => {
+      resolvePresentation?.({
+        placement: "above",
+        sideAlignment: "bottom",
+      });
+      await Promise.resolve();
+    });
     expect(screen.getByLabelText("Live transcript")).toBeTruthy();
   });
 
-  test("uses the capture preview while meeting details catch up", () => {
+  test("ignores repeated presentation clicks while the native frame is pending", async () => {
+    let resolvePresentation:
+      | ((value: { placement: "above"; sideAlignment: "bottom" }) => void)
+      | undefined;
+    overlayPresentation.mockImplementationOnce(
+      () =>
+        new Promise((resolve) => {
+          resolvePresentation = resolve;
+        }),
+    );
+    renderOverlay(recordingState());
+
+    const expandButton = screen.getByRole("button", {
+      name: "Expand recording pill",
+    });
+    fireEvent.click(expandButton);
+    fireEvent.click(expandButton);
+
+    expect(overlayPresentation).toHaveBeenCalledTimes(1);
+    expect(screen.queryByLabelText("Live transcript")).toBeNull();
+
+    await act(async () => {
+      resolvePresentation?.({
+        placement: "above",
+        sideAlignment: "bottom",
+      });
+      await Promise.resolve();
+    });
+    expect(screen.getByLabelText("Live transcript")).toBeTruthy();
+  });
+
+  test("removes the transcript before shrinking the native frame", async () => {
+    renderOverlay(recordingState());
+    await expandOverlay();
+    expect(screen.getByLabelText("Live transcript")).toBeTruthy();
+
+    const collapseButton = screen.getByRole("button", {
+      name: "Collapse recording pill",
+    });
+    collapseButton.focus();
+    fireEvent.click(collapseButton);
+
+    expect(screen.queryByLabelText("Live transcript")).toBeNull();
+    expect(overlayPresentation).toHaveBeenCalledTimes(2);
+    expect(overlayPresentation).toHaveBeenLastCalledWith({
+      compact: true,
+      transcriptVisible: false,
+      transcriptPinned: false,
+    });
+    await act(async () => {
+      await new Promise<void>((resolve) =>
+        requestAnimationFrame(() => resolve()),
+      );
+    });
+    expect(document.activeElement).toBe(
+      screen.getByRole("button", { name: "Expand recording pill" }),
+    );
+  });
+
+  test("uses the capture preview while meeting details catch up", async () => {
     const savedSegments = meetingDetails.live_transcript.splice(0);
     renderOverlay(recordingState({ live_transcript: "them: Live words" }));
 
-    fireEvent.mouseEnter(
-      screen.getByRole("button", { name: "Show or hide transcript" }),
-    );
+    await expandOverlay();
     expect(screen.getByText("Live words")).toBeTruthy();
     meetingDetails.live_transcript.push(...savedSegments);
   });
 
-  test("asks about a pinned transcript and renders one inline answer", () => {
+  test("asks about a pinned transcript and renders one inline answer", async () => {
     askMeetingMutation.mutate.mockImplementation((_variables, options) => {
       options?.onSuccess?.(
         "You agreed to own the QA pass and validate reconnect behavior.",
@@ -458,9 +524,7 @@ describe("MeetingCaptureOverlay", () => {
     });
     renderOverlay(recordingState());
 
-    fireEvent.click(
-      screen.getByRole("button", { name: "Show or hide transcript" }),
-    );
+    await expandOverlay();
     const input = screen.getByRole("textbox", {
       name: "Ask about this recording",
     });
@@ -488,30 +552,22 @@ describe("MeetingCaptureOverlay", () => {
     expect(screen.queryByText("What are my action items?")).toBeNull();
   });
 
-  test("keeps Ask hidden on hover previews and without an LLM", () => {
+  test("keeps Ask unavailable while compact and without an LLM", async () => {
     renderOverlay(recordingState());
-    const transcriptButton = screen.getByRole("button", {
-      name: "Show or hide transcript",
-    });
-
-    fireEvent.mouseEnter(transcriptButton);
     expect(
       screen.queryByRole("textbox", { name: "Ask about this recording" }),
     ).toBeNull();
-    fireEvent.mouseLeave(transcriptButton);
 
     llmSettings.llm_enabled = false;
-    fireEvent.click(transcriptButton);
+    await expandOverlay();
     expect(
       screen.queryByRole("textbox", { name: "Ask about this recording" }),
     ).toBeNull();
   });
 
-  test("shows loading and a recoverable inline error", () => {
+  test("shows loading and a recoverable inline error", async () => {
     const view = renderOverlay(recordingState());
-    fireEvent.click(
-      screen.getByRole("button", { name: "Show or hide transcript" }),
-    );
+    await expandOverlay();
     const input = screen.getByRole("textbox", {
       name: "Ask about this recording",
     });
@@ -540,7 +596,7 @@ describe("MeetingCaptureOverlay", () => {
     expect((input as HTMLInputElement).value).toBe("");
   });
 
-  test("follows new transcript history only while the reader is at the end", () => {
+  test("follows new transcript history only while the reader is at the end", async () => {
     const animationFrame = vi
       .spyOn(window, "requestAnimationFrame")
       .mockImplementation((callback) => {
@@ -549,9 +605,7 @@ describe("MeetingCaptureOverlay", () => {
       });
     const view = renderOverlay(recordingState());
 
-    fireEvent.click(
-      screen.getByRole("button", { name: "Show or hide transcript" }),
-    );
+    await expandOverlay();
     const scroller = screen.getByTestId("transcript-scroller");
     Object.defineProperties(scroller, {
       scrollHeight: { configurable: true, value: 600 },
@@ -598,58 +652,71 @@ describe("MeetingCaptureOverlay", () => {
     animationFrame.mockRestore();
   });
 
-  test("collapses to the animated recording indicator and restores the pill", () => {
+  test("collapses to the same one-line capsule used by the other pills", async () => {
     renderOverlay(recordingState());
 
-    fireEvent.click(
-      screen.getByRole("button", { name: "Collapse recording pill" }),
-    );
     expect(screen.queryByText("Recording")).toBeNull();
     expect(
       screen.getByRole("button", { name: "Expand recording pill" }),
     ).toBeTruthy();
-    expect(overlayPresentation).toHaveBeenLastCalledWith({
-      compact: true,
-      transcriptVisible: false,
-      transcriptPinned: false,
-    });
+    expect(screen.getByText("1:24")).toBeTruthy();
+    const compactPill = screen.getByLabelText("Meeting recording");
+    expect(compactPill.className).toContain("!h-[36px]");
+    expect(compactPill.className).toContain("!w-[128px]");
+    expect(compactPill.className).not.toContain("h-[42px]");
+    expect(compactPill.className).not.toContain("w-[42px]");
+    expect(overlayPresentation).not.toHaveBeenCalled();
 
-    fireEvent.click(
-      screen.getByRole("button", { name: "Expand recording pill" }),
-    );
+    await expandOverlay();
     expect(screen.getByText("Recording")).toBeTruthy();
+    expect(screen.getByLabelText("Live transcript")).toBeTruthy();
+    expect(
+      screen.getByRole("button", { name: "Minimize transcript" }).className,
+    ).toContain("h-10 w-10");
   });
 
-  test("drags the mini pill without expanding it", () => {
+  test("expands from the transparent native gutter without enlarging the pill", async () => {
+    renderOverlay(recordingState());
+
+    const hitSlop = screen.getByTestId("meeting-compact-hit-slop");
+    expect(hitSlop.className).toContain("absolute");
+    expect(hitSlop.className).toContain("inset-0");
+
+    fireEvent.click(hitSlop);
+    await waitFor(() => {
+      expect(overlayPresentation).toHaveBeenCalledWith({
+        compact: false,
+        transcriptVisible: true,
+        transcriptPinned: true,
+      });
+    });
+  });
+
+  test("starts a native drag from both shells but leaves controls clickable", async () => {
     vi.stubGlobal("PointerEvent", MouseEvent);
     renderOverlay(recordingState());
 
-    fireEvent.click(
-      screen.getByRole("button", { name: "Collapse recording pill" }),
-    );
+    const compactPill = screen.getByTitle("Drag to move");
+    fireEvent.pointerDown(compactPill, { button: 0 });
+    expect(meetingDrag).toHaveBeenCalledTimes(1);
+
     const miniPill = screen.getByRole("button", {
       name: "Expand recording pill",
     });
-
-    fireEvent.pointerDown(miniPill, {
+    fireEvent.pointerDown(miniPill, { button: 0 });
+    expect(meetingDrag).toHaveBeenCalledTimes(1);
+    expect(miniPill.hasAttribute("data-tauri-drag-region")).toBe(false);
+    fireEvent.pointerDown(screen.getByLabelText("Meeting recording"), {
       button: 0,
-      pointerId: 1,
-      clientX: 12,
-      clientY: 12,
     });
-    fireEvent.pointerMove(miniPill, {
-      pointerId: 1,
-      clientX: 20,
-      clientY: 12,
-    });
-    fireEvent.pointerUp(miniPill, { pointerId: 1 });
-    fireEvent.click(miniPill);
+    expect(meetingDrag).toHaveBeenCalledTimes(2);
 
-    expect(windowDrag.startDragging).toHaveBeenCalledTimes(1);
-    expect(screen.queryByText("Recording")).toBeNull();
+    await expandOverlay();
+    fireEvent.pointerDown(screen.getByTitle("Drag to move"), { button: 0 });
+    expect(meetingDrag).toHaveBeenCalledTimes(3);
   });
 
-  test("disables Stop while finalizing without exposing diagnostic warnings", () => {
+  test("disables Stop while finalizing without exposing diagnostic warnings", async () => {
     renderOverlay(
       recordingState({
         phase: "finalizing",
@@ -657,6 +724,7 @@ describe("MeetingCaptureOverlay", () => {
           "System audio became unavailable; microphone is still recording.",
       }),
     );
+    await expandOverlay();
 
     const saving = screen.getByRole("button", { name: "Saving..." });
     expect((saving as HTMLButtonElement).disabled).toBe(true);
@@ -683,7 +751,7 @@ describe("MeetingCaptureOverlay", () => {
 
     expect(screen.getByText("Moment saved")).toBeTruthy();
     act(() => vi.advanceTimersByTime(2_400));
-    expect(screen.getByText("Recording")).toBeTruthy();
+    expect(screen.getByText("1:24")).toBeTruthy();
   });
 
   test("keeps the held-note state to one line without a subtitle", () => {
@@ -709,14 +777,11 @@ describe("MeetingCaptureOverlay", () => {
     expect(screen.queryByText(/0:15 ·/)).toBeNull();
   });
 
-  test("temporarily expands a collapsed pill while Fn is held", () => {
+  test("keeps the compact footprint while Fn is held", () => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date("2026-07-18T10:01:00Z"));
     const view = renderOverlay(recordingState());
 
-    fireEvent.click(
-      screen.getByRole("button", { name: "Collapse recording pill" }),
-    );
     expect(screen.queryByText("Recording")).toBeNull();
 
     view.rerender(
@@ -737,9 +802,9 @@ describe("MeetingCaptureOverlay", () => {
     );
 
     expect(screen.getByText("Marking moment")).toBeTruthy();
-    expect(screen.getByTitle("Drag to move").className).toContain(
-      "hover:w-[260px]",
-    );
+    const compactPill = screen.getByTitle("Drag to move");
+    expect(compactPill.className).toContain("!h-[36px]");
+    expect(compactPill.className).toContain("!w-[128px]");
   });
 
   test("shows an important moment running forward until Fn is pressed", () => {
@@ -780,7 +845,29 @@ describe("MeetingCaptureOverlay", () => {
 describe("groupMeetingTranscriptSegments", () => {
   test("merges adjacent speech from the same source without shortening lines", () => {
     expect(
-      groupMeetingTranscriptSegments(meetingDetails.live_transcript),
+      groupMeetingTranscriptSegments([
+        {
+          id: "segment-1",
+          source: "them",
+          text: "We should ship the transcript first.",
+          start_ms: 0,
+          end_ms: 1_000,
+        },
+        {
+          id: "segment-2",
+          source: "them",
+          text: "Then validate reconnect behavior.",
+          start_ms: 1_000,
+          end_ms: 2_000,
+        },
+        {
+          id: "segment-3",
+          source: "you",
+          text: "I will own the QA pass.",
+          start_ms: 2_000,
+          end_ms: 3_000,
+        },
+      ]),
     ).toEqual([
       {
         id: "segment-1",

@@ -280,6 +280,8 @@ pub struct UserSettings {
     pub start_in_background: bool,
     #[serde(default)]
     pub calendar_meeting_awareness_enabled: bool,
+    #[serde(default = "super::policy::default_true")]
+    pub microphone_meeting_awareness_enabled: bool,
     #[serde(default = "super::policy::default_auto_delete_target")]
     pub auto_delete_target: AutoDeleteTarget,
     #[serde(default = "super::policy::default_auto_delete_duration")]
@@ -428,6 +430,7 @@ mod tests {
             "markdown_mirror_path",
             "media_action",
             "meeting_ai_provider",
+            "microphone_meeting_awareness_enabled",
             "microphone_device",
             "mode_rules",
             "onboarding_completed",

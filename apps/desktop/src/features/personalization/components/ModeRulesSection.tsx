@@ -22,7 +22,6 @@ import {
 } from "../queries";
 import { AppIconBadge } from "./PersonalityModal";
 import { createId } from "./personalization-utils";
-import { voiceListAnatomy } from "../../voice/components/voice-list-anatomy";
 
 // Sentinel used in the preset dropdown for "no preset" (`transform_preset:
 // null` - Selection Mode follows the spoken instruction verbatim).
@@ -335,58 +334,101 @@ const ModeRulesSection = ({
       }
     };
 
+    const flowDescription = (rule: ModeRule) => {
+      const preset = rule.transform_preset
+        ? rule.transform_preset.replaceAll("_", " ")
+        : t({
+            id: "personalization.smart_modes.custom_transform",
+            message: "custom transform",
+          });
+      return t({
+        id: "personalization.smart_modes.flow_description",
+        message: `${triggerLabel(rule.trigger)} · ${rule.input} → ${preset} → ${rule.output.type}`,
+      });
+    };
+    const localCount = rules.filter(
+      (rule) => rule.engine === "local" || rule.deterministic_only,
+    ).length;
+    const cloudCount = rules.filter(
+      (rule) => rule.engine === "cloud" && !rule.deterministic_only,
+    ).length;
+    const automaticCount = rules.length - localCount - cloudCount;
+
     return (
       <div className="min-w-0">
-        <div className="flex items-center justify-between gap-4">
-          <p className="ui-text-body-sm ui-color-muted">
-            {t({
-              id: "personalization.smart_modes.compact_description",
-              message: "When you dictate here, Looper applies this workflow.",
-            })}
-          </p>
-          <span className="shrink-0 ui-text-meta tabular-nums ui-color-muted">
-            {rules.length} of 50
-          </span>
+        <div className="flex items-start justify-between gap-[18px] border-b border-border-primary pb-4">
+          <div className="min-w-0">
+            <h2 className="ui-text-title-strong ui-color-primary text-balance">
+              {t({
+                id: "voice.flows.title",
+                message: "Context-aware flows",
+              })}
+            </h2>
+            <p className="mt-1 ui-text-body-sm ui-color-muted text-pretty">
+              {t({
+                id: "voice.flows.description",
+                message:
+                  "Change behavior only when the saved trigger matches. Each flow keeps its own engine and output.",
+              })}
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={() => {
+              handleAddRule();
+              setShowEditor(true);
+            }}
+            className="h-9 shrink-0 rounded-[11px] bg-[var(--color-accent)] px-4 ui-text-button font-semibold text-white transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent-30)]"
+          >
+            {t({ id: "voice.flows.new", message: "New flow" })}
+          </button>
         </div>
-        <button
-          type="button"
-          onClick={() => {
-            handleAddRule();
-            setShowEditor(true);
-          }}
-          className={voiceListAnatomy.adder}
-        >
-          {t({
-            id: "personalization.smart_modes.add_inline",
-            message: "App or site → workflow…",
-          })}
-          <span className="font-semibold ui-color-primary">
-            {t({ id: "personalization.smart_modes.add", message: "Add" })}
-          </span>
-        </button>
-        <div className={voiceListAnatomy.list}>
+        <ul className="mt-1">
           <AnimatePresence initial={false}>
             {rules.map((rule) => (
-              <motion.div
+              <motion.li
                 layout
                 key={rule.id}
                 initial={{ opacity: 0, y: -8 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -4 }}
                 transition={{ duration: 0.18, ease: "easeOut" }}
-                className={`${voiceListAnatomy.row} gap-4`}
+                className="flex min-h-16 items-center gap-3 border-b border-border-primary py-3 last:border-b-0"
               >
+                <span
+                  aria-hidden="true"
+                  className="grid size-9 shrink-0 place-items-center rounded-[10px] bg-[var(--color-accent-10)] ui-text-body-sm-strong text-[var(--color-accent)]"
+                >
+                  {flowGlyph(rule.trigger)}
+                </span>
                 <div className="min-w-0 flex-1">
                   <p className="ui-text-body-sm-strong ui-color-primary">
-                    {triggerLabel(rule.trigger)}
-                    <span className="mx-2 ui-color-disabled">→</span>
                     {rule.name}
                   </p>
-                  <p className="mt-0.5 truncate ui-text-meta ui-color-muted">
-                    {rule.transform_preset ?? "Custom workflow"} ·{" "}
-                    {rule.output.type}
+                  <p className="mt-0.5 ui-text-meta ui-color-muted text-pretty">
+                    {flowDescription(rule)}
                   </p>
                 </div>
+                {rule.trigger.type === "hotkey" &&
+                rule.trigger.shortcut.trim() !== "" ? (
+                  <div
+                    className="flex shrink-0 items-center gap-1"
+                    aria-label={rule.trigger.shortcut}
+                  >
+                    {rule.trigger.shortcut.split("+").map((key) => (
+                      <kbd
+                        className="rounded-md border border-border-primary bg-surface-secondary px-2 py-1 ui-text-micro ui-color-secondary"
+                        key={key}
+                      >
+                        {key}
+                      </kbd>
+                    ))}
+                  </div>
+                ) : (
+                  <span className="max-w-32 truncate rounded-lg border border-border-primary bg-surface-secondary px-2.5 py-1.5 ui-text-micro ui-color-muted">
+                    {triggerLabel(rule.trigger)}
+                  </span>
+                )}
                 <ToggleSwitch
                   enabled={rule.enabled}
                   onToggle={() =>
@@ -406,10 +448,39 @@ const ModeRulesSection = ({
                     message: "Edit",
                   })}
                 </button>
-              </motion.div>
+              </motion.li>
             ))}
           </AnimatePresence>
-        </div>
+        </ul>
+        {loading ? (
+          <p className="py-5 ui-text-body-sm ui-color-muted" role="status">
+            {t({ id: "voice.flows.loading", message: "Loading flows…" })}
+          </p>
+        ) : rules.length === 0 ? (
+          <p className="border-b border-border-primary py-5 ui-text-body-sm ui-color-muted">
+            {t({
+              id: "voice.flows.empty",
+              message:
+                "No flows yet. Add one to bind a real trigger and output.",
+            })}
+          </p>
+        ) : null}
+        <p className="mt-4 flex items-center gap-2 border-t border-border-primary pt-4 ui-text-meta ui-color-muted">
+          <span
+            aria-hidden="true"
+            className="size-1.5 rounded-full bg-[var(--color-accent)]"
+          />
+          <strong className="ui-color-primary">
+            {t({
+              id: "voice.flows.engine_summary",
+              message: "Saved per flow.",
+            })}
+          </strong>
+          {t({
+            id: "voice.flows.engine_counts",
+            message: `${localCount} local · ${automaticCount} automatic · ${cloudCount} cloud`,
+          })}
+        </p>
         {showEditor ? (
           <div className="mt-5 border-t border-border-primary pt-5">
             <ModeRulesSection
@@ -711,5 +782,20 @@ const ModeRulesSection = ({
     </div>
   );
 };
+
+function flowGlyph(trigger: ModeRuleTrigger): string {
+  switch (trigger.type) {
+    case "bundle_id":
+      return "A";
+    case "url_pattern":
+      return "↗";
+    case "field":
+      return trigger.field === "email" ? "@" : "⌁";
+    case "hotkey":
+      return "⌘";
+    case "manual":
+      return "↺";
+  }
+}
 
 export default ModeRulesSection;

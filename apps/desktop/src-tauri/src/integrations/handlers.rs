@@ -7,7 +7,9 @@ use serde_json::{json, Value};
 use tauri::{AppHandle, Manager};
 
 use super::ipc::{Request, Response};
-use crate::library::{LibraryImportOptions, MeetingStartOptions};
+use crate::library::{
+    LibraryImportOptions, MeetingCapturePhase, MeetingCaptureState, MeetingStartOptions,
+};
 use crate::settings::{Replacement, UserSettings};
 use crate::{AppRuntime, AppState};
 
@@ -415,6 +417,15 @@ fn capture_meeting_note(app: &AppHandle<AppRuntime>) -> Result<Value, String> {
 fn stop_meeting(app: &AppHandle<AppRuntime>) -> Result<Value, String> {
     let state = app.state::<AppState>();
     let capture = tauri::async_runtime::block_on(state.meeting_capture().stop(app, &state))?;
+    meeting_stop_response(capture)
+}
+
+fn meeting_stop_response(capture: MeetingCaptureState) -> Result<Value, String> {
+    if capture.phase == MeetingCapturePhase::Error {
+        return Err(capture
+            .error
+            .unwrap_or_else(|| "Meeting capture failed.".to_string()));
+    }
     serde_json::to_value(capture).map_err(|error| error.to_string())
 }
 
@@ -655,6 +666,29 @@ mod tests {
             serde_json::to_value(response_for(Err("denied".to_owned()))).unwrap(),
             json!({ "ok": false, "error": "denied" })
         );
+    }
+
+    #[test]
+    fn meeting_stop_reports_capture_errors_without_breaking_idempotent_states() {
+        let failed = MeetingCaptureState {
+            phase: MeetingCapturePhase::Error,
+            error: Some("Timed out waiting for microphone permission".to_string()),
+            ..Default::default()
+        };
+        assert_eq!(
+            meeting_stop_response(failed).unwrap_err(),
+            "Timed out waiting for microphone permission"
+        );
+
+        let idle = meeting_stop_response(MeetingCaptureState::default()).unwrap();
+        assert_eq!(idle["phase"], "idle");
+
+        let processing = meeting_stop_response(MeetingCaptureState {
+            phase: MeetingCapturePhase::Processing,
+            ..Default::default()
+        })
+        .unwrap();
+        assert_eq!(processing["phase"], "processing");
     }
 
     #[test]

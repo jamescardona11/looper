@@ -126,7 +126,7 @@ export function FeedbackWidget({
           type="button"
           onClick={send}
           disabled={!message.trim() || busy}
-          className="mt-2 w-full"
+          className="mt-2 min-h-11 w-full sm:min-h-10"
         >
           {busy ? t("auth.sendingCode") : t("chat.send")}
         </Button>

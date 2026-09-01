@@ -11,6 +11,7 @@ import type { LibraryItem, LibraryItemPatch } from "../../../../contracts";
 const mocks = vi.hoisted(() => ({
   copy: vi.fn(),
   export: vi.fn(),
+  generateMeetingSummary: vi.fn(),
   timestamp: vi.fn(),
   togglePlayback: vi.fn(),
 }));
@@ -42,6 +43,13 @@ vi.mock("../../export/useLibraryExport", () => ({
   useLibraryExport: () => ({
     isExporting: false,
     handleExport: mocks.export,
+  }),
+}));
+
+vi.mock("../../queries", () => ({
+  useGenerateMeetingSummary: () => ({
+    isPending: false,
+    mutate: mocks.generateMeetingSummary,
   }),
 }));
 
@@ -206,6 +214,7 @@ beforeEach(() => {
   i18n.loadAndActivate({ locale: "distinct", messages });
   mocks.copy.mockReset();
   mocks.export.mockReset().mockResolvedValue(undefined);
+  mocks.generateMeetingSummary.mockReset();
   mocks.timestamp.mockReset();
   mocks.togglePlayback.mockReset();
 });

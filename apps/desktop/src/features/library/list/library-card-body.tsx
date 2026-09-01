@@ -38,14 +38,14 @@ export function LibraryCardMedia({
 }) {
   const waveform = buildMiniWaveform(item.segments);
   return (
-    <div className="flex h-10 items-center justify-center">
+    <div className="grid h-8 w-8 place-items-center rounded-xl bg-[var(--desktop-highlight)] text-content-primary">
       {waveform.length === 0 ? (
         <IntelligencePixel
           active={transcribing || item.status.type === "recording"}
           statusType={item.status.type}
         />
       ) : (
-        <svg aria-hidden="true" viewBox="0 0 64 28" className="h-7 w-16">
+        <svg aria-hidden="true" viewBox="0 0 64 28" className="h-5 w-7">
           {waveform.map((bar, index) => (
             <rect
               key={`${index}-${bar.height}-${bar.speakerIndex}`}
@@ -54,7 +54,7 @@ export function LibraryCardMedia({
               width="3"
               height={bar.height}
               rx="1.5"
-              fill={`var(--data-speaker-${bar.speakerIndex + 1})`}
+              fill="currentColor"
             />
           ))}
         </svg>

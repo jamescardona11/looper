@@ -13,6 +13,7 @@ import {
 import type { SettingsDraft } from "./useSettingsDraft";
 
 export type SettingsSaveOverrides = ShortcutOverrides & {
+  calendarMeetingAwarenessEnabled?: boolean;
   localModel?: string;
   language?: string;
   shortcutBindings?: ShortcutBindings;
@@ -61,6 +62,9 @@ export function buildSettingsUpdateArgs(
 
   return {
     ...persistedDraft,
+    calendarMeetingAwarenessEnabled:
+      overrides.calendarMeetingAwarenessEnabled ??
+      draft.calendarMeetingAwarenessEnabled,
     smartShortcut:
       overrides.smartShortcut ??
       getPrimaryShortcut(shortcutBindings, "smart", shortcuts.smartShortcut),

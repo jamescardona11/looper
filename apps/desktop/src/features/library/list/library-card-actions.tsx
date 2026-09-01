@@ -18,6 +18,7 @@ import {
 
 type LibraryCardActionsProps = {
   item: LibraryItem;
+  onOpen: () => void;
   menuOpen: boolean;
   setMenuOpen: (open: boolean | ((current: boolean) => boolean)) => void;
   progress: number;
@@ -32,6 +33,7 @@ type LibraryCardActionsProps = {
 
 export function LibraryCardActions({
   item,
+  onOpen,
   menuOpen,
   setMenuOpen,
   progress,
@@ -47,22 +49,34 @@ export function LibraryCardActions({
   useClickOutside(menuRef, () => setMenuOpen(false), menuOpen);
 
   return (
-    <div className="flex min-w-[150px] items-center justify-end gap-2 pl-3">
+    <div className="flex min-w-[88px] items-center justify-end gap-2 pl-3">
       <LibraryCardProgress
         item={item}
         progress={progress}
         transcribing={transcribing}
       />
+      <button
+        type="button"
+        onClick={(event) => {
+          event.stopPropagation();
+          onOpen();
+        }}
+        className="h-8 rounded-lg px-2 ui-text-label font-medium text-content-muted transition-colors hover:bg-surface-elevated hover:text-content-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent-30)]"
+      >
+        Open
+      </button>
       <div ref={menuRef} className="relative">
         <button
           type="button"
           aria-label="More options"
+          aria-haspopup="menu"
+          aria-expanded={menuOpen}
           onClick={(event) => {
             event.stopPropagation();
             if (shiftHeld) runAction(onDelete);
             else setMenuOpen((open) => !open);
           }}
-          className="grid h-8 w-8 place-items-center rounded-lg text-content-disabled opacity-0 transition-[opacity,background-color,color] hover:bg-surface-elevated hover:text-content-primary group-hover:opacity-100 focus-visible:opacity-100"
+          className="grid h-8 w-8 place-items-center rounded-lg text-content-disabled opacity-0 transition-[opacity,background-color,color] hover:bg-surface-elevated hover:text-content-primary group-hover:opacity-100 group-focus-within:opacity-100 focus-visible:opacity-100"
         >
           {shiftHeld ? <Trash size={15} /> : <DotsThree size={17} />}
         </button>
@@ -138,6 +152,7 @@ function LibraryCardMenu({
           exit={{ opacity: 0, y: -3, scale: 0.98 }}
           transition={{ duration: 0.1 }}
           onClick={(event) => event.stopPropagation()}
+          role="menu"
           className="absolute right-0 top-full z-[100] mt-1 min-w-40 overflow-hidden rounded-lg border border-border-secondary bg-surface-overlay p-1 shadow-xl"
         >
           <MenuButton
@@ -194,6 +209,7 @@ function MenuButton({
   return (
     <button
       type="button"
+      role="menuitem"
       onClick={onClick}
       className={`flex w-full items-center gap-2 rounded-md px-2.5 py-2 ui-text-menu-item transition-colors hover:bg-surface-elevated ${
         danger ? "text-[var(--color-error)]" : "text-content-secondary"

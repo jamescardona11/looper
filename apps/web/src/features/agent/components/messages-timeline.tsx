@@ -148,7 +148,7 @@ function UserMessageBody({
               setDraft(content);
               setEditing(false);
             }}
-            className="text-[11px] text-primary-foreground/70 hover:text-primary-foreground"
+            className="inline-flex h-11 items-center text-[11px] text-primary-foreground/70 hover:text-primary-foreground sm:h-auto"
           >
             {t("agent.cancelEdit")}
           </button>
@@ -159,7 +159,7 @@ function UserMessageBody({
               setEditing(false);
               if (text && text !== content) void onEdit?.(text);
             }}
-            className="font-medium text-[11px] text-primary-foreground"
+            className="inline-flex h-11 items-center font-medium text-[11px] text-primary-foreground sm:h-auto"
           >
             {t("agent.saveResend")}
           </button>
@@ -178,7 +178,7 @@ function UserMessageBody({
             setDraft(content);
             setEditing(true);
           }}
-          className="mt-1 text-[10px] text-primary-foreground/60 opacity-0 transition-opacity hover:text-primary-foreground group-hover/edit:opacity-100"
+          className="mt-1 inline-flex h-11 items-center text-[10px] text-primary-foreground/60 opacity-100 transition-opacity hover:text-primary-foreground sm:h-auto sm:opacity-0 sm:group-hover/edit:opacity-100"
         >
           {t("agent.editMessage")}
         </button>
@@ -200,7 +200,8 @@ function MessageActions({
 }) {
   const { t } = useTranslation();
   const [copied, setCopied] = useState(false);
-  const action = "px-1 text-[10px] text-muted-foreground transition-colors hover:text-foreground";
+  const action =
+    "inline-flex h-11 items-center px-1 text-[10px] text-muted-foreground transition-colors hover:text-foreground sm:h-auto";
   return (
     <div className="flex items-center gap-3">
       <button

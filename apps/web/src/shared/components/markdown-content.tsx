@@ -7,24 +7,74 @@ import remarkMath from "remark-math";
 import "katex/dist/katex.min.css";
 import { Card } from "@/shared/components/ui";
 
-export function MarkdownContent({ content }: { content: string }) {
+export function MarkdownContent({
+  content,
+  variant = "compact",
+}: {
+  content: string;
+  variant?: "compact" | "document";
+}) {
+  const isDocument = variant === "document";
+
   return (
     <ReactMarkdown
       remarkPlugins={[remarkGfm, remarkMath]}
       rehypePlugins={[rehypeKatex]}
       components={{
-        p: ({ children }) => <p className="mb-2 last:mb-0">{children}</p>,
-        ul: ({ children }) => <ul className="my-2 list-disc space-y-0.5 pl-5">{children}</ul>,
-        ol: ({ children }) => <ol className="my-2 list-decimal space-y-0.5 pl-5">{children}</ol>,
+        p: ({ children }) => (
+          <p className={isDocument ? "mb-4 last:mb-0" : "mb-2 last:mb-0"}>{children}</p>
+        ),
+        ul: ({ children }) => (
+          <ul
+            className={
+              isDocument ? "my-4 list-disc space-y-2 pl-5" : "my-2 list-disc space-y-0.5 pl-5"
+            }
+          >
+            {children}
+          </ul>
+        ),
+        ol: ({ children }) => (
+          <ol
+            className={
+              isDocument ? "my-4 list-decimal space-y-2 pl-5" : "my-2 list-decimal space-y-0.5 pl-5"
+            }
+          >
+            {children}
+          </ol>
+        ),
         li: ({ children }) => <li className="leading-relaxed">{children}</li>,
         h1: ({ children }) => (
-          <h1 className="mt-3 mb-1.5 font-semibold text-base tracking-tight">{children}</h1>
+          <h1
+            className={
+              isDocument
+                ? "mt-10 mb-4 font-display font-semibold text-2xl tracking-tight first:mt-0"
+                : "mt-3 mb-1.5 font-semibold text-base tracking-tight"
+            }
+          >
+            {children}
+          </h1>
         ),
         h2: ({ children }) => (
-          <h2 className="mt-3 mb-1.5 font-semibold text-sm tracking-tight">{children}</h2>
+          <h2
+            className={
+              isDocument
+                ? "mt-9 mb-3 font-display font-semibold text-xl tracking-tight first:mt-0"
+                : "mt-3 mb-1.5 font-semibold text-sm tracking-tight"
+            }
+          >
+            {children}
+          </h2>
         ),
         h3: ({ children }) => (
-          <h3 className="mt-2 mb-1 font-semibold text-sm tracking-tight">{children}</h3>
+          <h3
+            className={
+              isDocument
+                ? "mt-7 mb-2 font-semibold text-base tracking-tight first:mt-0"
+                : "mt-2 mb-1 font-semibold text-sm tracking-tight"
+            }
+          >
+            {children}
+          </h3>
         ),
         a: ({ children, href }) => (
           <a

@@ -39,11 +39,9 @@ export function AppAppearanceSection({
         <AppearanceSelect
           label={t({ id: "settings.app.theme.label", message: "Theme" })}
         >
-          <Dropdown
-            value={props.themeMode}
-            onChange={props.onThemeModeChange}
-            options={controls.themeOptions}
-          />
+          <div className="flex h-9 items-center rounded-md border border-border-primary bg-surface-secondary px-3 ui-text-body-sm ui-color-primary">
+            {t({ id: "settings.app.theme.light", message: "Light" })}
+          </div>
         </AppearanceSelect>
         <AppearanceSelect
           label={t({ id: "settings.app.language.label", message: "Language" })}
@@ -64,7 +62,7 @@ export function AppAppearanceSection({
         {t({
           id: "settings.app.theme.pill_notice",
           message:
-            "Looper's pill, captions, and capture overlays stay dark in every theme for consistent contrast.",
+            "The workspace stays light. Looper's pill, captions, and capture overlays stay dark for consistent contrast.",
         })}
       </p>
     </section>

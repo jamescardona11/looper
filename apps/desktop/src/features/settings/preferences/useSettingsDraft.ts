@@ -1,4 +1,10 @@
-import { useCallback, useMemo, useState, type SetStateAction } from "react";
+import {
+  useCallback,
+  useMemo,
+  useRef,
+  useState,
+  type SetStateAction,
+} from "react";
 
 import { LOCAL_LLM_MODEL_ID } from "../../../data/models/local-llm";
 import {
@@ -47,6 +53,7 @@ export type SettingsDraft = {
   autoLaunchEnabled: boolean;
   startInBackground: boolean;
   calendarMeetingAwarenessEnabled: boolean;
+  microphoneMeetingAwarenessEnabled: boolean;
   autoDeleteTarget: AutoDeleteTarget;
   autoDeleteDuration: RecordingPrunePolicy;
   audioStorageBudgetMb: number;
@@ -66,13 +73,26 @@ export function useSettingsDraft(initialTranscriptionMode: TranscriptionMode) {
   const [draft, setDraft] = useState<SettingsDraft>(() =>
     createInitialSettingsDraft(initialTranscriptionMode),
   );
+  const draftRef = useRef(draft);
+
+  const commit = useCallback(
+    (update: (current: SettingsDraft) => SettingsDraft) => {
+      const current = draftRef.current;
+      const next = update(current);
+      if (Object.is(current, next)) return false;
+      draftRef.current = next;
+      setDraft(next);
+      return true;
+    },
+    [],
+  );
 
   const setField = useCallback(
     <K extends keyof SettingsDraft>(
       field: K,
       value: SetStateAction<SettingsDraft[K]>,
     ) => {
-      setDraft((current) => {
+      commit((current) => {
         const nextValue =
           typeof value === "function"
             ? (value as (previous: SettingsDraft[K]) => SettingsDraft[K])(
@@ -84,18 +104,54 @@ export function useSettingsDraft(initialTranscriptionMode: TranscriptionMode) {
           : { ...current, [field]: nextValue };
       });
     },
-    [],
+    [commit],
   );
 
-  const hydrate = useCallback((settings: StoredSettings) => {
-    setDraft((current) =>
-      draftFromStoredSettings(settings, current.textSizeMode),
-    );
-  }, []);
+  const hydrate = useCallback(
+    (settings: StoredSettings, previous?: StoredSettings) => {
+      return commit((current) => {
+        const next = draftFromStoredSettings(settings, current.textSizeMode);
+        if (!previous) {
+          return settingsDraftsAreEqual(current, next) ? current : next;
+        }
+
+        const baseline = draftFromStoredSettings(
+          previous,
+          current.textSizeMode,
+        );
+        const merged = mergeCleanDraftFields(current, baseline, next);
+        return settingsDraftsAreEqual(current, merged) ? current : merged;
+      });
+    },
+    [commit],
+  );
 
   const setters = useMemo(() => createDraftSetters(setField), [setField]);
 
   return { draft, setters, hydrate };
+}
+
+function mergeCleanDraftFields(
+  current: SettingsDraft,
+  baseline: SettingsDraft,
+  incoming: SettingsDraft,
+): SettingsDraft {
+  const merged = { ...current };
+  for (const field of Object.keys(incoming) as Array<keyof SettingsDraft>) {
+    if (Object.is(current[field], baseline[field])) {
+      Object.assign(merged, { [field]: incoming[field] });
+    }
+  }
+  return merged;
+}
+
+function settingsDraftsAreEqual(
+  current: SettingsDraft,
+  next: SettingsDraft,
+): boolean {
+  return (Object.keys(next) as Array<keyof SettingsDraft>).every((field) =>
+    Object.is(current[field], next[field]),
+  );
 }
 
 export function draftFromStoredSettings(
@@ -135,6 +191,8 @@ export function draftFromStoredSettings(
       autoLaunchEnabled && (settings.start_in_background ?? false),
     calendarMeetingAwarenessEnabled:
       settings.calendar_meeting_awareness_enabled ?? false,
+    microphoneMeetingAwarenessEnabled:
+      settings.microphone_meeting_awareness_enabled ?? true,
     autoDeleteTarget: settings.auto_delete_target ?? "transcripts",
     autoDeleteDuration: settings.auto_delete_duration ?? "never",
     audioStorageBudgetMb: settings.audio_storage_budget_mb ?? 0,
@@ -178,6 +236,7 @@ function createInitialSettingsDraft(
     autoLaunchEnabled: false,
     startInBackground: false,
     calendarMeetingAwarenessEnabled: false,
+    microphoneMeetingAwarenessEnabled: true,
     autoDeleteTarget: "transcripts",
     autoDeleteDuration: "never",
     audioStorageBudgetMb: 0,
@@ -233,6 +292,9 @@ function createDraftSetters(
     autoLaunchEnabled: bind("autoLaunchEnabled"),
     startInBackground: bind("startInBackground"),
     calendarMeetingAwarenessEnabled: bind("calendarMeetingAwarenessEnabled"),
+    microphoneMeetingAwarenessEnabled: bind(
+      "microphoneMeetingAwarenessEnabled",
+    ),
     autoDeleteTarget: bind("autoDeleteTarget"),
     autoDeleteDuration: bind("autoDeleteDuration"),
     audioStorageBudgetMb: bind("audioStorageBudgetMb"),

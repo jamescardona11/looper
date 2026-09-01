@@ -58,7 +58,7 @@ describe("WelcomeStep", () => {
     const props = renderWelcome();
     const button = screen.getByRole("button", { name: "Get started" });
     expect(button.className).toBe(
-      `mt-[13vh] ${PRIMARY_BUTTON_CLASS} disabled:opacity-60`,
+      `mt-14 ${PRIMARY_BUTTON_CLASS} disabled:opacity-60`,
     );
     fireEvent.click(button);
     expect(props.onStart).toHaveBeenCalledTimes(1);

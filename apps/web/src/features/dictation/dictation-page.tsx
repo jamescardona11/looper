@@ -15,7 +15,6 @@ import { ProductPageLayout } from "@/shared/components/product-page-layout";
 import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
 import { Select } from "@/shared/components/ui/select";
-import { VoiceToolNav } from "@/shared/components/voice-tool-nav";
 
 interface DictationStyle {
   id: string;
@@ -226,12 +225,10 @@ export function DictationPage() {
   return (
     <ProductPageLayout>
       <ProductPageHeader
-        eyebrow={t("nav.voiceTools")}
-        title={t("dictation.title")}
-        description={t("dictation.subtitle")}
-      >
-        <VoiceToolNav />
-      </ProductPageHeader>
+        eyebrow={t("nav.studio")}
+        title={t("web.studio.title")}
+        description={t("web.studio.subtitle")}
+      />
 
       {error ? (
         <div className="mb-5 rounded-lg border border-destructive/40 bg-destructive/10 px-4 py-3 text-destructive text-sm">
@@ -239,131 +236,152 @@ export function DictationPage() {
         </div>
       ) : null}
 
-      <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(320px,0.72fr)]">
-        <section className="rounded-lg border border-border bg-card p-5">
-          <div className="mb-5">
-            <h2 className="font-medium text-lg tracking-tight">{t("dictation.dictionary")}</h2>
-            <p className="mt-1 text-muted-foreground text-sm">{t("dictation.dictionaryHint")}</p>
-          </div>
+      <div className="grid gap-5">
+        <div className="web-product-panel overflow-hidden rounded-xl">
+          <section className="border-border border-b p-5">
+            <div className="mb-5">
+              <h2 className="font-medium text-lg tracking-tight">{t("dictation.dictionary")}</h2>
+              <p className="mt-1 text-muted-foreground text-sm">{t("dictation.dictionaryHint")}</p>
+            </div>
 
-          <form className="flex flex-col gap-3 sm:flex-row" onSubmit={addTerm}>
-            <Input
-              value={term}
-              onChange={(event) => setTerm(event.target.value)}
-              placeholder={t("dictation.termPlaceholder")}
-              aria-label={t("dictation.term")}
-              disabled={!isAuthenticated}
+            <form className="flex flex-col gap-3 sm:flex-row" onSubmit={addTerm}>
+              <Input
+                value={term}
+                onChange={(event) => setTerm(event.target.value)}
+                placeholder={t("dictation.termPlaceholder")}
+                aria-label={t("dictation.term")}
+                disabled={!isAuthenticated}
+              />
+              <Button
+                type="submit"
+                variant="outline"
+                disabled={!isAuthenticated || pending === "dictionary.add"}
+                className="min-h-11 sm:min-h-10 sm:w-auto"
+              >
+                <IconPlus aria-hidden />
+                {t("dictation.addTerm")}
+              </Button>
+            </form>
+
+            <EntryList
+              mutationsDisabled={!isAuthenticated}
+              isLoading={dictionary.isLoading}
+              emptyText={t("dictation.noTerms")}
+              items={dictionary.entries.map((entry) => ({
+                id: entry.id,
+                title: entry.term,
+                meta: new Date(entry.createdAt).toLocaleDateString(),
+                removeLabel: t("dictation.removeTerm"),
+                onRemove: () =>
+                  void run(`dictionary.remove.${entry.id}`, () => dictionary.remove(entry.id)),
+              }))}
             />
-            <Button
-              type="submit"
-              disabled={!isAuthenticated || pending === "dictionary.add"}
-              className="sm:w-auto"
+          </section>
+
+          <section className="border-border border-b p-5">
+            <div className="mb-5">
+              <h2 className="font-medium text-lg tracking-tight">{t("dictation.replacements")}</h2>
+              <p className="mt-1 text-muted-foreground text-sm">
+                {t("dictation.replacementsHint")}
+              </p>
+            </div>
+
+            <form
+              className="grid gap-3 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto]"
+              onSubmit={addReplacement}
             >
-              <IconPlus aria-hidden />
-              {t("dictation.addTerm")}
-            </Button>
-          </form>
+              <Input
+                value={source}
+                onChange={(event) => setSource(event.target.value)}
+                placeholder={t("dictation.sourcePlaceholder")}
+                aria-label={t("dictation.source")}
+                disabled={!isAuthenticated}
+              />
+              <Input
+                value={destination}
+                onChange={(event) => setDestination(event.target.value)}
+                placeholder={t("dictation.destinationPlaceholder")}
+                aria-label={t("dictation.destination")}
+                disabled={!isAuthenticated}
+              />
+              <Button
+                type="submit"
+                variant="outline"
+                disabled={!isAuthenticated || pending === "replacement.add"}
+                className="min-h-11 sm:min-h-10 md:w-auto"
+              >
+                <IconPlus aria-hidden />
+                {t("dictation.addReplacement")}
+              </Button>
+            </form>
 
-          <EntryList
-            mutationsDisabled={!isAuthenticated}
-            isLoading={dictionary.isLoading}
-            emptyText={t("dictation.noTerms")}
-            items={dictionary.entries.map((entry) => ({
-              id: entry.id,
-              title: entry.term,
-              meta: new Date(entry.createdAt).toLocaleDateString(),
-              removeLabel: t("dictation.removeTerm"),
-              onRemove: () =>
-                void run(`dictionary.remove.${entry.id}`, () => dictionary.remove(entry.id)),
-            }))}
-          />
-        </section>
-
-        <section className="rounded-lg border border-border bg-card p-5">
-          <div className="mb-5">
-            <h2 className="font-medium text-lg tracking-tight">{t("dictation.replacements")}</h2>
-            <p className="mt-1 text-muted-foreground text-sm">{t("dictation.replacementsHint")}</p>
-          </div>
-
-          <form className="grid gap-3" onSubmit={addReplacement}>
-            <Input
-              value={source}
-              onChange={(event) => setSource(event.target.value)}
-              placeholder={t("dictation.sourcePlaceholder")}
-              aria-label={t("dictation.source")}
-              disabled={!isAuthenticated}
+            <EntryList
+              mutationsDisabled={!isAuthenticated}
+              isLoading={replacements.isLoading}
+              emptyText={t("dictation.noReplacements")}
+              items={replacements.rules.map((rule) => ({
+                id: rule.id,
+                title: rule.source,
+                meta: rule.destination,
+                removeLabel: t("dictation.removeReplacement"),
+                onRemove: () =>
+                  void run(`replacement.remove.${rule.id}`, () => replacements.remove(rule.id)),
+              }))}
             />
-            <Input
-              value={destination}
-              onChange={(event) => setDestination(event.target.value)}
-              placeholder={t("dictation.destinationPlaceholder")}
-              aria-label={t("dictation.destination")}
-              disabled={!isAuthenticated}
+          </section>
+
+          <section className="p-5">
+            <div className="mb-5">
+              <h2 className="font-medium text-lg tracking-tight">{t("dictation.snippets")}</h2>
+              <p className="mt-1 text-muted-foreground text-sm">{t("dictation.snippetsHint")}</p>
+            </div>
+
+            <form
+              className="grid gap-3 md:grid-cols-[minmax(12rem,0.7fr)_minmax(0,1.5fr)_auto]"
+              onSubmit={addSnippet}
+            >
+              <Input
+                value={snippetTrigger}
+                onChange={(event) => setSnippetTrigger(event.target.value)}
+                placeholder={t("dictation.snippetTriggerPlaceholder")}
+                aria-label={t("dictation.snippetTrigger")}
+                disabled={!isAuthenticated}
+              />
+              <Input
+                value={snippetExpansion}
+                onChange={(event) => setSnippetExpansion(event.target.value)}
+                placeholder={t("dictation.snippetExpansionPlaceholder")}
+                aria-label={t("dictation.snippetExpansion")}
+                disabled={!isAuthenticated}
+              />
+              <Button
+                type="submit"
+                variant="outline"
+                disabled={!isAuthenticated || pending === "snippet.add"}
+                className="min-h-11 sm:min-h-10 md:w-auto"
+              >
+                <IconPlus aria-hidden />
+                {t("dictation.addSnippet")}
+              </Button>
+            </form>
+
+            <EntryList
+              mutationsDisabled={!isAuthenticated}
+              isLoading={snippets.isLoading}
+              emptyText={t("dictation.noSnippets")}
+              items={snippets.snippets.map((snippet) => ({
+                id: snippet.id,
+                title: snippet.trigger,
+                meta: snippet.expansion,
+                removeLabel: t("dictation.removeSnippet"),
+                onRemove: () =>
+                  void run(`snippet.remove.${snippet.id}`, () => snippets.remove(snippet.id)),
+              }))}
             />
-            <Button type="submit" disabled={!isAuthenticated || pending === "replacement.add"}>
-              <IconPlus aria-hidden />
-              {t("dictation.addReplacement")}
-            </Button>
-          </form>
+          </section>
+        </div>
 
-          <EntryList
-            mutationsDisabled={!isAuthenticated}
-            isLoading={replacements.isLoading}
-            emptyText={t("dictation.noReplacements")}
-            items={replacements.rules.map((rule) => ({
-              id: rule.id,
-              title: rule.source,
-              meta: rule.destination,
-              removeLabel: t("dictation.removeReplacement"),
-              onRemove: () =>
-                void run(`replacement.remove.${rule.id}`, () => replacements.remove(rule.id)),
-            }))}
-          />
-        </section>
-
-        <section className="rounded-lg border border-border bg-card p-5">
-          <div className="mb-5">
-            <h2 className="font-medium text-lg tracking-tight">{t("dictation.snippets")}</h2>
-            <p className="mt-1 text-muted-foreground text-sm">{t("dictation.snippetsHint")}</p>
-          </div>
-
-          <form className="grid gap-3" onSubmit={addSnippet}>
-            <Input
-              value={snippetTrigger}
-              onChange={(event) => setSnippetTrigger(event.target.value)}
-              placeholder={t("dictation.snippetTriggerPlaceholder")}
-              aria-label={t("dictation.snippetTrigger")}
-              disabled={!isAuthenticated}
-            />
-            <Input
-              value={snippetExpansion}
-              onChange={(event) => setSnippetExpansion(event.target.value)}
-              placeholder={t("dictation.snippetExpansionPlaceholder")}
-              aria-label={t("dictation.snippetExpansion")}
-              disabled={!isAuthenticated}
-            />
-            <Button type="submit" disabled={!isAuthenticated || pending === "snippet.add"}>
-              <IconPlus aria-hidden />
-              {t("dictation.addSnippet")}
-            </Button>
-          </form>
-
-          <EntryList
-            mutationsDisabled={!isAuthenticated}
-            isLoading={snippets.isLoading}
-            emptyText={t("dictation.noSnippets")}
-            items={snippets.snippets.map((snippet) => ({
-              id: snippet.id,
-              title: snippet.trigger,
-              meta: snippet.expansion,
-              removeLabel: t("dictation.removeSnippet"),
-              onRemove: () =>
-                void run(`snippet.remove.${snippet.id}`, () => snippets.remove(snippet.id)),
-            }))}
-          />
-        </section>
-
-        <section className="rounded-lg border border-border bg-card p-5 lg:col-span-2">
+        <section className="web-product-panel rounded-xl p-5">
           <div className="mb-5 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
             <div>
               <h2 className="font-medium text-lg tracking-tight">{t("dictation.styles")}</h2>
@@ -393,7 +411,12 @@ export function DictationPage() {
               aria-label={t("dictation.stylePrompt")}
               disabled={!isAuthenticated}
             />
-            <Button type="submit" disabled={!isAuthenticated || pending === "style.add"}>
+            <Button
+              type="submit"
+              variant="outline"
+              disabled={!isAuthenticated || pending === "style.add"}
+              className="min-h-11 sm:min-h-10"
+            >
               <IconPlus aria-hidden />
               {t("dictation.addStyle")}
             </Button>
@@ -401,7 +424,7 @@ export function DictationPage() {
 
           <div className="mt-5 grid gap-3 md:grid-cols-2">
             {styles.length === 0 ? (
-              <p className="rounded-lg border border-border border-dashed px-4 py-6 text-center text-muted-foreground text-sm md:col-span-2">
+              <p className="border-border border-t pt-3 text-muted-foreground text-xs md:col-span-2">
                 {t("dictation.noStyles")}
               </p>
             ) : (
@@ -421,6 +444,7 @@ export function DictationPage() {
                     <Button
                       variant="ghost"
                       size="icon"
+                      className="touch-target relative"
                       aria-label={`${t("dictation.removeStyle")}: ${style.name}`}
                       onClick={() => removeStyle(style.id)}
                       disabled={!isAuthenticated}
@@ -431,7 +455,7 @@ export function DictationPage() {
                   <Button
                     variant={selectedToneId === style.id ? "secondary" : "outline"}
                     size="sm"
-                    className="mt-4"
+                    className="mt-4 min-h-11 sm:min-h-10"
                     onClick={() => selectStyle(style.id)}
                     aria-pressed={selectedToneId === style.id}
                     disabled={!isAuthenticated}
@@ -446,7 +470,7 @@ export function DictationPage() {
           </div>
         </section>
 
-        <section className="rounded-lg border border-border bg-card p-5 lg:col-span-2">
+        <section className="web-product-panel rounded-xl p-5">
           <div className="mb-5">
             <h2 className="font-medium text-lg tracking-tight">{t("dictation.smartModes")}</h2>
             <p className="mt-1 text-muted-foreground text-sm">{t("dictation.smartModesHint")}</p>
@@ -487,7 +511,12 @@ export function DictationPage() {
               />
               {t("dictation.smartModeAutoSend")}
             </label>
-            <Button type="submit" disabled={!isAuthenticated || pending === "modeRule.add"}>
+            <Button
+              type="submit"
+              variant="outline"
+              disabled={!isAuthenticated || pending === "modeRule.add"}
+              className="min-h-11 sm:min-h-10"
+            >
               <IconPlus aria-hidden />
               {t("dictation.addSmartMode")}
             </Button>
@@ -495,7 +524,7 @@ export function DictationPage() {
 
           <div className="mt-5 grid gap-3 md:grid-cols-2">
             {modeRules.length === 0 ? (
-              <p className="rounded-lg border border-border border-dashed px-4 py-6 text-center text-muted-foreground text-sm md:col-span-2">
+              <p className="border-border border-t pt-3 text-muted-foreground text-xs md:col-span-2">
                 {t("dictation.noSmartModes")}
               </p>
             ) : (
@@ -525,6 +554,7 @@ export function DictationPage() {
                       <Button
                         variant="ghost"
                         size="icon"
+                        className="touch-target relative"
                         aria-label={`${t("dictation.removeSmartMode")}: ${trigger}`}
                         onClick={() => removeModeRule(rule.id)}
                         disabled={!isAuthenticated}
@@ -568,9 +598,7 @@ function EntryList({
 
   if (items.length === 0) {
     return (
-      <p className="mt-5 rounded-lg border border-border border-dashed px-4 py-6 text-center text-muted-foreground text-sm">
-        {emptyText}
-      </p>
+      <p className="mt-4 border-border border-t pt-3 text-muted-foreground text-xs">{emptyText}</p>
     );
   }
 
@@ -589,6 +617,7 @@ function EntryList({
           <Button
             variant="ghost"
             size="icon"
+            className="touch-target relative"
             aria-label={`${item.removeLabel}: ${item.title}`}
             onClick={item.onRemove}
             disabled={mutationsDisabled}

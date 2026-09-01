@@ -2,7 +2,13 @@
 
 import { setupI18n } from "@lingui/core";
 import { I18nProvider } from "@lingui/react";
-import { cleanup, render, screen, waitFor } from "@testing-library/react";
+import {
+  cleanup,
+  render,
+  screen,
+  waitFor,
+  within,
+} from "@testing-library/react";
 import { afterEach, describe, expect, test, vi } from "vitest";
 
 import MemoryView from "../MemoryView";
@@ -61,10 +67,10 @@ describe("MemoryView presentation contract", () => {
     );
     expect(consumed).toHaveBeenCalledOnce();
     expect(container.firstElementChild?.className).toBe(
-      "flex h-full min-h-0 flex-col items-center overflow-hidden px-6 pt-12 pb-6",
+      "flex h-full min-h-0 flex-col items-center overflow-hidden px-0 pb-6",
     );
     expect(screen.getByLabelText("Memory search").className).toBe(
-      "flex min-h-0 w-full max-w-[640px] flex-col overflow-hidden rounded-2xl border border-border-primary bg-surface-surface shadow-md",
+      "flex min-h-0 w-full max-w-[1040px] flex-col overflow-hidden rounded-[22px] bg-surface-surface shadow-[0_1px_0_var(--desktop-depth-line)]",
     );
 
     rerender(view(null));
@@ -102,10 +108,44 @@ describe("MemoryView presentation contract", () => {
     const row = screen.getByRole("article");
     expect(row.getAttribute("aria-current")).toBe("true");
     expect(row.className).toBe(
-      "group mx-1 flex items-start gap-3 rounded-lg px-2 py-2.5 transition-colors bg-surface-secondary",
+      "group mx-[15px] grid grid-cols-[minmax(0,1fr)_auto] gap-3 border-b border-border-primary px-0 py-3 transition-colors bg-[var(--color-bg-primary)]",
     );
     expect(screen.getByLabelText("VERSION-UNIQUE")).toBeTruthy();
     expect(screen.getByRole("button", { name: "FINAL-UNIQUE" })).toBeTruthy();
     expect(screen.getByRole("button", { name: "RAW-UNIQUE" })).toBeTruthy();
+  });
+
+  test("shows only grounded local source evidence for a query", () => {
+    mocks.useMemorySearch.mockReturnValue({
+      data: [
+        {
+          id: "dictation-1",
+          source: "dictation",
+          title: "Pricing handoff",
+          occurred_at_ms: 2,
+          excerpt: "Keep the annual plan.",
+          final_text: "Keep the annual plan.",
+        },
+      ],
+      isLoading: false,
+      isFetching: false,
+      error: null,
+    });
+    render(
+      <I18nProvider i18n={i18n}>
+        <MemoryView isActive onOpenResult={vi.fn()} prefillQuery="pricing" />
+      </I18nProvider>,
+    );
+
+    const evidence = screen.getByLabelText("Local search evidence");
+    expect(evidence).toBeTruthy();
+    expect(screen.getByText("1 local sources")).toBeTruthy();
+    expect(within(evidence).getByText("Keep the annual plan.")).toBeTruthy();
+    expect(
+      within(evidence).getByRole("button", { name: "Pricing handoff" }),
+    ).toBeTruthy();
+    expect(
+      screen.getByText("Searched on this Mac. None of it left the machine."),
+    ).toBeTruthy();
   });
 });

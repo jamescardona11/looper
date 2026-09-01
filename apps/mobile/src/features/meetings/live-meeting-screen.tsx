@@ -1,5 +1,5 @@
-import { type Href, useRouter } from "expo-router";
 import * as Haptics from "expo-haptics";
+import { type Href, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import Animated, {
@@ -233,7 +233,11 @@ function CaptureBar({ onFinish, onMark }: { onFinish: () => void; onMark: () => 
           pressed && styles.captureActionPressed,
         ]}
       >
-        <Icon color={momentMarked ? colors.onAccent : colors.textSecondary} name="bookmark" size={16} />
+        <Icon
+          color={momentMarked ? colors.onAccent : colors.textSecondary}
+          name="bookmark"
+          size={16}
+        />
         <Text style={[styles.captureActionText, momentMarked && styles.captureActionMarkedText]}>
           {momentMarked ? "Marcado" : "Momento"}
         </Text>

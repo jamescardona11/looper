@@ -3,6 +3,7 @@
 import { setupI18n } from "@lingui/core";
 import { I18nProvider } from "@lingui/react";
 import { cleanup, render, screen } from "@testing-library/react";
+import type { ComponentProps } from "react";
 import { afterEach, describe, expect, test, vi } from "vitest";
 import CaptureStatusCard, { type SignalStage } from "../CaptureStatusCard";
 
@@ -13,21 +14,15 @@ vi.mock("../../../../shared/ui/AnimatedCount", () => ({
 const i18n = setupI18n();
 i18n.loadAndActivate({ locale: "en", messages: {} });
 
-const stats = {
-  count: 12,
-  words: 1840,
-  audioSeconds: 1380,
-  longestWords: 320,
-  longestAudioSeconds: 240,
-  llmCleanedCount: 4,
-};
-
 afterEach(cleanup);
 
-const renderStage = (stage: SignalStage) =>
+const renderStage = (
+  stage: SignalStage,
+  overrides: Partial<ComponentProps<typeof CaptureStatusCard>> = {},
+) =>
   render(
     <I18nProvider i18n={i18n}>
-      <CaptureStatusCard stats={stats} stage={stage} />
+      <CaptureStatusCard stage={stage} {...overrides} />
     </I18nProvider>,
   );
 
@@ -74,11 +69,33 @@ describe("CaptureStatusCard", () => {
     ).toHaveLength(1);
   });
 
-  test("keeps today's numeric context in the ink surface", () => {
-    renderStage("ready");
+  test("matches the weekly signal anatomy without a redundant metrics footer", () => {
+    const { container } = renderStage("ready", {
+      weeklyActivity: {
+        days: [
+          { day: "L", height: 10, words: 100 },
+          { day: "M", height: 20, words: 200 },
+          { day: "X", height: 30, words: 300 },
+          { day: "J", height: 100, words: 1000 },
+          { day: "V", height: 20, words: 200 },
+          { day: "S", height: 4, words: 40 },
+          { day: "D", height: 0, words: 0 },
+        ],
+        words: 1840,
+      },
+    });
 
-    expect(screen.getByText("12")).toBeTruthy();
-    expect(screen.getByText("1840")).toBeTruthy();
-    expect(screen.getByText("23")).toBeTruthy();
+    expect(screen.getByText("This week")).toBeTruthy();
+    const metric = container.querySelector("[data-capture-metric]");
+    expect(metric?.children).toHaveLength(2);
+    expect(metric?.children[0]?.textContent).toBe("1840");
+    expect(metric?.children[1]?.textContent).toBe("words captured");
+    expect(container.querySelectorAll("[data-day]")).toHaveLength(7);
+    expect(
+      (container.querySelector('[data-day="J"] > span > span') as HTMLElement)
+        .style.height,
+    ).toBe("100%");
+    expect(screen.queryByText("dictations")).toBeNull();
+    expect(screen.queryByText("min spoken")).toBeNull();
   });
 });
