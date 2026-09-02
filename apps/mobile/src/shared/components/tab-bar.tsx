@@ -1,3 +1,4 @@
+import { useTranslation } from "@looper/i18n/react";
 import * as Haptics from "expo-haptics";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -6,13 +7,6 @@ import { radius, space } from "../theme/layout";
 import { Icon, type IconName } from "./icon";
 
 type Slot = { route: string; label: string; icon: IconName };
-
-const SLOTS: Slot[] = [
-  { route: "index", label: "Inicio", icon: "dictado" },
-  { route: "notes", label: "Biblioteca", icon: "library" },
-  { route: "ask", label: "Preguntar", icon: "ask" },
-  { route: "studio", label: "Studio", icon: "studio" },
-];
 
 function tap(style: Haptics.ImpactFeedbackStyle) {
   void Haptics.impactAsync(style).catch(() => {});
@@ -30,12 +24,19 @@ export function TabBar({
   captureOpen?: boolean;
 }) {
   const insets = useSafeAreaInsets();
+  const { t } = useTranslation();
+  const slots: Slot[] = [
+    { route: "index", label: t("nav.home"), icon: "dictado" },
+    { route: "notes", label: t("nav.library"), icon: "library" },
+    { route: "ask", label: t("mobile.nav.ask"), icon: "ask" },
+    { route: "studio", label: t("nav.studio"), icon: "studio" },
+  ];
 
   return (
     <View style={[styles.root, { paddingBottom: insets.bottom + space.md }]}>
       <View style={styles.dock}>
         <View style={styles.pill}>
-          {SLOTS.map((slot) => (
+          {slots.map((slot) => (
             <TabItem
               active={activeRoute === slot.route}
               key={slot.route}
@@ -62,6 +63,7 @@ function TabItem({ slot, active, onPress }: { slot: Slot; active: boolean; onPre
         if (!active) tap(Haptics.ImpactFeedbackStyle.Light);
         onPress();
       }}
+      testID={`tab-${slot.route}`}
       style={({ pressed }) => [styles.item, pressed && styles.itemPressed]}
     >
       <Icon color={tint} name={slot.icon} size={18} strokeWidth={active ? 2.4 : 2} />
@@ -73,14 +75,16 @@ function TabItem({ slot, active, onPress }: { slot: Slot; active: boolean; onPre
 }
 
 function CaptureButton({ onPress, open }: { onPress: () => void; open: boolean }) {
+  const { t } = useTranslation();
   return (
     <Pressable
-      accessibilityLabel={open ? "Cerrar captura" : "Capturar"}
+      accessibilityLabel={open ? t("mobile.capture.close") : t("mobile.capture.open")}
       accessibilityRole="button"
       onPress={() => {
         tap(Haptics.ImpactFeedbackStyle.Medium);
         onPress();
       }}
+      testID="capture-button"
       style={({ pressed }) => [styles.capture, pressed && styles.capturePressed]}
     >
       <Icon color={colors.onAccent} name={open ? "close" : "dictado"} size={22} strokeWidth={2.1} />

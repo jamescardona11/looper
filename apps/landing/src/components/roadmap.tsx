@@ -1,3 +1,4 @@
+import { useLandingCopy } from "../lib/landing-copy";
 import { containerClass } from "../lib/layout";
 
 /** Roadmap rail with a status column on desktop and stacked entries on mobile. */
@@ -12,6 +13,8 @@ const proseClass =
   "text-[14px] leading-[1.6] text-muted-foreground md:max-w-[620px] md:text-[15px]";
 
 export function Roadmap() {
+  const copy = useLandingCopy();
+
   return (
     <section
       aria-labelledby="roadmap-title"
@@ -23,55 +26,35 @@ export function Roadmap() {
           className="text-[39px] leading-[0.98] tracking-[-0.05em] md:text-[58px]"
           id="roadmap-title"
         >
-          What we are building next.
+          {copy.roadmap.title}
         </h2>
         <p className="text-[15px] text-ink-secondary leading-[1.65] md:text-[17px]">
-          Dated when it is real, not before
+          {copy.roadmap.body}
         </p>
       </div>
 
       <ul data-reveal className="mt-2 border-border border-t md:mt-0">
         <li className={`${entryClass} border-border border-b`}>
-          <span className={`${statusClass} text-primary`}>IN THE WORKSHOP</span>
+          <span className={`${statusClass} text-primary`}>{copy.roadmap.workshop}</span>
           <div className={bodyClass}>
-            <h3 className={titleClass}>iPhone and Android</h3>
-            <p className={proseClass}>
-              The same dictation and <span className="hidden md:inline">the same </span>recording
-              notes, on the device you <span className="hidden md:inline">actually </span>carry to
-              meetings.
-            </p>
+            <h3 className={titleClass}>{copy.roadmap.mobileTitle}</h3>
+            <p className={proseClass}>{copy.roadmap.mobileBody}</p>
           </div>
         </li>
 
         <li className={`${entryClass} border-border border-b`}>
-          <span className={`${statusClass} text-ink-muted`}>ARRIVES WITH MOBILE</span>
+          <span className={`${statusClass} text-ink-muted`}>{copy.roadmap.withMobile}</span>
           <div className={bodyClass}>
-            <h3 className={titleClass}>Sync across your devices</h3>
-            <p className={`${proseClass} md:hidden`}>
-              Dictate on your phone, find it on your desktop. The one feature that genuinely needs a
-              server, so the one we will charge for.
-            </p>
-            <p className={`${proseClass} hidden md:block`}>
-              Dictate on your phone, find it on your desktop. This is the one feature that genuinely
-              needs a server, so it is the one we will charge for.
-            </p>
+            <h3 className={titleClass}>{copy.roadmap.syncTitle}</h3>
+            <p className={proseClass}>{copy.roadmap.syncBody}</p>
           </div>
         </li>
 
         <li className={`${entryClass} border-border md:border-b`}>
-          <span className={`${statusClass} text-ink-muted`}>BEING EXPLORED</span>
+          <span className={`${statusClass} text-ink-muted`}>{copy.roadmap.exploring}</span>
           <div className={bodyClass}>
-            <h3 className={titleClass}>
-              A cloud model for <span className="hidden md:inline">the </span>hard recordings
-            </h3>
-            <p className={proseClass}>
-              Long, noisy, many voices at once. A paid switch
-              <span className="hidden md:inline">
-                {" "}
-                for the cases where local is not the right tool
-              </span>
-              , off unless you turn it on.
-            </p>
+            <h3 className={titleClass}>{copy.roadmap.cloudTitle}</h3>
+            <p className={proseClass}>{copy.roadmap.cloudBody}</p>
           </div>
         </li>
       </ul>

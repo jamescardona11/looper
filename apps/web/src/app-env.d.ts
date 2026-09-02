@@ -10,6 +10,10 @@ type LooperWebEnvironment = {
   readonly VITE_E2E_MIC_PROBE?: string;
 };
 
+declare module "virtual:product-preview-seeder" {
+  export function ProductPreviewSeeder(): import("react").ReactNode;
+}
+
 interface ImportMetaEnv extends LooperWebEnvironment {}
 
 interface ImportMeta {

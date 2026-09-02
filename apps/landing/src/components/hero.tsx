@@ -1,11 +1,16 @@
+import { useTranslation } from "@looper/i18n/react";
+import { useLandingCopy } from "../lib/landing-copy";
 import { containerClass } from "../lib/layout";
-import { desktopDownloadLabel, desktopDownloadUrl } from "../lib/links";
+import { desktopDownloadTarget, desktopDownloadUrl } from "../lib/links";
 import { CapturePillPreview } from "./ui/capture-pill-preview";
 import { ctaGhostClass, ctaPrimaryClass } from "./ui/cta";
 
 /** The product promise beside a real capture of the Purple desktop workspace. */
 
 export function Hero() {
+  const { locale } = useTranslation();
+  const copy = useLandingCopy();
+
   return (
     <section
       id="top"
@@ -16,22 +21,21 @@ export function Hero() {
           className="lp-enter font-mono text-[11px] text-primary tracking-[0.08em] md:text-[12px]"
           style={{ animationDelay: ".04s" }}
         >
-          VOICE WORKSPACE FOR DESKTOP
+          {copy.hero.eyebrow}
         </p>
 
         <h1
           className="lp-enter max-w-[720px] text-[46px] leading-[0.98] tracking-[-0.055em] md:text-[clamp(56px,5.3vw,76px)] md:leading-[0.94]"
           style={{ animationDelay: ".1s" }}
         >
-          Your voice becomes work.
+          {copy.hero.title}
         </h1>
 
         <p
           className="lp-enter max-w-[540px] text-[17px] text-ink-secondary leading-[1.55] md:text-[19px]"
           style={{ animationDelay: ".18s" }}
         >
-          Dictate anywhere, capture meetings, and keep original audio beside the finished note.
-          Local by default.
+          {copy.hero.body}
         </p>
 
         <div
@@ -42,14 +46,14 @@ export function Hero() {
             href={desktopDownloadUrl}
             className={`${ctaPrimaryClass} h-[52px] rounded-[12px] px-6 text-[16px]`}
           >
-            {desktopDownloadLabel}
+            {copy.download[desktopDownloadTarget]}
           </a>
 
           <a
             href="#how"
             className={`${ctaGhostClass} h-[52px] rounded-[12px] px-[22px] text-[16px] max-md:hidden`}
           >
-            See how Looper works
+            {copy.hero.secondaryCta}
           </a>
         </div>
       </div>
@@ -58,8 +62,8 @@ export function Hero() {
         <div className="lp-product-stage">
           <div className="lp-product-frame overflow-hidden rounded-[20px] md:rounded-[28px]">
             <img
-              src="/looper-workspace-purple.png"
-              alt="Looper desktop workspace showing local dictation, recent recoverable history and a meeting ready to prepare"
+              src={`/looper-workspace-purple-${locale}.png`}
+              alt={copy.hero.imageAlt}
               width="1350"
               height="830"
               fetchPriority="high"
@@ -69,7 +73,7 @@ export function Hero() {
           <CapturePillPreview />
         </div>
         <figcaption className="mt-3 max-w-[620px] text-[12px] text-ink-muted leading-[1.55] md:ml-5 md:text-[13px]">
-          One workspace for dictation, notes, memory and the local model that powers them.
+          {copy.hero.caption}
         </figcaption>
       </figure>
     </section>

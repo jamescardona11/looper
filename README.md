@@ -67,8 +67,27 @@ recording, and return to a structured meeting note.
 | --- | --- | --- |
 | ![Looper mobile dictation history and weekly local activity](assets/product/mobile-dictation.png) | ![Looper mobile live meeting capture with transcript and recording controls](assets/product/mobile-capture.png) | ![Looper mobile meeting note with summary, actions, moments, and source audio](assets/product/mobile-meeting.png) |
 
-_These previews are rendered from the maintained Desktop and Mobile design
-artifacts. Availability can vary by platform and release._
+_These mobile previews come from the real Expo Release app through the
+repository's deterministic Goldie capture flows. Availability can vary by
+platform and release._
+
+### Web review
+
+The browser workspace reads synchronized content and manages the vocabulary,
+styles, account, usage, and billing surfaces around it. Recording and native
+capture remain owned by Desktop and Mobile.
+
+<p align="center">
+  <img src="assets/product/looper-web-home-campaign-en.png" alt="Looper Web home showing synchronized dictations, notes, and meetings" width="100%">
+</p>
+
+| Meeting review | Studio |
+| --- | --- |
+| ![Looper Web meeting review with decisions, owners, open questions, and transcript](assets/product/looper-web-meeting-campaign-en.png) | ![Looper Web Studio with synchronized vocabulary, replacements, and writing styles](assets/product/looper-web-studio-campaign-en.png) |
+
+_These Web previews are Retina captures of the real Vite application. Run
+`pnpm web:previews` to seed an isolated anonymous preview account and reproduce
+the campaign assets._
 
 ### Repository surfaces
 

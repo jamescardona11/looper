@@ -1,0 +1,12 @@
+steps:
+  - launch: com.j11.looper.mobile
+  - await:
+      visible:
+        id: library-item-meeting
+  - tap:
+      id: library-item-meeting
+  - await:
+      visible:
+        id: meeting-detail-screen
+  - await:
+      idle: true

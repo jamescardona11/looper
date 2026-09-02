@@ -1,3 +1,4 @@
+import { useTranslation } from "@looper/i18n/react";
 import { type Href, router } from "expo-router";
 import { Modal, Pressable, StyleSheet, Text, View } from "react-native";
 import Animated, { FadeIn, FadeInDown } from "react-native-reanimated";
@@ -9,21 +10,6 @@ import { Icon, type IconName } from "./icon";
 
 type CaptureOption = { icon: IconName; title: string; note: string; href: Href };
 
-const OPTIONS: CaptureOption[] = [
-  {
-    icon: "meeting",
-    title: "Una reunión",
-    note: "Transcribe, separa quién habla y prepara el resumen",
-    href: "/capture",
-  },
-  {
-    icon: "dictado",
-    title: "Una nota de voz",
-    note: "Para ti. Sin resumen, sin hablantes, más rápida",
-    href: "/dictation",
-  },
-];
-
 /** Radio propio de la hoja: más generoso que la escala, para que flote. */
 const SHEET_RADIUS = 32;
 const TILE = 44;
@@ -32,6 +18,21 @@ const STEP_MS = 45;
 
 export function CaptureSheet({ visible, onClose }: { visible: boolean; onClose: () => void }) {
   const insets = useSafeAreaInsets();
+  const { t } = useTranslation();
+  const options: CaptureOption[] = [
+    {
+      icon: "meeting",
+      title: t("mobile.capture.meetingTitle"),
+      note: t("mobile.capture.meetingBody"),
+      href: "/capture",
+    },
+    {
+      icon: "dictado",
+      title: t("mobile.capture.voiceTitle"),
+      note: t("mobile.capture.voiceBody"),
+      href: "/dictation",
+    },
+  ];
 
   function go(href: Href) {
     onClose();
@@ -42,16 +43,19 @@ export function CaptureSheet({ visible, onClose }: { visible: boolean; onClose: 
     <Modal animationType="slide" onRequestClose={onClose} transparent visible={visible}>
       <View pointerEvents="box-none" style={styles.host}>
         <Pressable
-          accessibilityLabel="Cerrar"
+          accessibilityLabel={t("common.close")}
           accessibilityRole="button"
           onPress={onClose}
           style={styles.backdrop}
         />
-        <View style={[styles.sheet, { paddingBottom: space.xl + insets.bottom }]}>
+        <View
+          style={[styles.sheet, { paddingBottom: space.xl + insets.bottom }]}
+          testID="capture-sheet"
+        >
           <View style={styles.sheetHeader}>
             <View style={styles.grabber} />
             <Pressable
-              accessibilityLabel="Cerrar captura"
+              accessibilityLabel={t("mobile.capture.close")}
               accessibilityRole="button"
               hitSlop={6}
               onPress={onClose}
@@ -61,12 +65,10 @@ export function CaptureSheet({ visible, onClose }: { visible: boolean; onClose: 
             </Pressable>
           </View>
           <Animated.Text entering={FadeIn.duration(160)} style={styles.heading}>
-            ¿Qué vas a grabar?
+            {t("mobile.capture.title")}
           </Animated.Text>
-          <Text style={styles.intro}>
-            Elige el resultado que necesitas. Primero guardamos el audio en este iPhone.
-          </Text>
-          {OPTIONS.map((option, index) => (
+          <Text style={styles.intro}>{t("mobile.capture.body")}</Text>
+          {options.map((option, index) => (
             <Animated.View
               entering={FadeInDown.delay(index * STEP_MS).duration(220)}
               key={option.title}

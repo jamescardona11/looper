@@ -1,0 +1,17 @@
+steps:
+  - launch: com.j11.looper.mobile
+  - await:
+      visible:
+        id: library-item-meeting
+  - tap:
+      id: tab-studio
+  - await:
+      visible:
+        id: studio-screen
+  - tap:
+      id: studio-personalize
+  - await:
+      visible:
+        id: studio-personalize
+  - await:
+      idle: true

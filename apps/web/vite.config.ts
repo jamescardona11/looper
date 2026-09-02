@@ -4,8 +4,29 @@ import { tanstackRouter } from "@tanstack/router-plugin/vite";
 import react from "@vitejs/plugin-react";
 import { defineConfig } from "vite";
 
+const productPreviewModuleId = "virtual:product-preview-seeder";
+const emptyProductPreviewModuleId = `\0${productPreviewModuleId}.tsx`;
+
+function productPreviewPlugin() {
+  const enabled = process.env.VITE_PRODUCT_PREVIEW === "true";
+  const previewModule = path.resolve(__dirname, "./product-preview/web-product-preview-seeder.tsx");
+
+  return {
+    name: "looper-product-preview",
+    resolveId(id: string) {
+      if (id !== productPreviewModuleId) return;
+      return enabled ? previewModule : emptyProductPreviewModuleId;
+    },
+    load(id: string) {
+      if (id !== emptyProductPreviewModuleId) return;
+      return "export function ProductPreviewSeeder() { return null; }";
+    },
+  };
+}
+
 export default defineConfig({
   plugins: [
+    productPreviewPlugin(),
     tailwindcss(),
     tanstackRouter({ target: "react", autoCodeSplitting: true }),
     react({

@@ -1,0 +1,12 @@
+steps:
+  - launch: com.j11.looper.mobile
+  - await:
+      visible:
+        id: library-item-meeting
+  - tap:
+      id: capture-button
+  - await:
+      visible:
+        id: capture-sheet
+  - await:
+      idle: true

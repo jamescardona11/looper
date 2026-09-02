@@ -1,4 +1,5 @@
 import type { MeetingSession, Note } from "@looper/data";
+import type { Locale } from "@looper/i18n";
 
 export type LibraryFilter = "all" | "notes" | "meetings";
 export type LibraryItem =
@@ -27,19 +28,20 @@ export function buildLibraryItems(
   notes: Note[],
   meetings: MeetingSession[],
   filter: LibraryFilter,
+  locale: Locale = "es",
 ): LibraryItem[] {
   const noteItems: LibraryItem[] = notes.map((note) => ({
     id: note.id,
     kind: note.kind === "dictation" ? "dictation" : "note",
     title: note.title,
-    preview: note.body.trim() || "Nota vacía",
+    preview: note.body.trim() || (locale === "es" ? "Nota vacía" : "Empty note"),
     updatedAt: note.updatedAt,
   }));
   const meetingItems: LibraryItem[] = meetings.map((meeting) => ({
     id: meeting.meetingId,
     kind: "meeting",
     title: meeting.title,
-    preview: meetingPreview(meeting),
+    preview: meetingPreview(meeting, locale),
     updatedAt: meeting.lastActiveAt,
     state: meeting.state,
   }));
@@ -51,7 +53,11 @@ export function buildLibraryItems(
 }
 
 /** `now` se inyecta para que el corte de medianoche sea comprobable. */
-export function groupLibraryItemsByDay(items: LibraryItem[], now: number): LibraryDayGroup[] {
+export function groupLibraryItemsByDay(
+  items: LibraryItem[],
+  now: number,
+  locale: Locale = "es",
+): LibraryDayGroup[] {
   const todayKey = dayKey(new Date(now));
   const yesterday = new Date(now);
   yesterday.setDate(yesterday.getDate() - 1);
@@ -69,7 +75,7 @@ export function groupLibraryItemsByDay(items: LibraryItem[], now: number): Libra
     .sort(([left], [right]) => (left < right ? 1 : -1))
     .map(([key, group]) => ({
       key,
-      label: dayLabel(key, group[0].updatedAt, todayKey, yesterdayKey),
+      label: dayLabel(key, group[0].updatedAt, todayKey, yesterdayKey, locale),
       items: [...group].sort((left, right) => right.updatedAt - left.updatedAt),
     }));
 }
@@ -87,18 +93,25 @@ export function recentLibraryItems(items: LibraryItem[], since: number, limit = 
   return items.filter((item) => item.updatedAt >= since).slice(0, limit);
 }
 
-function meetingPreview(meeting: MeetingSession): string {
-  if (meeting.state === "active") return "Meeting en curso";
-  if (meeting.state === "paused") return "Meeting pausado";
-  return "Resumen, notas y transcripción";
+function meetingPreview(meeting: MeetingSession, locale: Locale): string {
+  if (meeting.state === "active")
+    return locale === "es" ? "Meeting en curso" : "Meeting in progress";
+  if (meeting.state === "paused") return locale === "es" ? "Meeting pausado" : "Meeting paused";
+  return locale === "es" ? "Resumen, notas y transcripción" : "Summary, notes, and transcript";
 }
 
-const weekdayFormatter = new Intl.DateTimeFormat("es", { weekday: "long", day: "numeric" });
-
-function dayLabel(key: string, timestamp: number, todayKey: string, yesterdayKey: string): string {
-  if (key === todayKey) return "HOY";
-  if (key === yesterdayKey) return "AYER";
-  return weekdayFormatter.format(new Date(timestamp)).toUpperCase();
+function dayLabel(
+  key: string,
+  timestamp: number,
+  todayKey: string,
+  yesterdayKey: string,
+  locale: Locale,
+): string {
+  if (key === todayKey) return locale === "es" ? "HOY" : "TODAY";
+  if (key === yesterdayKey) return locale === "es" ? "AYER" : "YESTERDAY";
+  return new Intl.DateTimeFormat(locale, { weekday: "long", day: "numeric" })
+    .format(new Date(timestamp))
+    .toUpperCase();
 }
 
 /** Clave local `YYYY-MM-DD`: ordena igual como texto que como fecha. */

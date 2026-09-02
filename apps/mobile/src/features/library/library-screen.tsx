@@ -1,4 +1,5 @@
 import { useMeetingSessions, useNotes } from "@looper/data";
+import { useTranslation } from "@looper/i18n/react";
 import { type Href, useRouter } from "expo-router";
 import { type ReactNode, useCallback, useMemo, useState } from "react";
 import { Pressable, SectionList, StyleSheet, Text, TextInput, View } from "react-native";
@@ -21,33 +22,16 @@ import {
 type LibrarySection = { key: string; label: string; data: LibraryItem[] };
 type Starter = { icon: IconName; title: string; note: string; href: Href };
 
-const KIND: Record<LibraryItem["kind"], { icon: IconName; label: string }> = {
-  dictation: { icon: "dictado", label: "Dictado" },
-  meeting: { icon: "meeting", label: "Meeting" },
-  note: { icon: "nota", label: "Nota" },
+const KIND_ICON: Record<LibraryItem["kind"], IconName> = {
+  dictation: "dictado",
+  meeting: "meeting",
+  note: "nota",
 };
 
-/** El estado vacío ofrece las tres capturas, no un cartel: cada fila navega. */
-const STARTERS: Starter[] = [
-  {
-    icon: "meeting",
-    title: "Graba tu próximo meeting",
-    note: "Se transcribe solo al terminar",
-    href: "/capture",
-  },
-  {
-    icon: "dictado",
-    title: "Dicta una idea suelta",
-    note: "Más rápido que escribirla",
-    href: "/dictation",
-  },
-  { icon: "nota", title: "Escribe una nota", note: "Empieza en blanco", href: "/notes" },
-];
-
 const SKELETON_ROWS = ["a", "b", "c", "d", "e"];
-const libraryDateFormatter = new Intl.DateTimeFormat("es", { day: "numeric", month: "short" });
 
 export function LibraryScreen() {
+  const { locale, t } = useTranslation();
   const router = useRouter();
   const notes = useNotes();
   const meetings = useMeetingSessions();
@@ -56,8 +40,8 @@ export function LibraryScreen() {
   const [rangeStart] = useState(() => Date.now() - 7 * 24 * 60 * 60 * 1_000);
 
   const items = useMemo(
-    () => buildLibraryItems(notes.notes, meetings.sessions, "all"),
-    [meetings.sessions, notes.notes],
+    () => buildLibraryItems(notes.notes, meetings.sessions, "all", locale),
+    [locale, meetings.sessions, notes.notes],
   );
   const rangedItems = useMemo(
     () => items.filter((item) => item.updatedAt >= rangeStart),
@@ -72,14 +56,20 @@ export function LibraryScreen() {
   const sections = useMemo<LibrarySection[]>(() => {
     if (needle) {
       const hits = searchLibraryItems(items, needle);
-      return [{ key: "results", label: resultsLabel(hits.length, needle), data: hits }];
+      return [
+        {
+          key: "results",
+          label: t("mobile.library.results", { count: hits.length, query: needle }),
+          data: hits,
+        },
+      ];
     }
-    return groupLibraryItemsByDay(recentItems, Date.now()).map((group) => ({
+    return groupLibraryItemsByDay(recentItems, Date.now(), locale).map((group) => ({
       key: group.key,
       label: group.label,
       data: group.items,
     }));
-  }, [items, needle, recentItems]);
+  }, [items, locale, needle, recentItems, t]);
 
   const openItem = useCallback(
     (item: LibraryItem) => {
@@ -113,8 +103,8 @@ export function LibraryScreen() {
       <View style={styles.emptyArea}>
         <EmptyState
           action={<StarterList onSelect={(href) => router.push(href)} />}
-          body="Empieza por donde te resulte natural. Todo lo que captures acaba aquí, buscable y citable."
-          title="Todavía no hay nada que recordar."
+          body={t("mobile.library.emptyBody")}
+          title={t("mobile.library.emptyTitle")}
         />
       </View>
     );
@@ -122,9 +112,9 @@ export function LibraryScreen() {
     body = (
       <View style={styles.emptyArea}>
         <EmptyState
-          action={<Button label="Borrar búsqueda" onPress={() => setQuery("")} />}
-          body="La búsqueda mira el título y el contenido. Prueba con otra palabra."
-          title={`Sin resultados para «${needle}».`}
+          action={<Button label={t("mobile.library.clearSearch")} onPress={() => setQuery("")} />}
+          body={t("mobile.library.noResultsBody")}
+          title={t("mobile.library.noResultsTitle", { query: needle })}
         />
       </View>
     );
@@ -134,13 +124,13 @@ export function LibraryScreen() {
         <EmptyState
           action={
             <Button
-              label="Ver toda la Biblioteca"
+              label={t("mobile.library.viewAll")}
               onPress={() => router.push("/notes" as Href)}
               variant="secondary"
             />
           }
-          body="Tus capturas anteriores siguen guardadas y disponibles en la Biblioteca."
-          title="Nada nuevo esta semana"
+          body={t("mobile.library.noRecentBody")}
+          title={t("mobile.library.noRecentTitle")}
         />
       </View>
     );
@@ -196,30 +186,32 @@ function BrowseHeader({
   onOpenSearch: () => void;
   wordCount: number;
 }) {
+  const { locale, t } = useTranslation();
+
   return (
     <View style={styles.headerBlock}>
       <View style={styles.header}>
         <View>
-          <Text style={styles.kicker}>DICTADO</Text>
-          <Text style={styles.title}>Hola, James</Text>
+          <Text style={styles.kicker}>{t("mobile.library.kicker")}</Text>
+          <Text style={styles.title}>{t("mobile.library.greeting", { name: "James" })}</Text>
         </View>
-        <HeaderIcon icon="search" label="Buscar en Library" onPress={onOpenSearch} />
+        <HeaderIcon icon="search" label={t("mobile.library.search")} onPress={onOpenSearch} />
       </View>
       <View style={styles.signal}>
-        <Text style={styles.signalEyebrow}>ESTA SEMANA</Text>
+        <Text style={styles.signalEyebrow}>{t("mobile.library.thisWeek")}</Text>
         <View style={styles.signalMetric}>
-          <Text style={styles.signalValue}>{formatNumber(wordCount)}</Text>
-          <Text style={styles.signalLabel}>palabras capturadas</Text>
+          <Text style={styles.signalValue}>{formatNumber(wordCount, locale)}</Text>
+          <Text style={styles.signalLabel}>{t("mobile.library.wordsCaptured")}</Text>
         </View>
-        <Text style={styles.signalSummary}>De tus apps, el teclado y las reuniones.</Text>
+        <Text style={styles.signalSummary}>{t("mobile.library.signalSummary")}</Text>
         {hasLibraryItems ? (
           <Pressable
-            accessibilityLabel="Ver toda la Biblioteca"
+            accessibilityLabel={t("mobile.library.viewAll")}
             accessibilityRole="button"
             onPress={onOpenLibrary}
             style={({ pressed }) => [styles.libraryLink, pressed && styles.sunk]}
           >
-            <Text style={styles.libraryLinkText}>Ver toda la Biblioteca</Text>
+            <Text style={styles.libraryLinkText}>{t("mobile.library.viewAll")}</Text>
             <Icon color={colors.accent} name="chevronRight" size={15} strokeWidth={2.2} />
           </Pressable>
         ) : null}
@@ -258,16 +250,18 @@ function SearchHeader({
   onChange: (value: string) => void;
   onCancel: () => void;
 }) {
+  const { t } = useTranslation();
+
   return (
     <View style={styles.searchHeader}>
       <View style={styles.searchField}>
         <Icon color={colors.muted} name="search" size={17} />
         <TextInput
-          accessibilityLabel="Buscar en Library"
+          accessibilityLabel={t("mobile.library.search")}
           autoCorrect={false}
           autoFocus
           onChangeText={onChange}
-          placeholder="Meetings, dictados y notas"
+          placeholder={t("mobile.library.searchPlaceholder")}
           placeholderTextColor={colors.disabled}
           returnKeyType="search"
           style={styles.searchInput}
@@ -275,7 +269,7 @@ function SearchHeader({
         />
         {query ? (
           <Pressable
-            accessibilityLabel="Borrar búsqueda"
+            accessibilityLabel={t("mobile.library.clearSearch")}
             accessibilityRole="button"
             hitSlop={10}
             onPress={() => onChange("")}
@@ -286,7 +280,7 @@ function SearchHeader({
         ) : null}
       </View>
       <Pressable accessibilityRole="button" hitSlop={8} onPress={onCancel}>
-        <Text style={styles.cancel}>Cancelar</Text>
+        <Text style={styles.cancel}>{t("common.cancel")}</Text>
       </Pressable>
     </View>
   );
@@ -300,23 +294,25 @@ function LibraryRow({
   item: LibraryItem;
   onPress: (item: LibraryItem) => void;
 }) {
-  const kind = KIND[item.kind];
+  const { locale, t } = useTranslation();
+  const kindLabel = t(`mobile.library.kind.${item.kind}`);
   return (
     <Pressable
-      accessibilityLabel={`${kind.label}: ${item.title}`}
+      accessibilityLabel={`${kindLabel}: ${item.title}`}
       accessibilityRole="button"
       onPress={() => onPress(item)}
+      testID={`library-item-${item.kind}`}
       style={({ pressed }) => [styles.row, pressed && styles.rowPressed]}
     >
       <View style={styles.rowTile}>
-        <Icon color={colors.accent} name={kind.icon} size={16} />
+        <Icon color={colors.accent} name={KIND_ICON[item.kind]} size={16} />
       </View>
       <View style={styles.rowCopy}>
         <Text numberOfLines={2} style={styles.rowTitle}>
           {item.title}
         </Text>
         <Text numberOfLines={1} style={styles.rowMeta}>
-          {kind.label} · {relativeTime(item.updatedAt)}
+          {kindLabel} · {relativeTime(item.updatedAt, locale, t)}
         </Text>
       </View>
     </Pressable>
@@ -324,9 +320,31 @@ function LibraryRow({
 }
 
 function StarterList({ onSelect }: { onSelect: (href: Href) => void }) {
+  const { t } = useTranslation();
+  const starters: Starter[] = [
+    {
+      icon: "meeting",
+      title: t("mobile.library.starterMeeting"),
+      note: t("mobile.library.starterMeetingBody"),
+      href: "/capture",
+    },
+    {
+      icon: "dictado",
+      title: t("mobile.library.starterDictation"),
+      note: t("mobile.library.starterDictationBody"),
+      href: "/dictation",
+    },
+    {
+      icon: "nota",
+      title: t("mobile.library.starterNote"),
+      note: t("mobile.library.starterNoteBody"),
+      href: "/notes",
+    },
+  ];
+
   return (
     <View style={styles.starters}>
-      {STARTERS.map((starter) => (
+      {starters.map((starter) => (
         <Pressable
           accessibilityLabel={starter.title}
           accessibilityRole="button"
@@ -348,26 +366,25 @@ function StarterList({ onSelect }: { onSelect: (href: Href) => void }) {
   );
 }
 
-function resultsLabel(count: number, query: string): string {
-  const noun = count === 1 ? "resultado" : "resultados";
-  return `${count} ${noun} para «${query}»`;
-}
-
-function relativeTime(timestamp: number): string {
+function relativeTime(
+  timestamp: number,
+  locale: "en" | "es",
+  t: (id: string, values?: Record<string, unknown>) => string,
+): string {
   const minutes = Math.max(0, Math.round((Date.now() - timestamp) / 60_000));
-  if (minutes < 1) return "ahora";
-  if (minutes < 60) return `hace ${minutes} min`;
+  if (minutes < 1) return t("common.justNow");
+  if (minutes < 60) return t("common.minutesAgo", { min: minutes });
   const hours = Math.round(minutes / 60);
-  if (hours < 24) return `hace ${hours} h`;
-  return libraryDateFormatter.format(timestamp);
+  if (hours < 24) return t("common.hoursAgo", { hr: hours });
+  return new Intl.DateTimeFormat(locale, { day: "numeric", month: "short" }).format(timestamp);
 }
 
 function wordCountFor(value: string): number {
   return value.trim() ? value.trim().split(/\s+/).length : 0;
 }
 
-function formatNumber(value: number): string {
-  return new Intl.NumberFormat("es").format(value);
+function formatNumber(value: number, locale: "en" | "es"): string {
+  return new Intl.NumberFormat(locale).format(value);
 }
 
 const ROW_HEIGHT = 72;

@@ -1,12 +1,9 @@
+import { useLandingCopy } from "../../lib/landing-copy";
 import { containerClass } from "../../lib/layout";
 
-const CONTEXTS = [
-  { surface: "Editor", treatment: "Technical language stays technical" },
-  { surface: "Chat with a model", treatment: "Your thought lands as a prompt" },
-  { surface: "Message to a colleague", treatment: "The tone stays plain and warm" },
-] as const;
-
 export function SpeakAnywhere() {
+  const copy = useLandingCopy();
+
   return (
     <section
       aria-labelledby="speak-anywhere-title"
@@ -17,11 +14,10 @@ export function SpeakAnywhere() {
           id="speak-anywhere-title"
           className="max-w-[620px] text-[39px] leading-[0.98] tracking-[-0.05em] md:text-[58px]"
         >
-          Speak where your cursor already is.
+          {copy.speak.title}
         </h2>
         <p className="max-w-[500px] text-[16px] text-ink-secondary leading-[1.65] md:text-[18px]">
-          Dictation is not another inbox. Hold the shortcut, speak, and Looper writes into the app
-          that already has your attention.
+          {copy.speak.body}
         </p>
       </div>
 
@@ -30,13 +26,13 @@ export function SpeakAnywhere() {
         className="rounded-[24px] bg-[var(--lp-ink)] p-6 text-[var(--lp-paper)] md:rounded-[30px] md:p-9"
       >
         <p className="font-mono text-[11px] text-[var(--lp-lavender-strong)] tracking-[0.08em]">
-          ONE SHORTCUT, THE RIGHT CONTEXT
+          {copy.speak.eyebrow}
         </p>
         <p className="mt-4 max-w-[520px] font-display font-semibold text-[30px] leading-[1.02] tracking-[-0.045em] md:text-[42px]">
-          Hold fn. Talk. Let go.
+          {copy.speak.command}
         </p>
         <dl className="mt-8">
-          {CONTEXTS.map((context) => (
+          {copy.speak.contexts.map((context) => (
             <div
               key={context.surface}
               className="grid gap-1 border-[var(--lp-paper)]/15 border-b py-4 last:border-b-0 md:grid-cols-[0.72fr_1.28fr] md:gap-6"

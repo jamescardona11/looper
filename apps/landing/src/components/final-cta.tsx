@@ -1,8 +1,11 @@
+import { useLandingCopy } from "../lib/landing-copy";
 import { containerClass } from "../lib/layout";
-import { desktopDownloadLabel, desktopDownloadUrl } from "../lib/links";
+import { desktopDownloadTarget, desktopDownloadUrl } from "../lib/links";
 import { ctaInkClass } from "./ui/cta";
 
 export function FinalCta() {
+  const copy = useLandingCopy();
+
   return (
     <section
       aria-labelledby="final-cta-title"
@@ -18,18 +21,17 @@ export function FinalCta() {
             className="text-[42px] leading-[0.96] tracking-[-0.055em] md:text-[66px]"
             id="final-cta-title"
           >
-            Keep your voice close. Put it to work.
+            {copy.finalCta.title}
           </h2>
           <p className="max-w-[560px] text-[16px] text-ink-secondary leading-[1.65] md:text-[18px]">
-            Choose the latest preview for macOS or Windows. Updates are verified by Looper, and
-            operating-system signing will follow before general availability.
+            {copy.finalCta.body}
           </p>
         </div>
         <a
           className={`${ctaInkClass} h-[52px] rounded-[12px] px-6 text-[15px]`}
           href={desktopDownloadUrl}
         >
-          {desktopDownloadLabel}
+          {copy.download[desktopDownloadTarget]}
         </a>
       </div>
     </section>

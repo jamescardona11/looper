@@ -1,5 +1,6 @@
 import type { MeetingBrief, MeetingContext, MeetingTranscriptSegment } from "@looper/data";
 import { useMeetingDetail } from "@looper/data";
+import { useTranslation } from "@looper/i18n/react";
 import { useAudioPlayer, useAudioPlayerStatus } from "expo-audio";
 import { useCallback, useEffect, useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
@@ -15,20 +16,13 @@ import { localMeetingAudioUri } from "./meeting-audio-store";
 import { formatMeetingDuration } from "./meeting-capture-logic";
 
 /** Título de la nota donde la captura guarda los momentos marcados. */
-const MOMENTS_NOTE = "Momentos marcados";
+const MOMENTS_NOTES = new Set(["Momentos marcados", "Marked moments"]);
 
 /**
  * Los interlocutores se separan por lightness, no por tono: la paleta tiene un
  * solo acento y el gris es lo único que puede distinguir sin colorear.
  */
 const SPEAKER_TONES = [colors.text, colors.textSecondary, colors.muted];
-
-const meetingDateFormatter = new Intl.DateTimeFormat("es", {
-  day: "numeric",
-  month: "short",
-  hour: "numeric",
-  minute: "2-digit",
-});
 
 export function MeetingDetailScreen({
   meetingId,
@@ -39,6 +33,7 @@ export function MeetingDetailScreen({
   onBack: () => void;
   onAsk: (meetingId: string) => void;
 }) {
+  const { locale, t } = useTranslation();
   const meeting = useMeetingDetail(meetingId);
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [playMoment, setPlayMoment] = useState<((timestampMs: number) => void) | null>(null);
@@ -63,9 +58,11 @@ export function MeetingDetailScreen({
         <Header onBack={onBack} />
         <View style={styles.body}>
           <EmptyState
-            action={<Button icon="library" label="Volver a Library" onPress={onBack} />}
-            body="El meeting ya no está en este dispositivo o nunca llegó a guardarse."
-            title="No encontramos este meeting"
+            action={
+              <Button icon="library" label={t("mobile.meeting.backLibrary")} onPress={onBack} />
+            }
+            body={t("mobile.meeting.notFoundBody")}
+            title={t("mobile.meeting.notFoundTitle")}
           />
         </View>
       </SafeAreaView>
@@ -77,20 +74,25 @@ export function MeetingDetailScreen({
   const moments = markedMoments(meeting.contexts);
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView style={styles.safeArea} testID="meeting-detail-screen">
       <Header onBack={onBack} title={session.title} />
 
       <View style={styles.metaBlock}>
         <View style={styles.metaRow}>
           <Text style={styles.meta}>
-            {`${meetingDateFormatter.format(session.startedAt)} · ${describeMinutes(duration)}`}
+            {`${new Intl.DateTimeFormat(locale, {
+              day: "numeric",
+              month: "short",
+              hour: "numeric",
+              minute: "2-digit",
+            }).format(session.startedAt)} · ${describeMinutes(duration)}`}
           </Text>
           {meeting.transcript.length > 0 ? (
             <>
               <View style={styles.metaDot} />
               <View style={styles.metaBadge}>
                 <Icon color={colors.accent} name="lock" size={12} strokeWidth={2.2} />
-                <Text style={styles.metaAccent}>Transcrito en el dispositivo</Text>
+                <Text style={styles.metaAccent}>{t("mobile.meeting.onDevice")}</Text>
               </View>
             </>
           ) : null}
@@ -106,7 +108,9 @@ export function MeetingDetailScreen({
           style={styles.detailsToggle}
         >
           <Text style={styles.detailsToggleText}>
-            {detailsOpen ? "Ocultar" : `Ver transcripción y ${moments.length} momentos`}
+            {detailsOpen
+              ? t("mobile.meeting.hideDetails")
+              : t("mobile.meeting.showDetails", { count: moments.length })}
           </Text>
           <Icon
             color={colors.accent}
@@ -130,13 +134,13 @@ export function MeetingDetailScreen({
           title={session.title}
         />
         <Pressable
-          accessibilityLabel="Pregunta sobre este meeting"
+          accessibilityLabel={t("mobile.meeting.ask")}
           accessibilityRole="button"
           onPress={() => onAsk(meetingId)}
           style={({ pressed }) => [styles.askBar, pressed && styles.sunk]}
         >
           <Icon color={colors.accent} name="ask" size={18} />
-          <Text style={styles.askText}>Pregunta sobre este meeting</Text>
+          <Text style={styles.askText}>{t("mobile.meeting.ask")}</Text>
         </Pressable>
       </View>
     </SafeAreaView>
@@ -154,6 +158,7 @@ function MeetingAudioPlayer({
   onPlayMomentChange: (playback: ((timestampMs: number) => void) | null) => void;
   title: string;
 }) {
+  const { t } = useTranslation();
   const [audioUri, setAudioUri] = useState<string | null>(null);
   const player = useAudioPlayer(null, { updateInterval: 250 });
   const status = useAudioPlayerStatus(player);
@@ -188,7 +193,9 @@ function MeetingAudioPlayer({
   return (
     <View style={styles.player}>
       <Pressable
-        accessibilityLabel={status.playing ? "Pausar grabación" : "Reproducir grabación"}
+        accessibilityLabel={
+          status.playing ? t("mobile.meeting.pauseAudio") : t("mobile.meeting.playAudio")
+        }
         accessibilityRole="button"
         accessibilityState={{ disabled: !audioUri }}
         disabled={!audioUri}
@@ -205,11 +212,13 @@ function MeetingAudioPlayer({
         </View>
       </Pressable>
       <View style={styles.playerCopy}>
-        <Text numberOfLines={1} style={styles.playerTitle}>{`${title} · grabación local`}</Text>
+        <Text numberOfLines={1} style={styles.playerTitle}>
+          {t("mobile.meeting.localRecording", { title })}
+        </Text>
         <Text style={styles.playerDuration}>
           {audioUri
             ? `${formatMeetingDuration(position)} / ${formatMeetingDuration(recordedDuration)}`
-            : "Audio local no disponible"}
+            : t("mobile.meeting.audioUnavailable")}
         </Text>
         <View style={styles.playerTrack}>
           <View style={[styles.playerProgress, { width: `${progress * 100}%` }]} />
@@ -220,10 +229,11 @@ function MeetingAudioPlayer({
 }
 
 function Header({ onBack, title }: { onBack: () => void; title?: string }) {
+  const { t } = useTranslation();
   return (
     <View style={styles.header}>
       <Pressable
-        accessibilityLabel="Volver"
+        accessibilityLabel={t("common.back")}
         accessibilityRole="button"
         hitSlop={8}
         onPress={onBack}
@@ -233,7 +243,7 @@ function Header({ onBack, title }: { onBack: () => void; title?: string }) {
       </Pressable>
       {title ? (
         <View style={styles.headerCopy}>
-          <Text style={styles.kicker}>NOTA DE REUNIÓN</Text>
+          <Text style={styles.kicker}>{t("mobile.meeting.kicker")}</Text>
           <Text numberOfLines={1} style={styles.title}>
             {title}
           </Text>
@@ -251,8 +261,9 @@ function SummarySection({
   brief: MeetingBrief | null;
   contexts: MeetingContext[];
 }) {
+  const { t } = useTranslation();
   const notes = contexts.filter(
-    (context) => context.kind === "note" && context.title !== MOMENTS_NOTE,
+    (context) => context.kind === "note" && !MOMENTS_NOTES.has(context.title),
   );
   const decisions = brief?.decisions ?? [];
   const tasks = brief?.tasks ?? [];
@@ -262,8 +273,8 @@ function SummarySection({
   if (!hasBrief && notes.length === 0) {
     return (
       <SectionNotice
-        body="Cuando la transcripción contenga decisiones o tareas, Looper las reunirá aquí. Tus notas del meeting también aparecen en esta pestaña."
-        title="Todavía no hay resumen"
+        body={t("mobile.meeting.noSummaryBody")}
+        title={t("mobile.meeting.noSummaryTitle")}
       />
     );
   }
@@ -272,13 +283,17 @@ function SummarySection({
     <View style={styles.sections}>
       {decisions[0] ? (
         <View style={styles.summaryCard}>
-          <Text style={styles.summaryEyebrow}>RESUMEN · GENERADO A PARTIR DE TU TRANSCRIPCIÓN</Text>
+          <Text style={styles.summaryEyebrow}>{t("mobile.meeting.summaryEyebrow")}</Text>
           <Text style={styles.summaryText}>{decisions[0]}</Text>
         </View>
       ) : null}
-      {decisions.length > 0 ? <BulletList items={decisions} title="Decisiones" /> : null}
-      {tasks.length > 0 ? <BulletList items={tasks} title="Pendientes" /> : null}
-      {questions.length > 0 ? <BulletList items={questions} title="Preguntas abiertas" /> : null}
+      {decisions.length > 0 ? (
+        <BulletList items={decisions} title={t("mobile.meeting.decisions")} />
+      ) : null}
+      {tasks.length > 0 ? <BulletList items={tasks} title={t("mobile.meeting.tasks")} /> : null}
+      {questions.length > 0 ? (
+        <BulletList items={questions} title={t("mobile.meeting.questions")} />
+      ) : null}
       {notes.map((note) => (
         <View key={note.id} style={styles.block}>
           <SectionLabel>{note.title}</SectionLabel>
@@ -306,21 +321,23 @@ function BulletList({ items, title }: { items: string[]; title: string }) {
 }
 
 function TranscriptSection({ transcript }: { transcript: MeetingTranscriptSegment[] }) {
+  const { t } = useTranslation();
   if (transcript.length === 0) {
     return (
       <SectionNotice
-        body="No se detectó voz, o el meeting todavía no ha terminado de procesarse."
-        title="Sin transcripción"
+        body={t("mobile.meeting.noTranscriptBody")}
+        title={t("mobile.meeting.noTranscriptTitle")}
       />
     );
   }
 
-  const speakers = uniqueSpeakers(transcript);
+  const voiceLabel = t("mobile.meeting.voice");
+  const speakers = uniqueSpeakers(transcript, voiceLabel);
 
   return (
     <View style={styles.turns}>
       {transcript.map((segment) => {
-        const speaker = speakerName(segment);
+        const speaker = speakerName(segment, voiceLabel);
         const tone = SPEAKER_TONES[speakers.indexOf(speaker) % SPEAKER_TONES.length];
         return (
           <View key={segment.id} style={styles.turn}>
@@ -344,11 +361,12 @@ function MomentsSection({
   moments: number[];
   onPlayMoment: ((timestampMs: number) => void) | null;
 }) {
+  const { t } = useTranslation();
   if (moments.length === 0) {
     return (
       <SectionNotice
-        body="Durante la grabación, el botón Momento ancla el minuto exacto para que puedas volver a él."
-        title="No marcaste ningún momento"
+        body={t("mobile.meeting.noMomentsBody")}
+        title={t("mobile.meeting.noMomentsTitle")}
       />
     );
   }
@@ -359,8 +377,11 @@ function MomentsSection({
         <Pressable
           accessibilityLabel={
             onPlayMoment
-              ? `Reproducir momento ${index + 1} en ${formatMeetingDuration(timestamp)}`
-              : `Momento ${index + 1}: audio local no disponible`
+              ? t("mobile.meeting.playMoment", {
+                  index: index + 1,
+                  time: formatMeetingDuration(timestamp),
+                })
+              : t("mobile.meeting.momentUnavailable", { index: index + 1 })
           }
           accessibilityRole="button"
           accessibilityState={{ disabled: !onPlayMoment }}
@@ -383,7 +404,9 @@ function MomentsSection({
             <Text style={styles.momentAt}>{formatMeetingDuration(timestamp)}</Text>
           </View>
           <Text style={styles.momentText}>
-            {onPlayMoment ? `Momento ${index + 1}` : "Audio local no disponible"}
+            {onPlayMoment
+              ? t("mobile.meeting.moment", { index: index + 1 })
+              : t("mobile.meeting.audioUnavailable")}
           </Text>
         </Pressable>
       ))}
@@ -423,7 +446,7 @@ function describeMinutes(durationMs: number): string {
 }
 
 function markedMoments(contexts: MeetingContext[]): number[] {
-  const note = contexts.find((context) => context.title === MOMENTS_NOTE);
+  const note = contexts.find((context) => MOMENTS_NOTES.has(context.title));
   if (!note) return [];
   return note.content
     .split("\n")
@@ -431,14 +454,14 @@ function markedMoments(contexts: MeetingContext[]): number[] {
     .filter((value) => Number.isFinite(value));
 }
 
-function speakerName(segment: MeetingTranscriptSegment): string {
-  return segment.speaker?.trim() || "Voz";
+function speakerName(segment: MeetingTranscriptSegment, fallback: string): string {
+  return segment.speaker?.trim() || fallback;
 }
 
-function uniqueSpeakers(transcript: MeetingTranscriptSegment[]): string[] {
+function uniqueSpeakers(transcript: MeetingTranscriptSegment[], fallback: string): string[] {
   const seen: string[] = [];
   for (const segment of transcript) {
-    const name = speakerName(segment);
+    const name = speakerName(segment, fallback);
     if (!seen.includes(name)) seen.push(name);
   }
   return seen;

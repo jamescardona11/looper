@@ -6,11 +6,13 @@ import { HowItWorks } from "./components/how-it-works";
 import { LocalModel } from "./components/local-model";
 import { PlatformStrip } from "./components/platform-strip";
 import { Pricing } from "./components/pricing";
+import { ProductSurfaces } from "./components/product-surfaces";
 import { Roadmap } from "./components/roadmap";
 import { ScrollMotionController } from "./components/scroll-motion-controller";
 import { SiteFooter } from "./components/site-footer";
 import { SiteHeader } from "./components/site-header";
 import { SmallPrint } from "./components/small-print";
+import { useLandingCopy } from "./lib/landing-copy";
 
 /**
  * The launch page, in the order both artboards run it.
@@ -26,13 +28,15 @@ import { SmallPrint } from "./components/small-print";
  * inside <main>, or drop the wrapper, and the build hangs rather than failing.
  */
 export function App() {
+  const copy = useLandingCopy();
+
   return (
     <>
       <a
         href="#main-content"
         className="fixed top-3 left-3 z-30 -translate-y-20 rounded-lg bg-foreground px-4 py-3 text-background focus:translate-y-0"
       >
-        Skip to content
+        {copy.common.skip}
       </a>
       <ScrollMotionController />
       <SiteHeader />
@@ -40,6 +44,7 @@ export function App() {
         <Hero />
         <PlatformStrip />
         <HowItWorks />
+        <ProductSurfaces />
         <Features />
         <LocalModel />
         <ComparisonTable />

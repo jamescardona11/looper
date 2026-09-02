@@ -1,4 +1,6 @@
 import { useDictationSettings } from "@looper/data";
+import type { Locale } from "@looper/i18n";
+import { useTranslation } from "@looper/i18n/react";
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import {
@@ -14,6 +16,7 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { secureStorage } from "@/lib/secure-storage";
 import { Button } from "@/shared/components/button";
 import { Icon } from "@/shared/components/icon";
 import { ErrorState } from "@/shared/components/screen-states";
@@ -30,16 +33,11 @@ import { colors } from "@/shared/theme/colors";
 import { radius, space } from "@/shared/theme/layout";
 import { typography } from "@/shared/theme/typography";
 
-const FORMAT_LABEL: Record<SmartMode["format"], string> = {
-  bullets: "viñetas",
-  email: "email",
-  message: "mensaje",
-  none: "sin formato",
-  todo: "tareas",
-};
+type Translate = (id: string, values?: Record<string, unknown>) => string;
 
 /** Studio mantiene la elección cotidiana arriba y revela la configuración avanzada bajo demanda. */
 export function StudioScreen() {
+  const { locale, setLocale, t } = useTranslation();
   const router = useRouter();
   const remote = useDictationSettings();
   const [settings, setSettings] = useState(() => normalizeStudioSettings(remote.doc?.data));
@@ -56,10 +54,10 @@ export function StudioScreen() {
   const persist = async (next: MobileStudioSettings) => {
     setSettings(next);
     setFailed(null);
-    setStatus("Guardando…");
+    setStatus(t("mobile.studio.saving"));
     try {
       await remote.update(studioSettingsData(next));
-      setStatus("Guardado. El teclado se actualiza automáticamente.");
+      setStatus(t("mobile.studio.saved"));
     } catch {
       setStatus(null);
       setFailed(next);
@@ -88,18 +86,18 @@ export function StudioScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView style={styles.safeArea} testID="studio-screen">
       <View style={styles.intro}>
         <Text style={styles.kicker}>STUDIO</Text>
-        <Text style={styles.title}>Cómo escribe</Text>
+        <Text style={styles.title}>{t("mobile.studio.title")}</Text>
       </View>
 
       <ScrollView contentContainerStyle={styles.content}>
         {failed ? (
           <ErrorState
-            body="Tus cambios siguen en pantalla, pero el teclado aún usa la última versión guardada."
+            body={t("mobile.studio.saveErrorBody")}
             onRetry={() => void persist(failed)}
-            title="No se pudo guardar Studio"
+            title={t("mobile.studio.saveErrorTitle")}
           />
         ) : null}
         {remote.isLoading ? (
@@ -110,18 +108,24 @@ export function StudioScreen() {
             settings={settings}
           />
         )}
+        <LanguageCard
+          locale={locale}
+          onSelect={(next) => {
+            setLocale(next);
+            void secureStorage.setItem("looper.locale", next);
+          }}
+        />
         <Pressable
-          accessibilityLabel="Personalizar cómo escribe Looper"
+          accessibilityLabel={t("mobile.studio.personalizeA11y")}
           accessibilityRole="button"
           accessibilityState={{ expanded: personalizeOpen }}
           onPress={() => setPersonalizeOpen((current) => !current)}
+          testID="studio-personalize"
           style={({ pressed }) => [styles.personalizeDisclosure, pressed && styles.dimmed]}
         >
           <View style={styles.personalizeCopy}>
-            <Text style={styles.dictationSettingsTitle}>Personalizar</Text>
-            <Text style={styles.dictationSettingsHint}>
-              Estilos, Smart Modes y conocimiento del teclado
-            </Text>
+            <Text style={styles.dictationSettingsTitle}>{t("mobile.studio.personalize")}</Text>
+            <Text style={styles.dictationSettingsHint}>{t("mobile.studio.personalizeBody")}</Text>
           </View>
           <Icon
             color={colors.accent}
@@ -133,7 +137,7 @@ export function StudioScreen() {
         {personalizeOpen && !remote.isLoading ? (
           <View style={styles.personalizeContent}>
             <View style={styles.sectionBlock}>
-              <SectionLabel>Estilos</SectionLabel>
+              <SectionLabel>{t("mobile.studio.styles")}</SectionLabel>
               <StylesTab
                 onCreate={() => setEditorKind("style")}
                 select={(activeStyleId) => void persist({ ...settings, activeStyleId })}
@@ -143,7 +147,7 @@ export function StudioScreen() {
               />
             </View>
             <View style={styles.sectionBlock}>
-              <SectionLabel>Smart Modes</SectionLabel>
+              <SectionLabel>{t("mobile.studio.smartModes")}</SectionLabel>
               <ModesTab
                 modes={settings.smartModes}
                 onCreate={() => setEditorKind("mode")}
@@ -152,15 +156,17 @@ export function StudioScreen() {
               />
             </View>
             <Pressable
-              accessibilityLabel="Abrir vocabulario, correcciones y snippets"
+              accessibilityLabel={t("mobile.studio.keyboardKnowledgeA11y")}
               accessibilityRole="button"
               onPress={() => router.push("/(app)/keyboard")}
               style={({ pressed }) => [styles.dictationSettingsLink, pressed && styles.dimmed]}
             >
               <View style={styles.personalizeCopy}>
-                <Text style={styles.dictationSettingsTitle}>Conocimiento del teclado</Text>
+                <Text style={styles.dictationSettingsTitle}>
+                  {t("mobile.studio.keyboardKnowledge")}
+                </Text>
                 <Text style={styles.dictationSettingsHint}>
-                  Vocabulario, correcciones y snippets
+                  {t("mobile.studio.keyboardKnowledgeBody")}
                 </Text>
               </View>
               <Icon color={colors.muted} name="chevronRight" size={18} strokeWidth={2.2} />
@@ -191,26 +197,23 @@ function CleaningCard({
   select: (id: string) => void;
   settings: MobileStudioSettings;
 }) {
+  const { t } = useTranslation();
   const active = settings.styles.find((style) => style.id === settings.activeStyleId);
   const levels = settings.styles.slice(0, 3);
   return (
     <View style={styles.cleaningCard}>
       <View style={styles.cleaningHead}>
-        <Text style={styles.cleaningName}>Nivel de limpieza</Text>
-        <Text style={styles.cleaningValue}>{active?.name ?? "Ligero"}</Text>
+        <Text style={styles.cleaningName}>{t("mobile.studio.cleaningLevel")}</Text>
+        <Text style={styles.cleaningValue}>{displayStyle(active, t).name}</Text>
       </View>
       <View style={styles.swatch}>
         <View style={styles.swatchLine}>
-          <Text style={styles.swatchLabel}>DIJISTE</Text>
-          <Text style={styles.swatchDim}>
-            O sea que el original se queda ahí al lado para que no se pierda nada.
-          </Text>
+          <Text style={styles.swatchLabel}>{t("mobile.studio.youSaid")}</Text>
+          <Text style={styles.swatchDim}>{t("mobile.studio.sampleInput")}</Text>
         </View>
         <View style={styles.swatchLine}>
-          <Text style={styles.swatchLabel}>SALE</Text>
-          <Text style={styles.swatchText}>
-            {active?.example ?? "El original se queda al lado, así no se pierde nada."}
-          </Text>
+          <Text style={styles.swatchLabel}>{t("mobile.studio.output")}</Text>
+          <Text style={styles.swatchText}>{displayStyle(active, t).example}</Text>
         </View>
       </View>
       <View style={styles.levels}>
@@ -225,7 +228,7 @@ function CleaningCard({
               style={[styles.level, selected && styles.levelSelected]}
             >
               <Text style={[styles.levelText, selected && styles.levelTextSelected]}>
-                {style.name}
+                {displayStyle(style, t).name}
               </Text>
             </Pressable>
           );
@@ -248,6 +251,7 @@ function StylesTab({
   showAll: boolean;
   toggleAll: () => void;
 }) {
+  const { t } = useTranslation();
   const active = settings.styles.find((style) => style.id === settings.activeStyleId);
   const visibleStyles = showAll || !active ? settings.styles : [active];
   return (
@@ -263,12 +267,12 @@ function StylesTab({
       {settings.styles.length > 1 ? (
         <Pressable accessibilityRole="button" onPress={toggleAll} style={styles.disclosure}>
           <Text style={styles.disclosureText}>
-            {showAll ? "Ver menos estilos" : "Ver todos los estilos"}
+            {showAll ? t("mobile.studio.showFewerStyles") : t("mobile.studio.showAllStyles")}
           </Text>
           <Icon color={colors.accent} name={showAll ? "chevronDown" : "chevronRight"} size={16} />
         </Pressable>
       ) : null}
-      <CreateRow label="Nuevo estilo" onPress={onCreate} />
+      <CreateRow label={t("mobile.studio.newStyle")} onPress={onCreate} />
     </View>
   );
 }
@@ -286,6 +290,8 @@ function StyleCard({
   selected: boolean;
   writingStyle: WritingStyle;
 }) {
+  const { t } = useTranslation();
+  const display = displayStyle(writingStyle, t);
   return (
     <Pressable
       accessibilityRole="radio"
@@ -302,13 +308,13 @@ function StyleCard({
           {selected ? <View style={styles.radioDot} /> : null}
         </View>
         <View style={styles.rowCopy}>
-          <Text style={styles.rowTitle}>{writingStyle.name}</Text>
-          <Text style={styles.rowNote}>{writingStyle.description}</Text>
+          <Text style={styles.rowTitle}>{display.name}</Text>
+          <Text style={styles.rowNote}>{display.description}</Text>
         </View>
       </View>
       <View style={styles.example}>
-        <SectionLabel>Suena así</SectionLabel>
-        <Text style={styles.exampleText}>{writingStyle.example}</Text>
+        <SectionLabel>{t("mobile.studio.soundsLike")}</SectionLabel>
+        <Text style={styles.exampleText}>{display.example}</Text>
       </View>
     </Pressable>
   );
@@ -325,27 +331,22 @@ function ModesTab({
   toggle: (id: string) => void;
   writingStyles: WritingStyle[];
 }) {
+  const { t } = useTranslation();
   return (
     <View style={styles.list}>
       {modes.length === 0 ? (
         <View style={styles.emptyCard}>
-          <Text style={styles.rowTitle}>Todavía no hay Smart Modes</Text>
-          <Text style={styles.rowNote}>
-            Un Smart Mode fija estilo y formato para un contexto: email, mensajes, notas o
-            seguimiento de reuniones.
-          </Text>
+          <Text style={styles.rowTitle}>{t("mobile.studio.noModesTitle")}</Text>
+          <Text style={styles.rowNote}>{t("mobile.studio.noModesBody")}</Text>
         </View>
       ) : (
         modes.map((mode) => (
           <ModeRow key={mode.id} mode={mode} toggle={toggle} writingStyles={writingStyles} />
         ))
       )}
-      <CreateRow label="Nuevo Smart Mode" onPress={onCreate} />
+      <CreateRow label={t("mobile.studio.newMode")} onPress={onCreate} />
       <View style={styles.note}>
-        <Text style={styles.rowNote}>
-          En iPhone eliges el modo desde el teclado. En Android puede activarse solo según la app en
-          la que escribas.
-        </Text>
+        <Text style={styles.rowNote}>{t("mobile.studio.modePlatformNote")}</Text>
       </View>
     </View>
   );
@@ -360,11 +361,13 @@ function ModeRow({
   toggle: (id: string) => void;
   writingStyles: WritingStyle[];
 }) {
-  const styleName = writingStyles.find((item) => item.id === mode.styleId)?.name ?? "Estilo";
+  const { t } = useTranslation();
+  const linkedStyle = writingStyles.find((item) => item.id === mode.styleId);
+  const styleName = linkedStyle ? displayStyle(linkedStyle, t).name : t("mobile.studio.style");
   const where =
     mode.triggerType === "manual"
-      ? "Lo eliges en el teclado"
-      : `Al escribir en ${mode.triggerValue}`;
+      ? t("mobile.studio.manualMode")
+      : t("mobile.studio.appMode", { app: mode.triggerValue });
 
   return (
     <View style={styles.card}>
@@ -372,7 +375,7 @@ function ModeRow({
         <View style={styles.rowCopy}>
           <Text style={[styles.rowTitle, !mode.enabled && styles.rowTitleOff]}>{mode.name}</Text>
           <Text style={styles.rowNote}>
-            {where} · {styleName} · {FORMAT_LABEL[mode.format]}
+            {where} · {styleName} · {t(`mobile.studio.format.${mode.format}`)}
           </Text>
         </View>
         <Switch
@@ -438,6 +441,7 @@ function StudioEditor({
   onStyle: (style: WritingStyle) => void;
   writingStyles: WritingStyle[];
 }) {
+  const { t } = useTranslation();
   const [name, setName] = useState("");
   const [instructions, setInstructions] = useState("");
   const [styleId, setStyleId] = useState(writingStyles[0]?.id ?? "concise");
@@ -447,8 +451,8 @@ function StudioEditor({
     if (!name.trim()) return;
     if (kind === "style") {
       onStyle({
-        description: "Personalizado",
-        example: "Vista previa disponible al usar este estilo.",
+        description: t("mobile.studio.custom"),
+        example: t("mobile.studio.customPreview"),
         id: `style_${Date.now()}`,
         name: name.trim(),
         promptTemplate: instructions.trim(),
@@ -476,10 +480,10 @@ function StudioEditor({
           <View style={styles.sheet}>
             <View style={styles.sheetHead}>
               <Text style={styles.sheetTitle}>
-                {kind === "style" ? "Nuevo estilo" : "Nuevo Smart Mode"}
+                {kind === "style" ? t("mobile.studio.newStyle") : t("mobile.studio.newMode")}
               </Text>
               <Pressable
-                accessibilityLabel="Cerrar"
+                accessibilityLabel={t("common.close")}
                 accessibilityRole="button"
                 onPress={onClose}
                 style={styles.close}
@@ -489,14 +493,14 @@ function StudioEditor({
             </View>
             <TextInput
               onChangeText={setName}
-              placeholder="Nombre"
+              placeholder={t("mobile.studio.name")}
               placeholderTextColor={colors.muted}
               style={styles.input}
               value={name}
             />
             {kind === "mode" ? (
               <>
-                <SectionLabel>Estilo</SectionLabel>
+                <SectionLabel>{t("mobile.studio.style")}</SectionLabel>
                 <View style={styles.options}>
                   {writingStyles.map((item) => (
                     <Pressable
@@ -506,11 +510,11 @@ function StudioEditor({
                       onPress={() => setStyleId(item.id)}
                       style={[styles.option, styleId === item.id && styles.optionSelected]}
                     >
-                      <Text style={styles.optionLabel}>{item.name}</Text>
+                      <Text style={styles.optionLabel}>{displayStyle(item, t).name}</Text>
                     </Pressable>
                   ))}
                 </View>
-                <SectionLabel>Formato</SectionLabel>
+                <SectionLabel>{t("mobile.studio.format")}</SectionLabel>
                 <View style={styles.options}>
                   {(["none", "email", "message", "bullets", "todo"] as const).map((value) => (
                     <Pressable
@@ -520,7 +524,7 @@ function StudioEditor({
                       onPress={() => setFormat(value)}
                       style={[styles.option, format === value && styles.optionSelected]}
                     >
-                      <Text style={styles.optionLabel}>{FORMAT_LABEL[value]}</Text>
+                      <Text style={styles.optionLabel}>{t(`mobile.studio.format.${value}`)}</Text>
                     </Pressable>
                   ))}
                 </View>
@@ -529,18 +533,79 @@ function StudioEditor({
             <TextInput
               multiline
               onChangeText={setInstructions}
-              placeholder="Instrucciones"
+              placeholder={t("mobile.studio.instructions")}
               placeholderTextColor={colors.muted}
               style={[styles.input, styles.instructions]}
               textAlignVertical="top"
               value={instructions}
             />
-            <Button disabled={!name.trim()} label="Guardar" onPress={save} variant="primary" />
+            <Button
+              disabled={!name.trim()}
+              label={t("common.save")}
+              onPress={save}
+              variant="primary"
+            />
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
     </Modal>
   );
+}
+
+function LanguageCard({
+  locale,
+  onSelect,
+}: {
+  locale: Locale;
+  onSelect: (locale: Locale) => void;
+}) {
+  const { t } = useTranslation();
+  return (
+    <View style={styles.languageCard}>
+      <View style={styles.personalizeCopy}>
+        <Text style={styles.dictationSettingsTitle}>{t("mobile.studio.appLanguage")}</Text>
+        <Text style={styles.dictationSettingsHint}>{t("mobile.studio.appLanguageBody")}</Text>
+      </View>
+      <View accessibilityRole="radiogroup" style={styles.languageOptions}>
+        {(["en", "es"] as const).map((value) => (
+          <Pressable
+            accessibilityRole="radio"
+            accessibilityState={{ selected: locale === value }}
+            key={value}
+            onPress={() => onSelect(value)}
+            style={[styles.languageOption, locale === value && styles.languageOptionSelected]}
+          >
+            <Text
+              style={[
+                styles.languageOptionText,
+                locale === value && styles.languageOptionTextSelected,
+              ]}
+            >
+              {t(`locale.${value}`)}
+            </Text>
+          </Pressable>
+        ))}
+      </View>
+    </View>
+  );
+}
+
+function displayStyle(style: WritingStyle | undefined, t: Translate) {
+  if (!style) {
+    return {
+      description: "",
+      example: t("mobile.studio.defaultExample"),
+      name: t("mobile.studio.defaultStyle"),
+    };
+  }
+  if (style.id === "concise" || style.id === "warm" || style.id === "structured") {
+    return {
+      description: t(`mobile.studio.style.${style.id}.description`),
+      example: t(`mobile.studio.style.${style.id}.example`),
+      name: t(`mobile.studio.style.${style.id}.name`),
+    };
+  }
+  return style;
 }
 
 const SCREEN_PAD = 20;
@@ -661,6 +726,26 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   levels: { flexDirection: "row", flexWrap: "wrap", gap: 6 },
+  languageCard: {
+    alignItems: "center",
+    backgroundColor: colors.surface,
+    borderRadius: radius.lg,
+    flexDirection: "row",
+    gap: space.md,
+    justifyContent: "space-between",
+    padding: 15,
+  },
+  languageOption: {
+    alignItems: "center",
+    borderRadius: radius.pill,
+    justifyContent: "center",
+    minHeight: 44,
+    paddingHorizontal: 13,
+  },
+  languageOptionSelected: { backgroundColor: colors.accentSubtle },
+  languageOptionText: { ...typography.meta, color: colors.muted, fontWeight: "700" },
+  languageOptionTextSelected: { color: colors.accent },
+  languageOptions: { flexDirection: "row", gap: 2 },
   levelSelected: { backgroundColor: colors.accentSubtle, borderColor: colors.accent },
   levelText: { ...typography.meta, color: colors.textSecondary, fontWeight: "600" },
   levelTextSelected: { color: colors.accent },

@@ -1,3 +1,4 @@
+import { useTranslation } from "@looper/i18n/react";
 import type { ReactNode } from "react";
 import { StyleSheet, Text, View } from "react-native";
 import { colors } from "../theme/colors";
@@ -34,6 +35,7 @@ export function EmptyState({ title, body, action }: EmptyStateProps) {
 
 /** Qué se ha salvado, por qué falló y una salida. El detalle técnico, aparte. */
 export function ErrorState({ title, body, detail, onRetry }: ErrorStateProps) {
+  const { t } = useTranslation();
   return (
     <View style={styles.errorPanel}>
       <View style={styles.errorHeading}>
@@ -42,7 +44,7 @@ export function ErrorState({ title, body, detail, onRetry }: ErrorStateProps) {
       </View>
       <Text style={styles.errorBody}>{body}</Text>
       {detail ? <Text style={styles.errorDetail}>{detail}</Text> : null}
-      <Button icon="refresh" label="Reintentar" onPress={onRetry} variant="secondary" />
+      <Button icon="refresh" label={t("common.retry")} onPress={onRetry} variant="secondary" />
     </View>
   );
 }

@@ -1,28 +1,16 @@
+import { useTranslation } from "@looper/i18n/react";
+import { useLandingCopy } from "../../lib/landing-copy";
 import { containerClass } from "../../lib/layout";
 import { CapturePillPreview } from "../ui/capture-pill-preview";
 
-const STORY_STEPS = [
-  {
-    number: "01",
-    label: "LISTENING",
-    title: "Speak where the work already is.",
-    body: "Hold the shortcut and keep your cursor in the editor, message or prompt that needs the words.",
-  },
-  {
-    number: "02",
-    label: "TRANSCRIBING",
-    title: "Looper turns the audio into useful text.",
-    body: "The local model transcribes first, then cleanup removes filler without erasing your original words.",
-  },
-  {
-    number: "03",
-    label: "INSERTED",
-    title: "The result lands with its source intact.",
-    body: "Use the finished note, jump back to the exact moment, or undo the cleanup when the first pass is wrong.",
-  },
-] as const;
-
 export function ScrollStory() {
+  const { locale } = useTranslation();
+  const copy = useLandingCopy();
+  const steps = copy.story.steps.map((step, index) => ({
+    ...step,
+    number: `0${index + 1}`,
+  }));
+
   return (
     <section
       aria-labelledby="scroll-story-title"
@@ -32,18 +20,20 @@ export function ScrollStory() {
     >
       <div className={`${containerClass} py-28`}>
         <div data-reveal className="max-w-[760px]">
-          <p className="font-mono text-[11px] text-primary tracking-[0.08em]">HOW LOOPER MOVES</p>
+          <p className="font-mono text-[11px] text-primary tracking-[0.08em]">
+            {copy.story.eyebrow}
+          </p>
           <h2
             id="scroll-story-title"
             className="mt-4 text-[66px] leading-[0.96] tracking-[-0.055em]"
           >
-            From voice to work, without a detour.
+            {copy.story.title}
           </h2>
         </div>
 
         <div className="mt-12 grid grid-cols-[0.72fr_1.28fr] gap-20 xl:gap-24">
           <ol className="m-0 list-none p-0">
-            {STORY_STEPS.map((step, index) => (
+            {steps.map((step, index) => (
               <li
                 key={step.label}
                 className="lp-story-step flex min-h-[62vh] items-center border-border border-t py-14 last:border-b"
@@ -73,7 +63,7 @@ export function ScrollStory() {
               <div className="lp-product-frame overflow-hidden rounded-[28px]">
                 <div className="lp-story-image-stack">
                   <img
-                    src="/looper-workspace-purple.png"
+                    src={`/looper-workspace-purple-${locale}.png`}
                     alt=""
                     width="1350"
                     height="830"
@@ -81,7 +71,7 @@ export function ScrollStory() {
                     data-story-image="workspace"
                   />
                   <img
-                    src="/looper-note-detail-purple.png"
+                    src={`/looper-note-detail-purple-${locale}.png`}
                     alt=""
                     width="1350"
                     height="830"
@@ -92,8 +82,8 @@ export function ScrollStory() {
                   <div className="lp-story-result-card" aria-hidden="true">
                     <span className="lp-story-result-check">✓</span>
                     <span>
-                      <strong>Note ready</strong>
-                      <small>Source audio stays attached</small>
+                      <strong>{copy.story.ready}</strong>
+                      <small>{copy.story.sourceAttached}</small>
                     </span>
                   </div>
                 </div>
@@ -104,8 +94,7 @@ export function ScrollStory() {
               <CapturePillPreview className="lp-story-pill lp-story-pill-2" state="inserted" />
             </div>
             <figcaption className="mt-3 ml-5 max-w-[620px] text-[13px] text-ink-muted leading-[1.55]">
-              The capture pill shows exactly what Looper is doing while the workspace keeps the
-              source beside the result.
+              {copy.story.caption}
             </figcaption>
           </figure>
         </div>
