@@ -429,8 +429,6 @@ class KeyboardViewController: UIInputViewController {
   private var cachedIdTokenExpiry: Date?
   private var lastDebugLog: String = ""
 
-  private var memberInfo: MemberInfo?
-  private var memberRefreshTimer: Timer?
   private var fullAccessBanner: UIView!
   private var isShowingCommands = false
 
@@ -454,8 +452,6 @@ class KeyboardViewController: UIInputViewController {
     loadSnippets()
     refreshDictationState()
     startDarwinObservers()
-    refreshMemberData()
-    startMemberRefreshTimer()
   }
 
   private func syncFullAccessStatus() {
@@ -1762,40 +1758,6 @@ class KeyboardViewController: UIInputViewController {
     updateTransformationSummary()
   }
 
-  // MARK: - Member Status
-
-  private func startMemberRefreshTimer() {
-    memberRefreshTimer?.invalidate()
-    memberRefreshTimer = Timer.scheduledTimer(withTimeInterval: 300, repeats: true) {
-      [weak self] _ in
-      self?.refreshMemberData()
-    }
-  }
-
-  private func refreshMemberData() {
-    fetchIdToken { [weak self] idToken in
-      guard let self = self, let idToken = idToken else { return }
-      guard let defaults = UserDefaults(suiteName: DictationConstants.appGroupId),
-        let convexUrl = defaults.string(forKey: "looper_convex_url")
-      else { return }
-
-      let config = RepoConfig(functionUrl: convexUrl, idToken: idToken)
-      let repo = MemberRepo(config: config)
-
-      Task {
-        do {
-          let member = try await repo.getMyMember()
-
-          await MainActor.run {
-            self.memberInfo = member
-          }
-        } catch {
-          NSLog("[LooperKB] Failed to refresh member: %@", error.localizedDescription)
-        }
-      }
-    }
-  }
-
 
   // MARK: - Transcription
 
@@ -2065,7 +2027,6 @@ class KeyboardViewController: UIInputViewController {
             }
             self.isProcessing = false
             self.applyPillVisual(.idle, animated: true)
-            self.refreshMemberData()
           }
 
           TranscriptionRepo().save(
@@ -2233,8 +2194,6 @@ class KeyboardViewController: UIInputViewController {
     }
     appCounterPoller?.invalidate()
     appCounterPoller = nil
-    memberRefreshTimer?.invalidate()
-    memberRefreshTimer = nil
     DarwinNotificationManager.shared.removeObserver(DictationConstants.dictationPhaseChanged)
     stopAudioLevelPolling()
     waveformView.stopAnimating()

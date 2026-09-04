@@ -11,7 +11,6 @@ import {
   ShieldCheck,
   SlidersHorizontal,
   SquaresFour,
-  User,
   type Icon as PhosphorIcon,
 } from "@phosphor-icons/react";
 import type { SettingsSection } from "../preferences/settings-navigation";
@@ -38,11 +37,6 @@ const navigationGroups: NavigationGroup[] = [
   {
     heading: { id: "settings.modal.section.account", message: "Account" },
     items: [
-      {
-        section: "account",
-        icon: User,
-        label: { id: "settings.modal.tab.account", message: "Account" },
-      },
       {
         section: "sync",
         icon: Sync,

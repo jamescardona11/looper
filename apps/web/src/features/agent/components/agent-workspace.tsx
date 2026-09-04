@@ -1,9 +1,6 @@
 // biome-ignore-all assist/source/organizeImports: module markers keep optional imports removable.
-import { useSubscription } from "@looper/data";
 import { useTranslation } from "@looper/i18n/react";
-import { IconArrowUpRight } from "@tabler/icons-react";
 import { IconDownload, IconMessageCircle } from "@tabler/icons-react";
-import { Link } from "@tanstack/react-router";
 import { Navigate } from "@tanstack/react-router";
 import { Eyebrow } from "@/shared/components/eyebrow";
 import { PageSurface } from "@/shared/components/page-surface";
@@ -15,7 +12,6 @@ import { ChatUI } from "./chat-ui";
 
 export function AgentWorkspace({ activeThreadId }: { activeThreadId: string | null }) {
   const { isAuthenticated, isLoading, nextThreadId } = useAgentWorkspace(activeThreadId);
-  const { tier } = useSubscription();
 
   if (isLoading) return <ChatLoadingState />;
   if (!isAuthenticated) return <Navigate to="/sign-in" replace />;
@@ -33,8 +29,6 @@ export function AgentWorkspace({ activeThreadId }: { activeThreadId: string | nu
           <ChatLoadingState />
         )}
       </section>
-
-      {tier === "free" ? <UpgradeFab /> : null}
     </PageSurface>
   );
 }
@@ -91,22 +85,5 @@ function ChatHeader({ activeThreadId }: { activeThreadId: string | null }) {
         ) : null}
       </div>
     </header>
-  );
-}
-
-function UpgradeFab() {
-  const { t } = useTranslation();
-  return (
-    <Link
-      to="/billing"
-      className="group fixed right-20 bottom-6 z-20 hidden items-center gap-2 rounded-full border border-border bg-card/90 px-3.5 py-2 font-medium text-foreground text-xs tracking-tight shadow-lg backdrop-blur transition-[border-color,background-color] hover:border-primary/40 hover:bg-card sm:inline-flex"
-    >
-      <span className="relative grid size-4 place-items-center">
-        <span className="absolute inset-0 animate-pulse rounded-full bg-primary/30 blur" />
-        <span className="relative size-1.5 rounded-full bg-primary" />
-      </span>
-      <span>{t("agent.upgrade")}</span>
-      <IconArrowUpRight className="size-3.5 text-muted-foreground transition-colors group-hover:text-primary" />
-    </Link>
   );
 }

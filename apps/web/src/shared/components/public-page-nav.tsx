@@ -26,9 +26,6 @@ export function PublicPageNav({ purchaseRequest = false }: { purchaseRequest?: b
 
         {!purchaseRequest && (
           <nav className="hidden items-center gap-6 text-muted-foreground text-sm md:flex">
-            <Link to="/pricing" className="transition-colors hover:text-foreground">
-              {t("landing.nav.pricing")}
-            </Link>
             <Link to="/changelog" className="transition-colors hover:text-foreground">
               {t("landing.footer.changelog")}
             </Link>

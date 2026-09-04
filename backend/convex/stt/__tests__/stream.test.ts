@@ -1,8 +1,8 @@
-// Characterization tests for the metered live-STT session action.
+// Characterization tests for the free-launch live-STT session action.
 //
-// createStreamSession mints a short-lived provider token. It already honors
-// mock by returning { mock: true, token: "" } with no charge and no provider
-// call. Pins the same metered-action contract the refactor must preserve.
+// createStreamSession mints a short-lived provider token without consuming
+// credits. Mock mode still returns { mock: true, token: "" } without a provider
+// call.
 
 import { convexTest } from "convex-test";
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest";
@@ -51,8 +51,8 @@ async function seedUser(t: ReturnType<typeof convexTest>, mock: boolean) {
   return userId;
 }
 
-describe("stt.stream.createStreamSession — metered action contract", () => {
-  it("(a) !mock charges via assertCredits and mints a real token", async () => {
+describe("stt.stream.createStreamSession — free-launch access contract", () => {
+  it("(a) !mock mints a real token without consuming credits", async () => {
     const t = setup();
     const userId = await seedUser(t, false);
     const { providerCalls } = stubFetch(deepgramGrant);
@@ -63,7 +63,7 @@ describe("stt.stream.createStreamSession — metered action contract", () => {
     expect(res).toEqual({ provider: "deepgram", mock: false, token: "tok-123" });
     expect(providerCalls.length).toBeGreaterThanOrEqual(1);
     const bal = await as.query(api.agent.credits.balance, {});
-    expect(bal?.used).toBeGreaterThan(0);
+    expect(bal?.used).toBe(0);
   });
 
   it("(b) mock does NOT charge and does NOT call the provider", async () => {

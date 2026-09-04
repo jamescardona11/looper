@@ -10,6 +10,7 @@ import { getAuthUserId } from "@convex-dev/auth/server";
 import {
   isConfiguredBillingId,
   type OneTimePack,
+  PRODUCT_ACCESS_IS_FREE,
   resolveStripeOneTimePriceId,
   resolveStripeTierPriceId,
   type Tier,
@@ -37,6 +38,10 @@ export const createCheckoutSession = action({
     cancelUrl: v.string(),
   },
   handler: async (ctx, { tier, interval, successUrl, cancelUrl }) => {
+    if (PRODUCT_ACCESS_IS_FREE) {
+      throw new Error("Commercial billing is unavailable while Looper is free to use");
+    }
+
     const userId = await getAuthUserId(ctx);
     if (!userId) throw new Error("Must be signed in to upgrade");
 
@@ -103,6 +108,10 @@ export const createOneTimeCheckout = action({
     allowCrypto: v.optional(v.boolean()),
   },
   handler: async (ctx, { pack, successUrl, cancelUrl, allowCrypto }) => {
+    if (PRODUCT_ACCESS_IS_FREE) {
+      throw new Error("Commercial billing is unavailable while Looper is free to use");
+    }
+
     const userId = await getAuthUserId(ctx);
     if (!userId) throw new Error("Must be signed in");
 
@@ -142,6 +151,10 @@ export const createPortalSession = action({
     returnUrl: v.string(),
   },
   handler: async (ctx, { returnUrl }) => {
+    if (PRODUCT_ACCESS_IS_FREE) {
+      throw new Error("Commercial billing is unavailable while Looper is free to use");
+    }
+
     const userId = await getAuthUserId(ctx);
     if (!userId) throw new Error("Must be signed in");
 

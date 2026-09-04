@@ -13,6 +13,11 @@
 
 export type Tier = "free" | "pro" | "ultra";
 
+// Product access is intentionally open while Looper is in its free launch
+// period. Keep commercial configuration below so it can be enabled later, but
+// callers must not expose or enforce plans, trials, or credits while this is on.
+export const PRODUCT_ACCESS_IS_FREE = true;
+
 export type SubscriptionStatus =
   | "active" // paid, valid
   | "trialing" // free trial

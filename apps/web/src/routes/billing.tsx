@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { BillingPage } from "@/features/billing";
+import { Navigate } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/billing")({
-  component: BillingPage,
+  component: () => <Navigate to="/settings" replace />,
 });

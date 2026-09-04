@@ -1,4 +1,5 @@
 import { convexCapabilities } from "@looper/data";
+import { PRODUCT_ACCESS_IS_FREE } from "@looper/config/billing";
 import { useTranslation } from "@looper/i18n/react";
 import { IconArrowUp, IconPlayerStopFilled } from "@tabler/icons-react";
 import { Link } from "@tanstack/react-router";
@@ -156,6 +157,7 @@ function CreditsHint({
       </p>
     );
   }
+  if (PRODUCT_ACCESS_IS_FREE) return null;
   if (byok) {
     return (
       <p className="mt-1.5 text-center text-[10px] text-muted-foreground">

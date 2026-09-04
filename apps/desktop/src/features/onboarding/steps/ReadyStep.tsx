@@ -37,8 +37,6 @@ type ReadyStepProps = {
   meetingIntelligenceLabel: string;
   autoLaunch: boolean;
   onSetAutoLaunch: (value: boolean) => void;
-  licenseActive: boolean;
-  onOpenLicense: () => void;
   isCompleting: boolean;
   completionError: string | null;
   onComplete: () => void;
@@ -52,8 +50,6 @@ const RECAP_CLASS_NAME =
   "onboarding-recap w-full divide-y divide-border-secondary border-y border-border-secondary text-left";
 const SHORTCUT_BUTTON_CLASS_NAME =
   "group flex items-center gap-1.5 rounded-md bg-surface-elevated px-2 py-1 transition-colors hover:bg-surface-overlay";
-const LICENSE_ACTION_CLASS_NAME =
-  "shrink-0 ui-text-body-sm-strong text-cloud underline-offset-4 transition-colors hover:underline";
 const SWITCH_MOTION = {
   layout: true,
   transition: { type: "spring", stiffness: 500, damping: 32 },
@@ -283,52 +279,21 @@ function SetupRecap(props: {
   );
 }
 
-function LicenseSummary({
-  active,
-  onOpen,
-}: {
-  active: boolean;
-  onOpen: () => void;
-}) {
+function FreeAccessSummary() {
   const { t } = useReadyTranslations();
-  const title = active
-    ? t({
-        id: "onboarding.done.license_active_title",
-        message: "License active",
-      })
-    : t({
-        id: "onboarding.done.free_title",
-        message: "Dictation is free forever",
-      });
-  const detail = active
-    ? t({
-        id: "onboarding.done.license_active",
-        message: "Every feature is unlocked.",
-      })
-    : t({
-        id: "onboarding.done.license_adds",
-        message:
-          "Unlock Cleanup, Edit Mode, Personalities, File Transcription, and more.",
-      });
   return (
-    <div className="mt-8 flex w-full items-start justify-between gap-4 text-left">
+    <div className="mt-8 w-full text-left">
       <span>
         <span className="block ui-text-body-sm-strong text-content-primary">
-          {title}
+          {t({ id: "onboarding.done.free_title", message: "Everything is available" })}
         </span>
         <span className="mt-0.5 block ui-text-meta text-content-muted text-pretty">
-          {detail}
+          {t({
+            id: "onboarding.done.free_access",
+            message: "Looper is currently free to use. No trial, license, or upgrade is needed.",
+          })}
         </span>
       </span>
-      {active ? null : (
-        <button
-          type="button"
-          onClick={onOpen}
-          className={LICENSE_ACTION_CLASS_NAME}
-        >
-          {t({ id: "onboarding.done.get_license", message: "Get a license" })}
-        </button>
-      )}
     </div>
   );
 }
@@ -415,10 +380,7 @@ export function ReadyStep(props: ReadyStepProps) {
           message: "More options available in Settings.",
         })}
       </p>
-      <LicenseSummary
-        active={props.licenseActive}
-        onOpen={props.onOpenLicense}
-      />
+      <FreeAccessSummary />
       {props.completionError ? (
         <p className="mt-4 ui-text-meta text-error">{props.completionError}</p>
       ) : null}

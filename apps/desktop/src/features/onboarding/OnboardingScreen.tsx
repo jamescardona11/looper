@@ -1,7 +1,6 @@
 import { useLingui as useOnboardingTranslations } from "@lingui/react/macro";
 import { useMachine as useOnboardingMachine } from "@xstate/react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { openUrl as openExternalUrl } from "@tauri-apps/plugin-opener";
 import { useCallback, useMemo, useState } from "react";
 import { requestMacAccessibilityPermission } from "../../shared/lib/macosPermissions";
 import {
@@ -19,11 +18,7 @@ import {
   downloadLocalLlmModel,
   LOCAL_LLM_MODEL_ID,
 } from "../../data/models/local-llm";
-import { checkoutUrlFor, type PurchaseTier } from "../license/purchaseConfig";
-import {
-  useActivateLicense as useLicenseActivation,
-  useLicenseState as useCurrentLicense,
-} from "../license/queries";
+import { useLicenseState as useCurrentLicense } from "../license/queries";
 import { useImportableApps as useDetectedImportApps } from "../import/queries";
 import {
   useModelCatalog,
@@ -36,8 +31,6 @@ import { OnboardingMachineBridges } from "./onboarding-machine-bridges";
 import {
   buildCompletedOnboardingSettings,
   buildModelDisplayStates,
-  licenseActivationError,
-  missingCheckoutMessage,
   modelDownloadRequest,
   permissionPresentation,
   permissionQueryOptions,
@@ -49,7 +42,6 @@ import {
   renderOnboardingStep,
   type OnboardingStepViews,
 } from "./onboarding-step-content";
-import { LicenseModal } from "./steps/LicenseModal";
 
 const permissionKeys = {
   microphone: ["onboarding", "permissions", "microphone"] as const,
@@ -69,10 +61,6 @@ export default function OnboardingScreen({
 }: OnboardingScreenProps) {
   const { t } = useOnboardingTranslations();
   const [snapshot, dispatch] = useOnboardingMachine(onboardingMachine);
-  const [openingLicenseTarget, setOpeningLicenseTarget] =
-    useState<PurchaseTier | null>(null);
-  const [licenseOpenError, setLicenseOpenError] = useState<string | null>(null);
-  const [showLicenseModal, setShowLicenseModal] = useState(false);
   const [localLlmDownload, setLocalLlmDownload] = useState({
     downloading: false,
     percent: 0,
@@ -86,7 +74,6 @@ export default function OnboardingScreen({
   const licenseQuery = useCurrentLicense();
   const settingsQuery = useStoredOnboardingSettings();
   const modelCatalogQuery = useModelCatalog();
-  const activateLicense = useLicenseActivation();
 
   const hasImportStep =
     setup.selectedMode === "local" && setup.importableApps.length > 0;
@@ -217,22 +204,6 @@ export default function OnboardingScreen({
     },
     [modelCatalogQuery.data, startDownload],
   );
-  const openLicenseCheckout = useCallback(async (tier: PurchaseTier) => {
-    setLicenseOpenError(null);
-    setOpeningLicenseTarget(tier);
-    try {
-      const checkoutUrl = checkoutUrlFor(tier, "onboarding");
-      if (!checkoutUrl) throw new Error(missingCheckoutMessage(tier));
-      await openExternalUrl(checkoutUrl);
-    } catch (error) {
-      setLicenseOpenError(
-        error instanceof Error ? error.message : String(error),
-      );
-    } finally {
-      setOpeningLicenseTarget(null);
-    }
-  }, []);
-
   const handleComplete = useCallback(async () => {
     if (
       settingsQuery.isLoading ||
@@ -443,8 +414,6 @@ export default function OnboardingScreen({
           : "Not configured",
       autoLaunch: setup.autoLaunch,
       onSetAutoLaunch: (value) => dispatch({ type: "SET_AUTO_LAUNCH", value }),
-      licenseActive: licenseQuery.data?.status === "active",
-      onOpenLicense: () => setShowLicenseModal(true),
       isCompleting: setup.isCompleting,
       completionError: setup.completionError,
       onComplete: handleComplete,
@@ -462,20 +431,6 @@ export default function OnboardingScreen({
       onLocalLlmChange={setLocalLlmDownload}
     />
   );
-  const licenseModal = showLicenseModal ? (
-    <LicenseModal
-      licenseState={licenseQuery.data ?? null}
-      licenseLoading={licenseQuery.isLoading && !licenseQuery.data}
-      activating={activateLicense.isPending}
-      openingTarget={openingLicenseTarget}
-      openError={licenseOpenError}
-      activationError={licenseActivationError(activateLicense.error)}
-      onOpenCheckout={openLicenseCheckout}
-      onActivateLicense={(key) => activateLicense.mutate(key)}
-      onClose={() => setShowLicenseModal(false)}
-    />
-  ) : null;
-
   return (
     <OnboardingScreenShell
       currentStep={currentStep}
@@ -487,7 +442,7 @@ export default function OnboardingScreen({
       onBack={goBack}
       faqOpen={setup.showFAQModal}
       onCloseFaq={() => dispatch({ type: "TOGGLE_FAQ", show: false })}
-      licenseModal={licenseModal}
+      licenseModal={null}
     />
   );
 }

@@ -15,6 +15,7 @@
 
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { Polar } from "@convex-dev/polar";
+import { PRODUCT_ACCESS_IS_FREE } from "@looper/config/billing";
 import { v } from "convex/values";
 import { components, internal } from "../_generated/api";
 import { action } from "../_generated/server";
@@ -51,6 +52,10 @@ export const createCheckout = action({
     successUrl: v.string(),
   },
   handler: async (ctx, { productKey, successUrl }) => {
+    if (PRODUCT_ACCESS_IS_FREE) {
+      throw new Error("Commercial billing is unavailable while Looper is free to use");
+    }
+
     const userId = await getAuthUserId(ctx);
     if (!userId) throw new Error("Must be signed in");
 
@@ -82,6 +87,10 @@ export const createCheckout = action({
 export const customerPortal = action({
   args: { returnUrl: v.optional(v.string()) },
   handler: async (ctx, { returnUrl }) => {
+    if (PRODUCT_ACCESS_IS_FREE) {
+      throw new Error("Commercial billing is unavailable while Looper is free to use");
+    }
+
     const userId = await getAuthUserId(ctx);
     if (!userId) throw new Error("Must be signed in");
     return await polar.createCustomerPortalSession(ctx as any, {

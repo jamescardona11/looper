@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { PricingPage } from "@/features/marketing";
+import { Navigate } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/pricing")({
-  component: PricingPage,
+  component: () => <Navigate to="/landing" replace />,
 });

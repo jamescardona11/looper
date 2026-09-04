@@ -622,16 +622,6 @@ msgstr "Accessibility needed"
 #~ msgstr "Contributor"
 
 #. js-lingui-explicit-id
-#: src/shared/ui/FAQModal.tsx
-#~ msgid "faq.free.answer"
-#~ msgstr "Core dictation is free: local transcription, dictionary, replacements, and history. There are no per-minute fees or subscriptions for that. Library, AI Cleanup, Edit Mode, personalization with an LLM, and the CLI are part of Looper Personal. You get a 14-day trial first; after that, activate a Personal license (a one-time purchase) or a Commercial license (billed yearly) in Settings → Account."
-
-#. js-lingui-explicit-id
-#: src/shared/ui/FAQModal.tsx
-#~ msgid "faq.delete.answer"
-#~ msgstr "Delete recordings from History, remove imported files from Library, or uninstall models from Settings → Models. Settings → App can auto-delete Audio only or full Transcripts (including linked audio). You can also open your Looper data folder from About → Storage to manage files directly."
-
-#. js-lingui-explicit-id
 #: src/features/pill/PillOverlay.tsx
 #~ msgid "pill.status.cancelled"
 #~ msgstr "Cancelled"
@@ -657,21 +647,6 @@ msgstr "Accessibility needed"
 #~ msgstr "Founder"
 
 #. js-lingui-explicit-id
-#: src/shared/ui/FAQModal.tsx
-#~ msgid "faq.delete.question"
-#~ msgstr "How do I manage or delete my data?"
-
-#. js-lingui-explicit-id
-#: src/shared/ui/FAQModal.tsx
-#~ msgid "faq.how_it_works.question"
-#~ msgstr "How does Looper work?"
-
-#. js-lingui-explicit-id
-#: src/shared/ui/FAQModal.tsx
-#~ msgid "faq.privacy.answer"
-#~ msgstr "In Local mode, audio and transcripts stay on your computer. In Cloud mode, audio is uploaded for transcription and deleted after the request; the transcript is stored locally. Optional anonymous usage analytics never include your audio or transcript and can be disabled in Settings → App."
-
-#. js-lingui-explicit-id
 #: src/shared/ui/ModelPickerModal.tsx
 #~ msgid "model_picker.category.legacy"
 #~ msgstr "Legacy"
@@ -687,19 +662,9 @@ msgstr "Accessibility needed"
 #~ msgstr "Local"
 
 #. js-lingui-explicit-id
-#: src/shared/ui/FAQModal.tsx
-#~ msgid "faq.permissions.answer"
-#~ msgstr "Microphone access to record your voice, and Accessibility access to insert text and read selected text for Edit Mode. Looper only uses these while you are actively dictating."
-
-#. js-lingui-explicit-id
 #: src/features/pill/PillOverlay.tsx
 #~ msgid "pill.preflight.drag"
 #~ msgstr "Move Dictation dock"
-
-#. js-lingui-explicit-id
-#: src/shared/ui/FAQModal.tsx
-#~ msgid "faq.ai_writing.answer"
-#~ msgstr "Only if you enable AI writing and set up a provider under Settings → Providers. Cleanup, Edit Mode, and Personalization then send the relevant text directly to that provider. Your API key stays stored locally in Looper."
 
 #. js-lingui-explicit-id
 #: src/features/license/components/MemberCard.tsx
@@ -710,11 +675,6 @@ msgstr "Accessibility needed"
 #: src/features/license/components/MemberCard.tsx
 #~ msgid "member_card.draft_idle"
 #~ msgstr "Pick a license"
-
-#. js-lingui-explicit-id
-#: src/shared/ui/FAQModal.tsx
-#~ msgid "faq.how_it_works.answer"
-#~ msgstr "Press your dictation shortcut, speak, and release. Local mode transcribes on your device and works offline. Cloud mode sends the recording to Looper Cloud. Both insert the result where your cursor is."
 
 #. js-lingui-explicit-id
 #: src/features/settings/components/tabs/GeneralProcessingSection.tsx
@@ -745,26 +705,6 @@ msgstr "Accessibility needed"
 #: src/features/settings/components/tabs/GeneralProcessingSection.tsx
 #~ msgid "settings.general.cloud.description"
 #~ msgstr "Uses Looper Cloud"
-
-#. js-lingui-explicit-id
-#: src/shared/ui/FAQModal.tsx
-#~ msgid "faq.free.question"
-#~ msgstr "What is free vs Looper Personal?"
-
-#. js-lingui-explicit-id
-#: src/shared/ui/FAQModal.tsx
-#~ msgid "faq.permissions.question"
-#~ msgstr "What permissions does Looper need?"
-
-#. js-lingui-explicit-id
-#: src/shared/ui/FAQModal.tsx
-#~ msgid "faq.ai_writing.question"
-#~ msgstr "When does text leave my device?"
-
-#. js-lingui-explicit-id
-#: src/shared/ui/FAQModal.tsx
-#~ msgid "faq.privacy.question"
-#~ msgstr "Where does my data go?"
 
 #. js-lingui-explicit-id
 #: src/features/library/meeting/MeetingDocumentDock.tsx
@@ -1015,6 +955,41 @@ msgstr "Accessibility needed"
 #: src/features/library/meeting/MeetingAwarenessOverlay.tsx
 #~ msgid "meeting.awareness.disable_microphone_suggestions"
 #~ msgstr "Don't suggest recording when the microphone is active"
+
+#. js-lingui-explicit-id
+#: src/features/onboarding/steps/ReadyStep.tsx
+#~ msgid "onboarding.done.license_active"
+#~ msgstr "Every feature is unlocked."
+
+#. js-lingui-explicit-id
+#: src/features/onboarding/steps/ReadyStep.tsx
+#~ msgid "onboarding.done.get_license"
+#~ msgstr "Get a license"
+
+#. js-lingui-explicit-id
+#: src/features/onboarding/steps/ReadyStep.tsx
+#~ msgid "onboarding.done.license_active_title"
+#~ msgstr "License active"
+
+#. js-lingui-explicit-id
+#: src/features/library/meeting/MeetingCaptureOverlay.tsx
+#~ msgid "meeting.capture.transcript.toggle"
+#~ msgstr "Show or hide transcript"
+
+#. js-lingui-explicit-id
+#: src/features/onboarding/steps/ReadyStep.tsx
+#~ msgid "onboarding.done.license_adds"
+#~ msgstr "Unlock Cleanup, Edit Mode, Personalities, File Transcription, and more."
+
+#. js-lingui-explicit-id
+#: src/shared/ui/faq-content.tsx
+#~ msgid "faq.free.question"
+#~ msgstr "What is free vs Looper Personal?"
+
+#. js-lingui-explicit-id
+#: src/shared/ui/faq-content.tsx
+#~ msgid "faq.free.answer"
+#~ msgstr "Core dictation is free: local transcription, dictionary, replacements, and history. There are no per-minute fees or subscriptions for that. Library, AI Cleanup, Edit Mode, personalization with an LLM, and the CLI are part of Looper Personal. You get a 14-day trial first; after that, activate a Personal license (a one-time purchase) or a Commercial license (billed yearly) in Settings → Account."
 
 #. js-lingui-explicit-id
 #: src/features/settings/providers/LanguageModelPanel.tsx
@@ -2449,6 +2424,11 @@ msgid "settings.app.auto_delete.confirm.title"
 msgstr "Delete older items now?"
 
 #. js-lingui-explicit-id
+#: src/shared/ui/faq-content.tsx
+msgid "faq.delete.answer"
+msgstr "Delete recordings from History, remove imported files from Library, or uninstall models from Settings → Models. Settings → App can auto-delete Audio only or full Transcripts (including linked audio). You can also open your Looper data folder from About → Storage to manage files directly."
+
+#. js-lingui-explicit-id
 #. placeholder {0}: replacement.from
 #: src/features/dictionary/components/DictionaryReplacementsSection.tsx
 msgid "dictionary.replacements.delete"
@@ -2545,11 +2525,6 @@ msgstr "Dictation history"
 #. js-lingui-explicit-id
 #: src/features/onboarding/steps/LicenseModal.tsx
 msgid "onboarding.license.free_title"
-msgstr "Dictation is free forever"
-
-#. js-lingui-explicit-id
-#: src/features/onboarding/steps/ReadyStep.tsx
-msgid "onboarding.done.free_title"
 msgstr "Dictation is free forever"
 
 #. js-lingui-explicit-id
@@ -2842,8 +2817,8 @@ msgstr "Enter your own endpoint URL"
 
 #. js-lingui-explicit-id
 #: src/features/onboarding/steps/ReadyStep.tsx
-msgid "onboarding.done.license_active"
-msgstr "Every feature is unlocked."
+msgid "onboarding.done.free_title"
+msgstr "Dictation is free forever"
 
 #. js-lingui-explicit-id
 #: src/features/library/meeting/MeetingCaptureOverlay.tsx
@@ -3001,6 +2976,12 @@ msgid "voice.step.automations"
 msgstr "Flows"
 
 #. js-lingui-explicit-id
+#: src/__tests__/i18n.test.ts
+#: src/features/library/meeting/MeetingCaptureOverlay.tsx
+msgid "meeting.capture.shortcut_unavailable"
+msgstr "Fn blocked"
+
+#. js-lingui-explicit-id
 #: src/features/feature-lab/components/FeatureLabView.tsx
 msgid "feature_lab.insertion.placeholder"
 msgstr "Focus here, then use your Looper shortcut…"
@@ -3059,11 +3040,6 @@ msgstr "Generated on this Mac · review before sharing"
 #: src/features/library/meeting/MeetingDetail.tsx
 msgid "meeting.detail.generating_summary"
 msgstr "Generating summary..."
-
-#. js-lingui-explicit-id
-#: src/features/onboarding/steps/ReadyStep.tsx
-msgid "onboarding.done.get_license"
-msgstr "Get a license"
 
 #. js-lingui-explicit-id
 #: src/features/onboarding/steps/WelcomeStep.tsx
@@ -3139,6 +3115,16 @@ msgstr "re-run setup wizard"
 #: src/features/settings/general/GeneralShortcutSection.tsx
 msgid "settings.general.shortcuts.hold_description"
 msgstr "hold to talk, release to stop"
+
+#. js-lingui-explicit-id
+#: src/shared/ui/faq-content.tsx
+msgid "faq.delete.question"
+msgstr "How do I manage or delete my data?"
+
+#. js-lingui-explicit-id
+#: src/shared/ui/faq-content.tsx
+msgid "faq.how_it_works.question"
+msgstr "How does Looper work?"
 
 #. js-lingui-explicit-id
 #: src/shared/ui/faq-dialog.tsx
@@ -3219,6 +3205,11 @@ msgstr "in any app · release to insert"
 #: src/features/transcriptions/components/transcription-list-viewport.tsx
 msgid "transcriptions.list.empty.dictate.detail"
 msgstr "in any app and speak."
+
+#. js-lingui-explicit-id
+#: src/shared/ui/faq-content.tsx
+msgid "faq.privacy.answer"
+msgstr "In Local mode, audio and transcripts stay on your computer. In Cloud mode, audio is uploaded for transcription and deleted after the request; the transcript is stored locally. Optional anonymous usage analytics never include your audio or transcript and can be disabled in Settings → App."
 
 #. js-lingui-explicit-id
 #: src/shared/ui/ModelPickerRow.tsx
@@ -3336,6 +3327,11 @@ msgid "settings.app.prune.instantly"
 msgstr "Instantly"
 
 #. js-lingui-explicit-id
+#: src/shared/ui/faq-content.tsx
+msgid "faq.free_launch.question"
+msgstr "Is Looper free to use?"
+
+#. js-lingui-explicit-id
 #: src/features/license/components/member-card-header.tsx
 msgid "member_card.draft_stamp_issuing"
 msgstr "Issuing"
@@ -3429,11 +3425,6 @@ msgstr "let Selection Mode transforms read visible text for better results — A
 #: src/features/onboarding/steps/LicenseModal.tsx
 msgid "onboarding.license.dialog_aria"
 msgstr "License"
-
-#. js-lingui-explicit-id
-#: src/features/onboarding/steps/ReadyStep.tsx
-msgid "onboarding.done.license_active_title"
-msgstr "License active"
 
 #. js-lingui-explicit-id
 #: src/features/settings/account/AccountView.tsx
@@ -3622,6 +3613,16 @@ msgid "library.youtube.description"
 msgstr "Looper downloads one video's audio with yt-dlp, transcribes it locally or with your chosen provider, then removes the temporary download."
 
 #. js-lingui-explicit-id
+#: src/shared/ui/faq-content.tsx
+msgid "faq.free_launch.answer"
+msgstr "Looper is currently free to use, including dictation, Library, AI Cleanup, Edit Mode, personalization, and the CLI. There are no subscriptions, trials, licenses, or per-minute fees during this free launch period."
+
+#. js-lingui-explicit-id
+#: src/features/onboarding/steps/ReadyStep.tsx
+msgid "onboarding.done.free_access"
+msgstr "Looper is currently free to use. No trial, license, or upgrade is needed."
+
+#. js-lingui-explicit-id
 #: src/features/license/components/MemberCard.tsx
 msgid "member_card.aria"
 msgstr "Looper member card"
@@ -3655,12 +3656,6 @@ msgstr "Looper, tuned to this Mac."
 #: src/features/settings/app/useMediaActionControl.ts
 msgid "settings.app.auto_pause_media.body_duck"
 msgstr "Lowers system volume while recording."
-
-#. js-lingui-explicit-id
-#: src/__tests__/i18n.test.ts
-#: src/features/library/meeting/MeetingCaptureOverlay.tsx
-msgid "meeting.capture.shortcut_unavailable"
-msgstr "Fn blocked"
 
 #. js-lingui-explicit-id
 #: src/features/settings/models/ane-compile-dialog.tsx
@@ -3767,6 +3762,11 @@ msgstr "Microphone"
 #: src/features/onboarding/steps/PermissionsStep.tsx
 msgid "onboarding.microphone.title"
 msgstr "Microphone"
+
+#. js-lingui-explicit-id
+#: src/shared/ui/faq-content.tsx
+msgid "faq.permissions.answer"
+msgstr "Microphone access to record your voice, and Accessibility access to insert text and read selected text for Edit Mode. Looper only uses these while you are actively dictating."
 
 #. js-lingui-explicit-id
 #: src/features/settings/app/AppCalendarSection.tsx
@@ -4249,6 +4249,11 @@ msgid "home.context.local_title"
 msgstr "On-device model selected"
 
 #. js-lingui-explicit-id
+#: src/shared/ui/faq-content.tsx
+msgid "faq.ai_writing.answer"
+msgstr "Only if you enable AI writing and set up a provider under Settings → Providers. Cleanup, Edit Mode, and Personalization then send the relevant text directly to that provider. Your API key stays stored locally in Looper."
+
+#. js-lingui-explicit-id
 #: src/features/memory/components/memory-result-row.tsx
 msgid "memory.result.open"
 msgstr "Open"
@@ -4453,6 +4458,11 @@ msgid "dictionary.edit_hint"
 msgstr "Press Enter to save · Esc to cancel"
 
 #. js-lingui-explicit-id
+#: src/shared/ui/faq-content.tsx
+msgid "faq.how_it_works.answer"
+msgstr "Press your dictation shortcut, speak, and release. Local mode transcribes on your device and works offline. Cloud mode sends the recording to Looper Cloud. Both insert the result where your cursor is."
+
+#. js-lingui-explicit-id
 #: src/features/onboarding/steps/ReadyStep.tsx
 msgid "onboarding.done.subtitle"
 msgstr "Press your shortcut in any app to dictate."
@@ -4590,6 +4600,7 @@ msgid "feature_lab.meetings.body"
 msgstr "Record a meeting, watch live text, and mark important moments."
 
 #. js-lingui-explicit-id
+#: src/features/library/list/library-view-toolbar.tsx
 #: src/features/library/meeting/MeetingStartModal.tsx
 msgid "meeting.start.title"
 msgstr "Record meeting"
@@ -5336,11 +5347,6 @@ msgstr "Show less"
 #: src/features/transcriptions/components/transcription-item-content.tsx
 msgid "transcriptions.item.show_more"
 msgstr "Show more"
-
-#. js-lingui-explicit-id
-#: src/features/library/meeting/MeetingCaptureOverlay.tsx
-msgid "meeting.capture.transcript.toggle"
-msgstr "Show or hide transcript"
 
 #. js-lingui-explicit-id
 #: src/features/personalization/components/personality-modal-instructions.tsx
@@ -6097,11 +6103,6 @@ msgid "onboarding.license.free_body"
 msgstr "Unlock AI cleanup, voice editing, per-app personalities, audio and video transcription, and more."
 
 #. js-lingui-explicit-id
-#: src/features/onboarding/steps/ReadyStep.tsx
-msgid "onboarding.done.license_adds"
-msgstr "Unlock Cleanup, Edit Mode, Personalities, File Transcription, and more."
-
-#. js-lingui-explicit-id
 #: src/features/pill/use-pill-preflight.ts
 #: src/features/settings/providers/useSettingsProviderControls.ts
 msgid "transcription.language.unsupported"
@@ -6334,6 +6335,11 @@ msgid "meeting.capture.ask.suggestion"
 msgstr "What did I miss?"
 
 #. js-lingui-explicit-id
+#: src/shared/ui/faq-content.tsx
+msgid "faq.permissions.question"
+msgstr "What permissions does Looper need?"
+
+#. js-lingui-explicit-id
 #: src/features/transcriptions/components/transcription-list-viewport.tsx
 msgid "transcriptions.list.empty"
 msgstr "What you say lands where your cursor is, and shows up here so you can recover it later."
@@ -6344,9 +6350,19 @@ msgid "transcriptions.filter.when"
 msgstr "When"
 
 #. js-lingui-explicit-id
+#: src/shared/ui/faq-content.tsx
+msgid "faq.ai_writing.question"
+msgstr "When does text leave my device?"
+
+#. js-lingui-explicit-id
 #: src/features/settings/app/app-retention-setting.tsx
 msgid "settings.app.audio_budget.body"
 msgstr "When the limit is exceeded, Looper removes the oldest saved audio first and keeps every transcript."
+
+#. js-lingui-explicit-id
+#: src/shared/ui/faq-content.tsx
+msgid "faq.privacy.question"
+msgstr "Where does my data go?"
 
 #. js-lingui-explicit-id
 #: src/features/personalization/components/personalization-view-style-browser.tsx

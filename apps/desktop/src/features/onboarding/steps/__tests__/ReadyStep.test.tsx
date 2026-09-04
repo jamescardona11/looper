@@ -65,8 +65,6 @@ const readyProps = (): ComponentProps<typeof ReadyStep> => ({
   meetingIntelligenceLabel: "Local",
   autoLaunch: false,
   onSetAutoLaunch: vi.fn(),
-  licenseActive: false,
-  onOpenLicense: vi.fn(),
   isCompleting: false,
   completionError: null,
   onComplete: vi.fn(),
@@ -142,8 +140,7 @@ describe("ReadyStep", () => {
 
     fireEvent.click(screen.getByRole("switch", { name: /Open at login/ }));
     expect(props.onSetAutoLaunch).toHaveBeenCalledWith(true);
-    fireEvent.click(screen.getByRole("button", { name: "Get a license" }));
-    expect(props.onOpenLicense).toHaveBeenCalledOnce();
+    expect(screen.getByText("Everything is available")).toBeTruthy();
   });
 
   it("lets people finish setup before verification", async () => {

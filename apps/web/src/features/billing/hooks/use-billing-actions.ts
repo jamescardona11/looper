@@ -7,6 +7,7 @@
 
 import {
   isConfiguredBillingId,
+  PRODUCT_ACCESS_IS_FREE,
   type OneTimePack,
   resolveStripeOneTimePriceId,
   resolveStripeTierPriceId,
@@ -50,12 +51,14 @@ const STRIPE_ENABLED = (["pro", "ultra"] as const).some((tier) =>
 );
 const POLAR_ENABLED = TIERS.some((tier) => isConfiguredBillingId(tier.polar.monthly));
 const POLAR_YEARLY_ENABLED = TIERS.some((tier) => isConfiguredBillingId(tier.polar.yearly));
-export const BILLING_ENABLED = STRIPE_ENABLED || POLAR_ENABLED;
+export const BILLING_ENABLED = !PRODUCT_ACCESS_IS_FREE && (STRIPE_ENABLED || POLAR_ENABLED);
 export const DEFAULT_PAYMENT_PROVIDER: PaymentProvider = STRIPE_ENABLED ? "stripe" : "polar";
 export const SHOW_PAYMENT_PROVIDER_TOGGLE = STRIPE_ENABLED && POLAR_ENABLED;
-export const CREDIT_PACKS_ENABLED = (["credits_100", "credits_500", "lifetime"] as const).some(
-  (pack) => isConfiguredBillingId(resolveStripeOneTimePriceId(pack, stripePriceOverrides)),
-);
+export const CREDIT_PACKS_ENABLED =
+  !PRODUCT_ACCESS_IS_FREE &&
+  (["credits_100", "credits_500", "lifetime"] as const).some((pack) =>
+    isConfiguredBillingId(resolveStripeOneTimePriceId(pack, stripePriceOverrides)),
+  );
 
 export function paymentProviderSupportsYearly(provider: PaymentProvider): boolean {
   return provider === "stripe" || POLAR_YEARLY_ENABLED;

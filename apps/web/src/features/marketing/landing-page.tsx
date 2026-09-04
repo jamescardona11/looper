@@ -1,4 +1,4 @@
-import { TIERS } from "@looper/config/billing";
+import { PRODUCT_ACCESS_IS_FREE, TIERS } from "@looper/config/billing";
 import { useTranslation } from "@looper/i18n/react";
 import { IconArrowRight, IconCheck, IconMenu2, IconX } from "@tabler/icons-react";
 import { Link } from "@tanstack/react-router";
@@ -8,8 +8,6 @@ import { LooperMark } from "@/shared/components/looper-mark";
 import { PageSurface } from "@/shared/components/page-surface";
 import { buttonVariants } from "@/shared/components/ui/button";
 
-// "Buy" stays in-app (/pricing) so the landing page enters the real checkout
-// flow (Stripe/Polar).
 // The marketing surface shares the paper workspace direction with the product
 // while reusing its semantic tokens, typography, controls, and radius scale.
 export function LandingPage() {
@@ -23,7 +21,7 @@ export function LandingPage() {
         <ReasonsSection />
         <ProofSection />
         <ComparisonSection />
-        <PricingSection />
+        {!PRODUCT_ACCESS_IS_FREE ? <PricingSection /> : null}
         <LandingFAQSection />
         <FinalCTA />
       </PageSurface>
@@ -113,7 +111,6 @@ function Nav() {
 
   const NAV_LINKS = [
     { label: t("landing.nav.features"), href: "#features" },
-    { label: t("landing.nav.pricing"), href: "#pricing" },
   ];
 
   return (
@@ -132,11 +129,10 @@ function Nav() {
             </a>
           ))}
           <Link
-            to="/pricing"
+            to="/sign-in"
             className="flex items-center gap-1.5 transition-colors hover:text-primary"
           >
-            {t("landing.nav.buy")}
-            <span className="font-mono text-primary text-xs tabular-nums">$10</span>
+            {t("landing.getStarted")}
           </Link>
         </nav>
         <div className="flex items-center gap-3">
@@ -182,11 +178,11 @@ function Nav() {
             </a>
           ))}
           <Link
-            to="/pricing"
+            to="/sign-in"
             onClick={close}
             className="flex min-h-11 items-center rounded-lg px-2 py-2 text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
           >
-            {t("landing.nav.buy")}
+            {t("landing.getStarted")}
           </Link>
           <Link
             to="/sign-in"
@@ -226,11 +222,10 @@ function HeroSection() {
               <IconArrowRight className="size-4" />
             </Link>
             <Link
-              to="/pricing"
+              to="/sign-in"
               className={buttonVariants({ variant: "outline", className: SECONDARY_CTA })}
             >
-              {t("landing.nav.buy")}
-              <span className="font-mono text-primary text-xs tabular-nums">$10</span>
+              {t("landing.getStarted")}
             </Link>
           </div>
           <ul className="mt-10 flex flex-wrap gap-x-6 gap-y-2 text-muted-foreground text-sm">
@@ -879,10 +874,10 @@ function FinalCTA() {
             <IconArrowRight className="size-4" />
           </Link>
           <Link
-            to="/pricing"
+            to="/sign-in"
             className={buttonVariants({ variant: "outline", className: SECONDARY_CTA })}
           >
-            {t("landing.nav.buy")}
+            {t("landing.getStarted")}
           </Link>
         </div>
       </div>
@@ -912,11 +907,6 @@ function FooterSection() {
         <div className="md:col-span-2">
           <Eyebrow className="text-muted-foreground">{t("landing.footer.productLabel")}</Eyebrow>
           <ul className="mt-4 space-y-2 text-muted-foreground text-sm">
-            <li>
-              <a href="#pricing" className="transition-colors hover:text-primary">
-                {t("landing.nav.pricing")}
-              </a>
-            </li>
             <li>
               <a href="#features" className="transition-colors hover:text-primary">
                 {t("landing.nav.features")}
