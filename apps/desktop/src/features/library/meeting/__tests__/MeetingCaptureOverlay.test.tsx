@@ -8,7 +8,6 @@ import {
   fireEvent,
   render,
   screen,
-  waitFor,
 } from "@testing-library/react";
 import { afterEach, describe, expect, test, vi } from "vitest";
 import type { MeetingCaptureState } from "../../../../contracts";
@@ -113,6 +112,7 @@ vi.mock("../../../../data/capture/overlay", () => ({
 
 vi.mock("../../../../data/capture/dictation", () => ({
   beginOverlayDrag: meetingDrag,
+  endOverlayDrag: vi.fn(async () => undefined),
 }));
 
 vi.mock("../../../../data/capture/shortcuts", () => ({
@@ -223,7 +223,7 @@ afterEach(() => {
 });
 
 describe("MeetingCaptureOverlay", () => {
-  test("expands the compact capsule directly into the transcript workspace", async () => {
+  test("keeps identity, duration and Stop in the compact meeting pill", async () => {
     renderOverlay(recordingState());
 
     const expandButton = screen.getByRole("button", {
@@ -233,7 +233,12 @@ describe("MeetingCaptureOverlay", () => {
     expect(expandButton.getAttribute("aria-controls")).toBe(
       "meeting-live-transcript",
     );
-    expect(screen.queryByText("Recording")).toBeNull();
+    expect(screen.getByText("Meeting")).toBeTruthy();
+    expect(screen.getByText("1:24")).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Stop" })).toBeTruthy();
+    const grip = screen.getByRole("button", { name: "Drag to move" });
+    expect(grip.className).toContain("h-10 w-10");
+    expect(grip.querySelectorAll("span span")).toHaveLength(9);
 
     await expandOverlay();
 
@@ -252,7 +257,8 @@ describe("MeetingCaptureOverlay", () => {
     });
   });
 
-  test("keeps compact recording identity when Accessibility is missing", async () => {
+  test("keeps Fn permission actionable without turning it into a capture state", async () => {
+    vi.useFakeTimers();
     shortcutPermission.allowed = false;
     renderOverlay(recordingState());
 
@@ -262,51 +268,35 @@ describe("MeetingCaptureOverlay", () => {
 
     const pill = screen.getByLabelText("Meeting recording");
     expect(pill.textContent).toContain("1:24");
+    expect(pill.textContent).toContain("Meeting");
     expect(pill.textContent).not.toContain("Fn blocked");
-    expect(pill.textContent).not.toContain("Accessibility needed");
-    expect(pill.className).toContain("!w-[128px]");
-    expect(screen.queryByRole("button", { name: "Why?" })).toBeNull();
-
-    await expandOverlay();
-    expect(screen.getByText("Fn blocked")).toBeTruthy();
-    expect(screen.getByLabelText("Meeting recording").className).toContain(
-      "!w-[260px]",
-    );
+    expect(screen.getByRole("button", { name: "Why?" })).toBeTruthy();
 
     fireEvent.click(screen.getByRole("button", { name: "Why?" }));
     expect(shortcutPermission.help).toHaveBeenCalledTimes(1);
     expect(shortcutPermission.retry).not.toHaveBeenCalled();
   });
 
-  test("collapses and restores despite missing Accessibility", async () => {
-    shortcutPermission.allowed = false;
+  test("shows a hover preview and pins it only after an explicit interaction", async () => {
+    vi.useFakeTimers();
     renderOverlay(recordingState());
 
+    fireEvent.pointerEnter(screen.getByLabelText("Meeting recording"));
     await act(async () => {
-      await Promise.resolve();
+      await vi.advanceTimersByTimeAsync(300);
     });
-    expect(screen.queryByText("Fn blocked")).toBeNull();
-    expect(screen.getByText("1:24")).toBeTruthy();
-
-    const compactPill = screen.getByLabelText("Meeting recording");
-    expect(compactPill.className).toContain("!h-[36px]");
-    expect(compactPill.className).toContain("!w-[128px]");
-    expect(compactPill.className).toContain("!transition-colors");
-    expect(
-      screen.getByRole("button", { name: "Expand recording pill" }).className,
-    ).toContain("h-9 w-10");
-    await expandOverlay();
-    expect(screen.getByText("Fn blocked")).toBeTruthy();
-    expect(screen.getByRole("button", { name: "Why?" })).toBeTruthy();
     expect(screen.getByLabelText("Live transcript")).toBeTruthy();
-
-    fireEvent.click(
-      screen.getByRole("button", { name: "Collapse recording pill" }),
-    );
     expect(overlayPresentation).toHaveBeenLastCalledWith({
       compact: true,
-      transcriptVisible: false,
+      transcriptVisible: true,
       transcriptPinned: false,
+    });
+
+    fireEvent.pointerDown(screen.getByLabelText("Live transcript"));
+    expect(overlayPresentation).toHaveBeenLastCalledWith({
+      compact: false,
+      transcriptVisible: true,
+      transcriptPinned: true,
     });
   });
 
@@ -318,9 +308,6 @@ describe("MeetingCaptureOverlay", () => {
     await act(async () => {
       await Promise.resolve();
     });
-    expect(screen.queryByText("Fn blocked")).toBeNull();
-    await expandOverlay();
-    expect(screen.getByText("Fn blocked")).toBeTruthy();
 
     shortcutPermission.allowed = true;
     await act(async () => {
@@ -328,7 +315,6 @@ describe("MeetingCaptureOverlay", () => {
     });
 
     expect(shortcutPermission.retry).toHaveBeenCalledTimes(1);
-    expect(screen.queryByText("Fn blocked")).toBeNull();
     expect(screen.getByText("1:24")).toBeTruthy();
 
     await act(async () => {
@@ -337,7 +323,7 @@ describe("MeetingCaptureOverlay", () => {
     expect(shortcutPermission.check).toHaveBeenCalledTimes(2);
   });
 
-  test("keeps the Accessibility warning visible while Fn remains blocked", async () => {
+  test("removes the transient Fn notice even when Accessibility remains blocked", async () => {
     vi.useFakeTimers();
     shortcutPermission.allowed = false;
     renderOverlay(recordingState());
@@ -347,10 +333,8 @@ describe("MeetingCaptureOverlay", () => {
       await vi.advanceTimersByTimeAsync(12_000);
     });
 
-    expect(screen.queryByText("Fn blocked")).toBeNull();
-    await expandOverlay();
-    expect(screen.getByText("Fn blocked")).toBeTruthy();
-    expect(screen.getByRole("button", { name: "Why?" })).toBeTruthy();
+    expect(screen.queryByRole("button", { name: "Why?" })).toBeNull();
+    expect(screen.getByText("Meeting")).toBeTruthy();
   });
 
   test("does not poll again when Accessibility is already available", async () => {
@@ -364,30 +348,19 @@ describe("MeetingCaptureOverlay", () => {
 
     expect(shortcutPermission.check).toHaveBeenCalledTimes(1);
     expect(shortcutPermission.retry).toHaveBeenCalledTimes(1);
-    expect(screen.queryByText("Fn blocked")).toBeNull();
+    expect(screen.queryByRole("button", { name: "Why?" })).toBeNull();
   });
 
   test("shows recording state and stops from the same draggable pill", async () => {
     renderOverlay(recordingState());
-    await expandOverlay();
 
-    expect(
-      screen.getByText("Recording").hasAttribute("data-tauri-drag-region"),
-    ).toBe(false);
+    expect(screen.getByText("Meeting").hasAttribute("data-tauri-drag-region")).toBe(false);
     expect(screen.queryByText("1:24 · You + Them")).toBeNull();
     expect(screen.queryByText("You + Them")).toBeNull();
-    // El estado completo no depende del hover: identidad, tiempo y acciones
-    // se leen juntos desde que aparece la reunión.
     expect(screen.getByText("1:24")).toBeTruthy();
-    const railInfo = screen.getByText("Recording").parentElement;
-    expect(railInfo?.className).toContain("opacity-100");
-    expect(railInfo?.className).not.toContain("max-w-0");
-    const dragSurface = screen.getByTitle("Drag to move");
-    expect(dragSurface.hasAttribute("data-tauri-drag-region")).toBe(false);
-    expect(dragSurface.className).toContain("!w-[260px]");
-    expect(dragSurface.className).not.toContain("!w-[150px]");
-    expect(dragSurface.className).toContain("ui-pill-shell");
-    expect(dragSurface.style.boxShadow).toBe("");
+    const dragHandle = screen.getByRole("button", { name: "Drag to move" });
+    expect(dragHandle.hasAttribute("data-tauri-drag-region")).toBe(false);
+    expect(dragHandle.getAttribute("data-overlay-drag-handle")).toBe("true");
 
     const stopButton = screen.getByRole("button", { name: "Stop" });
     expect(stopButton.hasAttribute("data-tauri-drag-region")).toBe(false);
@@ -403,7 +376,6 @@ describe("MeetingCaptureOverlay", () => {
         system_audio_enabled: false,
       }),
     );
-    await expandOverlay();
 
     expect(screen.getByLabelText("Note recording")).toBeTruthy();
     expect(screen.getByText("Note")).toBeTruthy();
@@ -415,9 +387,7 @@ describe("MeetingCaptureOverlay", () => {
     expect(recordingSignal.children).toHaveLength(4);
     expect(recordingSignal.className).toContain("looper-recording-signal");
 
-    // Una nota tiene la misma superficie que una reunión: transcript en vivo y
-    // Fn para marcar momentos, así que también comprueba el permiso.
-    expect(screen.getByLabelText("Live transcript")).toBeTruthy();
+    expect(shortcutPermission.check).toHaveBeenCalled();
     expect(shortcutPermission.check).toHaveBeenCalled();
   });
 
@@ -652,71 +622,56 @@ describe("MeetingCaptureOverlay", () => {
     animationFrame.mockRestore();
   });
 
-  test("collapses to the same one-line capsule used by the other pills", async () => {
+  test("uses one readable compact rail instead of a circular meeting state", async () => {
     renderOverlay(recordingState());
 
-    expect(screen.queryByText("Recording")).toBeNull();
+    expect(screen.getByText("Meeting")).toBeTruthy();
     expect(
       screen.getByRole("button", { name: "Expand recording pill" }),
     ).toBeTruthy();
     expect(screen.getByText("1:24")).toBeTruthy();
     const compactPill = screen.getByLabelText("Meeting recording");
-    expect(compactPill.className).toContain("!h-[36px]");
-    expect(compactPill.className).toContain("!w-[128px]");
-    expect(compactPill.className).not.toContain("h-[42px]");
+    expect(compactPill.className).toContain("h-11");
+    expect(compactPill.className).toContain("w-[244px]");
     expect(compactPill.className).not.toContain("w-[42px]");
     expect(overlayPresentation).not.toHaveBeenCalled();
 
     await expandOverlay();
-    expect(screen.getByText("Recording")).toBeTruthy();
+    expect(screen.getByText("Meeting")).toBeTruthy();
     expect(screen.getByLabelText("Live transcript")).toBeTruthy();
     expect(
       screen.getByRole("button", { name: "Minimize transcript" }).className,
     ).toContain("h-10 w-10");
   });
 
-  test("expands from the transparent native gutter without enlarging the pill", async () => {
+  test("does not render a transparent hit target outside the visible pill", () => {
     renderOverlay(recordingState());
 
-    const hitSlop = screen.getByTestId("meeting-compact-hit-slop");
-    expect(hitSlop.className).toContain("absolute");
-    expect(hitSlop.className).toContain("inset-0");
-
-    fireEvent.click(hitSlop);
-    await waitFor(() => {
-      expect(overlayPresentation).toHaveBeenCalledWith({
-        compact: false,
-        transcriptVisible: true,
-        transcriptPinned: true,
-      });
-    });
+    expect(screen.queryByTestId("meeting-compact-hit-slop")).toBeNull();
   });
 
-  test("starts a native drag from both shells but leaves controls clickable", async () => {
+  test("starts a native drag only after the grip travels past its threshold", async () => {
     vi.stubGlobal("PointerEvent", MouseEvent);
     renderOverlay(recordingState());
 
-    const compactPill = screen.getByTitle("Drag to move");
-    fireEvent.pointerDown(compactPill, { button: 0 });
+    const grip = screen.getByRole("button", { name: "Drag to move" });
+    fireEvent.pointerDown(grip, { button: 0, clientX: 10, clientY: 10 });
+    fireEvent.pointerMove(window, { buttons: 1, clientX: 12, clientY: 12 });
+    expect(meetingDrag).not.toHaveBeenCalled();
+    fireEvent.pointerMove(window, { buttons: 1, clientX: 15, clientY: 10 });
     expect(meetingDrag).toHaveBeenCalledTimes(1);
+    fireEvent.pointerUp(window);
 
-    const miniPill = screen.getByRole("button", {
-      name: "Expand recording pill",
-    });
-    fireEvent.pointerDown(miniPill, { button: 0 });
-    expect(meetingDrag).toHaveBeenCalledTimes(1);
-    expect(miniPill.hasAttribute("data-tauri-drag-region")).toBe(false);
-    fireEvent.pointerDown(screen.getByLabelText("Meeting recording"), {
+    fireEvent.pointerDown(screen.getByRole("button", { name: "Stop" }), {
       button: 0,
+      clientX: 10,
+      clientY: 10,
     });
-    expect(meetingDrag).toHaveBeenCalledTimes(2);
-
-    await expandOverlay();
-    fireEvent.pointerDown(screen.getByTitle("Drag to move"), { button: 0 });
-    expect(meetingDrag).toHaveBeenCalledTimes(3);
+    fireEvent.pointerMove(window, { buttons: 1, clientX: 20, clientY: 10 });
+    expect(meetingDrag).toHaveBeenCalledTimes(1);
   });
 
-  test("disables Stop while finalizing without exposing diagnostic warnings", async () => {
+  test("names finalizing instead of leaving a disabled, unnamed pill", () => {
     renderOverlay(
       recordingState({
         phase: "finalizing",
@@ -724,10 +679,8 @@ describe("MeetingCaptureOverlay", () => {
           "System audio became unavailable; microphone is still recording.",
       }),
     );
-    await expandOverlay();
-
-    const saving = screen.getByRole("button", { name: "Saving..." });
-    expect((saving as HTMLButtonElement).disabled).toBe(true);
+    expect(screen.getByText("Finishing…")).toBeTruthy();
+    expect(screen.queryByRole("button", { name: "Stop" })).toBeNull();
     expect(
       screen.queryByText(
         "System audio became unavailable; microphone is still recording.",
@@ -782,7 +735,7 @@ describe("MeetingCaptureOverlay", () => {
     vi.setSystemTime(new Date("2026-07-18T10:01:00Z"));
     const view = renderOverlay(recordingState());
 
-    expect(screen.queryByText("Recording")).toBeNull();
+    expect(screen.getByText("Meeting")).toBeTruthy();
 
     view.rerender(
       <I18nProvider i18n={i18n}>
@@ -802,9 +755,9 @@ describe("MeetingCaptureOverlay", () => {
     );
 
     expect(screen.getByText("Marking moment")).toBeTruthy();
-    const compactPill = screen.getByTitle("Drag to move");
-    expect(compactPill.className).toContain("!h-[36px]");
-    expect(compactPill.className).toContain("!w-[128px]");
+    const compactPill = screen.getByLabelText("Meeting recording");
+    expect(compactPill.className).toContain("h-11");
+    expect(compactPill.className).toContain("w-[244px]");
   });
 
   test("shows an important moment running forward until Fn is pressed", () => {

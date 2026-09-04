@@ -11,6 +11,11 @@ export const startMeetingCapture = (
   options: MeetingStartOptions,
 ): Promise<MeetingCaptureState> => invoke("start_meeting_capture", { options });
 
+// El inicio normal no debería abrir un segundo formulario. El backend resuelve
+// el modelo compatible y las preferencias guardadas en un único sitio.
+export const startDefaultMeetingCapture = (): Promise<MeetingCaptureState> =>
+  invoke("start_default_meeting_capture");
+
 export const stopMeetingCapture = (): Promise<MeetingCaptureState> =>
   invoke("stop_meeting_capture");
 

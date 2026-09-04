@@ -30,6 +30,7 @@ import {
   probeLibraryImportFiles,
   resolveLibraryAudioUrl,
   retryLibraryTranscription,
+  startDefaultMeetingCapture,
   startMeetingCapture,
   subscribeLibraryDragEnter,
   subscribeLibraryEvents,
@@ -64,6 +65,7 @@ describe("library native boundary", () => {
       model_key: "parakeet",
       system_audio_enabled: true,
     });
+    await startDefaultMeetingCapture();
     await updateMeetingNotes("meeting-1", {
       notes: "Decision",
       expected_revision: 3,
@@ -81,6 +83,7 @@ describe("library native boundary", () => {
         "start_meeting_capture",
         { options: { model_key: "parakeet", system_audio_enabled: true } },
       ],
+      ["start_default_meeting_capture"],
       [
         "update_meeting_notes",
         {

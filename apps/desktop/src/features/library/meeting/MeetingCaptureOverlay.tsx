@@ -6,17 +6,8 @@ import {
   Sparkle,
   Stop,
 } from "@phosphor-icons/react";
-import {
-  type PointerEvent as ReactPointerEvent,
-  useEffect,
-  useRef,
-  useState,
-} from "react";
+import { useEffect, useRef, useState } from "react";
 import type { MeetingCaptureState } from "../../../contracts";
-import { beginOverlayDrag } from "../../../data/capture/dictation";
-import { useMountEffect } from "../../../shared/hooks/useMountEffect";
-import { SignalRail } from "../../pill/SignalRail";
-import { useMeetingDetails, useStopMeetingCapture } from "../queries";
 import {
   setMeetingOverlayPresentation,
   type MeetingTranscriptPlacement,
@@ -27,25 +18,20 @@ import {
   openShortcutPermissionHelp,
   retryShortcuts,
 } from "../../../data/capture/shortcuts";
+import { useMountEffect } from "../../../shared/hooks/useMountEffect";
+import { SIGNAL_RAIL_SHELL_CLASS } from "../../pill/SignalRail";
+import { useOverlayDrag } from "../../pill/use-overlay-drag";
+import { useMeetingDetails, useStopMeetingCapture } from "../queries";
 import { formatDuration } from "../shared/library-utils";
 import { selectedDurationMs } from "./meeting-note-duration";
 import { MeetingTranscriptPanel } from "./MeetingTranscriptPanel";
 
 const NOTE_SAVED_VISIBLE_MS = 2_400;
+const HOVER_PREVIEW_DELAY_MS = 300;
+const PERMISSION_NOTICE_VISIBLE_MS = 6_000;
 const TRANSCRIPT_PANEL_ID = "meeting-live-transcript";
 
-const beginMeetingDrag = (event: ReactPointerEvent<HTMLDivElement>) => {
-  const target = event.target;
-  if (
-    event.button !== 0 ||
-    (target instanceof Element && target.closest("button"))
-  ) {
-    return;
-  }
-  void beginOverlayDrag().catch((error) =>
-    console.error("Failed to drag meeting pill:", error),
-  );
-};
+type TranscriptMode = "hidden" | "preview" | "pinned";
 
 const RecordingSignal = () => (
   <span
@@ -60,14 +46,40 @@ const RecordingSignal = () => (
   </span>
 );
 
+function DragGrip({
+  onPointerDown,
+}: {
+  onPointerDown: ReturnType<typeof useOverlayDrag>["onPointerDown"];
+}) {
+  const { t } = useLingui();
+  return (
+    <button
+      type="button"
+      data-overlay-drag-handle
+      onPointerDown={onPointerDown}
+      aria-label={t({
+        id: "meeting.capture.drag",
+        message: "Drag to move",
+      })}
+      className="grid h-10 w-10 shrink-0 cursor-grab place-items-center rounded-full text-white/45 transition-colors hover:bg-white/10 hover:text-white/75 active:cursor-grabbing"
+    >
+      <span aria-hidden="true" className="grid grid-cols-3 gap-0.5">
+        {Array.from({ length: 9 }, (_, index) => (
+          <span key={index} className="h-0.5 w-0.5 rounded-full bg-current" />
+        ))}
+      </span>
+    </button>
+  );
+}
+
 const MeetingCaptureOverlay = ({ state }: { state: MeetingCaptureState }) => {
   const { t } = useLingui();
+  const drag = useOverlayDrag();
   const stop = useStopMeetingCapture();
   const meetingId = state.id ?? "";
   const voiceNote = state.capture_intent === "voice_note";
-  // El audio ya está a salvo; lo que sigue corriendo es la transcripción y el
-  // resumen, y la píldora se queda para que ese trabajo no sea invisible.
   const processing = state.phase === "processing";
+  const finalizing = state.phase === "finalizing";
   const { data: details } = useMeetingDetails(meetingId, meetingId.length > 0);
   const selection = state.active_note_selection ?? null;
   const importantMoment = state.active_important_moment ?? null;
@@ -76,7 +88,8 @@ const MeetingCaptureOverlay = ({ state }: { state: MeetingCaptureState }) => {
   const [visibleMarkerId, setVisibleMarkerId] = useState<string | null>(
     markerId,
   );
-  const [compact, setCompact] = useState(true);
+  const [transcriptMode, setTranscriptMode] =
+    useState<TranscriptMode>("hidden");
   const [placement, setPlacement] =
     useState<MeetingTranscriptPlacement>("above");
   const [sideAlignment, setSideAlignment] =
@@ -84,12 +97,42 @@ const MeetingCaptureOverlay = ({ state }: { state: MeetingCaptureState }) => {
   const [shortcutPermission, setShortcutPermission] = useState<boolean | null>(
     null,
   );
+  const [permissionNoticeVisible, setPermissionNoticeVisible] =
+    useState(false);
   const presentationRequestInFlight = useRef(false);
-  const signalButtonRef = useRef<HTMLButtonElement>(null);
+  const hoverPreviewTimer = useRef<number | null>(null);
+  const permissionNoticeTimer = useRef<number | null>(null);
+  const transcriptModeRef = useRef<TranscriptMode>("hidden");
+
+  const clearHoverPreviewTimer = () => {
+    if (hoverPreviewTimer.current == null) return;
+    window.clearTimeout(hoverPreviewTimer.current);
+    hoverPreviewTimer.current = null;
+  };
+
+  const hidePermissionNotice = () => {
+    if (permissionNoticeTimer.current != null) {
+      window.clearTimeout(permissionNoticeTimer.current);
+      permissionNoticeTimer.current = null;
+    }
+    setPermissionNoticeVisible(false);
+  };
+
+  const showPermissionNotice = () => {
+    if (permissionNoticeTimer.current != null) {
+      window.clearTimeout(permissionNoticeTimer.current);
+    }
+    setPermissionNoticeVisible(true);
+    permissionNoticeTimer.current = window.setTimeout(() => {
+      permissionNoticeTimer.current = null;
+      setPermissionNoticeVisible(false);
+    }, PERMISSION_NOTICE_VISIBLE_MS);
+  };
 
   useMountEffect(() => {
     let cancelled = false;
     let shortcutWasReady = false;
+    let missingPermissionWasReported = false;
     let pollTimer: number | null = null;
 
     const refreshShortcutPermission = async () => {
@@ -107,13 +150,20 @@ const MeetingCaptureOverlay = ({ state }: { state: MeetingCaptureState }) => {
             window.clearInterval(pollTimer);
             pollTimer = null;
           }
+          hidePermissionNotice();
+        } else if (!missingPermissionWasReported) {
+          missingPermissionWasReported = true;
+          showPermissionNotice();
         }
       } catch (error) {
-        if (!cancelled) {
-          shortcutWasReady = false;
-          setShortcutPermission(false);
-          console.error("Failed to verify meeting shortcut:", error);
+        if (cancelled) return;
+        shortcutWasReady = false;
+        setShortcutPermission(false);
+        if (!missingPermissionWasReported) {
+          missingPermissionWasReported = true;
+          showPermissionNotice();
         }
+        console.error("Failed to verify meeting shortcut:", error);
       }
     };
 
@@ -121,52 +171,76 @@ const MeetingCaptureOverlay = ({ state }: { state: MeetingCaptureState }) => {
     pollTimer = window.setInterval(refreshShortcutPermission, 1_500);
     return () => {
       cancelled = true;
+      clearHoverPreviewTimer();
       if (pollTimer != null) window.clearInterval(pollTimer);
+      if (permissionNoticeTimer.current != null) {
+        window.clearTimeout(permissionNoticeTimer.current);
+        permissionNoticeTimer.current = null;
+      }
     };
   });
 
-  const transcriptVisible = !compact;
-
-  const applyOverlayPresentation = (
+  const applyOverlayPresentation = async (
     next: Parameters<typeof setMeetingOverlayPresentation>[0],
   ) => {
-    return setMeetingOverlayPresentation(next)
-      .then(({ placement: nextPlacement, sideAlignment: nextAlignment }) => {
-        setPlacement(nextPlacement);
-        setSideAlignment(nextAlignment);
-        return true;
-      })
-      .catch((error) => {
-        console.error("Failed to update meeting overlay presentation:", error);
-        return false;
-      });
+    try {
+      const result = await setMeetingOverlayPresentation(next);
+      setPlacement(result.placement);
+      setSideAlignment(result.sideAlignment);
+      return true;
+    } catch (error) {
+      console.error("Failed to update meeting overlay presentation:", error);
+      return false;
+    }
   };
 
-  const toggleCompact = async () => {
+  const setTranscriptVisibility = async (next: TranscriptMode) => {
     if (presentationRequestInFlight.current) return;
+    if (transcriptModeRef.current === next) return;
     presentationRequestInFlight.current = true;
-    try {
-      if (compact) {
-        const applied = await applyOverlayPresentation({
-          compact: false,
-          transcriptVisible: true,
-          transcriptPinned: true,
-        });
-        if (applied) setCompact(false);
-        return;
-      }
-
-      setCompact(true);
-      const applied = await applyOverlayPresentation({
-        compact: true,
-        transcriptVisible: false,
-        transcriptPinned: false,
-      });
-      if (!applied) setCompact(false);
-      else requestAnimationFrame(() => signalButtonRef.current?.focus());
-    } finally {
-      presentationRequestInFlight.current = false;
+    const previous = transcriptModeRef.current;
+    // Al cerrar, React quita el panel antes de encoger la ventana nativa. De
+    // otro modo el último frame del panel queda recortado durante el resize.
+    if (next === "hidden") {
+      transcriptModeRef.current = next;
+      setTranscriptMode(next);
     }
+    const applied = await applyOverlayPresentation({
+      compact: next !== "pinned",
+      transcriptVisible: next !== "hidden",
+      transcriptPinned: next === "pinned",
+    });
+    if (applied) {
+      transcriptModeRef.current = next;
+      setTranscriptMode(next);
+    } else if (next === "hidden") {
+      transcriptModeRef.current = previous;
+      setTranscriptMode(previous);
+    }
+    presentationRequestInFlight.current = false;
+  };
+
+  const scheduleTranscriptPreview = () => {
+    if (transcriptModeRef.current !== "hidden") return;
+    clearHoverPreviewTimer();
+    hoverPreviewTimer.current = window.setTimeout(() => {
+      hoverPreviewTimer.current = null;
+      void setTranscriptVisibility("preview");
+    }, HOVER_PREVIEW_DELAY_MS);
+  };
+
+  const hideTranscriptPreview = () => {
+    clearHoverPreviewTimer();
+    if (transcriptModeRef.current === "preview") {
+      void setTranscriptVisibility("hidden");
+    }
+  };
+
+  const togglePinnedTranscript = () => {
+    clearHoverPreviewTimer();
+    void setTranscriptVisibility(
+      transcriptModeRef.current === "pinned" ? "hidden" : "pinned",
+    );
   };
 
   useEffect(() => {
@@ -190,59 +264,45 @@ const MeetingCaptureOverlay = ({ state }: { state: MeetingCaptureState }) => {
   const noteSaved = visibleMarkerId != null && !selection && !importantMoment;
   const importantMomentSaved =
     noteSaved && state.last_note_marker?.kind === "important_moment";
-  const visuallyCompact = compact;
-  const shortcutBlocked =
-    shortcutPermission === false &&
-    state.phase === "recording" &&
-    !selection &&
-    !importantMoment &&
-    !noteSaved;
-  const shortcutWarningVisible = shortcutBlocked && !visuallyCompact;
   const progress = selection
     ? Math.min(100, (selectedMs / selection.max_duration_ms) * 100)
     : 0;
-  const title = processing
-    ? t({ id: "meeting.capture.summarizing", message: "Summarizing…" })
-    : shortcutWarningVisible
-      ? t({
-          id: "meeting.capture.shortcut_unavailable",
-          message: "Fn blocked",
-        })
-      : importantMoment
-        ? t({
-            id: "meeting.capture.important_moment",
-            message: "Important moment",
-          })
-        : selection
-          ? t({ id: "meeting.capture.note", message: "Marking moment" })
-          : noteSaved
-            ? importantMomentSaved
-              ? t({
-                  id: "meeting.capture.important_moment_saved",
-                  message: "Important moment saved",
-                })
-              : t({
-                  id: "meeting.capture.note_saved",
-                  message: "Moment saved",
-                })
-            : voiceNote
-              ? t({ id: "note.capture.rail_title", message: "Note" })
-              : t({ id: "meeting.capture.rail_title", message: "Recording" });
+  const captureLabel = voiceNote
+    ? t({ id: "note.capture.rail_title", message: "Note" })
+    : t({ id: "meeting.capture.label", message: "Meeting" });
   const captureAriaLabel = voiceNote
     ? t({ id: "note.capture.active", message: "Note recording" })
     : t({ id: "meeting.capture.active", message: "Meeting recording" });
-  const recordingSignal = processing ? (
-    <Sparkle size={16} weight="fill" className="animate-pulse text-white/70" />
-  ) : shortcutWarningVisible ? (
-    <Key size={16} weight="bold" className="text-amber-300" />
+  const statusLabel = processing
+    ? t({ id: "meeting.capture.summarizing", message: "Summarizing…" })
+    : finalizing
+      ? t({ id: "meeting.capture.finalizing", message: "Finishing…" })
+      : state.phase === "starting"
+        ? t({ id: "meeting.capture.starting", message: "Starting…" })
+        : importantMoment
+          ? t({
+              id: "meeting.capture.important_moment",
+              message: "Important moment",
+            })
+          : selection
+            ? t({ id: "meeting.capture.note", message: "Marking moment" })
+            : noteSaved
+              ? importantMomentSaved
+                ? t({
+                    id: "meeting.capture.important_moment_saved",
+                    message: "Important moment saved",
+                  })
+                : t({
+                    id: "meeting.capture.note_saved",
+                    message: "Moment saved",
+                  })
+              : null;
+  const recordingSignal = processing || finalizing ? (
+    <Sparkle size={15} weight="fill" className="animate-pulse text-white/70" />
   ) : importantMoment ? (
-    <BookmarkSimple size={16} weight="fill" className="text-red-400" />
+    <BookmarkSimple size={15} weight="fill" className="text-red-400" />
   ) : selection ? (
-    // Anillo que se llena: un solo glifo dice "marcando" y cuánto (spec Fn·A).
-    <span
-      aria-hidden="true"
-      className="relative grid h-4 w-4 place-items-center"
-    >
+    <span aria-hidden="true" className="relative grid h-4 w-4 place-items-center">
       <span
         className="absolute inset-0 rounded-full"
         style={{
@@ -257,39 +317,12 @@ const MeetingCaptureOverlay = ({ state }: { state: MeetingCaptureState }) => {
     </span>
   ) : noteSaved ? (
     <CheckCircle
-      size={16}
+      size={15}
       weight="fill"
       className="text-[var(--color-success)]"
     />
   ) : (
     <RecordingSignal />
-  );
-
-  const signal = (
-    <button
-      ref={signalButtonRef}
-      type="button"
-      data-overlay-drag-handle
-      aria-controls={TRANSCRIPT_PANEL_ID}
-      aria-expanded={!visuallyCompact}
-      aria-label={
-        visuallyCompact
-          ? t({
-              id: "meeting.capture.pill.expand",
-              message: "Expand recording pill",
-            })
-          : t({
-              id: "meeting.capture.pill.collapse",
-              message: "Collapse recording pill",
-            })
-      }
-      onClick={toggleCompact}
-      className={`grid place-items-center rounded-full transition-colors hover:bg-white/10 ${
-        visuallyCompact ? "h-9 w-10" : "h-7 w-7"
-      }`}
-    >
-      {recordingSignal}
-    </button>
   );
 
   const previewSegment = state.live_transcript?.trim()
@@ -307,100 +340,101 @@ const MeetingCaptureOverlay = ({ state }: { state: MeetingCaptureState }) => {
     details?.live_transcript?.length || !previewSegment
       ? (details?.live_transcript ?? [])
       : [previewSegment];
+  const transcriptVisible = transcriptMode !== "hidden";
+  const transientPermissionWarning =
+    shortcutPermission === false && permissionNoticeVisible && !statusLabel;
+
   const transcriptPanel = transcriptVisible ? (
-    <MeetingTranscriptPanel
-      id={TRANSCRIPT_PANEL_ID}
-      meetingId={meetingId}
-      segments={transcriptSegments}
-      pinned
-      onMinimize={toggleCompact}
-    />
-  ) : null;
-
-  const meetingInfoVisible = Boolean(
-    selection || importantMoment || noteSaved || shortcutWarningVisible,
-  );
-  const compactCopy =
-    meetingInfoVisible || processing
-      ? title
-      : formatDuration(state.elapsed_seconds);
-
-  const pill = (
     <div
-      onPointerDown={beginMeetingDrag}
-      className={`relative z-10 flex justify-center ${visuallyCompact ? "w-[128px]" : "w-[260px]"}`}
+      onPointerEnter={clearHoverPreviewTimer}
+      onPointerLeave={hideTranscriptPreview}
+      onPointerDown={() => {
+        if (transcriptModeRef.current === "preview") {
+          void setTranscriptVisibility("pinned");
+        }
+      }}
     >
-      <SignalRail
-        dragTitle={t({ id: "meeting.capture.drag", message: "Drag to move" })}
-        ariaLabel={captureAriaLabel}
-        signal={signal}
-        title={visuallyCompact ? null : title}
-        progress={undefined}
-        // Una captura dura minutos u horas: el cronómetro solo no dice qué se
-        // está grabando, así que aquí el título se queda fijo en vez de esperar
-        // al hover como en Dictation.
-        meta={
-          visuallyCompact || meetingInfoVisible || processing
-            ? undefined
-            : formatDuration(state.elapsed_seconds)
-        }
-        compactExtra={visuallyCompact ? compactCopy : undefined}
-        infoVisible={!visuallyCompact}
-        revealOnGroupInteraction={false}
-        nativeDragRegions={false}
-        actionsVisible={!visuallyCompact}
-        className={
-          visuallyCompact
-            ? "!h-[36px] !w-[128px] !transition-colors hover:!w-[128px] focus-within:!w-[128px]"
-            : "!w-[260px] !transition-colors hover:!w-[260px] focus-within:!w-[260px]"
-        }
-        actions={
-          processing ? null : shortcutWarningVisible ? (
-            <>
-              <button
-                type="button"
-                onClick={() => {
-                  void openShortcutPermissionHelp().catch((error) =>
-                    console.error("Failed to open the Fn help:", error),
-                  );
-                }}
-                className="inline-flex h-7 shrink-0 items-center rounded-[9px] border border-amber-300/25 bg-amber-300/10 px-2 text-[10px] font-semibold text-amber-100 transition-colors duration-150 hover:bg-amber-300/20"
-              >
-                {t({
-                  id: "meeting.capture.shortcut_enable",
-                  message: "Why?",
-                })}
-              </button>
-              <button
-                type="button"
-                title={t({ id: "meeting.capture.stop", message: "Stop" })}
-                aria-label={t({
-                  id: "meeting.capture.stop",
-                  message: "Stop",
-                })}
-                onClick={() => stop.mutate()}
-                disabled={stop.isPending}
-                className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-[9px] border border-white/10 bg-white/5 text-white/65 transition-colors duration-150 hover:border-red-400/30 hover:bg-red-500 hover:text-white disabled:opacity-50"
-              >
-                <Stop size={10} weight="fill" />
-              </button>
-            </>
-          ) : (
-            <button
-              type="button"
-              onClick={() => stop.mutate()}
-              disabled={stop.isPending || state.phase === "finalizing"}
-              className="inline-flex h-7 shrink-0 items-center gap-1 rounded-[9px] border border-white/10 bg-white/5 px-2 text-[10px] font-semibold text-white/75 transition-colors duration-150 hover:border-red-400/30 hover:bg-red-500 hover:text-white disabled:opacity-50"
-            >
-              <Stop size={10} weight="fill" />
-              {state.phase === "finalizing"
-                ? t({ id: "meeting.capture.saving", message: "Saving..." })
-                : t({ id: "meeting.capture.stop", message: "Stop" })}
-            </button>
-          )
+      <MeetingTranscriptPanel
+        id={TRANSCRIPT_PANEL_ID}
+        meetingId={meetingId}
+        segments={transcriptSegments}
+        pinned={transcriptMode === "pinned"}
+        onMinimize={
+          transcriptMode === "pinned" ? togglePinnedTranscript : undefined
         }
       />
     </div>
+  ) : null;
+
+  const pill = (
+    <section
+      aria-label={captureAriaLabel}
+      className={`${SIGNAL_RAIL_SHELL_CLASS} flex h-11 w-[244px] items-center rounded-full px-1 text-white transition-[border-color,box-shadow] duration-150`}
+      onPointerEnter={scheduleTranscriptPreview}
+      onPointerLeave={hideTranscriptPreview}
+      onClickCapture={drag.onClickCapture}
+    >
+      <DragGrip onPointerDown={drag.onPointerDown} />
+      <button
+        type="button"
+        aria-controls={TRANSCRIPT_PANEL_ID}
+        aria-expanded={transcriptMode === "pinned"}
+        aria-label={
+          transcriptMode === "pinned"
+            ? t({
+                id: "meeting.capture.pill.collapse",
+                message: "Collapse recording pill",
+              })
+            : t({
+                id: "meeting.capture.pill.expand",
+                message: "Expand recording pill",
+              })
+        }
+        onClick={togglePinnedTranscript}
+        className="grid h-9 w-8 shrink-0 place-items-center rounded-full transition-colors hover:bg-white/10"
+      >
+        {recordingSignal}
+      </button>
+      <div className="min-w-0 flex-1 pl-1">
+        <p className="truncate text-[12px] font-semibold leading-4 text-white">
+          {captureLabel}
+        </p>
+        <p className="truncate text-[10px] leading-3 text-white/60 tabular-nums">
+          {statusLabel ?? formatDuration(state.elapsed_seconds)}
+        </p>
+      </div>
+      {transientPermissionWarning ? (
+        <button
+          type="button"
+          onClick={() => {
+            hidePermissionNotice();
+            void openShortcutPermissionHelp().catch((error) =>
+              console.error("Failed to open the Fn help:", error),
+            );
+          }}
+          className="mr-1 inline-flex h-8 shrink-0 items-center rounded-[9px] border border-amber-300/25 bg-amber-300/10 px-1.5 text-[9px] font-semibold text-amber-100 hover:bg-amber-300/20"
+        >
+          <Key size={11} weight="bold" className="mr-1" />
+          {t({ id: "meeting.capture.shortcut_enable", message: "Fix Fn" })}
+        </button>
+      ) : processing || finalizing || state.phase === "starting" ? (
+        <span className="mr-1 grid h-8 w-8 shrink-0 place-items-center rounded-[9px] text-white/45">
+          <Sparkle size={13} className="animate-pulse" />
+        </span>
+      ) : (
+        <button
+          type="button"
+          title={t({ id: "meeting.capture.stop", message: "Stop" })}
+          aria-label={t({ id: "meeting.capture.stop", message: "Stop" })}
+          onClick={() => stop.mutate()}
+          disabled={stop.isPending}
+          className="mr-1 inline-flex h-8 min-w-11 shrink-0 items-center justify-center gap-1 rounded-[9px] border border-white/10 bg-white/5 px-2 text-[10px] font-semibold text-white/80 transition-colors duration-150 hover:border-red-400/30 hover:bg-red-500 hover:text-white disabled:opacity-50"
+        >
+          <Stop size={10} weight="fill" />
+          {t({ id: "meeting.capture.stop", message: "Stop" })}
+        </button>
+      )}
+    </section>
   );
 
   return (
@@ -411,22 +445,7 @@ const MeetingCaptureOverlay = ({ state }: { state: MeetingCaptureState }) => {
           : `flex-row ${sideAlignment === "top" ? "items-start" : "items-end"}`
       }`}
     >
-      {visuallyCompact ? (
-        <button
-          type="button"
-          tabIndex={-1}
-          aria-hidden="true"
-          data-testid="meeting-compact-hit-slop"
-          onClick={toggleCompact}
-          className="absolute inset-0 rounded-[22px]"
-        />
-      ) : null}
-      {placement === "above" ? (
-        <>
-          {transcriptPanel}
-          {pill}
-        </>
-      ) : placement === "left" ? (
+      {placement === "above" || placement === "left" ? (
         <>
           {transcriptPanel}
           {pill}

@@ -172,6 +172,17 @@ pub async fn start_meeting_capture(
     state.meeting_capture().start(&app, &state, options).await
 }
 
+/// Inicia una reunión con las preferencias persistentes. Mantener esta ruta
+/// junto a los inicios desde menú y detección evita que cada UI vuelva a crear
+/// su propio formulario y termine usando defaults distintos.
+#[tauri::command]
+pub async fn start_default_meeting_capture(
+    app: AppHandle<AppRuntime>,
+    state: tauri::State<'_, AppState>,
+) -> Result<MeetingCaptureState, String> {
+    start_unscheduled_meeting(&app, &state).await
+}
+
 #[tauri::command]
 pub async fn start_note_from_dock(
     app: AppHandle<AppRuntime>,
