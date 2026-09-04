@@ -358,11 +358,10 @@ fn cursor_over_pill_window(app: &AppHandle<AppRuntime>) -> Option<(bool, bool, (
             scale,
             state.pill().meeting_overlay_presentation(),
         );
-        // La ventana de reunión ya se ajusta al contenido visible: 136×44 en
-        // compacto y al transcript + rail cuando está expandida. Mantenerla
-        // interactiva evita que macOS deje los controles del borde en
-        // click-through mientras el cursor cruza entre ambas superficies.
-        return Some((true, inside, cursor));
+        // El panel sólo recibe eventos sobre sus superficies visibles. Dejarlo
+        // interactivo en todo su frame convierte las áreas transparentes del
+        // transcript minimizado en un bloqueo invisible sobre la aplicación.
+        return Some((inside, inside, cursor));
     }
 
     if state.pill().status() == PillStatus::Preflight {
