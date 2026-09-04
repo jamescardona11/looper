@@ -292,8 +292,16 @@ describe("Home presentation contract", () => {
       POPULATED_TODAY_STATS,
     );
     const askMemory = screen.getByRole("button", { name: /^Ask Memory/ });
+    const header = askMemory.closest("header");
 
-    expect(askMemory.closest("header")?.className).toContain("px-7");
+    expect(header?.className).toContain("px-7");
+    expect(header?.hasAttribute("data-tauri-drag-region")).toBe(false);
+    const titlebarDragRegion = header?.querySelector(
+      ":scope > [data-tauri-drag-region]",
+    );
+    expect(titlebarDragRegion?.className).toContain("pointer-events-auto");
+    expect(titlebarDragRegion?.className).toContain("h-9");
+    expect(askMemory.closest("[data-tauri-drag-region]")).toBeNull();
     expect(askMemory.className).toContain("w-[112px]");
     expect(screen.getByText("On-device model selected")).toBeTruthy();
     expect(
