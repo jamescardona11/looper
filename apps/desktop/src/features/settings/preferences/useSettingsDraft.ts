@@ -54,6 +54,8 @@ export type SettingsDraft = {
   startInBackground: boolean;
   calendarMeetingAwarenessEnabled: boolean;
   microphoneMeetingAwarenessEnabled: boolean;
+  meetingSystemAudioEnabled: boolean;
+  meetingLiveTranscriptEnabled: boolean;
   autoDeleteTarget: AutoDeleteTarget;
   autoDeleteDuration: RecordingPrunePolicy;
   audioStorageBudgetMb: number;
@@ -193,6 +195,9 @@ export function draftFromStoredSettings(
       settings.calendar_meeting_awareness_enabled ?? false,
     microphoneMeetingAwarenessEnabled:
       settings.microphone_meeting_awareness_enabled ?? true,
+    meetingSystemAudioEnabled: settings.meeting_system_audio_enabled ?? true,
+    meetingLiveTranscriptEnabled:
+      settings.meeting_live_transcript_enabled ?? true,
     autoDeleteTarget: settings.auto_delete_target ?? "transcripts",
     autoDeleteDuration: settings.auto_delete_duration ?? "never",
     audioStorageBudgetMb: settings.audio_storage_budget_mb ?? 0,
@@ -237,6 +242,8 @@ function createInitialSettingsDraft(
     startInBackground: false,
     calendarMeetingAwarenessEnabled: false,
     microphoneMeetingAwarenessEnabled: true,
+    meetingSystemAudioEnabled: true,
+    meetingLiveTranscriptEnabled: true,
     autoDeleteTarget: "transcripts",
     autoDeleteDuration: "never",
     audioStorageBudgetMb: 0,
@@ -295,6 +302,8 @@ function createDraftSetters(
     microphoneMeetingAwarenessEnabled: bind(
       "microphoneMeetingAwarenessEnabled",
     ),
+    meetingSystemAudioEnabled: bind("meetingSystemAudioEnabled"),
+    meetingLiveTranscriptEnabled: bind("meetingLiveTranscriptEnabled"),
     autoDeleteTarget: bind("autoDeleteTarget"),
     autoDeleteDuration: bind("autoDeleteDuration"),
     audioStorageBudgetMb: bind("audioStorageBudgetMb"),

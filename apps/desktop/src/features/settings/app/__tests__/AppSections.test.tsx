@@ -104,6 +104,8 @@ describe("app settings sections", () => {
   test("exposes independent Calendar and microphone awareness toggles", () => {
     const toggleCalendarAwareness = vi.fn();
     const setMicrophoneAwareness = vi.fn();
+    const setSystemAudio = vi.fn();
+    const setLiveTranscript = vi.fn();
     render(
       <I18nProvider i18n={i18n}>
         <AppCalendarSection
@@ -114,6 +116,10 @@ describe("app settings sections", () => {
           onCalendarMeetingAwarenessEnabledChange={vi.fn()}
           microphoneMeetingAwarenessEnabled
           onMicrophoneMeetingAwarenessEnabledChange={setMicrophoneAwareness}
+          meetingSystemAudioEnabled
+          onMeetingSystemAudioEnabledChange={setSystemAudio}
+          meetingLiveTranscriptEnabled
+          onMeetingLiveTranscriptEnabledChange={setLiveTranscript}
           platformCapabilities={capabilities}
         />
       </I18nProvider>,
@@ -122,6 +128,7 @@ describe("app settings sections", () => {
     expect(screen.getByText("Meeting awareness")).toBeTruthy();
     expect(screen.getByText("Calendar reminders")).toBeTruthy();
     expect(screen.getByText("Microphone activity suggestions")).toBeTruthy();
+    expect(screen.getByText("Meeting recording")).toBeTruthy();
     fireEvent.click(
       screen.getByRole("switch", { name: "Toggle calendar meeting reminders" }),
     );
@@ -130,9 +137,21 @@ describe("app settings sections", () => {
         name: "Toggle microphone activity suggestions",
       }),
     );
+    fireEvent.click(
+      screen.getByRole("switch", {
+        name: "Toggle system audio for new meetings",
+      }),
+    );
+    fireEvent.click(
+      screen.getByRole("switch", {
+        name: "Toggle live transcript for new meetings",
+      }),
+    );
 
     expect(toggleCalendarAwareness).toHaveBeenCalledOnce();
     expect(setMicrophoneAwareness).toHaveBeenCalledWith(false);
+    expect(setSystemAudio).toHaveBeenCalledWith(false);
+    expect(setLiveTranscript).toHaveBeenCalledWith(false);
   });
 
   test("connects native permission and privacy actions", async () => {

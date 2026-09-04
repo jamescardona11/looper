@@ -85,7 +85,7 @@ pub(crate) fn toggle_meeting_from_menu(app: &AppHandle<AppRuntime>) {
                     MeetingStartOptions {
                         model_key,
                         live_model_key,
-                        system_audio_enabled: true,
+                        system_audio_enabled: settings.meeting_system_audio_enabled,
                         calendar_context: None,
                     },
                 )
@@ -103,7 +103,14 @@ fn default_live_meeting_model(
     settings: &crate::settings::UserSettings,
 ) -> Option<String> {
     let models = crate::speech::list_models(app, settings);
-    select_default_live_meeting_model(&models)
+    select_live_meeting_model(settings.meeting_live_transcript_enabled, &models)
+}
+
+fn select_live_meeting_model(
+    enabled: bool,
+    models: &[crate::speech::SpeechModel],
+) -> Option<String> {
+    enabled.then(|| select_default_live_meeting_model(models)).flatten()
 }
 
 fn select_default_live_meeting_model(models: &[crate::speech::SpeechModel]) -> Option<String> {
@@ -287,7 +294,7 @@ async fn start_unscheduled_meeting(
             MeetingStartOptions {
                 model_key: default_meeting_model(app, &settings)?,
                 live_model_key: default_live_meeting_model(app, &settings),
-                system_audio_enabled: true,
+                system_audio_enabled: settings.meeting_system_audio_enabled,
                 calendar_context: None,
             },
         )
@@ -326,7 +333,7 @@ async fn start_calendar_meeting(
             MeetingStartOptions {
                 model_key: default_meeting_model(app, &settings)?,
                 live_model_key: default_live_meeting_model(app, &settings),
-                system_audio_enabled: true,
+                system_audio_enabled: settings.meeting_system_audio_enabled,
                 calendar_context: Some(context),
             },
         )
@@ -648,6 +655,13 @@ mod tests {
         ];
 
         assert!(select_default_live_meeting_model(&models).is_none());
+    }
+
+    #[test]
+    fn disabled_live_transcript_preference_skips_an_installed_parakeet() {
+        let models = vec![parakeet("parakeet_tdt_int8", true)];
+
+        assert!(select_live_meeting_model(false, &models).is_none());
     }
 
     #[test]

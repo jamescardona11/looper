@@ -93,6 +93,81 @@ export function AppCalendarSection({
           })}
         </p>
       )}
+
+      <SectionLabel>
+        {t({
+          id: "settings.app.meeting_defaults",
+          message: "Meeting recording",
+        })}
+      </SectionLabel>
+      <div className="rounded-lg bg-surface-surface p-2.5">
+        <div className="flex items-center justify-between gap-3 px-2 py-1.5">
+          <div className="min-w-0">
+            <span className="block ui-text-label-strong ui-color-primary">
+              {t({
+                id: "settings.app.meeting_system_audio.label",
+                message: "System audio",
+              })}
+            </span>
+            <span className="mt-0.5 block ui-text-micro ui-color-disabled">
+              {t({
+                id: "settings.app.meeting_system_audio.body",
+                message:
+                  "Include the people and media you hear through this computer.",
+              })}
+            </span>
+          </div>
+          <ToggleSwitch
+            enabled={props.meetingSystemAudioEnabled}
+            onToggle={() =>
+              props.onMeetingSystemAudioEnabledChange(
+                !props.meetingSystemAudioEnabled,
+              )
+            }
+            ariaLabel={t({
+              id: "settings.app.meeting_system_audio.toggle_aria",
+              message: "Toggle system audio for new meetings",
+            })}
+          />
+        </div>
+
+        <div className="mt-1.5 flex items-center justify-between gap-3 border-t border-border-primary px-2 pt-3 pb-1.5">
+          <div className="min-w-0">
+            <span className="block ui-text-label-strong ui-color-primary">
+              {t({
+                id: "settings.app.meeting_live_transcript.label",
+                message: "Live transcript",
+              })}
+            </span>
+            <span className="mt-0.5 block ui-text-micro ui-color-disabled">
+              {t({
+                id: "settings.app.meeting_live_transcript.body",
+                message:
+                  "Show live captions when a compatible local model is installed.",
+              })}
+            </span>
+          </div>
+          <ToggleSwitch
+            enabled={props.meetingLiveTranscriptEnabled}
+            onToggle={() =>
+              props.onMeetingLiveTranscriptEnabledChange(
+                !props.meetingLiveTranscriptEnabled,
+              )
+            }
+            ariaLabel={t({
+              id: "settings.app.meeting_live_transcript.toggle_aria",
+              message: "Toggle live transcript for new meetings",
+            })}
+          />
+        </div>
+
+        <p className="border-t border-border-primary px-2 pt-3 pb-1.5 ui-text-micro ui-color-disabled">
+          {t({
+            id: "settings.app.meeting_defaults.model",
+            message: "Choose the transcription model in Processing & Models.",
+          })}
+        </p>
+      </div>
     </section>
   );
 }

@@ -81,6 +81,8 @@ enum Key {
     StartInBackground,
     CalendarMeetingAwarenessEnabled,
     MicrophoneMeetingAwarenessEnabled,
+    MeetingSystemAudioEnabled,
+    MeetingLiveTranscriptEnabled,
     AutoDeleteTarget,
     AutoDeleteDuration,
     AudioStorageBudgetMb,
@@ -141,6 +143,8 @@ impl Key {
             Self::StartInBackground => "start_in_background",
             Self::CalendarMeetingAwarenessEnabled => "calendar_meeting_awareness_enabled",
             Self::MicrophoneMeetingAwarenessEnabled => "microphone_meeting_awareness_enabled",
+            Self::MeetingSystemAudioEnabled => "meeting_system_audio_enabled",
+            Self::MeetingLiveTranscriptEnabled => "meeting_live_transcript_enabled",
             Self::AutoDeleteTarget => "auto_delete_target",
             Self::AutoDeleteDuration => "auto_delete_duration",
             Self::AudioStorageBudgetMb => "audio_storage_budget_mb",
@@ -389,6 +393,8 @@ impl SettingsStore {
                 auto_launch_enabled => AutoLaunchEnabled,
                 start_in_background => StartInBackground,
                 calendar_meeting_awareness_enabled => CalendarMeetingAwarenessEnabled,
+                meeting_system_audio_enabled => MeetingSystemAudioEnabled,
+                meeting_live_transcript_enabled => MeetingLiveTranscriptEnabled,
                 auto_delete_target => AutoDeleteTarget,
             );
             migration.load_microphone_meeting_awareness(&reader, &mut settings)?;
@@ -479,6 +485,8 @@ impl SettingsStore {
             start_in_background => StartInBackground,
             calendar_meeting_awareness_enabled => CalendarMeetingAwarenessEnabled,
             microphone_meeting_awareness_enabled => MicrophoneMeetingAwarenessEnabled,
+            meeting_system_audio_enabled => MeetingSystemAudioEnabled,
+            meeting_live_transcript_enabled => MeetingLiveTranscriptEnabled,
             auto_delete_target => AutoDeleteTarget,
             auto_delete_duration => AutoDeleteDuration,
             audio_storage_budget_mb => AudioStorageBudgetMb,
@@ -773,6 +781,8 @@ mod tests {
         let mut settings = UserSettings::default();
         settings.calendar_meeting_awareness_enabled = true;
         settings.microphone_meeting_awareness_enabled = false;
+        settings.meeting_system_audio_enabled = false;
+        settings.meeting_live_transcript_enabled = false;
         settings.capture_pill_presentation = crate::pill::capture::CapturePillPresentation::Floating;
         settings.capture_pill_dock_position =
             crate::pill::capture::CapturePillDockPosition::LeftCenter;
@@ -781,6 +791,8 @@ mod tests {
         let loaded = store.load().unwrap();
         assert!(loaded.calendar_meeting_awareness_enabled);
         assert!(!loaded.microphone_meeting_awareness_enabled);
+        assert!(!loaded.meeting_system_audio_enabled);
+        assert!(!loaded.meeting_live_transcript_enabled);
         assert_eq!(
             loaded.capture_pill_presentation,
             settings.capture_pill_presentation
@@ -940,7 +952,7 @@ mod tests {
             .lock()
             .query_row("SELECT COUNT(*) FROM settings", [], |row| row.get(0))
             .unwrap();
-        assert_eq!(count, 55);
+        assert_eq!(count, 57);
     }
 
     #[test]
