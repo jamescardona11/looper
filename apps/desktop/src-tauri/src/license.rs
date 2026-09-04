@@ -22,6 +22,11 @@ const POLAR_DEFAULT_BASE: &str = "https://api.polar.sh";
 const POLAR_DEFAULT_ORGANIZATION: &str = "98d75121-191c-4136-aa56-2c7803173973";
 const GRANTED: &str = "granted";
 const INVALID: &str = "invalid";
+// Mientras Looper está en acceso gratuito, ninguna capacidad de producto
+// depende de una prueba ni de una licencia almacenada. Conservamos el
+// subsistema para cuando cambie la política, pero la decisión vive aquí para
+// que todos los comandos tengan el mismo comportamiento.
+const PRODUCT_ACCESS_IS_FREE: bool = true;
 
 struct StorageKey;
 
@@ -219,6 +224,9 @@ struct GateMemo {
 static GATE_MEMO: Mutex<Option<GateMemo>> = Mutex::new(None);
 
 pub fn license_gate_active(store: &SettingsStore) -> bool {
+    if PRODUCT_ACCESS_IS_FREE {
+        return true;
+    }
     if development_bypass() {
         return true;
     }
@@ -290,6 +298,9 @@ pub fn require_license_gate(store: &SettingsStore, feature: &str) -> Result<(), 
 }
 
 pub(crate) fn active_license_gate(store: &SettingsStore) -> bool {
+    if PRODUCT_ACCESS_IS_FREE {
+        return true;
+    }
     development_bypass()
         || LicenseStorage::new(store)
             .paid_grant_active(Utc::now())
@@ -354,7 +365,10 @@ impl LicenseSnapshot {
         let grant = self.grant.as_ref();
         LicenseState {
             status,
-            license_gate_active: paid_active || trial_active || self.development_bypass,
+            license_gate_active: PRODUCT_ACCESS_IS_FREE
+                || paid_active
+                || trial_active
+                || self.development_bypass,
             trial_active,
             trial_started_at: self.trial_started_at.to_rfc3339(),
             trial_ends_at: trial_ends_at.to_rfc3339(),
@@ -1109,7 +1123,7 @@ mod tests {
     }
 
     #[test]
-    fn granted_but_unreadable_credential_is_reported_expired() {
+    fn expired_license_state_keeps_product_access_open_while_free() {
         let grant = CachedGrant {
             status: GRANTED.to_owned(),
             last_validated_at: "2026-05-25T11:59:00Z".to_owned(),
@@ -1122,7 +1136,7 @@ mod tests {
             Some(grant),
         );
         assert_eq!(state.status, LicenseStatus::Expired);
-        assert!(!state.license_gate_active);
+        assert!(state.license_gate_active);
     }
 
     #[test]
