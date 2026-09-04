@@ -1162,6 +1162,21 @@ msgid "home.today.stats.seconds_spoken"
 msgstr "{seconds, plural, one {# second spoken today} other {# seconds spoken today}}"
 
 #. js-lingui-explicit-id
+#: src/app/home/home-presentation.tsx
+msgid "home.context.shortcut_checking"
+msgstr "{shortcutLabel} checking"
+
+#. js-lingui-explicit-id
+#: src/app/home/home-presentation.tsx
+msgid "home.context.shortcut_needs_accessibility"
+msgstr "{shortcutLabel} needs Accessibility"
+
+#. js-lingui-explicit-id
+#: src/app/home/home-presentation.tsx
+msgid "home.context.shortcut_ready"
+msgstr "{shortcutLabel} ready"
+
+#. js-lingui-explicit-id
 #: src/features/transcriptions/homeHeaderStats.ts
 msgid "home.today.stats.longest_words"
 msgstr "{words, plural, one {Longest dictation today: # word} other {Longest dictation today: # words}}"
@@ -3554,7 +3569,7 @@ msgstr "Local"
 #. js-lingui-explicit-id
 #: src/app/home/home-presentation.tsx
 msgid "home.context.local_detail"
-msgstr "Local processing · This Mac · {shortcut} enabled"
+msgstr "Local processing · This Mac · {shortcut}"
 
 #. js-lingui-explicit-id
 #: src/features/memory/components/memory-view-results.tsx
@@ -4639,7 +4654,7 @@ msgstr "Release Fn to transcribe"
 #. js-lingui-explicit-id
 #: src/app/home/home-presentation.tsx
 msgid "home.context.cloud_detail"
-msgstr "Remote processing · {shortcut} enabled"
+msgstr "Remote processing · {shortcut}"
 
 #. js-lingui-explicit-id
 #: src/features/library/transcript/LibraryRetranscribeModal.tsx

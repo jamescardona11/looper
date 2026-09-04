@@ -1,4 +1,5 @@
 import { useReducedMotion } from "framer-motion";
+import { useQuery } from "@tanstack/react-query";
 import { useMemo, useReducer } from "react";
 
 import { useLicenseGate } from "../../features/license/queries";
@@ -6,6 +7,7 @@ import {
   useAppInfo,
   useSettings,
 } from "../../features/settings/preferences/queries";
+import { checkAccessibilityPermission } from "../../data/settings";
 import {
   useTodayDictationStats,
   useTranscriptionList,
@@ -30,6 +32,11 @@ function Home() {
   const { data: settings } = useSettings();
   const { data: updateStatus } = useUpdateStatus();
   const { data: appInfo } = useAppInfo();
+  const shortcutPermission = useQuery({
+    queryKey: ["home", "shortcut-permission"],
+    queryFn: checkAccessibilityPermission,
+    refetchOnWindowFocus: "always",
+  });
   const reduceMotion = useReducedMotion();
   const [state, dispatch] = useReducer(
     reduceHomeState,
@@ -66,6 +73,7 @@ function Home() {
         hasHistory={retainedTranscriptions.length > 0}
         reduceMotion={reduceMotion}
         runDiagnostics={createHomeDiagnostics(settings)}
+        shortcutAvailable={shortcutPermission.data}
         settingsShortcut={settings?.smart_shortcut}
         showCleanupButtons={cleanupAvailable}
         state={state}

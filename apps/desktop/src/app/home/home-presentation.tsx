@@ -58,6 +58,7 @@ type HomePresentationProps = {
   hasHistory: boolean;
   reduceMotion: boolean | null;
   runDiagnostics: () => Promise<FeatureDiagnostic[]>;
+  shortcutAvailable?: boolean;
   settingsShortcut?: string;
   showCleanupButtons: boolean;
   state: HomeState;
@@ -424,6 +425,7 @@ type WorkspaceProps = Pick<
   | "dispatch"
   | "hasHistory"
   | "runDiagnostics"
+  | "shortcutAvailable"
   | "settingsShortcut"
   | "showCleanupButtons"
   | "state"
@@ -435,17 +437,34 @@ type WorkspaceProps = Pick<
 function HomeDictationContext({
   onOpenHistory,
   onOpenSetup,
+  shortcutAvailable,
   shortcut,
   transcriptionMode,
 }: {
   onOpenHistory: () => void;
   onOpenSetup: () => void;
+  shortcutAvailable?: boolean;
   shortcut?: string;
   transcriptionMode: TranscriptionMode;
 }) {
   const { t } = useLingui();
   const isLocal = transcriptionMode === "local";
   const shortcutLabel = formatShortcutForDisplay(shortcut ?? "Fn");
+  const shortcutStatus =
+    shortcutAvailable === false
+      ? t({
+          id: "home.context.shortcut_needs_accessibility",
+          message: `${shortcutLabel} needs Accessibility`,
+        })
+      : shortcutAvailable
+        ? t({
+            id: "home.context.shortcut_ready",
+            message: `${shortcutLabel} ready`,
+          })
+        : t({
+            id: "home.context.shortcut_checking",
+            message: `${shortcutLabel} checking`,
+          });
 
   return (
     <aside className="hidden min-[1180px]:block" aria-label="Dictation context">
@@ -474,11 +493,11 @@ function HomeDictationContext({
               {isLocal
                 ? t({
                     id: "home.context.local_detail",
-                    message: `Local processing · This Mac · ${{ shortcut: shortcutLabel }} enabled`,
+                    message: `Local processing · This Mac · ${{ shortcut: shortcutStatus }}`,
                   })
                 : t({
                     id: "home.context.cloud_detail",
-                    message: `Remote processing · ${{ shortcut: shortcutLabel }} enabled`,
+                    message: `Remote processing · ${{ shortcut: shortcutStatus }}`,
                   })}
             </p>
           </div>
@@ -588,6 +607,7 @@ function HomeWorkspace({
   dispatch,
   hasHistory,
   runDiagnostics,
+  shortcutAvailable,
   settingsShortcut,
   showCleanupButtons,
   state,
@@ -678,6 +698,7 @@ function HomeWorkspace({
               onOpenSetup={() =>
                 dispatch({ type: "activate-view", view: "settings" })
               }
+              shortcutAvailable={shortcutAvailable}
               shortcut={settingsShortcut}
               transcriptionMode={transcriptionMode}
             />
@@ -863,6 +884,7 @@ export function HomePresentation({
   hasHistory,
   reduceMotion,
   runDiagnostics,
+  shortcutAvailable,
   settingsShortcut,
   showCleanupButtons,
   state,
@@ -886,6 +908,7 @@ export function HomePresentation({
         dispatch={dispatch}
         hasHistory={hasHistory}
         runDiagnostics={runDiagnostics}
+        shortcutAvailable={shortcutAvailable}
         settingsShortcut={settingsShortcut}
         showCleanupButtons={showCleanupButtons}
         state={state}

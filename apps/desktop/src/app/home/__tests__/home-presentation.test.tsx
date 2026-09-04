@@ -124,6 +124,7 @@ function renderHomePresentation(
   statePatch: Partial<HomeState> = {},
   licenseGateActive = true,
   todayStats: TodayDictationStats = EMPTY_TODAY_DICTATION_STATS,
+  shortcutAvailable?: boolean,
 ) {
   const dispatch = vi.fn();
   const state = { ...createHomeState(licenseGateActive), ...statePatch };
@@ -135,6 +136,7 @@ function renderHomePresentation(
         hasHistory={todayStats.count > 0}
         reduceMotion={false}
         runDiagnostics={vi.fn().mockResolvedValue([])}
+        shortcutAvailable={shortcutAvailable}
         settingsShortcut="⌥Space"
         showCleanupButtons
         state={state}
@@ -299,6 +301,13 @@ describe("Home presentation contract", () => {
     ).toBeTruthy();
     expect(screen.getByText("Dictation history")).toBeTruthy();
     expect(container.textContent).not.toContain("Product sync");
+  });
+
+  test("does not claim the global shortcut is ready without Accessibility", () => {
+    renderHomePresentation({}, true, POPULATED_TODAY_STATS, false);
+
+    expect(screen.getByText(/⌥Space needs Accessibility/)).toBeTruthy();
+    expect(screen.queryByText(/⌥Space ready/)).toBeNull();
   });
 
   test("dispatches navigation, Memory, meeting and support actions", () => {

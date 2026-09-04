@@ -20,7 +20,7 @@ APP_NAME := looper
 
 .PHONY: help install \
         status diff diff-stat diff-check gitignore-audit review \
-        dev dev-web dev-mobile dev-all build build-debug build-debug-signed build-release build-all test-desktop test-mobile \
+        dev dev-web dev-mobile dev-all build build-download build-debug build-debug-signed build-release build-all test-desktop test-mobile \
         typecheck lint lint-desktop lint-fix format format-check check check-fix tokens tokens-check test ci \
         update-deps licenses-audit \
         clean nuke
@@ -90,6 +90,9 @@ dev-all: ## Start all monorepo dev servers
 
 build: ## Build an unsigned local Looper.app bundle
 	@cd $(DESKTOP_DIR) && pnpm tauri build --bundles app --no-sign
+
+build-download: ## Build unsigned local Looper.app and DMG bundles for sharing
+	@cd $(DESKTOP_DIR) && pnpm tauri build --bundles app,dmg --no-sign
 
 build-debug: ## Build an unsigned debug Looper.app bundle
 	@cd $(DESKTOP_DIR) && pnpm tauri build --debug --bundles app --no-sign

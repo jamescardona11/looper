@@ -111,6 +111,17 @@ Desktop installers for macOS 14+ and Windows are published manually in
 The operating systems may warn while these preview installers remain unsigned.
 Updater packages are signed separately and verified by the desktop app.
 
+To create a local macOS download for QA or a private handoff, run:
+
+```sh
+make build-download
+```
+
+This produces unsigned `Looper.app` and `.dmg` bundles under
+`apps/desktop/src-tauri/target/release/bundle/`. They are suitable for local
+testing only; the signed macOS and Windows installers come from the manual
+`Desktop release` workflow on `main`.
+
 ### Requirements
 
 - Node.js 22.18 or newer
