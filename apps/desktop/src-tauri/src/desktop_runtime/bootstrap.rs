@@ -339,7 +339,6 @@ fn register_commands(builder: tauri::Builder<AppRuntime>) -> tauri::Builder<AppR
         crate::library::commands::get_library_translations,
         crate::library::commands::translate_library_item,
         crate::library::commands::delete_library_translation,
-        crate::library::meeting_commands::start_meeting_capture,
         crate::library::meeting_commands::start_default_meeting_capture,
         crate::library::meeting_commands::start_note_from_dock,
         crate::library::meeting_commands::resume_capture,

@@ -5,7 +5,6 @@ import type {
   MeetingCaptureState,
   MeetingDetails,
   MeetingNotesUpdate,
-  MeetingStartOptions,
 } from "../../contracts";
 import { isLibraryListKey, libraryKeys } from "./library-query-keys";
 import { appendFinalTranscript } from "./meeting-query-cache";
@@ -57,12 +56,6 @@ function useCaptureMutation<Data, Variables>(
       void client.invalidateQueries({ queryKey: libraryKeys.all });
     },
   });
-}
-
-export function useStartMeetingCapture() {
-  return useCaptureMutation((options: MeetingStartOptions) =>
-    libraryApi.startMeetingCapture(options),
-  );
 }
 
 export function useStartDefaultMeetingCapture() {

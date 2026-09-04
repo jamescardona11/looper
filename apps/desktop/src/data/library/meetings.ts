@@ -4,12 +4,7 @@ import type {
   MeetingDetails,
   MeetingNoteMarker,
   MeetingNotesUpdate,
-  MeetingStartOptions,
 } from "../../contracts";
-
-export const startMeetingCapture = (
-  options: MeetingStartOptions,
-): Promise<MeetingCaptureState> => invoke("start_meeting_capture", { options });
 
 // El inicio normal no debería abrir un segundo formulario. El backend resuelve
 // el modelo compatible y las preferencias guardadas en un único sitio.

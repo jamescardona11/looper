@@ -169,16 +169,6 @@ pub(crate) fn require_meeting_license(state: &AppState) -> Result<(), String> {
     crate::license::require_license_gate(&state.settings_store, "Meeting recording")
 }
 
-#[tauri::command]
-pub async fn start_meeting_capture(
-    options: MeetingStartOptions,
-    app: AppHandle<AppRuntime>,
-    state: tauri::State<'_, AppState>,
-) -> Result<MeetingCaptureState, String> {
-    require_meeting_license(&state)?;
-    state.meeting_capture().start(&app, &state, options).await
-}
-
 /// Inicia una reunión con las preferencias persistentes. Mantener esta ruta
 /// junto a los inicios desde menú y detección evita que cada UI vuelva a crear
 /// su propio formulario y termine usando defaults distintos.

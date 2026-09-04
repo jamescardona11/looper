@@ -31,7 +31,6 @@ import {
   resolveLibraryAudioUrl,
   retryLibraryTranscription,
   startDefaultMeetingCapture,
-  startMeetingCapture,
   subscribeLibraryDragEnter,
   subscribeLibraryEvents,
   translateLibraryItem,
@@ -61,10 +60,6 @@ describe("library native boundary", () => {
     await createLibraryItem("/tmp/audio.wav", options);
     await getLibraryItemsPage({ search: "review" }, 25, 50);
     await probeLibraryImportFiles(["/tmp/audio.wav"]);
-    await startMeetingCapture({
-      model_key: "parakeet",
-      system_audio_enabled: true,
-    });
     await startDefaultMeetingCapture();
     await updateMeetingNotes("meeting-1", {
       notes: "Decision",
@@ -79,10 +74,6 @@ describe("library native boundary", () => {
         { filter: { search: "review" }, limit: 25, offset: 50 },
       ],
       ["probe_library_import_files", { paths: ["/tmp/audio.wav"] }],
-      [
-        "start_meeting_capture",
-        { options: { model_key: "parakeet", system_audio_enabled: true } },
-      ],
       ["start_default_meeting_capture"],
       [
         "update_meeting_notes",
