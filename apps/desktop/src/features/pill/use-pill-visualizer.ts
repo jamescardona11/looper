@@ -131,7 +131,7 @@ export function usePillVisualizer(input: VisualizerInput) {
   }, []);
 
   const drawSpectrum = useCallback(
-    (bins: Uint8Array, elapsed: number) => {
+    (bins: Uint8Array) => {
       const target = visibleTarget();
       paintCanvas(
         target.canvas.current,
@@ -139,7 +139,6 @@ export function usePillVisualizer(input: VisualizerInput) {
         palette.current,
         spectrumPainter({
           bins,
-          elapsed,
           normalization: normalizationFor(bins),
           sensitivity: input.sensitivity,
           decay: input.decay,
@@ -190,7 +189,7 @@ export function usePillVisualizer(input: VisualizerInput) {
           performance.now() - input.lastSpectrumAt.current > 250
             ? EMPTY_SPECTRUM
             : input.spectrum.current;
-        actions.current.spectrum(bins, elapsed);
+        actions.current.spectrum(bins);
       } else if (input.status === "processing") {
         actions.current.process(elapsed);
       } else if (input.status === "cancelled") {
