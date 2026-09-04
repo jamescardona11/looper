@@ -174,6 +174,10 @@ fn start_runtime_services(app: &tauri::App<AppRuntime>) {
     handle.listen(tray::EVENT_SETTINGS_RENDERER_READY, move |_| {
         tray::mark_settings_renderer_ready(&application);
     });
+    let application = handle.clone();
+    handle.listen(crate::toast::EVENT_RENDERER_READY, move |_| {
+        crate::toast::mark_renderer_ready(&application);
+    });
 }
 
 fn synchronize_platform_state(app: &AppHandle<AppRuntime>) {
