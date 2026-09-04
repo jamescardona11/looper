@@ -5,7 +5,7 @@ import { Hero } from "./components/hero";
 import { HowItWorks } from "./components/how-it-works";
 import { LocalModel } from "./components/local-model";
 import { PlatformStrip } from "./components/platform-strip";
-import { Pricing } from "./components/pricing";
+import { Access } from "./components/access";
 import { ProductSurfaces } from "./components/product-surfaces";
 import { Roadmap } from "./components/roadmap";
 import { ScrollMotionController } from "./components/scroll-motion-controller";
@@ -50,7 +50,7 @@ export function App() {
         <ComparisonTable />
         <SmallPrint />
         <Roadmap />
-        <Pricing />
+        <Access />
         <FinalCta />
       </main>
       <SiteFooter />

@@ -17,7 +17,7 @@ export function SiteHeader() {
     { href: "#features", label: copy.nav.features },
     { href: "#local", label: copy.nav.local },
     { href: "#roadmap", label: copy.nav.roadmap },
-    { href: "#pricing", label: copy.nav.pricing },
+    { href: "#access", label: copy.nav.access },
   ];
 
   const closeMenu = () => {

@@ -1075,7 +1075,7 @@ export const es: Record<keyof typeof en, string> = {
   "landing.purple.nav.features": "Funciones",
   "landing.purple.nav.local": "Modelo local",
   "landing.purple.nav.roadmap": "Próximamente",
-  "landing.purple.nav.pricing": "Precio",
+  "landing.purple.nav.access": "Acceso",
   "landing.purple.download.macos": "Descargar para macOS",
   "landing.purple.download.windows": "Descargar para Windows",
   "landing.purple.download.desktop": "Ver descargas de escritorio",
@@ -1258,30 +1258,28 @@ export const es: Record<keyof typeof en, string> = {
   "landing.purple.roadmap.withMobile": "LLEGA CON MOBILE",
   "landing.purple.roadmap.syncTitle": "Sincronización entre dispositivos",
   "landing.purple.roadmap.syncBody":
-    "Dicta en el teléfono y encuéntralo en el escritorio. Es la única función que realmente necesita un servidor, así que será la que cobremos.",
+    "Dicta en el teléfono y encuéntralo en el escritorio. Necesita infraestructura de servidor, pero aún no se han definido precios ni suscripciones.",
   "landing.purple.roadmap.exploring": "EN EXPLORACIÓN",
   "landing.purple.roadmap.cloudTitle": "Un modelo en la nube para grabaciones difíciles",
   "landing.purple.roadmap.cloudBody":
-    "Largas, ruidosas, con varias voces a la vez. Un interruptor pago para cuando lo local no sea la herramienta correcta, apagado hasta que tú lo actives.",
-  "landing.purple.pricing.eyebrow": "PRECIO",
-  "landing.purple.pricing.title": "Gratis cuando tu propio hardware hace el trabajo.",
-  "landing.purple.pricing.local": "Local",
-  "landing.purple.pricing.free": "Gratis",
-  "landing.purple.pricing.body":
-    "Dictado local, notas de grabación, diccionario, limpieza e historial buscable sin límites. Ningún servidor cuenta tus palabras.",
-  "landing.purple.pricing.platforms": "macOS, Windows y Linux",
-  "landing.purple.pricing.futureTitle": "Lo que podría costar después",
-  "landing.purple.pricing.futureBody":
-    "Solo el trabajo que realmente necesita infraestructura fuera de tu máquina.",
-  "landing.purple.pricing.cloud": "Modelo en la nube",
-  "landing.purple.pricing.cloudDetail":
-    "Un interruptor explícito para grabaciones largas o difíciles.",
-  "landing.purple.pricing.sync": "Sincronización entre dispositivos",
-  "landing.purple.pricing.syncDetail":
-    "Será de pago cuando llegue mobile y un servidor tenga trabajo real que hacer.",
+    "Largas, ruidosas, con varias voces a la vez. Estamos explorando un modelo en la nube, sin precio ni suscripción definidos.",
+  "landing.purple.access.eyebrow": "ACCESO",
+  "landing.purple.access.title": "Looper es gratis hoy.",
+  "landing.purple.access.included": "Todo incluido",
+  "landing.purple.access.free": "Gratis",
+  "landing.purple.access.body":
+    "No necesitas suscripción, prueba, tarjeta ni licencia. El dictado, las notas de grabación, el diccionario, la limpieza y el historial buscable están abiertos.",
+  "landing.purple.access.platforms": "macOS, Windows y Linux",
+  "landing.purple.access.noPlansTitle": "No hay planes que elegir.",
+  "landing.purple.access.noPlansBody":
+    "No existe un plan de pago en esta etapa. Si eso cambia, lo comunicaremos antes de cambiar el acceso al producto.",
+  "landing.purple.access.noSubscription": "Sin suscripción",
+  "landing.purple.access.noSubscriptionDetail": "Sin cobro recurrente ni saldo de créditos.",
+  "landing.purple.access.noTrial": "Sin prueba",
+  "landing.purple.access.noTrialDetail": "Nada vence ni requiere una mejora hoy.",
   "landing.purple.final.title": "Mantén tu voz cerca. Ponla a trabajar.",
   "landing.purple.final.body":
-    "Elige la última versión preliminar para macOS o Windows. Looper verifica las actualizaciones y el firmado del sistema operativo llegará antes del lanzamiento general.",
+    "Descarga la versión preliminar más reciente para macOS o Windows. Looper es gratis hoy: no requiere suscripción, prueba ni licencia.",
   "landing.purple.footer.label": "Pie de página",
   "mobile.shell.signInFailed": "No se pudo iniciar la sesión.",
   "mobile.shell.openFailed": "No se pudo abrir Looper",

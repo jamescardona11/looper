@@ -1075,7 +1075,7 @@ export const en = {
   "landing.purple.nav.features": "Features",
   "landing.purple.nav.local": "Local model",
   "landing.purple.nav.roadmap": "Roadmap",
-  "landing.purple.nav.pricing": "Pricing",
+  "landing.purple.nav.access": "Access",
   "landing.purple.download.macos": "Download for macOS",
   "landing.purple.download.windows": "Download for Windows",
   "landing.purple.download.desktop": "View desktop downloads",
@@ -1254,28 +1254,28 @@ export const en = {
   "landing.purple.roadmap.withMobile": "ARRIVES WITH MOBILE",
   "landing.purple.roadmap.syncTitle": "Sync across your devices",
   "landing.purple.roadmap.syncBody":
-    "Dictate on your phone, find it on your desktop. This is the one feature that genuinely needs a server, so it is the one we will charge for.",
+    "Dictate on your phone, find it on your desktop. It needs server infrastructure, but pricing and subscriptions have not been defined.",
   "landing.purple.roadmap.exploring": "BEING EXPLORED",
   "landing.purple.roadmap.cloudTitle": "A cloud model for hard recordings",
   "landing.purple.roadmap.cloudBody":
-    "Long, noisy, many voices at once. A paid switch for the cases where local is not the right tool, off unless you turn it on.",
-  "landing.purple.pricing.eyebrow": "PRICING",
-  "landing.purple.pricing.title": "Free where your own hardware does the work.",
-  "landing.purple.pricing.local": "Local",
-  "landing.purple.pricing.free": "Free",
-  "landing.purple.pricing.body":
-    "Unlimited local dictation, recording notes, dictionary, cleanup and searchable history. No server is counting your words.",
-  "landing.purple.pricing.platforms": "macOS, Windows and Linux",
-  "landing.purple.pricing.futureTitle": "What may cost later",
-  "landing.purple.pricing.futureBody":
-    "Only the work that genuinely needs infrastructure beyond your machine.",
-  "landing.purple.pricing.cloud": "Cloud model",
-  "landing.purple.pricing.cloudDetail": "An explicit switch for long or difficult recordings.",
-  "landing.purple.pricing.sync": "Sync across devices",
-  "landing.purple.pricing.syncDetail": "Paid once mobile arrives and a server has real work to do.",
+    "Long, noisy, many voices at once. A cloud model is being explored, with no price or subscription defined.",
+  "landing.purple.access.eyebrow": "ACCESS",
+  "landing.purple.access.title": "Looper is free today.",
+  "landing.purple.access.included": "Everything included",
+  "landing.purple.access.free": "Free",
+  "landing.purple.access.body":
+    "No subscription, trial, credit card or license is required. Dictation, recording notes, dictionary, cleanup and searchable history are open.",
+  "landing.purple.access.platforms": "macOS, Windows and Linux",
+  "landing.purple.access.noPlansTitle": "No plans to choose.",
+  "landing.purple.access.noPlansBody":
+    "There is no paid tier at this stage. If that changes, we will communicate it before product access changes.",
+  "landing.purple.access.noSubscription": "No subscription",
+  "landing.purple.access.noSubscriptionDetail": "No recurring fee or credit balance.",
+  "landing.purple.access.noTrial": "No trial",
+  "landing.purple.access.noTrialDetail": "Nothing expires or requires an upgrade today.",
   "landing.purple.final.title": "Keep your voice close. Put it to work.",
   "landing.purple.final.body":
-    "Choose the latest preview for macOS or Windows. Updates are verified by Looper, and operating-system signing will follow before general availability.",
+    "Download the latest preview for macOS or Windows. Looper is free today: no subscription, trial or license is required.",
   "landing.purple.footer.label": "Footer",
 
   // Mobile shell and capture

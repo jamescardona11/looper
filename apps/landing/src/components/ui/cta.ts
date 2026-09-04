@@ -25,7 +25,7 @@ const interactive =
  */
 const base = `lp-cta inline-flex items-center justify-center font-medium whitespace-nowrap ${interactive}`;
 
-/** The accent button. Hero, pricing, and the closing card. */
+/** The accent button. Hero, access, and the closing card. */
 export const ctaPrimaryClass = `${base} bg-primary text-primary-foreground`;
 
 /** The black button. Header only, where the accent would compete with the wordmark. */
