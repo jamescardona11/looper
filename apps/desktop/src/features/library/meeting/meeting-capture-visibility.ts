@@ -1,7 +1,7 @@
 import type { MeetingCapturePhase } from "../../../contracts";
 
 export const meetingCaptureIsVisible = (phase: MeetingCapturePhase): boolean =>
-  phase === "recording" || phase === "finalizing" || phase === "processing";
+  phase === "recording" || phase === "finalizing";
 
 export const meetingCaptureBlocksStart = (
   phase: MeetingCapturePhase,

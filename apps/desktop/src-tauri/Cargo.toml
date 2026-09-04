@@ -1,6 +1,6 @@
 [package]
 name = "Looper"
-version = "1.0.5"
+version = "1.0.6"
 description = "Open-source voice-to-text productivity app built with Tauri"
 authors = ["Looper contributors"]
 edition = "2021"
