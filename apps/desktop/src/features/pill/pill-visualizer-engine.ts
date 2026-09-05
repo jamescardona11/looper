@@ -244,51 +244,38 @@ export function symbolPainter(
 
 type SpectrumPainterInput = {
   bins: Uint8Array;
-  elapsed: number;
   normalization: number;
   sensitivity: number;
   decay: number;
   heights: number[];
 };
 
+function spectrumSample(bins: Uint8Array, proportion: number) {
+  if (bins.length === 0) return 0;
+  const index = Math.floor(bins.length * 0.4 * proportion * proportion);
+  const neighbor = bins[index + 1];
+  return neighbor ? ((bins[index] || 0) + neighbor) / 2 : bins[index] || 0;
+}
+
 export function spectrumPainter(input: SpectrumPainterInput): FramePainter {
   return (context, width, height, grid, palette) => {
     const center = Math.floor(grid.cols / 2);
-    if (input.bins.length > 0) {
-      for (let distance = 0; distance <= center; distance += 1) {
-        const proportion = distance / center;
-        const index = Math.floor(
-          input.bins.length * 0.4 * proportion * proportion,
-        );
-        const neighbor = input.bins[index + 1];
-        const sample = neighbor
-          ? ((input.bins[index] || 0) + neighbor) / 2
-          : input.bins[index] || 0;
-        let amplitude =
-          ((sample * input.normalization) / 255) * input.sensitivity;
-        if (proportion < 0.2) amplitude *= 1.25;
-        const reduceMotion =
-          window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ??
-          false;
-        const ambient = reduceMotion
-          ? 0.1
-          : 0.08 +
-            0.09 *
-              (0.5 + 0.5 * Math.sin(input.elapsed * 0.006 + proportion * 8));
-        amplitude = Math.min(
-          1,
-          Math.max(amplitude, ambient * (1 - proportion * 0.45)),
-        );
-        const left = center - distance;
-        if (left >= 0 && left < grid.cols) {
-          const current = input.heights[left];
-          const response = amplitude > current ? 0.5 : 1 - input.decay;
-          input.heights[left] += (amplitude - current) * response;
-        }
-        const right = center + distance;
-        if (right < grid.cols && right !== left) {
-          input.heights[right] = input.heights[left];
-        }
+    for (let distance = 0; distance <= center; distance += 1) {
+      const proportion = center === 0 ? 0 : distance / center;
+      const sample = spectrumSample(input.bins, proportion);
+      let amplitude =
+        ((sample * input.normalization) / 255) * input.sensitivity;
+      if (proportion < 0.2) amplitude *= 1.25;
+      amplitude = Math.min(1, amplitude);
+      const left = center - distance;
+      if (left >= 0 && left < grid.cols) {
+        const current = input.heights[left];
+        const response = amplitude > current ? 0.5 : 1 - input.decay;
+        input.heights[left] += (amplitude - current) * response;
+      }
+      const right = center + distance;
+      if (right < grid.cols && right !== left) {
+        input.heights[right] = input.heights[left];
       }
     }
 

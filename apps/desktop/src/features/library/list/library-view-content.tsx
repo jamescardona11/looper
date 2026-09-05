@@ -25,7 +25,7 @@ import {
   useLibraryTags,
   useMeetingCapture,
   useRetryLibraryTranscription,
-  useStartMeetingCapture,
+  useStartDefaultMeetingCapture,
   useStartVoiceNoteCapture,
   useUpdateLibraryItem,
 } from "../queries";
@@ -86,7 +86,6 @@ export default function LibraryViewContent({
   });
   const [followTimestamps, setFollowTimestamps] = useState(true);
   const [youtubeImportOpen, setYoutubeImportOpen] = useState(false);
-  const [meetingModalOpen, setMeetingModalOpen] = useState(false);
   const lastFocusItemId = useRef<string | null>(null);
   const openedFocusItemId = useRef<string | null>(null);
   const focusSearchQuery = useRef<string | null>(null);
@@ -155,7 +154,7 @@ export default function LibraryViewContent({
   const exportItem = useExportLibraryItem();
   const { data: meetingCapture } = useMeetingCapture(isActive);
   const resumeCapture = useResumeCapture();
-  const startMeeting = useStartMeetingCapture();
+  const startMeeting = useStartDefaultMeetingCapture();
   const startNote = useStartVoiceNoteCapture();
 
   const invalidateTags = useCallback(
@@ -300,7 +299,14 @@ export default function LibraryViewContent({
                 meetingCaptureBlocksStart(meetingCapture.phase),
               )
             }
-            onOpenMeeting={() => setMeetingModalOpen(true)}
+            onOpenMeeting={() => {
+              void startMeeting.mutateAsync().catch((error) => {
+                void showLibraryToast(
+                  "error",
+                  error instanceof Error ? error.message : String(error),
+                ).catch(() => {});
+              });
+            }}
             meetingDisabled={Boolean(
               startNote.isPending ||
               (meetingCapture &&
@@ -372,23 +378,6 @@ export default function LibraryViewContent({
         installedModels={models.installed}
         defaultSpeechModelKey={models.detailDefault}
         defaultImportModelKey={models.importDefault}
-        meetingOpen={meetingModalOpen}
-        meetingModels={models.meeting}
-        liveMeetingModels={models.liveMeeting}
-        defaultMeetingModelKey={models.meetingDefault}
-        meetingPending={startMeeting.isPending}
-        meetingError={libraryErrorMessage(startMeeting.error)}
-        onCancelMeeting={() => {
-          if (!startMeeting.isPending) {
-            startMeeting.reset();
-            setMeetingModalOpen(false);
-          }
-        }}
-        onStartMeeting={async (options) => {
-          const result = await startMeeting.mutateAsync(options);
-          setMeetingModalOpen(false);
-          return result;
-        }}
       />
     </div>
   );

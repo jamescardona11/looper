@@ -35,6 +35,10 @@ export type AppCalendarProps = SectionProps<
   | "onCalendarMeetingAwarenessEnabledChange"
   | "microphoneMeetingAwarenessEnabled"
   | "onMicrophoneMeetingAwarenessEnabledChange"
+  | "meetingSystemAudioEnabled"
+  | "onMeetingSystemAudioEnabledChange"
+  | "meetingLiveTranscriptEnabled"
+  | "onMeetingLiveTranscriptEnabledChange"
   | "platformCapabilities"
 >;
 

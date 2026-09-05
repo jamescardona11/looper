@@ -1218,6 +1218,18 @@ impl MeetingCaptureManager {
                     ..Default::default()
                 };
                 self.set_state(app, processing.clone());
+                // La captura ya terminó: el trabajo de transcripción continúa
+                // en segundo plano, pero la ventana tiene que volver al pill
+                // de dictado inmediatamente. Mantener el rail de reunión aquí
+                // hacía que una grabación larga pareciera bloqueada y dejaba
+                // expuesto un frame nativo intermedio durante el resize.
+                if !app_state.pill().is_recording() {
+                    if let Err(error) = pill::show_idle_sticky(app) {
+                        tracing::error!(
+                            "Failed to restore Dictation after meeting capture: {error}"
+                        );
+                    }
+                }
                 Ok(processing)
             }
             Err(message) => {

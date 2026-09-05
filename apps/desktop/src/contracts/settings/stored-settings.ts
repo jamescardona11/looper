@@ -24,6 +24,8 @@ type ApplicationFlags =
   | "start_in_background"
   | "calendar_meeting_awareness_enabled"
   | "microphone_meeting_awareness_enabled"
+  | "meeting_system_audio_enabled"
+  | "meeting_live_transcript_enabled"
   | "hide_overlays_from_capture"
   | "analytics_enabled";
 

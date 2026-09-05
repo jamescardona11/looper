@@ -6,6 +6,7 @@ import { undoLastInsertion } from "../../data/capture/insertion";
 import { retryTranscription } from "../../data/transcription";
 import {
   hideToastWindow,
+  notifyToastRendererReady,
   runToastAction,
   setToastInteractive,
   subscribeToastHide,
@@ -257,6 +258,7 @@ const ToastOverlay: React.FC = () => {
   }, []);
 
   useEffect(() => {
+    let active = true;
     const showSubscription = subscribeToastShow((payload) => {
       const id = nextIdRef.current;
       nextIdRef.current += 1;
@@ -277,7 +279,18 @@ const ToastOverlay: React.FC = () => {
     const hideSubscription = subscribeToastHide(() => void closeAll());
     const recordingSubscription = subscribeRecordingStart(() => closeAll());
 
+    void Promise.all([
+      showSubscription,
+      hideSubscription,
+      recordingSubscription,
+    ])
+      .then(() => (active ? notifyToastRendererReady() : undefined))
+      .catch((error) => {
+        console.error("Failed to announce toast renderer readiness:", error);
+      });
+
     return () => {
+      active = false;
       showSubscription.then((unsubscribe) => unsubscribe());
       hideSubscription.then((unsubscribe) => unsubscribe());
       recordingSubscription.then((unsubscribe) => unsubscribe());

@@ -175,6 +175,8 @@ fn apply_product_preferences(next: &mut UserSettings, args: &UpdateSettingsArgs)
     next.calendar_meeting_awareness_enabled = args.product.calendar_meeting_awareness_enabled;
     next.microphone_meeting_awareness_enabled =
         args.product.microphone_meeting_awareness_enabled;
+    next.meeting_system_audio_enabled = args.product.meeting_system_audio_enabled;
+    next.meeting_live_transcript_enabled = args.product.meeting_live_transcript_enabled;
     next.auto_delete_target = args.product.auto_delete_target;
     next.auto_delete_duration = args.product.auto_delete_duration;
     next.audio_storage_budget_mb = args.product.audio_storage_budget_mb;

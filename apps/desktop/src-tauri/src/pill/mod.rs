@@ -56,8 +56,10 @@ const MEETING_TRANSCRIPT_WIDTH: f64 = 320.0;
 const MEETING_TRANSCRIPT_HEIGHT: f64 = 300.0;
 const MEETING_PILL_SLOT_WIDTH: f64 = 260.0;
 const MEETING_PILL_HEIGHT: f64 = 48.0;
-const MEETING_COMPACT_PILL_WIDTH: f64 = 128.0;
-const MEETING_COMPACT_PILL_HEIGHT: f64 = 36.0;
+// La variante compacta aún tiene que comunicar qué se está grabando y ofrecer
+// Stop. Por eso comparte la altura táctil del rail y no es un icono circular.
+const MEETING_COMPACT_PILL_WIDTH: f64 = 244.0;
+const MEETING_COMPACT_PILL_HEIGHT: f64 = 44.0;
 const MEETING_OVERLAY_GAP: f64 = 4.0;
 const MEETING_PILL_GUTTER: f64 = 4.0;
 const MEETING_OVERLAY_WIDTH: f64 = MEETING_PILL_SLOT_WIDTH + MEETING_PILL_GUTTER * 2.0;

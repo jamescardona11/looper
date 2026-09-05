@@ -14,7 +14,6 @@ import {
 import type {
   LibraryImportOptions,
   LibraryItem,
-  MeetingStartOptions,
   SpeechModel,
   YoutubeImportMetadata,
 } from "../../../../contracts";
@@ -62,7 +61,7 @@ vi.mock("../../queries", () => ({
   useExportLibraryItem: () => ({ mutateAsync: mocks.exportItem }),
   useMeetingCapture: (...args: unknown[]) => mocks.useMeetingCapture(...args),
   useResumeCapture: () => ({ mutate: mocks.resumeCapture }),
-  useStartMeetingCapture: () => ({
+  useStartDefaultMeetingCapture: () => ({
     mutateAsync: mocks.startMeeting,
     reset: mocks.resetMeeting,
     isPending: mocks.meetingPending,
@@ -238,27 +237,6 @@ vi.mock("../../import/LibraryYoutubeImportModal", () => ({
         }
       >
         Confirm YouTube
-      </button>
-    </div>
-  ),
-}));
-
-vi.mock("../../meeting/MeetingStartModal", () => ({
-  default: (props: {
-    onCancel: () => void;
-    onConfirm: (options: MeetingStartOptions) => void;
-  }) => (
-    <div data-testid="meeting-modal">
-      <button onClick={props.onCancel}>Cancel meeting</button>
-      <button
-        onClick={() =>
-          props.onConfirm({
-            model_key: "configured",
-            system_audio_enabled: true,
-          })
-        }
-      >
-        Confirm meeting
       </button>
     </div>
   ),
@@ -633,18 +611,17 @@ describe("LibraryView contract", () => {
     expect(mocks.openDialog).not.toHaveBeenCalled();
   });
 
-  test("starts a personal note directly and keeps meeting options explicit", async () => {
+  test("starts a personal note and a meeting directly", async () => {
     renderLibrary();
 
     fireEvent.click(screen.getByRole("button", { name: "NOTE-UNIQUE" }));
     await waitFor(() => expect(mocks.startNote).toHaveBeenCalledOnce());
-    expect(screen.queryByTestId("meeting-modal")).toBeNull();
 
     fireEvent.click(screen.getByRole("button", { name: "MEETING-UNIQUE" }));
-    expect(screen.getByTestId("meeting-modal")).toBeTruthy();
+    await waitFor(() => expect(mocks.startMeeting).toHaveBeenCalledOnce());
   });
 
-  test("preserves YouTube and meeting modal lifecycles", async () => {
+  test("preserves the YouTube import lifecycle", async () => {
     renderLibrary();
     fireEvent.click(screen.getByRole("button", { name: "YOUTUBE-UNIQUE" }));
     expect(screen.getByTestId("youtube-import-modal")).toBeTruthy();
@@ -652,14 +629,6 @@ describe("LibraryView contract", () => {
     await waitFor(() => expect(mocks.createYoutube).toHaveBeenCalledOnce());
     await waitFor(() =>
       expect(screen.queryByTestId("youtube-import-modal")).toBeNull(),
-    );
-
-    fireEvent.click(screen.getByRole("button", { name: "MEETING-UNIQUE" }));
-    expect(screen.getByTestId("meeting-modal")).toBeTruthy();
-    fireEvent.click(screen.getByRole("button", { name: "Confirm meeting" }));
-    await waitFor(() => expect(mocks.startMeeting).toHaveBeenCalledOnce());
-    await waitFor(() =>
-      expect(screen.queryByTestId("meeting-modal")).toBeNull(),
     );
   });
 });

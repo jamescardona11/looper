@@ -627,8 +627,12 @@ function HomeWorkspace({
     <main className="ui-canvas flex flex-1 flex-col min-w-0 overflow-hidden relative will-change-contents">
       <header
         className="pointer-events-none absolute inset-x-0 top-0 z-10 flex h-[84px] w-full shrink-0 items-center justify-between px-7"
-        data-tauri-drag-region
       >
+        <div
+          aria-hidden="true"
+          className="pointer-events-auto absolute inset-x-0 top-0 h-9"
+          data-tauri-drag-region
+        />
         <span aria-hidden="true" />
         {showGlobalAskMemory ? (
           <button

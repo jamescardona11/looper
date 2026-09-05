@@ -90,6 +90,10 @@ pub(crate) struct ProductInput {
     pub calendar_meeting_awareness_enabled: bool,
     #[serde(default = "crate::settings::default_true")]
     pub microphone_meeting_awareness_enabled: bool,
+    #[serde(default = "crate::settings::default_true")]
+    pub meeting_system_audio_enabled: bool,
+    #[serde(default = "crate::settings::default_true")]
+    pub meeting_live_transcript_enabled: bool,
     pub auto_delete_target: AutoDeleteTarget,
     pub auto_delete_duration: RecordingPrunePolicy,
     #[serde(default)]
@@ -373,6 +377,8 @@ mod tests {
                 start_in_background: true,
                 calendar_meeting_awareness_enabled: false,
                 microphone_meeting_awareness_enabled: true,
+                meeting_system_audio_enabled: true,
+                meeting_live_transcript_enabled: true,
                 auto_delete_target: AutoDeleteTarget::Transcripts,
                 auto_delete_duration: RecordingPrunePolicy::Never,
                 audio_storage_budget_mb: 0,

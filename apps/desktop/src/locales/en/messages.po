@@ -15,6 +15,11 @@ msgstr ""
 
 #. js-lingui-explicit-id
 #: src/__tests__/i18n.test.ts
+msgid "meeting.capture.shortcut_unavailable"
+msgstr "Fn blocked"
+
+#. js-lingui-explicit-id
+#: src/__tests__/i18n.test.ts
 msgid "meeting.capture.shortcut_enable_hint"
 msgstr "Accessibility needed"
 
@@ -992,6 +997,96 @@ msgstr "Accessibility needed"
 #~ msgstr "Core dictation is free: local transcription, dictionary, replacements, and history. There are no per-minute fees or subscriptions for that. Library, AI Cleanup, Edit Mode, personalization with an LLM, and the CLI are part of Looper Personal. You get a 14-day trial first; after that, activate a Personal license (a one-time purchase) or a Commercial license (billed yearly) in Settings → Account."
 
 #. js-lingui-explicit-id
+#: src/features/library/meeting/MeetingStartModal.tsx
+#~ msgid "meeting.start.description"
+#~ msgstr "Capture your microphone and the audio playing on this computer."
+
+#. js-lingui-explicit-id
+#: src/features/library/meeting/MeetingStartModal.tsx
+#~ msgid "meeting.start.close"
+#~ msgstr "Close"
+
+#. js-lingui-explicit-id
+#: src/features/library/meeting/MeetingStartModal.tsx
+#~ msgid "meeting.start.system_audio_help"
+#~ msgstr "Include the people and media you hear through this computer."
+
+#. js-lingui-explicit-id
+#: src/features/library/meeting/MeetingStartModal.tsx
+#~ msgid "meeting.start.no_models"
+#~ msgstr "Configure Cloud transcription or install a local model before recording."
+
+#. js-lingui-explicit-id
+#: src/features/library/meeting/MeetingStartModal.tsx
+#~ msgid "meeting.start.live_transcript"
+#~ msgstr "Live transcript"
+
+#. js-lingui-explicit-id
+#: src/features/library/meeting/MeetingStartModal.tsx
+#~ msgid "meeting.start.permission"
+#~ msgstr "Looper will request microphone and system audio permission when needed."
+
+#. js-lingui-explicit-id
+#: src/features/library/meeting/MeetingStartModal.tsx
+#~ msgid "meeting.start.mobile_companion"
+#~ msgstr "Mobile companion"
+
+#. js-lingui-explicit-id
+#: src/features/library/meeting/MeetingStartModal.tsx
+#~ msgid "meeting.start.open_microphone_settings"
+#~ msgstr "Open Microphone Settings"
+
+#. js-lingui-explicit-id
+#: src/features/library/meeting/MeetingStartModal.tsx
+#~ msgid "meeting.start.open_system_audio_settings"
+#~ msgstr "Open System Settings"
+
+#. js-lingui-explicit-id
+#: src/features/library/meeting/MeetingCaptureOverlay.tsx
+#~ msgid "meeting.capture.rail_title"
+#~ msgstr "Recording"
+
+#. js-lingui-explicit-id
+#: src/features/library/meeting/MeetingStartModal.tsx
+#~ msgid "meeting.start.remote"
+#~ msgstr "Remote provider"
+
+#. js-lingui-explicit-id
+#: src/features/library/meeting/MeetingCaptureOverlay.tsx
+#~ msgid "meeting.capture.saving"
+#~ msgstr "Saving..."
+
+#. js-lingui-explicit-id
+#: src/features/library/meeting/MeetingStartModal.tsx
+#~ msgid "meeting.start.mobile_companion_help"
+#~ msgstr "Share transcript text with your signed-in mobile devices. Audio stays on this computer."
+
+#. js-lingui-explicit-id
+#: src/features/library/meeting/MeetingStartModal.tsx
+#~ msgid "meeting.start.live_transcript_help"
+#~ msgstr "Show separate local captions for you and everyone else."
+
+#. js-lingui-explicit-id
+#: src/features/library/meeting/MeetingStartModal.tsx
+#~ msgid "meeting.start.confirm"
+#~ msgstr "Start recording"
+
+#. js-lingui-explicit-id
+#: src/features/library/meeting/MeetingStartModal.tsx
+#~ msgid "meeting.start.starting"
+#~ msgstr "Starting..."
+
+#. js-lingui-explicit-id
+#: src/features/library/meeting/MeetingStartModal.tsx
+#~ msgid "meeting.start.system_audio"
+#~ msgstr "System audio"
+
+#. js-lingui-explicit-id
+#: src/features/library/meeting/MeetingStartModal.tsx
+#~ msgid "meeting.start.model"
+#~ msgstr "Transcription model"
+
+#. js-lingui-explicit-id
 #: src/features/settings/providers/LanguageModelPanel.tsx
 msgid "settings.language_model.api_key.optional_hint"
 msgstr "(if required)"
@@ -1749,12 +1844,6 @@ msgid "library.retranscribe.cancel"
 msgstr "Cancel"
 
 #. js-lingui-explicit-id
-#: src/features/library/import/library-youtube-actions.tsx
-#: src/features/library/meeting/MeetingStartModal.tsx
-msgid "common.cancel"
-msgstr "Cancel"
-
-#. js-lingui-explicit-id
 #: src/features/library/list/library-card-actions.tsx
 msgid "library.card.cancel"
 msgstr "Cancel"
@@ -1762,6 +1851,11 @@ msgstr "Cancel"
 #. js-lingui-explicit-id
 #: src/features/library/import/library-import-file-actions.tsx
 msgid "library.import.cancel"
+msgstr "Cancel"
+
+#. js-lingui-explicit-id
+#: src/features/library/import/library-youtube-actions.tsx
+msgid "common.cancel"
 msgstr "Cancel"
 
 #. js-lingui-explicit-id
@@ -1790,11 +1884,6 @@ msgstr "Cancelled"
 #: src/features/settings/models/ModelDownloadActivityBar.tsx
 msgid "models.download_activity.cancelled"
 msgstr "Cancelled"
-
-#. js-lingui-explicit-id
-#: src/features/library/meeting/MeetingStartModal.tsx
-msgid "meeting.start.description"
-msgstr "Capture your microphone and the audio playing on this computer."
 
 #. js-lingui-explicit-id
 #: src/features/library/meeting/CapturedMeetingNotes.tsx
@@ -1883,6 +1972,11 @@ msgid "onboarding.model.subtitle"
 msgstr "Bigger models are more accurate. Smaller ones are faster."
 
 #. js-lingui-explicit-id
+#: src/features/settings/app/AppCalendarSection.tsx
+msgid "settings.app.meeting_defaults.model"
+msgstr "Choose the transcription model in Processing & Models."
+
+#. js-lingui-explicit-id
 #: src/features/personalization/components/ModeRulesSection.tsx
 msgid "personalization.smart_modes.description"
 msgstr "Trigger a default Selection Mode preset (and optional auto-send) by app bundle ID or website - you can still pick a different preset manually each time."
@@ -1961,11 +2055,6 @@ msgstr "Close"
 #. js-lingui-explicit-id
 #: src/features/library/transcript/library-retranscribe-header.tsx
 msgid "library.retranscribe.close"
-msgstr "Close"
-
-#. js-lingui-explicit-id
-#: src/features/library/meeting/MeetingStartModal.tsx
-msgid "meeting.start.close"
 msgstr "Close"
 
 #. js-lingui-explicit-id
@@ -2966,20 +3055,25 @@ msgid "onboarding.model.loading"
 msgstr "Finding a model for your device"
 
 #. js-lingui-explicit-id
+#: src/features/library/meeting/MeetingCaptureOverlay.tsx
+msgid "meeting.capture.finalizing"
+msgstr "Finishing…"
+
+#. js-lingui-explicit-id
 #: src/features/onboarding/steps/ReadyStep.tsx
 msgid "onboarding.done.verify.field"
 msgstr "First dictation test field"
 
 #. js-lingui-explicit-id
+#: src/__tests__/i18n.test.ts
+#: src/features/library/meeting/MeetingCaptureOverlay.tsx
+msgid "meeting.capture.shortcut_enable"
+msgstr "Why?"
+
+#. js-lingui-explicit-id
 #: src/features/voice/components/VoiceView.tsx
 msgid "voice.step.automations"
 msgstr "Flows"
-
-#. js-lingui-explicit-id
-#: src/__tests__/i18n.test.ts
-#: src/features/library/meeting/MeetingCaptureOverlay.tsx
-msgid "meeting.capture.shortcut_unavailable"
-msgstr "Fn blocked"
 
 #. js-lingui-explicit-id
 #: src/features/feature-lab/components/FeatureLabView.tsx
@@ -3217,8 +3311,8 @@ msgid "model_picker.ane.toggle"
 msgstr "Include the Apple Neural Engine encoder"
 
 #. js-lingui-explicit-id
-#: src/features/library/meeting/MeetingStartModal.tsx
-msgid "meeting.start.system_audio_help"
+#: src/features/settings/app/AppCalendarSection.tsx
+msgid "settings.app.meeting_system_audio.body"
 msgstr "Include the people and media you hear through this computer."
 
 #. js-lingui-explicit-id
@@ -3300,11 +3394,6 @@ msgstr "Insights"
 #: src/app/home/home-presentation.tsx
 msgid "home.sidebar.insights"
 msgstr "Insights"
-
-#. js-lingui-explicit-id
-#: src/features/library/meeting/MeetingStartModal.tsx
-msgid "meeting.start.no_models"
-msgstr "Configure Cloud transcription or install a local model before recording."
 
 #. js-lingui-explicit-id
 #: src/features/settings/about/AboutTab.tsx
@@ -3483,8 +3572,8 @@ msgid "settings.models.capability.streaming"
 msgstr "Live streaming"
 
 #. js-lingui-explicit-id
-#: src/features/library/meeting/MeetingStartModal.tsx
-msgid "meeting.start.live_transcript"
+#: src/features/settings/app/AppCalendarSection.tsx
+msgid "settings.app.meeting_live_transcript.label"
 msgstr "Live transcript"
 
 #. js-lingui-explicit-id
@@ -3638,11 +3727,6 @@ msgid "onboarding.permissions.subtitle"
 msgstr "Looper needs these to hear you and type for you."
 
 #. js-lingui-explicit-id
-#: src/features/library/meeting/MeetingStartModal.tsx
-msgid "meeting.start.permission"
-msgstr "Looper will request microphone and system audio permission when needed."
-
-#. js-lingui-explicit-id
 #: src/features/settings/account/AccountView.tsx
 msgid "settings.account.activate.placeholder"
 msgstr "LOOPER_…"
@@ -3703,6 +3787,11 @@ msgid "meeting.capture.note"
 msgstr "Marking moment"
 
 #. js-lingui-explicit-id
+#: src/features/library/meeting/MeetingCaptureOverlay.tsx
+msgid "meeting.capture.label"
+msgstr "Meeting"
+
+#. js-lingui-explicit-id
 #: src/features/settings/app/AppCalendarSection.tsx
 msgid "settings.app.meeting_awareness"
 msgstr "Calendar meetings"
@@ -3716,6 +3805,11 @@ msgstr "Meeting notifications are currently available on macOS."
 #: src/features/library/meeting/MeetingDocumentDock.tsx
 msgid "meeting.detail.ai_unavailable"
 msgstr "Meeting intelligence unavailable"
+
+#. js-lingui-explicit-id
+#: src/features/settings/app/AppCalendarSection.tsx
+msgid "settings.app.meeting_defaults"
+msgstr "Meeting recording"
 
 #. js-lingui-explicit-id
 #: src/features/library/meeting/MeetingCaptureOverlay.tsx
@@ -3787,11 +3881,6 @@ msgstr "Mirror dictations and recordings into an Obsidian-compatible folder."
 #: src/features/settings/app/AppStorageSection.tsx
 msgid "settings.app.markdown_mirror.label"
 msgstr "Mirror new content to Markdown"
-
-#. js-lingui-explicit-id
-#: src/features/library/meeting/MeetingStartModal.tsx
-msgid "meeting.start.mobile_companion"
-msgstr "Mobile companion"
 
 #. js-lingui-explicit-id
 #: src/features/feature-lab/components/FeatureLabView.tsx
@@ -4279,11 +4368,6 @@ msgid "feature_lab.meetings.action"
 msgstr "Open meetings"
 
 #. js-lingui-explicit-id
-#: src/features/library/meeting/MeetingStartModal.tsx
-msgid "meeting.start.open_microphone_settings"
-msgstr "Open Microphone Settings"
-
-#. js-lingui-explicit-id
 #: src/features/feature-lab/components/FeatureLabView.tsx
 msgid "feature_lab.markdown.action"
 msgstr "Open mirror setting"
@@ -4302,11 +4386,6 @@ msgstr "Open Settings"
 #: src/features/feature-lab/components/FeatureLabView.tsx
 msgid "feature_lab.snippets.action"
 msgstr "Open snippets"
-
-#. js-lingui-explicit-id
-#: src/features/library/meeting/MeetingStartModal.tsx
-msgid "meeting.start.open_system_audio_settings"
-msgstr "Open System Settings"
 
 #. js-lingui-explicit-id
 #: src/features/feature-lab/components/FeatureLabView.tsx
@@ -4601,7 +4680,6 @@ msgstr "Record a meeting, watch live text, and mark important moments."
 
 #. js-lingui-explicit-id
 #: src/features/library/list/library-view-toolbar.tsx
-#: src/features/library/meeting/MeetingStartModal.tsx
 msgid "meeting.start.title"
 msgstr "Record meeting"
 
@@ -4609,11 +4687,6 @@ msgstr "Record meeting"
 #: src/features/library/meeting/HomeMeetingActivity.tsx
 msgid "home.captures.today"
 msgstr "Recorded today"
-
-#. js-lingui-explicit-id
-#: src/features/library/meeting/MeetingCaptureOverlay.tsx
-msgid "meeting.capture.rail_title"
-msgstr "Recording"
 
 #. js-lingui-explicit-id
 #: src/features/library/meeting/MeetingReviewPanel.tsx
@@ -4670,11 +4743,6 @@ msgstr "Remote processing · {shortcut}"
 #. js-lingui-explicit-id
 #: src/features/library/transcript/LibraryRetranscribeModal.tsx
 msgid "library.retranscribe.remote_provider"
-msgstr "Remote provider"
-
-#. js-lingui-explicit-id
-#: src/features/library/meeting/MeetingStartModal.tsx
-msgid "meeting.start.remote"
 msgstr "Remote provider"
 
 #. js-lingui-explicit-id
@@ -5063,11 +5131,6 @@ msgid "onboarding.done.saving"
 msgstr "Saving..."
 
 #. js-lingui-explicit-id
-#: src/features/library/meeting/MeetingCaptureOverlay.tsx
-msgid "meeting.capture.saving"
-msgstr "Saving..."
-
-#. js-lingui-explicit-id
 #: src/features/library/meeting/MeetingDetail.tsx
 msgid "meeting.detail.saving_notes"
 msgstr "Saving..."
@@ -5324,11 +5387,6 @@ msgid "voice.title"
 msgstr "Shape how Looper writes."
 
 #. js-lingui-explicit-id
-#: src/features/library/meeting/MeetingStartModal.tsx
-msgid "meeting.start.mobile_companion_help"
-msgstr "Share transcript text with your signed-in mobile devices. Audio stays on this computer."
-
-#. js-lingui-explicit-id
 #: src/features/settings/general/GeneralShortcutSection.tsx
 msgid "settings.general.shortcuts"
 msgstr "Shortcuts"
@@ -5344,6 +5402,11 @@ msgid "transcriptions.item.show_less"
 msgstr "Show less"
 
 #. js-lingui-explicit-id
+#: src/features/settings/app/AppCalendarSection.tsx
+msgid "settings.app.meeting_live_transcript.body"
+msgstr "Show live captions when a compatible local model is installed."
+
+#. js-lingui-explicit-id
 #: src/features/transcriptions/components/transcription-item-content.tsx
 msgid "transcriptions.item.show_more"
 msgstr "Show more"
@@ -5357,11 +5420,6 @@ msgstr "Show personalization snippet examples"
 #: src/features/settings/shortcuts/ShortcutBindingList.tsx
 msgid "settings.general.shortcuts.show_shortcuts"
 msgstr "Show shortcuts"
-
-#. js-lingui-explicit-id
-#: src/features/library/meeting/MeetingStartModal.tsx
-msgid "meeting.start.live_transcript_help"
-msgstr "Show separate local captions for you and everyone else."
 
 #. js-lingui-explicit-id
 #: src/features/library/transcript/library-retranscribe-options.tsx
@@ -5525,24 +5583,19 @@ msgid "onboarding.done.auto_launch.body"
 msgstr "Start Looper when you log in."
 
 #. js-lingui-explicit-id
-#: src/features/library/meeting/MeetingStartModal.tsx
-msgid "meeting.start.confirm"
-msgstr "Start recording"
-
-#. js-lingui-explicit-id
 #: src/features/library/meeting/MeetingAwarenessOverlay.tsx
 msgid "meeting.awareness.start_detected_call"
 msgstr "Start recording this call"
 
 #. js-lingui-explicit-id
-#: src/features/library/meeting/MeetingStartModal.tsx
-msgid "meeting.start.starting"
-msgstr "Starting..."
-
-#. js-lingui-explicit-id
 #: src/features/library/import/library-import-file-actions.tsx
 msgid "library.import.importing"
 msgstr "Importing..."
+
+#. js-lingui-explicit-id
+#: src/features/library/meeting/MeetingCaptureOverlay.tsx
+msgid "meeting.capture.starting"
+msgstr "Starting…"
 
 #. js-lingui-explicit-id
 #: src/features/pill/pill-preflight.tsx
@@ -5677,8 +5730,8 @@ msgid "settings.app.language.system"
 msgstr "System"
 
 #. js-lingui-explicit-id
-#: src/features/library/meeting/MeetingStartModal.tsx
-msgid "meeting.start.system_audio"
+#: src/features/settings/app/AppCalendarSection.tsx
+msgid "settings.app.meeting_system_audio.label"
 msgstr "System audio"
 
 #. js-lingui-explicit-id
@@ -5868,6 +5921,11 @@ msgid "settings.app.auto_launch.toggle_aria"
 msgstr "Toggle launch at login"
 
 #. js-lingui-explicit-id
+#: src/features/settings/app/AppCalendarSection.tsx
+msgid "settings.app.meeting_live_transcript.toggle_aria"
+msgstr "Toggle live transcript for new meetings"
+
+#. js-lingui-explicit-id
 #: src/features/settings/app/AppStorageSection.tsx
 msgid "settings.app.markdown_mirror.toggle_aria"
 msgstr "Toggle Markdown archive"
@@ -5901,6 +5959,11 @@ msgstr "Toggle Preview Before Inserting"
 #: src/features/settings/app/app-launch-setting.tsx
 msgid "settings.app.start_in_background.toggle_aria"
 msgstr "Toggle start in background"
+
+#. js-lingui-explicit-id
+#: src/features/settings/app/AppCalendarSection.tsx
+msgid "settings.app.meeting_system_audio.toggle_aria"
+msgstr "Toggle system audio for new meetings"
 
 #. js-lingui-explicit-id
 #: src/features/settings/app/AppPrivacySection.tsx
@@ -5983,11 +6046,6 @@ msgstr "Transcript will appear here."
 #: src/features/transcriptions/components/TranscriptionItem.tsx
 msgid "transcriptions.item.error.default"
 msgstr "Transcription failed"
-
-#. js-lingui-explicit-id
-#: src/features/library/meeting/MeetingStartModal.tsx
-msgid "meeting.start.model"
-msgstr "Transcription model"
 
 #. js-lingui-explicit-id
 #: src/features/import/components/import-step-categories.tsx
@@ -6373,12 +6431,6 @@ msgstr "Where it applies"
 #: src/features/onboarding/steps/ModeStep.tsx
 msgid "onboarding.mode.title"
 msgstr "Where should Looper process your voice?"
-
-#. js-lingui-explicit-id
-#: src/__tests__/i18n.test.ts
-#: src/features/library/meeting/MeetingCaptureOverlay.tsx
-msgid "meeting.capture.shortcut_enable"
-msgstr "Why?"
 
 #. js-lingui-explicit-id
 #. placeholder {0}: personality.name

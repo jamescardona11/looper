@@ -17,6 +17,7 @@ const mocks = vi.hoisted(() => ({
   listeners: new Map<string, (event: { payload: ToastPayload }) => void>(),
   invoke: vi.fn(() => Promise.resolve()),
   hide: vi.fn(() => Promise.resolve()),
+  rendererReady: vi.fn(() => Promise.resolve()),
 }));
 
 vi.mock("../../../data/capture/toast", () => ({
@@ -30,6 +31,7 @@ vi.mock("../../../data/capture/toast", () => ({
   }),
   setToastInteractive: mocks.invoke,
   hideToastWindow: mocks.hide,
+  notifyToastRendererReady: mocks.rendererReady,
   runToastAction: mocks.invoke,
 }));
 vi.mock("../../../data/capture/audio", () => ({
@@ -64,6 +66,7 @@ describe("ToastOverlay", () => {
     mocks.listeners.clear();
     mocks.invoke.mockClear();
     mocks.hide.mockClear();
+    mocks.rendererReady.mockClear();
   });
 
   afterEach(() => {
@@ -93,6 +96,14 @@ describe("ToastOverlay", () => {
       screen.getByText("No words detected. Recording deleted.").isConnected,
     ).toBe(true);
     expect(screen.getAllByRole("status")).toHaveLength(1);
+  });
+
+  test("marks the renderer ready only after every toast listener is installed", async () => {
+    await renderOverlay();
+
+    expect(mocks.listeners.has("toast:show")).toBe(true);
+    expect(mocks.listeners.has("toast:hide")).toBe(true);
+    expect(mocks.rendererReady).toHaveBeenCalledOnce();
   });
 
   test("uses alert only for errors and status for other notifications", async () => {
