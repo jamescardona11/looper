@@ -3,6 +3,7 @@ import { createRoot } from "react-dom/client";
 import { LandingV2 } from "./landing-v2";
 import "../styles/index.css";
 import "./v2.css";
+import "./recovered-sections.css";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>

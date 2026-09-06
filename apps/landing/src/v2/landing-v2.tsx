@@ -2,14 +2,23 @@ import { useRef } from "react";
 import meetingPreview from "../../../../assets/product/desktop-note-detail.png";
 import { WaveformMark } from "../components/ui/icons";
 import { VoiceDemo } from "./voice-demo";
+import { MoreFeatures, MobilePreview } from "./product-sections";
+import { ComparisonV2 } from "./comparison-v2";
+import { ComingNext, PricingV2 } from "./availability-sections";
 
 const repositoryUrl = "https://github.com/jamescardona11/looper";
 const navLinks = [
   { href: "#demo", label: "Try the demo" },
-  { href: "#meetings", label: "Meetings" },
-  { href: "#local", label: "Your data" },
+  { href: "#mobile", label: "Mobile" },
+  { href: "#compare", label: "Compare" },
+  { href: "#pricing", label: "Pricing" },
 ];
-const mobileNavLinks = [...navLinks, { href: "#get-looper", label: "Get Looper" }];
+const mobileNavLinks = [
+  ...navLinks,
+  { href: "#features", label: "Features" },
+  { href: "#coming", label: "Coming next" },
+  { href: "#get-looper", label: "Get Looper" },
+];
 
 function Header() {
   const menuRef = useRef<HTMLDetailsElement>(null);
@@ -93,7 +102,7 @@ export function LandingV2() {
           <div className="v2-compatibility">
             <span>AT HOME ON YOUR DESKTOP</span>
             <p>
-              macOS <span>/</span> Windows <span>/</span> Linux
+              macOS <span>/</span> Windows
             </p>
             <span>BUILT AROUND THE WAY YOU WORK</span>
           </div>
@@ -267,6 +276,12 @@ export function LandingV2() {
           </div>
         </section>
 
+        <MoreFeatures />
+        <MobilePreview />
+        <ComparisonV2 />
+        <ComingNext />
+        <PricingV2 />
+
         <section
           className="v2-closing v2-container"
           id="get-looper"
@@ -298,6 +313,8 @@ export function LandingV2() {
         </a>
         <p>A little more room to think.</p>
         <nav aria-label="Footer">
+          <a href="#coming">Coming next</a>
+          <a href="#local">Your data</a>
           <a href="/">Compare with V1</a>
           <a href={repositoryUrl}>
             GitHub <span aria-hidden="true">↗</span>
