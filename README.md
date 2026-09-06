@@ -62,12 +62,14 @@ from, so the useful output never replaces the original.
 Mobile covers the same lifecycle at phone scale: dictate, follow a live
 recording, and return to a structured meeting note.
 
-| Dictation | Live capture | Meeting note |
+| Home | Capture options | Meeting note |
 | --- | --- | --- |
-| ![Looper mobile dictation history and weekly local activity](assets/product/mobile-dictation.png) | ![Looper mobile live meeting capture with transcript and recording controls](assets/product/mobile-capture.png) | ![Looper mobile meeting note with summary, actions, moments, and source audio](assets/product/mobile-meeting.png) |
+| ![Looper mobile home with weekly activity and recent recordings](assets/product/mobile-dictation.png) | ![Looper mobile capture options for a meeting or voice note](assets/product/mobile-capture.png) | ![Looper mobile meeting note with summary, decisions, pending tasks, and transcript access](assets/product/mobile-meeting.png) |
 
-_These previews are rendered from the maintained Desktop and Mobile design
-artifacts. Availability can vary by platform and release._
+_These mobile screenshots come from the real Expo Release app with sample data,
+captured through Goldie and integrated on September 2, 2026 (commit `827d65d`).
+The Desktop previews above remain design artifacts. Availability can vary by
+platform and release._
 
 ### Repository surfaces
 
