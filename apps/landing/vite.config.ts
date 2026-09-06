@@ -19,6 +19,7 @@ export default defineConfig({
       input: {
         main: path.resolve(__dirname, "index.html"),
         v2: path.resolve(__dirname, "v2/index.html"),
+        v3: path.resolve(__dirname, "v3/index.html"),
       },
     },
   },
