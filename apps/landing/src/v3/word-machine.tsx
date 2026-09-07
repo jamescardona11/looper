@@ -102,12 +102,15 @@ export function WordMachine() {
         <div>
           <button
             type="button"
+            className="v3-fn-replay"
+            aria-label="Replay transformation"
             onClick={() => {
               setReplay(replay + 1);
               setOriginal(false);
             }}
           >
-            Replay transformation <span aria-hidden="true">↻</span>
+            <kbd className="v3-fn-key">fn</kbd> Replay transformation{" "}
+            <span aria-hidden="true">↻</span>
           </button>
           <button type="button" aria-pressed={original} onClick={() => setOriginal(!original)}>
             {original ? "Show cleaned text" : "See original"}

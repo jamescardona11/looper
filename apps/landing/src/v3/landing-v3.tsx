@@ -3,6 +3,7 @@ import { ComparisonV2 } from "../v2/comparison-v2";
 import { MobilePreview, DownloadSection, FrequentlyAsked } from "./launch-sections";
 import { LocalChoice } from "./local-choice";
 import { FeatureStudio } from "./feature-studio";
+import { DesktopPreview } from "./desktop-preview";
 import { WordMachine } from "./word-machine";
 import { revealWhenVisible } from "./reveal";
 
@@ -109,7 +110,12 @@ export function LandingV3() {
             <p className="v3-orbit-caption">YOUR VOICE. A LITTLE MORE POSSIBILITY.</p>
           </div>
           <div className="v3-hero-bottom">
-            <span>Made for the way your mind moves.</span>
+            <a className="v3-shortcut-intro" href="#demo">
+              <kbd>fn</kbd>
+              <span>
+                Hold. Speak. Release.<small>On Mac · Your shortcut, your flow.</small>
+              </span>
+            </a>
             <a href="#demo">
               Take it for a spin <span aria-hidden="true">↓</span>
             </a>
@@ -125,6 +131,7 @@ export function LandingV3() {
           </div>
         </div>
         <WordMachine />
+        <DesktopPreview />
         <FeatureStudio />
         <section className="v3-memory v3-wrap" aria-labelledby="memory-title">
           <h2 id="memory-title" ref={revealWhenVisible}>
