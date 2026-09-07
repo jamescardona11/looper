@@ -93,7 +93,9 @@ function installSettingsNavigation(
     ),
     retainSubscription(
       scope,
-      subscribeNavigateHistory(() => dispatch({ type: "return-home" })),
+      subscribeNavigateHistory(() =>
+        dispatch({ type: "activate-view", view: "history" }),
+      ),
     ),
     retainSubscription(
       scope,
@@ -247,13 +249,11 @@ function editableSelectionTarget(element: Element | null): boolean {
 
 function installKeyboardShortcuts(
   dispatch: Dispatch<HomeAction>,
-  licensed: boolean,
 ): () => void {
   const onKeyDown = (event: KeyboardEvent) => {
     const modifierPressed = event.metaKey || event.ctrlKey;
     const pressedKey = event.key.toLocaleLowerCase();
     if (modifierPressed && pressedKey === "k") {
-      if (!licensed) return;
       event.preventDefault();
       dispatch({ type: "open-memory-shortcut" });
       return;
@@ -289,13 +289,9 @@ export function useHomeNativeEventBridge(dispatch: Dispatch<HomeAction>): void {
 
 type HomeKeyboardBridgeProps = {
   dispatch: Dispatch<HomeAction>;
-  licensed: boolean;
 };
 
-export function HomeKeyboardBridge({
-  dispatch,
-  licensed,
-}: HomeKeyboardBridgeProps) {
-  useMountEffect(() => installKeyboardShortcuts(dispatch, licensed));
+export function HomeKeyboardBridge({ dispatch }: HomeKeyboardBridgeProps) {
+  useMountEffect(() => installKeyboardShortcuts(dispatch));
   return null;
 }

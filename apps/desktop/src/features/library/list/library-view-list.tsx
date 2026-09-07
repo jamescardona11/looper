@@ -5,6 +5,7 @@ import Shimmer from "../../../shared/ui/Shimmer";
 import type { LibraryItem } from "../../../contracts";
 import LibraryCard from "./LibraryCard";
 import type { LibraryInboxGroup } from "./library-inbox-groups";
+import type { LibraryStatusChoice } from "./library-view-model";
 
 type NameEditor = {
   id: string | null;
@@ -36,6 +37,8 @@ type LibraryItemActions = {
 type LibraryViewListProps = {
   items: LibraryItem[];
   groups: LibraryInboxGroup[];
+  status: "all" | LibraryStatusChoice;
+  onStatusChange: (choice: "all" | LibraryStatusChoice) => void;
   loading: boolean;
   fetchingNextPage: boolean;
   hasNextPage: boolean;
@@ -52,10 +55,14 @@ export function LibraryViewList(props: LibraryViewListProps) {
   const { t } = useLingui();
   const empty = props.items.length === 0;
   return (
-    <div className="flex-1 min-h-0 overflow-y-scroll overflow-x-hidden custom-scrollbar scrollbar-gutter pb-6 pr-3 pt-1">
-      <div key="library-list" className="flex flex-col gap-6 w-full">
-        <div className="mx-auto flex w-full max-w-6xl min-w-0 flex-col gap-6">
-          <div className="flex min-w-0 flex-col gap-6">
+    <div className="flex-1 min-h-0 overflow-y-scroll overflow-x-hidden custom-scrollbar scrollbar-gutter pb-6 pr-3 pt-2">
+      <div key="library-list" className="flex w-full flex-col gap-4">
+        <div className="mx-auto flex w-full max-w-[1040px] min-w-0 flex-col gap-4">
+          <div className="flex min-w-0 flex-col gap-4">
+            <LibraryInboxHeader
+              status={props.status}
+              onStatusChange={props.onStatusChange}
+            />
             {props.loading && empty ? <LibraryLoadingRows /> : null}
             {!props.loading && empty ? (
               <button
@@ -87,10 +94,11 @@ export function LibraryViewList(props: LibraryViewListProps) {
               </button>
             ) : null}
 
-            {props.groups.map((group) => (
+            {props.groups.map((group, index) => (
               <LibraryGroup
                 key={group.key}
                 group={group}
+                primary={index === 0}
                 nameEditor={props.nameEditor}
                 tagEditor={props.tagEditor}
                 actions={props.actions}
@@ -98,21 +106,6 @@ export function LibraryViewList(props: LibraryViewListProps) {
                 availableTags={props.availableTags}
               />
             ))}
-
-            {!empty ? (
-              <button
-                onClick={props.onOpenImport}
-                className="rounded-xl border border-dashed border-border-secondary bg-surface-secondary p-4 flex flex-col items-center justify-center text-center ui-color-muted hover:text-content-secondary hover:border-border-hover transition-colors"
-              >
-                <FolderOpen size={18} />
-                <span className="mt-2 ui-text-body-sm">
-                  {t({
-                    id: "library.view.dropzone",
-                    message: "Transcribe another recording",
-                  })}
-                </span>
-              </button>
-            ) : null}
 
             {!empty && props.hasNextPage ? (
               <div className="col-span-full flex items-center justify-center pt-2">
@@ -166,6 +159,7 @@ function LibraryLoadingRows() {
 
 function LibraryGroup({
   group,
+  primary,
   nameEditor,
   tagEditor,
   actions,
@@ -173,6 +167,7 @@ function LibraryGroup({
   availableTags,
 }: {
   group: LibraryInboxGroup;
+  primary: boolean;
   nameEditor: NameEditor;
   tagEditor: TagEditor;
   actions: LibraryItemActions;
@@ -181,22 +176,20 @@ function LibraryGroup({
 }) {
   const { t } = useLingui();
   return (
-    <section aria-labelledby={group.key}>
-      <h2
-        id={group.key}
-        className="mb-2 ui-text-uppercase-micro ui-color-disabled"
-      >
-        {group.key === "this-week"
-          ? t({ id: "library.group.this_week", message: "This week" })
-          : t({ id: "library.group.earlier", message: "Earlier" })}
-      </h2>
+    <section
+      aria-labelledby={primary ? "library-recent-recordings" : group.key}
+    >
+      {!primary ? (
+        <h2
+          id={group.key}
+          className="mb-2 ui-text-uppercase-micro ui-color-disabled"
+        >
+          {t({ id: "library.group.earlier", message: "Earlier" })}
+        </h2>
+      ) : null}
       <div className="flex flex-col gap-1">
-        {group.items.map((item, index) => (
-          <div
-            key={item.id || `library-item-${index}`}
-            className={index < 4 ? "library-row-enter" : undefined}
-            style={{ animationDelay: `${index * 40}ms` }}
-          >
+        {group.items.map((item) => (
+          <div key={item.id}>
             <LibraryCard
               item={item}
               onOpen={() => actions.open(item)}
@@ -224,5 +217,50 @@ function LibraryGroup({
         ))}
       </div>
     </section>
+  );
+}
+
+function LibraryInboxHeader({
+  status,
+  onStatusChange,
+}: Pick<LibraryViewListProps, "status" | "onStatusChange">) {
+  const { t } = useLingui();
+  return (
+    <header className="flex min-w-0 items-end justify-between gap-4">
+      <div className="min-w-0">
+        <p className="ui-text-uppercase-micro ui-color-accent">Inbox</p>
+        <h2
+          id="library-recent-recordings"
+          className="mt-1 ui-text-title-strong ui-color-primary"
+        >
+          Recent recordings
+        </h2>
+      </div>
+      <select
+        aria-label={t({
+          id: "library.filter.aria_label",
+          message: "Filter library by status",
+        })}
+        value={status}
+        onChange={(event) =>
+          onStatusChange(event.target.value as "all" | LibraryStatusChoice)
+        }
+        className="h-9 shrink-0 appearance-none rounded-xl bg-transparent px-3 ui-text-label ui-color-accent outline-none transition-colors hover:bg-[var(--color-accent-10)] focus-visible:ring-2 focus-visible:ring-[var(--color-accent-30)]"
+      >
+        <option value="all">Filter</option>
+        <option value="active">
+          {t({ id: "library.filter.transcribing", message: "Transcribing" })}
+        </option>
+        <option value="complete">
+          {t({ id: "library.filter.ready", message: "Ready" })}
+        </option>
+        <option value="error">
+          {t({
+            id: "library.filter.needs_attention",
+            message: "Needs attention",
+          })}
+        </option>
+      </select>
+    </header>
   );
 }

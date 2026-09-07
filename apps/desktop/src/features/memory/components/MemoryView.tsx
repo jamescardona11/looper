@@ -98,7 +98,7 @@ export default function MemoryView({
   };
 
   return (
-    <div className="flex h-full min-h-0 flex-col items-center overflow-hidden px-6 pt-12 pb-6">
+    <div className="flex h-full min-h-0 flex-col items-center overflow-hidden px-0 pb-6">
       {prefillQuery === null ? null : (
         <MemoryQueryPrefill
           key={prefillQuery}
@@ -107,10 +107,18 @@ export default function MemoryView({
           onConsumed={onPrefillConsumed}
         />
       )}
+      <header className="mb-[22px] w-full max-w-[1040px]">
+        <p className="ui-text-uppercase-micro ui-color-accent">
+          {t({ id: "memory.eyebrow", message: "Memory" })}
+        </p>
+        <h1 className="mt-1 font-display ui-text-screen-title font-semibold ui-color-primary">
+          {t({ id: "memory.title", message: "Ask what you already said." })}
+        </h1>
+      </header>
       <section
         aria-label="Memory search"
         onKeyDown={handlePaletteKeyDown}
-        className="flex min-h-0 w-full max-w-[640px] flex-col overflow-hidden rounded-2xl border border-border-primary bg-surface-surface shadow-md"
+        className="flex min-h-0 w-full max-w-[1040px] flex-col overflow-hidden rounded-[22px] bg-surface-surface shadow-[0_1px_0_var(--desktop-depth-line)]"
       >
         <MemoryViewControls
           query={query}
@@ -123,6 +131,10 @@ export default function MemoryView({
           }
           days={days}
           onDaysChange={setDays}
+          onResetFilters={() => {
+            setSources([]);
+            setDays(null);
+          }}
           advanced={showAdvanced}
           onShowAdvanced={() => setShowAdvanced(true)}
           appId={appId}
@@ -144,7 +156,7 @@ export default function MemoryView({
           onActiveResultChange={setActiveResultIndex}
           onOpenResult={onOpenResult}
         />
-        <div className="flex shrink-0 items-center gap-4 border-t border-border-primary bg-surface-primary/40 px-4 py-2 ui-text-micro ui-color-muted">
+        <div className="flex shrink-0 items-center gap-4 border-t border-border-primary px-4 py-3 ui-text-micro ui-color-muted">
           <span>
             {t({ id: "memory.hint.navigate", message: "↑↓ navigate" })}
           </span>

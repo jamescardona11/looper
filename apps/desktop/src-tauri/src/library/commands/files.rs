@@ -134,17 +134,23 @@ mod tests {
 
     #[test]
     fn export_destination_rejects_relative_and_parent_traversal_paths() {
+        let absolute = std::env::temp_dir().join("looper-export.md");
+        let traversing = std::env::temp_dir()
+            .join("..")
+            .join("private")
+            .join("looper-export.md");
+
         assert_eq!(
             validated_export_destination("notes/export.md").unwrap_err(),
             "Export path must be absolute"
         );
         assert_eq!(
-            validated_export_destination("/tmp/../private/export.md").unwrap_err(),
+            validated_export_destination(&traversing.to_string_lossy()).unwrap_err(),
             "Export path contains invalid components"
         );
         assert_eq!(
-            validated_export_destination("/tmp/export.md").unwrap(),
-            Path::new("/tmp/export.md")
+            validated_export_destination(&absolute.to_string_lossy()).unwrap(),
+            absolute
         );
     }
 

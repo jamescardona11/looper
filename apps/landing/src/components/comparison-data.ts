@@ -55,7 +55,7 @@ export const CELL_STATE_LABEL: Record<CellState, string> = {
 };
 
 /** The day every competitor claim below was read off an official page. */
-export const COMPARISON_REVIEW_DATE = "August 18, 2026";
+export const COMPARISON_REVIEW_DATE = "2026-08-18";
 
 const WISPR_FLOW: Competitor = { name: "Wispr Flow", url: "https://wisprflow.ai/" };
 const GRANOLA: Competitor = { name: "Granola", url: "https://www.granola.ai/" };

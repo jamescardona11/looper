@@ -4,7 +4,8 @@ import { openUrl } from "@tauri-apps/plugin-opener";
 import { useEffect, useState } from "react";
 import type { MeetingAwarenessState } from "../../../data/meeting/meeting-awareness";
 import {
-  disableMeetingAwarenessNotifications,
+  dismissMeetingAwareness,
+  startCalendarMeetingCapture,
   startPromptedMeetingCapture,
 } from "../../../data/meeting/meeting-awareness";
 
@@ -26,11 +27,11 @@ export default function MeetingAwarenessOverlay({
 
   const detected = state.phase === "detected";
 
-  // La tarjeta se retira sola pasado su tiempo de vida; esto es "nunca más".
-  // Apaga los avisos de reunión en Ajustes, de donde se vuelven a encender.
-  const neverShowAgain = async () => {
+  // La X consume solo este episodio. Las preferencias permanentes de
+  // calendario y micrófono siguen perteneciendo a Ajustes.
+  const dismissPrompt = async () => {
     try {
-      await disableMeetingAwarenessNotifications();
+      await dismissMeetingAwareness();
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : String(cause));
     }
@@ -47,7 +48,11 @@ export default function MeetingAwarenessOverlay({
         await openUrl(meeting.meeting_url);
         setCallOpened(true);
       }
-      await startPromptedMeetingCapture();
+      if (meeting) {
+        await startCalendarMeetingCapture(meeting.id);
+      } else {
+        await startPromptedMeetingCapture();
+      }
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : String(cause));
     } finally {
@@ -101,26 +106,17 @@ export default function MeetingAwarenessOverlay({
         message: `Meeting: ${meeting?.title ?? ""}`,
       });
   const SignalIcon = detected ? VideoCamera : CalendarDots;
-  const neverShowAgainLabel = t({
-    id: "meeting.awareness.never_show_again",
-    message: "Don't show meeting notifications again",
+  const closeLabel = t({
+    id: "meeting.awareness.close",
+    message: "Close meeting suggestion",
   });
 
   return (
     <div className="fixed inset-0 flex select-none items-start justify-end p-2">
-      <div className="relative">
-        <button
-          aria-label={neverShowAgainLabel}
-          className="absolute -left-1.5 -top-1.5 z-40 grid h-5 w-5 place-items-center rounded-full border border-white/20 bg-[var(--color-mask-opaque)] text-[var(--ui-capture-muted)] transition-colors duration-150 hover:bg-white/15 hover:text-white"
-          onClick={() => void neverShowAgain()}
-          title={neverShowAgainLabel}
-          type="button"
-        >
-          <X aria-hidden="true" size={10} weight="bold" />
-        </button>
+      <div>
         <section
           aria-label={ariaLabel}
-          className="ui-overlay-notification relative flex h-[72px] w-[404px] items-center gap-3 overflow-hidden rounded-[18px] px-3 text-white"
+          className="ui-overlay-notification relative flex h-[72px] w-[404px] items-center gap-2.5 overflow-hidden rounded-[18px] px-3 text-white"
         >
           <div className="relative z-10 grid h-10 w-10 shrink-0 place-items-center rounded-[12px] border border-white/10 bg-white/6 [box-shadow:var(--ui-notification-icon-shadow)]">
             <SignalIcon
@@ -155,6 +151,16 @@ export default function MeetingAwarenessOverlay({
           >
             <VideoCamera size={13} weight="fill" />
             {actionLabel}
+          </button>
+
+          <button
+            aria-label={closeLabel}
+            className="group relative z-30 grid h-10 w-10 shrink-0 place-items-center rounded-[12px] text-[var(--ui-capture-muted)] transition-[background-color,color] duration-150 hover:bg-white/10 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-white"
+            onClick={() => void dismissPrompt()}
+            title={closeLabel}
+            type="button"
+          >
+            <X aria-hidden="true" size={14} weight="bold" />
           </button>
         </section>
       </div>

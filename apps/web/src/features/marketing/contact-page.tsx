@@ -159,7 +159,7 @@ export function ContactPage({ intent }: { intent?: ContactIntent }) {
                 <button
                   type="submit"
                   disabled={formState === "submitting"}
-                  className="mt-2 inline-flex h-10 items-center justify-center rounded-lg bg-primary px-6 font-medium text-primary-foreground text-sm transition-colors hover:bg-primary/90 disabled:opacity-60"
+                  className="mt-2 inline-flex h-11 items-center justify-center rounded-lg bg-primary px-6 font-medium text-primary-foreground text-sm transition-colors hover:bg-primary/90 disabled:opacity-60 sm:h-10"
                 >
                   {formState === "submitting"
                     ? t("contact.sending")
@@ -264,7 +264,7 @@ function Field({
         required={required}
         aria-describedby={descriptionId}
         aria-invalid={error ? true : undefined}
-        className="h-10 rounded-lg border border-border bg-card px-4 text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+        className="h-11 rounded-lg border border-border bg-card px-4 text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring sm:h-10"
       />
       {(error || hint) && (
         <p

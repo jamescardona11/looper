@@ -1,12 +1,7 @@
-// Characterization tests for the metered STT transcribe action.
+// Characterization tests for the free-launch STT action.
 //
-// Pins the cross-cutting "metered AI action" contract that the metered-action
-// refactor must preserve:
-//   (a) !mock  → assertCredits charges (rate limiter consumed; balance.used > 0)
-//                and the real provider is called over fetch,
-//   (b) mock   → no charge (used === 0), the real provider is NOT called, and a
-//                canned transcript is returned,
-//   (c) the public return shape ({ transcriptionId, text }) is unchanged.
+// Both real and mocked calls bypass the commercial meter. A real call still
+// reaches its provider; mock mode still returns a canned transcript.
 
 import { convexTest } from "convex-test";
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest";
@@ -62,7 +57,7 @@ async function seedUser(t: ReturnType<typeof convexTest>, mock: boolean) {
   return { userId, audioStorageId };
 }
 
-describe("stt.transcribe — metered action contract", () => {
+describe("stt.transcribe — free-launch access contract", () => {
   it("reports the configured batch STT provider for clients", async () => {
     const t = setup();
 
@@ -105,7 +100,7 @@ describe("stt.transcribe — metered action contract", () => {
     });
   });
 
-  it("(a) !mock charges via assertCredits and calls the provider", async () => {
+  it("(a) !mock calls the provider without consuming credits", async () => {
     const t = setup();
     const { userId, audioStorageId } = await seedUser(t, false);
     const { providerCalls } = stubFetch(deepgramOk);
@@ -119,7 +114,7 @@ describe("stt.transcribe — metered action contract", () => {
     expect(res.text).toBe("hello world");
     expect(providerCalls.length).toBeGreaterThanOrEqual(1);
     const bal = await as.query(api.agent.credits.balance, {});
-    expect(bal?.used).toBeGreaterThan(0); // rate limiter consumed → charged
+    expect(bal?.used).toBe(0);
   });
 
   it("(b) mock does NOT charge and does NOT call the provider", async () => {

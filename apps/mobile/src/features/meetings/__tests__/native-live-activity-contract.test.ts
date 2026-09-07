@@ -21,10 +21,14 @@ describe("meeting live activity native contract", () => {
     expect(widget).toContain("DynamicIsland");
   });
 
-  it("makes the home-screen widget an explicit deep link instead of claiming background capture", () => {
-    const widget = readNativeFile("../../../../targets/widgets/QuickDictationWidget.swift");
+  it("makes the home-screen widgets explicit deep links instead of claiming background capture", () => {
+    const metricWidget = readNativeFile("../../../../targets/widgets/QuickDictationWidget.swift");
+    const recentWidget = readNativeFile("../../../../targets/widgets/RecentCaptureWidget.swift");
 
-    expect(widget).toContain('URL(string: "looper://dictation")');
-    expect(widget).toContain("Abre Looper listo para escuchar");
+    expect(metricWidget).toContain('URL(string: "looper://dictation")');
+    expect(metricWidget).toContain("looper_widget_weekly_word_count");
+    expect(recentWidget).toContain('URL(string: "looper://notes")');
+    expect(recentWidget).toContain("looper_widget_last_capture_title");
+    expect(recentWidget).toContain("entry.title ?? entry.detail");
   });
 });

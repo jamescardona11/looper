@@ -24,6 +24,7 @@ export function LibraryDetailBody({
       {meeting ? (
         <MeetingDocumentWorkspace
           {...workspace}
+          meetingDockProps={footer.meetingDockProps}
           transcriptPanel={transcriptPanel}
         />
       ) : (

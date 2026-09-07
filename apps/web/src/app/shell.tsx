@@ -31,12 +31,9 @@ export function WebAppShell() {
   );
 }
 
-const DARK_OVERLAY_ROUTES = new Set(["/", "/landing"]);
 function GlobalOverlays() {
-  const pathname = useRouterState({ select: (state) => state.location.pathname });
-
   return (
-    <div className={DARK_OVERLAY_ROUTES.has(pathname) ? "dark" : undefined}>
+    <div>
       <CookieConsent />
       <DeferredToasterRuntime />
       <FeedbackLauncher />

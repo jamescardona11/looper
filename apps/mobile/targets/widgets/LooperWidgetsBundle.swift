@@ -5,6 +5,7 @@ import WidgetKit
 struct LooperWidgetsBundle: WidgetBundle {
     var body: some Widget {
         QuickDictationWidget()
+        RecentCaptureWidget()
         MeetingLiveActivity()
     }
 }

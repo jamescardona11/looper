@@ -33,6 +33,7 @@ import {
 import { DictionaryEntryList } from "./dictionary-entry-list";
 import { DictionaryReplacementsSection } from "./DictionaryReplacementsSection";
 import { DictionarySnippetsSection } from "./DictionarySnippetsSection";
+import { DictionarySuggestions } from "./dictionary-suggestions";
 import { DictionaryViewHeader } from "./dictionary-view-header";
 import {
   addDictionaryEntry,
@@ -60,7 +61,8 @@ import {
 import { DictionaryVocabularyControls } from "./dictionary-vocabulary-controls";
 import { useQueuedPersist } from "./useQueuedPersist";
 
-export type DictionarySection = "all" | "vocabulary" | "rules" | "snippets";
+export type DictionarySection =
+  "all" | "vocabulary" | "rules" | "snippets" | "words" | "building-blocks";
 
 type DictionaryViewProps = {
   isActive?: boolean;
@@ -292,9 +294,19 @@ export default function DictionaryView({
     currentModel &&
     !hasModelCapability(currentModel, MODEL_CAPABILITY_DICTIONARY),
   );
-  const vocabularyVisible = sectionIsVisible(section, "vocabulary");
-  const rulesVisible = sectionIsVisible(section, "rules");
-  const snippetsVisible = sectionIsVisible(section, "snippets");
+  const focusedSection =
+    section === "words" || section === "building-blocks" ? null : section;
+  const vocabularyVisible =
+    section === "words" ||
+    (focusedSection !== null && sectionIsVisible(focusedSection, "vocabulary"));
+  const rulesVisible =
+    section === "building-blocks" ||
+    (focusedSection !== null && sectionIsVisible(focusedSection, "rules"));
+  const snippetsVisible =
+    section === "building-blocks" ||
+    (focusedSection !== null && sectionIsVisible(focusedSection, "snippets"));
+  const studioWords = section === "words";
+  const studioBuildingBlocks = section === "building-blocks";
   const itemRowClassName = dictionaryItemRowClass(embedded);
 
   const editHintLabel = t({
@@ -372,7 +384,9 @@ export default function DictionaryView({
     >
       <div
         className={`grid w-full min-w-0 grid-cols-1 gap-0 ${
-          vocabularyVisible && rulesVisible
+          studioWords ||
+          studioBuildingBlocks ||
+          (vocabularyVisible && rulesVisible)
             ? "md:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]"
             : ""
         }`}
@@ -384,6 +398,23 @@ export default function DictionaryView({
         >
           <DictionaryVocabularyControls
             embedded={embedded}
+            title={
+              studioWords
+                ? t({
+                    id: "voice.words.vocabulary",
+                    message: "Vocabulary",
+                  })
+                : undefined
+            }
+            description={
+              studioWords
+                ? t({
+                    id: "voice.words.vocabulary_description",
+                    message: "Names, products and terms.",
+                  })
+                : undefined
+            }
+            showSuggestions={!studioWords}
             suggestions={suggestions}
             itemRowClassName={itemRowClassName}
             deleteButtonClassName={DICTIONARY_DELETE_BUTTON}
@@ -487,57 +518,155 @@ export default function DictionaryView({
           actionGradientStyle={DICTIONARY_ACTION_GRADIENT}
           deleteButtonActiveClassName={DICTIONARY_DELETE_BUTTON_ACTIVE}
           deleteButtonClassName={DICTIONARY_DELETE_BUTTON}
+          embeddedTitle={
+            studioBuildingBlocks
+              ? t({ id: "voice.building_blocks.rules", message: "Rules" })
+              : undefined
+          }
+          embeddedDescription={
+            studioBuildingBlocks
+              ? t({
+                  id: "voice.building_blocks.rules_description",
+                  message: "Correct or expand predictable phrases.",
+                })
+              : undefined
+          }
+          studioFocusTarget={studioBuildingBlocks ? "block" : undefined}
         />
+        {studioWords ? (
+          <div className="min-w-0 border-t border-border-primary pt-6 md:border-t-0 md:border-l md:pl-6 md:pt-0 lg:pl-8">
+            <DictionarySuggestions
+              column
+              suggestions={suggestions}
+              itemRowClassName={itemRowClassName}
+              deleteButtonClassName={DICTIONARY_DELETE_BUTTON}
+              onAccept={(from, to) =>
+                void updateSuggestion(acceptSuggestedCorrection, from, to, true)
+              }
+              onDismiss={(from, to) =>
+                void updateSuggestion(
+                  dismissSuggestedCorrection,
+                  from,
+                  to,
+                  false,
+                )
+              }
+            />
+          </div>
+        ) : null}
+        {studioBuildingBlocks ? (
+          <div className="min-w-0 border-t border-border-primary pt-6 md:border-t-0 md:border-l md:pl-6 md:pt-0 lg:pl-8">
+            <DictionarySnippetsSection
+              visible={snippetsVisible}
+              section="snippets"
+              embedded={embedded}
+              embeddedTitle={t({
+                id: "voice.building_blocks.snippets",
+                message: "Snippets",
+              })}
+              embeddedDescription={t({
+                id: "voice.building_blocks.snippets_description",
+                message: "Insert useful structure from a short cue.",
+              })}
+              newTrigger={snippetDraft.trigger}
+              setNewTrigger={(trigger) =>
+                setSnippetDraft((draft) => ({ ...draft, trigger }))
+              }
+              newExpansion={snippetDraft.expansion}
+              setNewExpansion={(expansion) =>
+                setSnippetDraft((draft) => ({ ...draft, expansion }))
+              }
+              handleAddSnippet={() => void addSnippet()}
+              snippetCountLabel={snippetCountLabel}
+              snippetHintLabel={
+                snippetEdit.index !== null
+                  ? editHintLabel
+                  : t({
+                      id: "dictionary.snippets.press_enter_to_add",
+                      message: "Press Enter in either field to add",
+                    })
+              }
+              snippetsPending={snippetsWriter.pending}
+              snippets={snippets}
+              loading={loading}
+              fadeItemThreshold={DICTIONARY_FADE_ITEM_THRESHOLD}
+              panelBodyFadeClassName={DICTIONARY_PANEL_FADE}
+              editingSnippetIndex={snippetEdit.index}
+              editRowClassName={DICTIONARY_EDIT_ROW}
+              editingTrigger={snippetEdit.trigger}
+              setEditingTrigger={(trigger) =>
+                setSnippetEdit((edit) => ({ ...edit, trigger }))
+              }
+              editingExpansion={snippetEdit.expansion}
+              setEditingExpansion={(expansion) =>
+                setSnippetEdit((edit) => ({ ...edit, expansion }))
+              }
+              cancelSnippetEdit={() =>
+                setSnippetEdit({ index: null, trigger: "", expansion: "" })
+              }
+              handleEditSnippetCommit={() => void commitSnippetEdit()}
+              itemRowClassName={itemRowClassName}
+              shiftHeld={shiftHeld}
+              handleDeleteSnippet={(index) => void deleteSnippet(index)}
+              startEditingSnippet={startSnippetEdit}
+              actionGradientStyle={DICTIONARY_ACTION_GRADIENT}
+              deleteButtonActiveClassName={DICTIONARY_DELETE_BUTTON_ACTIVE}
+              deleteButtonClassName={DICTIONARY_DELETE_BUTTON}
+            />
+          </div>
+        ) : null}
       </div>
-      <DictionarySnippetsSection
-        visible={snippetsVisible}
-        section={section}
-        embedded={embedded}
-        newTrigger={snippetDraft.trigger}
-        setNewTrigger={(trigger) =>
-          setSnippetDraft((draft) => ({ ...draft, trigger }))
-        }
-        newExpansion={snippetDraft.expansion}
-        setNewExpansion={(expansion) =>
-          setSnippetDraft((draft) => ({ ...draft, expansion }))
-        }
-        handleAddSnippet={() => void addSnippet()}
-        snippetCountLabel={snippetCountLabel}
-        snippetHintLabel={
-          snippetEdit.index !== null
-            ? editHintLabel
-            : t({
-                id: "dictionary.snippets.press_enter_to_add",
-                message: "Press Enter in either field to add",
-              })
-        }
-        snippetsPending={snippetsWriter.pending}
-        snippets={snippets}
-        loading={loading}
-        fadeItemThreshold={DICTIONARY_FADE_ITEM_THRESHOLD}
-        panelBodyFadeClassName={DICTIONARY_PANEL_FADE}
-        editingSnippetIndex={snippetEdit.index}
-        editRowClassName={DICTIONARY_EDIT_ROW}
-        editingTrigger={snippetEdit.trigger}
-        setEditingTrigger={(trigger) =>
-          setSnippetEdit((edit) => ({ ...edit, trigger }))
-        }
-        editingExpansion={snippetEdit.expansion}
-        setEditingExpansion={(expansion) =>
-          setSnippetEdit((edit) => ({ ...edit, expansion }))
-        }
-        cancelSnippetEdit={() =>
-          setSnippetEdit({ index: null, trigger: "", expansion: "" })
-        }
-        handleEditSnippetCommit={() => void commitSnippetEdit()}
-        itemRowClassName={itemRowClassName}
-        shiftHeld={shiftHeld}
-        handleDeleteSnippet={(index) => void deleteSnippet(index)}
-        startEditingSnippet={startSnippetEdit}
-        actionGradientStyle={DICTIONARY_ACTION_GRADIENT}
-        deleteButtonActiveClassName={DICTIONARY_DELETE_BUTTON_ACTIVE}
-        deleteButtonClassName={DICTIONARY_DELETE_BUTTON}
-      />
+      {studioBuildingBlocks ? null : (
+        <DictionarySnippetsSection
+          visible={snippetsVisible}
+          section={studioWords || studioBuildingBlocks ? "snippets" : section}
+          embedded={embedded}
+          newTrigger={snippetDraft.trigger}
+          setNewTrigger={(trigger) =>
+            setSnippetDraft((draft) => ({ ...draft, trigger }))
+          }
+          newExpansion={snippetDraft.expansion}
+          setNewExpansion={(expansion) =>
+            setSnippetDraft((draft) => ({ ...draft, expansion }))
+          }
+          handleAddSnippet={() => void addSnippet()}
+          snippetCountLabel={snippetCountLabel}
+          snippetHintLabel={
+            snippetEdit.index !== null
+              ? editHintLabel
+              : t({
+                  id: "dictionary.snippets.press_enter_to_add",
+                  message: "Press Enter in either field to add",
+                })
+          }
+          snippetsPending={snippetsWriter.pending}
+          snippets={snippets}
+          loading={loading}
+          fadeItemThreshold={DICTIONARY_FADE_ITEM_THRESHOLD}
+          panelBodyFadeClassName={DICTIONARY_PANEL_FADE}
+          editingSnippetIndex={snippetEdit.index}
+          editRowClassName={DICTIONARY_EDIT_ROW}
+          editingTrigger={snippetEdit.trigger}
+          setEditingTrigger={(trigger) =>
+            setSnippetEdit((edit) => ({ ...edit, trigger }))
+          }
+          editingExpansion={snippetEdit.expansion}
+          setEditingExpansion={(expansion) =>
+            setSnippetEdit((edit) => ({ ...edit, expansion }))
+          }
+          cancelSnippetEdit={() =>
+            setSnippetEdit({ index: null, trigger: "", expansion: "" })
+          }
+          handleEditSnippetCommit={() => void commitSnippetEdit()}
+          itemRowClassName={itemRowClassName}
+          shiftHeld={shiftHeld}
+          handleDeleteSnippet={(index) => void deleteSnippet(index)}
+          startEditingSnippet={startSnippetEdit}
+          actionGradientStyle={DICTIONARY_ACTION_GRADIENT}
+          deleteButtonActiveClassName={DICTIONARY_DELETE_BUTTON_ACTIVE}
+          deleteButtonClassName={DICTIONARY_DELETE_BUTTON}
+        />
+      )}
       {resolvedError ? (
         <div className="mt-3 border-t border-border-primary pt-3 ui-text-body-sm ui-color-error-soft">
           {resolvedError}

@@ -1,6 +1,6 @@
 // biome-ignore-all assist/source/organizeImports: module markers keep optional imports removable.
 import { useTranslation } from "@looper/i18n/react";
-import { IconCreditCard, IconKey, IconLanguage, IconPalette, IconUser } from "@tabler/icons-react";
+import { IconCreditCard, IconKey, IconLanguage, IconUser } from "@tabler/icons-react";
 import { useRequireAuth } from "@/features/auth";
 import { cn } from "@/lib/cn";
 import { Eyebrow } from "@/shared/components/eyebrow";
@@ -8,7 +8,6 @@ import { ProductPageHeader } from "@/shared/components/product-page-header";
 import { ProductPageLayout } from "@/shared/components/product-page-layout";
 import { Select } from "@/shared/components/ui";
 import { SHOW_SUBSCRIPTION_SETTINGS, type SettingsTab } from "./settings-tabs";
-import { AppearanceTab } from "./tabs/appearance-tab";
 import { ApiKeysTab } from "./tabs/api-keys-tab";
 import { LanguageTab } from "./tabs/language-tab";
 import { ProfileTab } from "./tabs/profile-tab";
@@ -47,11 +46,6 @@ export function SettingsPage({
       label: t("settings.language"),
       icon: <IconLanguage className="size-4" />,
     },
-    {
-      key: "appearance",
-      label: t("settings.appearance"),
-      icon: <IconPalette className="size-4" />,
-    },
   ];
 
   const navigationGroups = createNavigationGroups({
@@ -65,17 +59,13 @@ export function SettingsPage({
 
   return (
     <ProductPageLayout compactTop>
-      <h1 className="sr-only md:hidden">{t("settings.title")}</h1>
+      <h1 className="sr-only md:hidden">{t("nav.setup")}</h1>
       <div className="hidden md:block">
-        <ProductPageHeader
-          eyebrow={t("nav.account")}
-          title={t("settings.title")}
-          description={t("settings.subtitle")}
-        />
+        <ProductPageHeader title={t("nav.setup")} description={t("settings.subtitle")} />
       </div>
 
-      <div className="grid grid-cols-1 gap-6 md:grid-cols-[232px_minmax(0,1fr)] md:gap-10">
-        <aside className="min-w-0 md:sticky md:top-6 md:self-start md:border-border md:border-r md:pr-6">
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-[192px_minmax(0,1fr)] md:gap-8">
+        <aside className="min-w-0 md:sticky md:top-6 md:self-start md:border-border md:border-r md:pr-5">
           <Select
             aria-label={t("settings.section")}
             value={currentTab}
@@ -98,10 +88,10 @@ export function SettingsPage({
                       aria-current={currentTab === item.key ? "page" : undefined}
                       onClick={() => onTabChange(item.key)}
                       className={cn(
-                        "flex shrink-0 items-center gap-2.5 whitespace-nowrap rounded-lg px-3 py-2.5 text-left text-sm transition-colors",
+                        "flex shrink-0 items-center gap-2.5 whitespace-nowrap rounded-lg border px-3 py-2.5 text-left text-sm transition-colors",
                         currentTab === item.key
-                          ? "bg-secondary text-foreground"
-                          : "text-muted-foreground hover:bg-secondary/60 hover:text-foreground",
+                          ? "border-border bg-card text-foreground"
+                          : "border-transparent text-muted-foreground hover:bg-secondary/60 hover:text-foreground",
                       )}
                     >
                       <span
@@ -113,9 +103,6 @@ export function SettingsPage({
                         {item.icon}
                       </span>
                       <span className="min-w-0 flex-1">{item.label}</span>
-                      {currentTab === item.key ? (
-                        <span className="size-1.5 rounded-full bg-primary" aria-hidden />
-                      ) : null}
                     </button>
                   ))}
                 </div>
@@ -146,8 +133,6 @@ function ActiveSettingsTab({ activeTab }: { activeTab: SettingsTab }) {
       return <ApiKeysTab />;
     case "language":
       return <LanguageTab />;
-    case "appearance":
-      return <AppearanceTab />;
   }
 }
 
@@ -174,7 +159,7 @@ function createNavigationGroups({
     },
     {
       label: preferencesLabel,
-      keys: ["language", "appearance"] satisfies SettingsTab[],
+      keys: ["language"] satisfies SettingsTab[],
     },
   ];
 

@@ -90,7 +90,7 @@ function BridgeHarness({ licensed = true }: { licensed?: boolean }) {
   useHomeNativeEventBridge(dispatch);
   return (
     <>
-      <HomeKeyboardBridge dispatch={dispatch} licensed={licensed} />
+      <HomeKeyboardBridge dispatch={dispatch} />
       <pre data-testid="state">{JSON.stringify(state)}</pre>
     </>
   );
@@ -168,7 +168,7 @@ describe("Home native event bridge", () => {
 
     act(() => drop(["one.m4a", "one.m4a", "two.wav"]));
     expect(currentState()).toMatchObject({
-      activeView: "library",
+      activeView: "import",
       pendingImportPaths: ["one.m4a", "two.wav"],
     });
 
@@ -217,7 +217,7 @@ describe("Home native event bridge", () => {
     expect(currentState().signalStage).toBe("ready");
   });
 
-  test("leaves native import and Memory shortcuts untouched without access", async () => {
+  test("keeps native import and Memory shortcuts available without access", async () => {
     render(<BridgeHarness licensed={false} />);
     await finishRegistrations();
     const dragEnter = bridge.state.handlers["drag-enter"] as (
@@ -239,11 +239,11 @@ describe("Home native event bridge", () => {
     });
 
     expect(currentState()).toMatchObject({
-      activeView: "home",
+      activeView: "memory",
       dragActive: false,
       memoryPrefill: null,
-      pendingImportPaths: null,
+      pendingImportPaths: ["private.wav"],
     });
-    expect(shortcut.defaultPrevented).toBe(false);
+    expect(shortcut.defaultPrevented).toBe(true);
   });
 });

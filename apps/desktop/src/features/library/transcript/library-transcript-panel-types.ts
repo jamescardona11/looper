@@ -31,4 +31,6 @@ export type LibraryTranscriptPanelProps = {
   transcriptDraft: string;
   setTranscriptDraft: (value: string) => void;
   transcriptAvailable: boolean;
+  copyConfirmed?: boolean;
+  onCopy?: () => void;
 };

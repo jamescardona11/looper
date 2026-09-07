@@ -47,12 +47,10 @@ describe("mobile theme", () => {
     }
   });
 
-  test("the pill keeps its own shell, independent of the app theme", () => {
-    // El pill flota sobre el escritorio del usuario, no sobre la app, así que
-    // su carcasa usa siempre los valores oscuros.
-    expect(colors.pillShell).toBe(colors.background);
-    expect(colors.pillBorder).toBe(colors.border);
-    expect(colors.onAccent).toBe(colors.background);
+  test("the pill and primary action retain contrast over the light canvas", () => {
+    expect(colors.pillShell).not.toBe(colors.background);
+    expect(colors.pillBorder).not.toBe(colors.border);
+    expect(colors.onAccent).toBe("#ffffff");
   });
 
   test("text roles descend in weight without repeating a value", () => {

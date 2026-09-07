@@ -14,13 +14,17 @@ import type { MeetingAwarenessState } from "../../../../data/meeting/meeting-awa
 import MeetingAwarenessOverlay from "../MeetingAwarenessOverlay";
 
 const meetingActions = vi.hoisted(() => ({
+  dismissAwareness: vi.fn(),
   disableNotifications: vi.fn(),
-  startCapture: vi.fn(),
+  startCalendarCapture: vi.fn(),
+  startPromptedCapture: vi.fn(),
   openUrl: vi.fn(),
 }));
 vi.mock("../../../../data/meeting/meeting-awareness", () => ({
+  dismissMeetingAwareness: meetingActions.dismissAwareness,
   disableMeetingAwarenessNotifications: meetingActions.disableNotifications,
-  startPromptedMeetingCapture: meetingActions.startCapture,
+  startCalendarMeetingCapture: meetingActions.startCalendarCapture,
+  startPromptedMeetingCapture: meetingActions.startPromptedCapture,
 }));
 
 vi.mock("@tauri-apps/plugin-opener", () => ({
@@ -59,8 +63,11 @@ i18n.loadAndActivate({
     "meeting.awareness.calendar_meeting": "Calendar meeting",
     "meeting.awareness.detected_call": "Detected call",
     "meeting.awareness.meeting_label": "Meeting: {0}",
-    "meeting.awareness.never_show_again":
-      "Don't show meeting notifications again",
+    "meeting.awareness.disable_microphone_suggestions":
+      "Don't suggest recording when the microphone is active",
+    "meeting.awareness.disable_calendar_reminders":
+      "Don't show Calendar meeting reminders",
+    "meeting.awareness.close": "Close meeting suggestion",
   },
 });
 
@@ -73,8 +80,10 @@ const renderAwareness = (state: MeetingAwarenessState) =>
 
 afterEach(() => {
   cleanup();
+  meetingActions.dismissAwareness.mockReset();
   meetingActions.disableNotifications.mockReset();
-  meetingActions.startCapture.mockReset();
+  meetingActions.startCalendarCapture.mockReset();
+  meetingActions.startPromptedCapture.mockReset();
   meetingActions.openUrl.mockReset();
 });
 
@@ -94,7 +103,7 @@ describe("MeetingAwarenessOverlay", () => {
 
   test("opens the call and starts recording from the same Signal Rail", async () => {
     meetingActions.openUrl.mockResolvedValue(undefined);
-    meetingActions.startCapture.mockResolvedValue(undefined);
+    meetingActions.startCalendarCapture.mockResolvedValue(undefined);
     renderAwareness(awarenessState);
 
     expect(screen.getByText("Meeting starting")).toBeTruthy();
@@ -110,10 +119,12 @@ describe("MeetingAwarenessOverlay", () => {
       expect(meetingActions.openUrl).toHaveBeenCalledWith(
         "https://meet.google.com/abc-defg-hij",
       );
-      expect(meetingActions.startCapture).toHaveBeenCalledTimes(1);
+      expect(meetingActions.startCalendarCapture).toHaveBeenCalledWith(
+        "calendar-event-1",
+      );
     });
     expect(meetingActions.openUrl.mock.invocationCallOrder[0]).toBeLessThan(
-      meetingActions.startCapture.mock.invocationCallOrder[0],
+      meetingActions.startCalendarCapture.mock.invocationCallOrder[0],
     );
   });
 
@@ -125,7 +136,7 @@ describe("MeetingAwarenessOverlay", () => {
           finishOpening = resolve;
         }),
     );
-    meetingActions.startCapture.mockResolvedValue(undefined);
+    meetingActions.startCalendarCapture.mockResolvedValue(undefined);
     renderAwareness(awarenessState);
 
     const action = screen.getByRole("button", {
@@ -139,13 +150,58 @@ describe("MeetingAwarenessOverlay", () => {
 
     finishOpening?.();
     await waitFor(() => {
-      expect(meetingActions.startCapture).toHaveBeenCalledTimes(1);
+      expect(meetingActions.startCalendarCapture).toHaveBeenCalledWith(
+        "calendar-event-1",
+      );
     });
+  });
+
+  test("keeps the clicked Calendar event ID when awareness changes while opening", async () => {
+    let finishOpening: (() => void) | undefined;
+    meetingActions.openUrl.mockImplementation(
+      () =>
+        new Promise<void>((resolve) => {
+          finishOpening = resolve;
+        }),
+    );
+    meetingActions.startCalendarCapture.mockResolvedValue(undefined);
+    const view = renderAwareness(awarenessState);
+
+    fireEvent.click(
+      screen.getByRole("button", {
+        name: "Join meeting and start recording",
+      }),
+    );
+
+    view.rerender(
+      <I18nProvider i18n={i18n}>
+        <MeetingAwarenessOverlay
+          state={{
+            ...awarenessState,
+            meeting: {
+              ...awarenessState.meeting!,
+              id: "calendar-event-2",
+              title: "Next meeting",
+            },
+          }}
+        />
+      </I18nProvider>,
+    );
+
+    finishOpening?.();
+    await waitFor(() => {
+      expect(meetingActions.startCalendarCapture).toHaveBeenCalledWith(
+        "calendar-event-1",
+      );
+    });
+    expect(meetingActions.startCalendarCapture).not.toHaveBeenCalledWith(
+      "calendar-event-2",
+    );
   });
 
   test("still joins the call when recording cannot start", async () => {
     meetingActions.openUrl.mockResolvedValue(undefined);
-    meetingActions.startCapture.mockRejectedValue(
+    meetingActions.startCalendarCapture.mockRejectedValue(
       new Error("Microphone permission is required"),
     );
     renderAwareness(awarenessState);
@@ -164,7 +220,7 @@ describe("MeetingAwarenessOverlay", () => {
 
   test("retries recording without reopening the call", async () => {
     meetingActions.openUrl.mockResolvedValue(undefined);
-    meetingActions.startCapture
+    meetingActions.startCalendarCapture
       .mockRejectedValueOnce(new Error("Microphone permission is required"))
       .mockResolvedValueOnce(undefined);
     renderAwareness(awarenessState);
@@ -184,14 +240,17 @@ describe("MeetingAwarenessOverlay", () => {
     );
 
     await waitFor(() => {
-      expect(meetingActions.startCapture).toHaveBeenCalledTimes(2);
+      expect(meetingActions.startCalendarCapture).toHaveBeenCalledTimes(2);
+      expect(meetingActions.startCalendarCapture).toHaveBeenLastCalledWith(
+        "calendar-event-1",
+      );
     });
     expect(meetingActions.openUrl).toHaveBeenCalledTimes(1);
   });
 
   test("a racing Dictation rejects meeting capture after the call opens", async () => {
     meetingActions.openUrl.mockResolvedValue(undefined);
-    meetingActions.startCapture.mockRejectedValue(
+    meetingActions.startCalendarCapture.mockRejectedValue(
       new Error("Finish the current dictation before recording a meeting."),
     );
     renderAwareness(awarenessState);
@@ -209,7 +268,7 @@ describe("MeetingAwarenessOverlay", () => {
     ).toBeTruthy();
     expect(meetingActions.openUrl).toHaveBeenCalledTimes(1);
     expect(meetingActions.openUrl.mock.invocationCallOrder[0]).toBeLessThan(
-      meetingActions.startCapture.mock.invocationCallOrder[0],
+      meetingActions.startCalendarCapture.mock.invocationCallOrder[0],
     );
   });
 
@@ -237,35 +296,63 @@ describe("MeetingAwarenessOverlay", () => {
     expect(screen.queryByText("Join")).toBeNull();
   });
 
-  test("the corner X is the only control besides the action", async () => {
-    // La tarjeta se retira sola, así que no hay boton de descartar: dejarlo
-    // habria dado dos formas de decir que no que significan cosas distintas.
-    meetingActions.disableNotifications.mockResolvedValue(undefined);
+  test("starts an unscheduled capture without a Calendar event ID", async () => {
+    meetingActions.startPromptedCapture.mockResolvedValue(undefined);
     renderAwareness({ phase: "detected", meeting: undefined });
 
-    expect(screen.queryByText("Dismiss")).toBeNull();
-    expect(screen.getAllByRole("button")).toHaveLength(2);
-
     fireEvent.click(
-      screen.getByLabelText("Don't show meeting notifications again"),
+      screen.getByRole("button", { name: "Start recording this call" }),
     );
-    await waitFor(() =>
-      expect(meetingActions.disableNotifications).toHaveBeenCalledTimes(1),
-    );
+
+    await waitFor(() => {
+      expect(meetingActions.startPromptedCapture).toHaveBeenCalledTimes(1);
+    });
+    expect(meetingActions.startCalendarCapture).not.toHaveBeenCalled();
   });
 
-  test("a failed opt-out says so instead of pretending it worked", async () => {
-    meetingActions.disableNotifications.mockRejectedValue(
-      new Error("settings are locked"),
+  test("the inset X dismisses only the current suggestion", async () => {
+    meetingActions.dismissAwareness.mockResolvedValue(undefined);
+    renderAwareness({ phase: "detected", meeting: undefined });
+
+    expect(screen.getAllByRole("button")).toHaveLength(2);
+
+    const close = screen.getByLabelText("Close meeting suggestion");
+    expect(close.className).toContain("h-10");
+    expect(close.className).toContain("w-10");
+    expect(close.className).not.toContain("absolute");
+    expect(close.parentElement).toBe(screen.getByLabelText("Detected call"));
+
+    fireEvent.click(close);
+    await waitFor(() =>
+      expect(meetingActions.dismissAwareness).toHaveBeenCalledTimes(1),
+    );
+    expect(meetingActions.disableNotifications).not.toHaveBeenCalled();
+  });
+
+  test("the same close control dismisses a Calendar suggestion", async () => {
+    meetingActions.dismissAwareness.mockResolvedValue(undefined);
+    renderAwareness(awarenessState);
+
+    fireEvent.click(screen.getByLabelText("Close meeting suggestion"));
+
+    await waitFor(() =>
+      expect(meetingActions.dismissAwareness).toHaveBeenCalledTimes(1),
+    );
+    expect(meetingActions.disableNotifications).not.toHaveBeenCalled();
+  });
+
+  test("a failed dismiss says so instead of pretending it worked", async () => {
+    meetingActions.dismissAwareness.mockRejectedValue(
+      new Error("notification could not close"),
     );
     renderAwareness({ phase: "detected", meeting: undefined });
 
-    fireEvent.click(
-      screen.getByLabelText("Don't show meeting notifications again"),
-    );
+    fireEvent.click(screen.getByLabelText("Close meeting suggestion"));
 
     await waitFor(() =>
-      expect(screen.getByRole("alert").textContent).toBe("settings are locked"),
+      expect(screen.getByRole("alert").textContent).toBe(
+        "notification could not close",
+      ),
     );
   });
 });

@@ -13,7 +13,7 @@ export const getSettings = () => invoke<StoredSettings>("get_settings");
 export const getAppInfo = () => invoke<AppInfo>("get_app_info");
 
 export const updateSettings = <TArgs extends object>(args: TArgs) =>
-  invoke<void>("update_settings", { args });
+  invoke<StoredSettings>("update_settings", { args });
 
 export const setShortcutCaptureActive = (active: boolean) =>
   invoke<void>("set_shortcut_capture_active", { active });

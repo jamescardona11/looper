@@ -6,6 +6,7 @@ export type LibraryDetailHeaderProps = {
   item: LibraryItem;
   shiftHeld: boolean;
   onClose: () => void;
+  onSummarize?: () => void;
   onCancel: () => void;
   onContinueRecording: () => void;
   onRetry: () => Promise<void>;

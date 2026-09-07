@@ -130,10 +130,11 @@ describe("LibraryTranscriptPanel", () => {
     const turn = screen.getByTestId("conversation-turn");
 
     expect(transcript.className).toContain("px-0");
-    expect(transcript.style.height).toBe("clamp(520px, 65vh, 760px)");
-    expect(turn.className).toContain("grid-cols-[88px_minmax(0,1fr)]");
+    expect(transcript.style.height).toBe("");
+    expect(turn.className).toContain("grid-cols-[56px_minmax(0,1fr)]");
     expect(turn.className).toContain("py-3");
-    expect(turn.parentElement?.className).toContain("pb-1");
+    expect(turn.className).toContain("border-b");
+    expect(turn.parentElement?.className).not.toContain("pb-1");
     expect(turn.className).toContain("transcript-segment-active");
     expect(screen.getByText("Ana").isConnected).toBe(true);
     expect(
@@ -206,6 +207,49 @@ describe("LibraryTranscriptPanel", () => {
     );
     fireEvent.change(textarea, { target: { value: "Updated" } });
     expect(editable.props.setTranscriptDraft).toHaveBeenCalledWith("Updated");
+  });
+
+  test("preserves the transcript document hierarchy before timestamp segments exist", () => {
+    const onCopy = vi.fn();
+    renderPanel({ documentMode: true, onCopy });
+
+    expect(screen.getByText("Transcript").isConnected).toBe(true);
+    expect(
+      screen.getByRole("heading", { name: "Original local transcript" })
+        .isConnected,
+    ).toBe(true);
+    expect(screen.queryByTestId("library-transcript-scroll-fade")).toBeNull();
+    fireEvent.click(screen.getByRole("button", { name: "Copy" }));
+    expect(onCopy).toHaveBeenCalledOnce();
+  });
+
+  test("keeps the document header and copy action with timestamp segments", () => {
+    const segment: TranscriptSegment = {
+      start_ms: 5_000,
+      end_ms: 7_000,
+      text: "Timestamped transcript",
+    };
+    const onCopy = vi.fn();
+
+    renderPanel({
+      documentMode: true,
+      showSegmentView: true,
+      visibleSegments: [{ segment, index: 0 }],
+      onCopy,
+    });
+
+    expect(
+      screen.getByRole("heading", { name: "Original local transcript" })
+        .isConnected,
+    ).toBe(true);
+    fireEvent.click(screen.getByRole("button", { name: "Copy" }));
+    expect(onCopy).toHaveBeenCalledOnce();
+  });
+
+  test("keeps the scroll fade in the library panel, not in the document", () => {
+    renderPanel();
+
+    expect(screen.getByTestId("library-transcript-scroll-fade")).toBeTruthy();
   });
 
   test("renders streamed chunks and marks only the active search result", () => {

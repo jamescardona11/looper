@@ -1,9 +1,6 @@
 package com.j11.looper.mobile
 
 import android.Manifest
-import android.animation.Animator
-import android.animation.AnimatorListenerAdapter
-import android.animation.ValueAnimator
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
@@ -23,7 +20,6 @@ import android.view.Gravity
 import android.view.KeyEvent
 import android.view.MotionEvent
 import android.view.View
-import android.view.animation.DecelerateInterpolator
 import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.ExtractedTextRequest
 import android.widget.FrameLayout
@@ -49,10 +45,6 @@ class LooperIME : InputMethodService() {
     private lateinit var dictateIcon: ImageView
     private lateinit var dictateSpinner: ProgressBar
     private lateinit var dictateLabel: TextView
-    private lateinit var statusRow: LinearLayout
-    private lateinit var statusLabel: TextView
-    private lateinit var statusDot: TextView
-    private lateinit var upgradeButton: TextView
     private lateinit var logoButton: ImageButton
     private lateinit var languageButton: TextView
     private lateinit var atButton: ImageButton
@@ -84,13 +76,9 @@ class LooperIME : InputMethodService() {
     private var smartModeRules: List<KeyboardWorkflow> = emptyList()
     private var manualSmartModeRules: List<KeyboardWorkflow> = emptyList()
     private var dictationLanguages = listOf("en")
-    private var member: KeyboardMember? = null
 
     private var keyboardCounter = -1
     private var keyboardCounterTask: Runnable? = null
-    private var memberTask: Runnable? = null
-    private var statusAnimation: ValueAnimator? = null
-    private var statusVisible = false
     private var deleteTask: Runnable? = null
     private var wordDeleteTask: Runnable? = null
     private var deletingWords = false
@@ -129,8 +117,6 @@ class LooperIME : InputMethodService() {
         rememberNightMode(resources.configuration)
         reloadKeyboardConfig()
         startConfigPolling()
-        startMemberPolling()
-        refreshMember()
         setPhase(Phase.IDLE)
         return root
     }
@@ -143,10 +129,6 @@ class LooperIME : InputMethodService() {
         dictateIcon = root.findViewById(R.id.pill_icon)
         dictateSpinner = root.findViewById(R.id.pill_activity)
         dictateLabel = root.findViewById(R.id.pill_label)
-        statusRow = root.findViewById(R.id.status_row)
-        statusLabel = root.findViewById(R.id.status_label)
-        statusDot = root.findViewById(R.id.status_dot)
-        upgradeButton = root.findViewById(R.id.upgrade_button)
         logoButton = root.findViewById(R.id.logo_button)
         languageButton = root.findViewById(R.id.language_chip)
         atButton = root.findViewById(R.id.util_at_button)
@@ -202,7 +184,6 @@ class LooperIME : InputMethodService() {
             spaceButton,
             returnButton,
             deleteButton,
-            upgradeButton,
         ).forEach { it.setOnTouchListener(scaleFeedback(.9f)) }
         logoButton.setOnClickListener { openLooper() }
         languageButton.setOnClickListener { cycleLanguage() }
@@ -210,7 +191,6 @@ class LooperIME : InputMethodService() {
         spaceButton.setOnClickListener { currentInputConnection?.commitText(" ", 1) }
         returnButton.setOnClickListener { sendReturn() }
         deleteButton.setOnTouchListener { view, event -> handleDeleteTouch(view, event) }
-        upgradeButton.setOnClickListener { openLooper(showPaywall = true) }
     }
 
     private fun scaleFeedback(pressedScale: Float): View.OnTouchListener =
@@ -330,9 +310,6 @@ class LooperIME : InputMethodService() {
         listOf(logoButton, atButton, spaceButton, returnButton, deleteButton)
             .forEach { it.setColorFilter(foreground) }
         languageButton.setTextColor(foreground)
-        statusLabel.setTextColor(secondary)
-        statusDot.setTextColor(tertiary)
-        upgradeButton.setTextColor(COLOR_ACCENT)
         listOf<View>(logoButton, languageButton, atButton, spaceButton, returnButton, deleteButton)
             .forEach { setRoundedFill(it, utility, 8f) }
         renderToneChips()
@@ -552,17 +529,6 @@ class LooperIME : InputMethodService() {
         reloadKeyboardConfig()
     }
 
-    private fun startMemberPolling() {
-        stopMemberPolling()
-        memberTask = periodicTask(MEMBER_REFRESH_INTERVAL_MS, ::refreshMember)
-        memberTask?.let { mainHandler.postDelayed(it, MEMBER_REFRESH_INTERVAL_MS) }
-    }
-
-    private fun stopMemberPolling() {
-        memberTask?.let(mainHandler::removeCallbacks)
-        memberTask = null
-    }
-
     private fun periodicTask(delay: Long, action: () -> Unit): Runnable =
         object : Runnable {
             override fun run() {
@@ -570,89 +536,6 @@ class LooperIME : InputMethodService() {
                 mainHandler.postDelayed(this, delay)
             }
         }
-
-    private fun refreshMember() {
-        val functionUrl = preferences.getString(KEY_CONVEX_URL, null)
-        if (functionUrl.isNullOrBlank()) {
-            member = null
-            if (::statusRow.isInitialized) setStatusBannerVisible(false)
-            return
-        }
-        worker.execute {
-            val config = session.config()
-            val freshMember = config?.let { KeyboardRepositoryFactory.member(it, ::debug) }
-            mainHandler.post {
-                member = freshMember
-                updateStatusBanner()
-            }
-        }
-    }
-
-    private fun updateStatusBanner() {
-        if (!::statusRow.isInitialized) return
-        val transcriptionMode = preferences.getString(KEY_AI_TRANSCRIPTION_MODE, "cloud") ?: "cloud"
-        val generationMode = preferences.getString(KEY_AI_POST_PROCESSING_MODE, "cloud") ?: "cloud"
-        if (transcriptionMode == "api" && generationMode == "api") {
-            setStatusBannerVisible(false)
-            return
-        }
-        val copy = member?.let { KeyboardPolicy.trialCopy(it, System.currentTimeMillis()) }
-        if (copy == null) {
-            setStatusBannerVisible(false)
-        } else {
-            statusLabel.text = copy
-            setStatusBannerVisible(true)
-        }
-    }
-
-    private fun setStatusBannerVisible(show: Boolean) {
-        if (show == statusVisible) return
-        statusVisible = show
-        statusAnimation?.cancel()
-        val expanded = dp(20f).toInt()
-        val layout = statusRow.layoutParams as LinearLayout.LayoutParams
-        if (show) {
-            statusRow.visibility = View.VISIBLE
-            statusRow.alpha = 0f
-            layout.height = 0
-            statusRow.layoutParams = layout
-            statusAnimation = heightAnimation(0, expanded, STATUS_SHOW_MS) { value, fraction ->
-                layout.height = value
-                statusRow.layoutParams = layout
-                statusRow.alpha = fraction
-            }.also(ValueAnimator::start)
-            return
-        }
-        val start = statusRow.height.takeIf { it > 0 } ?: expanded
-        statusAnimation = heightAnimation(start, 0, STATUS_HIDE_MS) { value, fraction ->
-            layout.height = value
-            statusRow.layoutParams = layout
-            statusRow.alpha = 1f - fraction
-        }.apply {
-            addListener(object : AnimatorListenerAdapter() {
-                override fun onAnimationEnd(animation: Animator) {
-                    if (!statusVisible) {
-                        layout.height = expanded
-                        statusRow.layoutParams = layout
-                        statusRow.visibility = View.GONE
-                        statusRow.alpha = 0f
-                    }
-                }
-            })
-            start()
-        }
-    }
-
-    private fun heightAnimation(
-        from: Int,
-        to: Int,
-        length: Long,
-        update: (Int, Float) -> Unit,
-    ) = ValueAnimator.ofInt(from, to).apply {
-        duration = length
-        interpolator = DecelerateInterpolator()
-        addUpdateListener { update(it.animatedValue as Int, it.animatedFraction) }
-    }
 
     private fun transcribeRecording() {
         val editor = currentInputEditorInfo
@@ -765,7 +648,6 @@ class LooperIME : InputMethodService() {
             mainHandler.post {
                 deliverResult(activeWorkflow, finalText, insertion, sendsAfterInsert)
                 setPhase(Phase.IDLE)
-                refreshMember()
             }
         }
     }
@@ -929,10 +811,9 @@ class LooperIME : InputMethodService() {
         }
     }
 
-    private fun openLooper(showPaywall: Boolean = false) {
+    private fun openLooper() {
         val intent = packageManager.getLaunchIntentForPackage(packageName) ?: return
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP)
-        if (showPaywall) intent.putExtra(EXTRA_SHOW_PAYWALL, true)
         runCatching { startActivity(intent) }
             .onFailure { debug("openMainApp failed: ${it.message}") }
     }
@@ -996,7 +877,6 @@ class LooperIME : InputMethodService() {
     override fun onDestroy() {
         super.onDestroy()
         stopConfigPolling()
-        stopMemberPolling()
         stopDeleting()
         recorder.stop()
         waveform?.end()
@@ -1065,14 +945,12 @@ class LooperIME : InputMethodService() {
         const val KEY_AI_POST_PROCESSING_MODEL = "looper_ai_post_processing_model"
         const val KEY_AI_TRANSCRIPTION_AZURE_REGION = "looper_ai_transcription_azure_region"
         const val KEY_LOCAL_STT_MODEL_PATH = "looper_local_stt_model_path"
-        const val EXTRA_SHOW_PAYWALL = "looper_show_paywall"
 
         const val COLOR_ACCENT = 0xFF7079FB.toInt()
         const val COLOR_GRAY_LIGHT = 0xFFC7C7CC.toInt()
         const val COLOR_GRAY_DARK = 0xFF48484A.toInt()
         const val COLOR_UTILITY_LIGHT = 0xFFD1D1D6.toInt()
         const val COLOR_UTILITY_DARK = 0xFF3A3A3C.toInt()
-        const val MEMBER_REFRESH_INTERVAL_MS = 300_000L
         const val MAX_TRANSCRIPTION_ENTRIES = 50
         const val STYLE_INSTRUCTIONS_OPEN = "<style-instructions>"
         const val FORMAT_INSTRUCTIONS_OPEN = "<format-instructions>"
@@ -1085,8 +963,6 @@ class LooperIME : InputMethodService() {
 
         private const val CONFIG_POLL_MS = 1_000L
         private const val ERROR_DURATION_MS = 3_000L
-        private const val STATUS_SHOW_MS = 220L
-        private const val STATUS_HIDE_MS = 180L
         private const val DELETE_INITIAL_DELAY_MS = 400L
         private const val DELETE_REPEAT_MS = 80L
         private const val WORD_DELETE_DELAY_MS = 2_000L

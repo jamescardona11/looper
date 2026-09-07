@@ -22,8 +22,8 @@ export function TranscriptionList({
     <ol className="grid gap-3">
       {items.map((item) => (
         <li key={item.id}>
-          <Card className="p-5">
-            <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+          <Card className="p-4 sm:p-5">
+            <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
               <div className="flex items-center gap-2">
                 <Badge variant="outline">
                   {item.source === "remote"

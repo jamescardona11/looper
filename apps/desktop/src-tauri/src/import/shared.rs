@@ -18,9 +18,14 @@ fn platform_support_root(home: &Path) -> PathBuf {
 
 #[cfg(target_os = "windows")]
 fn platform_support_root(home: &Path) -> PathBuf {
-    std::env::var_os("APPDATA")
-        .map(PathBuf::from)
-        .unwrap_or_else(|| home.join("AppData").join("Roaming"))
+    let user_profile = std::env::var_os("USERPROFILE").map(PathBuf::from);
+    if user_profile.as_deref() == Some(home) {
+        return std::env::var_os("APPDATA")
+            .map(PathBuf::from)
+            .unwrap_or_else(|| home.join("AppData").join("Roaming"));
+    }
+
+    home.join("AppData").join("Roaming")
 }
 
 #[cfg(not(any(target_os = "macos", target_os = "windows")))]

@@ -1,10 +1,3 @@
-export type MeetingStartOptions = {
-  model_key: string;
-  live_model_key?: string | null;
-  system_audio_enabled: boolean;
-  calendar_context?: MeetingCalendarContext | null;
-};
-
 export type CaptureIntent = "meeting" | "voice_note";
 
 export type MeetingCalendarContext = {

@@ -20,7 +20,7 @@ function memoryResult(
 }
 
 describe("home state transitions", () => {
-  test("revoking access exits protected views and clears transient imports", () => {
+  test("keeps the active workspace route when license state changes", () => {
     const importing = {
       ...createHomeState(true),
       activeView: "library" as const,
@@ -35,21 +35,21 @@ describe("home state transitions", () => {
     });
 
     expect(restricted).toMatchObject({
-      activeView: "home",
-      dragActive: false,
+      activeView: "library",
+      dragActive: true,
       licensed: false,
-      pendingImportPaths: null,
+      pendingImportPaths: ["meeting.m4a"],
       supportMenuOpen: true,
     });
   });
 
-  test("deduplicates dropped files and opens the library", () => {
+  test("deduplicates dropped files and opens the import queue", () => {
     const next = reduceHomeState(createHomeState(true), {
       type: "open-import",
       paths: ["one.wav", "one.wav", "two.mp4"],
     });
 
-    expect(next.activeView).toBe("library");
+    expect(next.activeView).toBe("import");
     expect(next.pendingImportPaths).toEqual(["one.wav", "two.mp4"]);
   });
 
@@ -65,7 +65,7 @@ describe("home state transitions", () => {
     });
 
     expect(history).toMatchObject({
-      activeView: "home",
+      activeView: "history",
       historyFocusId: "history-42",
     });
     expect(library).toMatchObject({
@@ -74,13 +74,13 @@ describe("home state transitions", () => {
     });
   });
 
-  test("keeps a denied Memory question for a later licensed visit", () => {
+  test("opens Memory even when no license is active", () => {
     const restricted = reduceHomeState(createHomeState(false), {
       type: "ask-memory",
       query: "quarterly plan",
     });
 
-    expect(restricted.activeView).toBe("home");
+    expect(restricted.activeView).toBe("memory");
     expect(restricted.memoryPrefill).toBe("quarterly plan");
   });
 

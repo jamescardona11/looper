@@ -95,6 +95,21 @@ private func assertTranscriptMergeContract() throws {
     )
 }
 
+private func assertTranscriptPayloadContract() throws {
+    try require(
+        TranscriptPayload.text(from: #"{"text":"plain transcript"}"#) == "plain transcript",
+        "A JSON text envelope must not be inserted verbatim"
+    )
+    try require(
+        TranscriptPayload.text(from: "```Json\n{\"transcript\":\"spoken words\"}\n```") == "spoken words",
+        "A fenced JSON transcript must not be inserted verbatim"
+    )
+    try require(
+        TranscriptPayload.text(from: "A person said { hello }.") == "A person said { hello }.",
+        "Normal spoken text must remain unchanged"
+    )
+}
+
 private func assertMediaTypeContract() throws {
     try require(
         AudioMediaType.detect(in: Data("RIFF1234WAVE".utf8)) == "audio/wav",
@@ -217,6 +232,7 @@ private enum TranscribeAudioRepoContractTests {
         try assertSegmentationContract()
         try await assertBatchOrderingContract()
         try assertTranscriptMergeContract()
+        try assertTranscriptPayloadContract()
         try assertMediaTypeContract()
         try await assertWholeFileContract()
         try await assertCloudContract()

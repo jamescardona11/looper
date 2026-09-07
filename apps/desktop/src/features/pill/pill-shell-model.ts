@@ -9,11 +9,6 @@ import {
 } from "./SignalRail";
 
 export const PILL_EXPANDED_WIDTH = 260;
-export const PILL_EXPAND_TRANSITION = [
-  "width 0.42s cubic-bezier(0.2, 0.82, 0.18, 1)",
-  "height 0.42s cubic-bezier(0.2, 0.82, 0.18, 1)",
-  "border-radius 0.42s cubic-bezier(0.2, 0.82, 0.18, 1)",
-].join(", ");
 
 const resultMinimumHeight = 132;
 const resultMaximumHeight = 220;

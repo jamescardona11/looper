@@ -5,7 +5,6 @@ import {
   IconCreditCard,
   IconLogout,
   IconMenu2,
-  IconSearch,
   IconSettings,
   IconShieldLock,
   IconUserCircle,
@@ -13,12 +12,7 @@ import {
 } from "@tabler/icons-react";
 import { Link, Outlet, useRouterState } from "@tanstack/react-router";
 import { type KeyboardEvent, lazy, type RefObject, Suspense, useRef, useState } from "react";
-import {
-  APP_DESTINATIONS,
-  MANAGE_DESTINATIONS,
-  VOICE_DESTINATIONS,
-  WORKSPACE_DESTINATIONS,
-} from "@/app/navigation";
+import { APP_DESTINATIONS } from "@/app/navigation";
 import { cn } from "@/lib/cn";
 import { CommandPalette } from "@/shared/components/command-palette";
 import { ConfirmProvider } from "@/shared/components/confirm-dialog";
@@ -69,36 +63,51 @@ function AuthenticatedChrome() {
   }
 
   return (
-    <div className="flex h-screen overflow-hidden bg-background text-foreground">
-      <button
-        type="button"
-        aria-label={t("common.close")}
-        aria-hidden={!sidebarOpen}
-        tabIndex={-1}
-        onClick={closeSidebar}
-        className={cn(
-          "fixed inset-0 z-30 bg-background/80 backdrop-blur-sm transition-opacity duration-200 lg:hidden",
-          sidebarOpen ? "opacity-100" : "pointer-events-none opacity-0",
-        )}
-      />
-      <AppSidebar
-        pathname={pathname}
-        open={sidebarOpen}
-        onClose={closeSidebar}
-        closeButtonRef={closeNavigationRef}
-      />
+    <div className="web-product-canvas">
+      <div className="web-product-shell">
+        <button
+          type="button"
+          aria-label={t("common.close")}
+          aria-hidden={!sidebarOpen}
+          tabIndex={-1}
+          onClick={closeSidebar}
+          className={cn(
+            "fixed inset-0 z-30 bg-background/80 backdrop-blur-sm transition-opacity duration-200 lg:hidden",
+            sidebarOpen ? "opacity-100" : "pointer-events-none opacity-0",
+          )}
+        />
+        <AppSidebar
+          pathname={pathname}
+          open={sidebarOpen}
+          onClose={closeSidebar}
+          closeButtonRef={closeNavigationRef}
+        />
 
-      <div className="flex min-w-0 flex-1 flex-col" inert={sidebarOpen ? true : undefined}>
-        <MobileHeader open={sidebarOpen} onOpen={openSidebar} buttonRef={openNavigationRef} />
-        <section
-          aria-label={t("common.pageContent")}
-          data-web-workspace
-          className="min-h-0 flex-1 overflow-y-auto"
-          // biome-ignore lint/a11y/noNoninteractiveTabindex: this is the shell's only scroll viewport
-          tabIndex={0}
+        <div
+          className="web-product-content-shell flex min-w-0 flex-1 flex-col"
+          inert={sidebarOpen ? true : undefined}
         >
-          <Outlet />
-        </section>
+          <div className="absolute top-5 right-8 z-10 hidden lg:block">
+            <CommandPalette
+              trigger={
+                <button type="button" className="web-memory-trigger">
+                  <span>Ask Memory</span>
+                  <kbd>⌘K</kbd>
+                </button>
+              }
+            />
+          </div>
+          <MobileHeader open={sidebarOpen} onOpen={openSidebar} buttonRef={openNavigationRef} />
+          <section
+            aria-label={t("common.pageContent")}
+            data-web-workspace
+            className="web-product-workspace min-h-0 flex-1 overflow-y-auto"
+            // biome-ignore lint/a11y/noNoninteractiveTabindex: this is the shell's only scroll viewport
+            tabIndex={0}
+          >
+            <Outlet />
+          </section>
+        </div>
       </div>
     </div>
   );
@@ -159,16 +168,17 @@ function AppSidebar({
       aria-label={open ? t("nav.workspace") : undefined}
       onKeyDown={handleKeyDown}
       className={cn(
-        "fixed inset-y-0 left-0 z-40 flex w-64 shrink-0 flex-col border-border border-r bg-card transition-transform duration-200 ease-out lg:static lg:translate-x-0",
+        "web-product-sidebar fixed inset-y-0 left-0 z-40 flex w-56 shrink-0 flex-col transition-transform duration-200 ease-out lg:static lg:translate-x-0",
         open ? "visible translate-x-0 shadow-2xl" : "invisible -translate-x-full lg:visible",
       )}
     >
-      <div className={cn("flex h-12 shrink-0 items-center gap-2 border-border border-b px-3")}>
+      <div className={cn("web-product-brand flex shrink-0 items-center gap-2")}>
         <Link to="/home" onClick={onClose} className="flex min-w-0 flex-1 items-center gap-2">
-          <span className="grid size-7 shrink-0 place-items-center rounded-lg border border-border bg-background text-primary">
-            <LooperMark className="size-4" />
+          <LooperMark className="size-5 shrink-0 text-foreground" />
+          <span className="truncate font-display font-semibold text-[22px] tracking-[-0.055em]">
+            Looper
           </span>
-          <span className="truncate font-medium text-sm tracking-tight">Looper</span>
+          <span className="web-product-edition">Free</span>
         </Link>
         <button
           ref={closeButtonRef}
@@ -181,32 +191,12 @@ function AppSidebar({
         </button>
       </div>
 
-      <div className="shrink-0 space-y-4 px-2 py-3">
-        <CommandPalette
-          trigger={
-            <button
-              type="button"
-              className="flex h-8 w-full items-center gap-2 rounded-md border border-border bg-background px-2.5 text-muted-foreground text-xs transition-colors hover:border-ring hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-            >
-              <IconSearch className="size-3.5" aria-hidden />
-              <span className="flex-1 text-left">{t("cmd.searchPlaceholder")}</span>
-              <kbd className="rounded border border-border px-1 py-0.5 font-mono text-[9px]">
-                ⌘K
-              </kbd>
-            </button>
-          }
-        />
-
+      <div className="shrink-0 px-3 py-3">
         <NavSection
-          label={t("nav.workspace")}
-          destinations={WORKSPACE_DESTINATIONS}
+          destinations={APP_DESTINATIONS.filter(
+            (destination) => destination.id !== "settings" && destination.id !== "billing",
+          )}
           onNavigate={onClose}
-        />
-        <NavSection
-          label={t("nav.voiceTools")}
-          destinations={VOICE_DESTINATIONS}
-          onNavigate={onClose}
-          compact
         />
       </div>
 
@@ -215,20 +205,9 @@ function AppSidebar({
           <ThreadSidebar onNavigate={onClose} />
         </Suspense>
       ) : null}
-      <div className={cn("min-h-0 flex-1 overflow-y-auto px-2", isAgent && "hidden")}>
-        <NavSection
-          label={t("nav.manage")}
-          destinations={MANAGE_DESTINATIONS}
-          onNavigate={onClose}
-        />
-      </div>
+      <div className={cn("min-h-0 flex-1", isAgent && "hidden")} />
 
-      <div className="shrink-0 border-border border-t p-2">
-        {isAgent ? (
-          <div className="mb-2">
-            <NavSection destinations={MANAGE_DESTINATIONS} onNavigate={onClose} compact />
-          </div>
-        ) : null}
+      <div className="shrink-0 border-border border-t p-3">
         {isAdmin ? (
           <Link
             to="/admin"
@@ -240,20 +219,28 @@ function AppSidebar({
             <span className="flex-1">{t("nav.admin")}</span>
           </Link>
         ) : null}
+        <Link
+          to="/settings"
+          onClick={onClose}
+          className={navItemClass}
+          activeProps={{ className: activeNavItemClass }}
+          activeOptions={{ exact: true }}
+        >
+          <IconSettings className="size-4" aria-hidden />
+          <span className="flex-1">{t("nav.setup")}</span>
+        </Link>
         <AccountMenu onNavigate={onClose} />
       </div>
     </aside>
   );
 }
 
-type Destination =
-  | (typeof WORKSPACE_DESTINATIONS)[number]
-  | (typeof VOICE_DESTINATIONS)[number]
-  | (typeof MANAGE_DESTINATIONS)[number];
+type Destination = (typeof APP_DESTINATIONS)[number];
 
 const navItemClass =
-  "flex h-8 items-center gap-2.5 rounded-md px-2.5 text-muted-foreground text-xs transition-colors hover:bg-secondary hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
-const activeNavItemClass = "bg-primary text-primary-foreground shadow-sm";
+  "flex h-10 items-center gap-2.5 rounded-lg px-3 text-[13px] font-semibold text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
+const activeNavItemClass =
+  "bg-[var(--web-highlight)] text-foreground hover:bg-[var(--web-highlight)] hover:text-foreground [&_svg]:text-primary";
 
 function NavSection({
   label,
@@ -272,7 +259,7 @@ function NavSection({
   return (
     <nav aria-label={label} className={cn(!compact && "space-y-1")}>
       {label ? (
-        <p className="px-2.5 pb-1 font-mono text-[9px] text-muted-foreground uppercase tracking-[0.16em]">
+        <p className="px-2.5 pb-1 font-mono text-[9px] text-muted-foreground uppercase tracking-[0.14em]">
           {label}
         </p>
       ) : null}
@@ -286,7 +273,7 @@ function NavSection({
           activeOptions={{ exact: true }}
         >
           <destination.icon className="size-4 shrink-0" aria-hidden />
-          <span className="min-w-0 flex-1 truncate">{t(destination.labelKey)}</span>
+          <span className="min-w-0 flex-1 truncate">{t(destination.sidebarLabelKey)}</span>
         </Link>
       ))}
     </nav>
@@ -305,10 +292,10 @@ function MobileHeader({
   const { t } = useTranslation();
   const pathname = useRouterState({ select: (state) => state.location.pathname });
   const destination = APP_DESTINATIONS.find((item) => item.to === pathname);
-  const label = destination ? t(destination.labelKey) : "Looper";
+  const label = destination ? t(destination.sidebarLabelKey) : "Looper";
 
   return (
-    <header className="flex h-12 shrink-0 items-center gap-3 border-border border-b bg-card px-3 lg:hidden">
+    <header className="flex h-14 shrink-0 items-center gap-3 border-border border-b bg-card px-3 lg:hidden">
       <button
         ref={buttonRef}
         type="button"

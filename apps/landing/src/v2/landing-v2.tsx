@@ -1,6 +1,6 @@
 import { useRef } from "react";
 import meetingPreview from "../../../../assets/product/desktop-note-detail.png";
-import { WaveformMark } from "../components/ui/icons";
+import { WaveformMark } from "./waveform-mark";
 import { VoiceDemo } from "./voice-demo";
 import { MoreFeatures, MobilePreview } from "./product-sections";
 import { ComparisonV2 } from "./comparison-v2";

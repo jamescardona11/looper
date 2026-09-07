@@ -10,6 +10,7 @@ import {
   waitFor,
 } from "@testing-library/react";
 import { afterEach, describe, expect, test, vi } from "vitest";
+import type { MeetingDetails } from "../../../../contracts";
 import MeetingDetail from "../MeetingDetail";
 
 const notesMutation = vi.hoisted(() => ({
@@ -17,7 +18,13 @@ const notesMutation = vi.hoisted(() => ({
   mutateAsync: vi.fn(),
 }));
 
-const emptyDetails = vi.hoisted(() => ({
+const meetingQuery = vi.hoisted(() => ({
+  data: undefined as MeetingDetails | undefined,
+  isLoading: false,
+  refetch: vi.fn(),
+}));
+
+const emptyDetails = vi.hoisted<MeetingDetails>(() => ({
   library_item_id: "meeting-empty",
   started_at: "2026-08-11T14:00:00Z",
   ended_at: "2026-08-11T14:10:00Z",
@@ -34,7 +41,7 @@ const emptyDetails = vi.hoisted(() => ({
 }));
 
 vi.mock("../../queries", () => ({
-  useMeetingDetails: () => ({ data: emptyDetails, isLoading: false }),
+  useMeetingDetails: () => meetingQuery,
   useUpdateMeetingNotes: () => notesMutation,
   useGenerateMeetingSummary: () => ({
     error: null,
@@ -66,7 +73,14 @@ i18n.loadAndActivate({
 afterEach(() => {
   cleanup();
   notesMutation.mutateAsync.mockReset();
+  emptyDetails.note_markers = [];
+  emptyDetails.live_transcript = [];
+  meetingQuery.data = emptyDetails;
+  meetingQuery.isLoading = false;
+  meetingQuery.refetch.mockReset();
 });
+
+meetingQuery.data = emptyDetails;
 
 describe("MeetingDetail notes", () => {
   test("opens an editable note even when the meeting has no notes yet", async () => {
@@ -107,5 +121,69 @@ describe("MeetingDetail notes", () => {
         },
       });
     });
+  });
+
+  test("keeps a failed detail retryable instead of loading forever", () => {
+    meetingQuery.data = undefined;
+
+    render(
+      <I18nProvider i18n={i18n}>
+        <MeetingDetail
+          id="missing-meeting"
+          view="notes"
+          segments={[]}
+          audioAvailable={false}
+          onPlayNote={vi.fn()}
+        />
+      </I18nProvider>,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Retry" }));
+    expect(meetingQuery.refetch).toHaveBeenCalledOnce();
+    expect(screen.queryByText("Loading...")).toBeNull();
+  });
+});
+
+describe("MeetingDetail moments", () => {
+  test("expands a marked source independently from playing its audio", () => {
+    emptyDetails.note_markers = [
+      {
+        id: "moment-1",
+        captured_at_ms: 90_000,
+        start_ms: 84_000,
+        end_ms: 96_000,
+        created_at: "2026-08-11T14:01:30Z",
+      },
+    ];
+    const onPlayNote = vi.fn();
+
+    render(
+      <I18nProvider i18n={i18n}>
+        <MeetingDetail
+          id="meeting-empty"
+          view="moments"
+          segments={[
+            {
+              start_ms: 84_000,
+              end_ms: 96_000,
+              text: "Keep the shortcut discoverable in daily use.",
+            },
+          ]}
+          audioAvailable
+          onPlayNote={onPlayNote}
+        />
+      </I18nProvider>,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: /Captured moment/ }));
+
+    expect(screen.getByText("Source").isConnected).toBe(true);
+    expect(
+      screen.getAllByText("Keep the shortcut discoverable in daily use."),
+    ).toHaveLength(2);
+
+    fireEvent.click(screen.getByRole("button", { name: "Play audio" }));
+
+    expect(onPlayNote).toHaveBeenCalledWith(84_000);
   });
 });

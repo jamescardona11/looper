@@ -1,5 +1,3 @@
-import { Eyebrow } from "@/shared/components/eyebrow";
-
 export function SectionHeader({
   title,
   hint,
@@ -17,10 +15,7 @@ export function SectionHeader({
         </span>
       ) : null}
       <div>
-        <Eyebrow className="hidden text-muted-foreground md:block">{title}</Eyebrow>
-        <h2 className="font-display font-semibold text-lg tracking-tight md:mt-2 md:text-2xl">
-          {title}
-        </h2>
+        <h2 className="font-display font-semibold text-lg tracking-tight md:text-2xl">{title}</h2>
         {hint ? <p className="mt-1 max-w-2xl text-muted-foreground text-sm">{hint}</p> : null}
       </div>
     </header>

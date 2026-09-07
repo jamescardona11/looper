@@ -101,27 +101,57 @@ afterEach(() => {
 });
 
 describe("app settings sections", () => {
-  test("exposes the meeting notification toggle", () => {
-    const toggleMeetingAwareness = vi.fn();
+  test("exposes independent Calendar and microphone awareness toggles", () => {
+    const toggleCalendarAwareness = vi.fn();
+    const setMicrophoneAwareness = vi.fn();
+    const setSystemAudio = vi.fn();
+    const setLiveTranscript = vi.fn();
     render(
       <I18nProvider i18n={i18n}>
         <AppCalendarSection
           controls={controlSet({
-            toggleCalendarAwareness: toggleMeetingAwareness,
+            toggleCalendarAwareness,
           })}
           calendarMeetingAwarenessEnabled
           onCalendarMeetingAwarenessEnabledChange={vi.fn()}
+          microphoneMeetingAwarenessEnabled
+          onMicrophoneMeetingAwarenessEnabledChange={setMicrophoneAwareness}
+          meetingSystemAudioEnabled
+          onMeetingSystemAudioEnabledChange={setSystemAudio}
+          meetingLiveTranscriptEnabled
+          onMeetingLiveTranscriptEnabledChange={setLiveTranscript}
           platformCapabilities={capabilities}
         />
       </I18nProvider>,
     );
 
-    expect(screen.getByText("Meeting notifications")).toBeTruthy();
+    expect(screen.getByText("Meeting awareness")).toBeTruthy();
+    expect(screen.getByText("Calendar reminders")).toBeTruthy();
+    expect(screen.getByText("Microphone activity suggestions")).toBeTruthy();
+    expect(screen.getByText("Meeting recording")).toBeTruthy();
     fireEvent.click(
-      screen.getByRole("switch", { name: "Toggle meeting notifications" }),
+      screen.getByRole("switch", { name: "Toggle calendar meeting reminders" }),
+    );
+    fireEvent.click(
+      screen.getByRole("switch", {
+        name: "Toggle microphone activity suggestions",
+      }),
+    );
+    fireEvent.click(
+      screen.getByRole("switch", {
+        name: "Toggle system audio for new meetings",
+      }),
+    );
+    fireEvent.click(
+      screen.getByRole("switch", {
+        name: "Toggle live transcript for new meetings",
+      }),
     );
 
-    expect(toggleMeetingAwareness).toHaveBeenCalledOnce();
+    expect(toggleCalendarAwareness).toHaveBeenCalledOnce();
+    expect(setMicrophoneAwareness).toHaveBeenCalledWith(false);
+    expect(setSystemAudio).toHaveBeenCalledWith(false);
+    expect(setLiveTranscript).toHaveBeenCalledWith(false);
   });
 
   test("connects native permission and privacy actions", async () => {

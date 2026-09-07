@@ -217,6 +217,9 @@ impl MeetingCaptureManager {
             return;
         }
         self.set_state(app, MeetingCaptureState::default());
+        if let Err(error) = pill::show_idle_sticky(app) {
+            tracing::error!("Failed to restore Dictation after meeting processing: {error}");
+        }
     }
 
     pub(crate) fn continue_after_silence(
@@ -888,7 +891,8 @@ impl MeetingCaptureManager {
         // en vivo de la primera tanda siguen apuntando a lo mismo.
         let (item_dir, partial_path, final_path, writer) = match &resume {
             Some(target) => {
-                let writer = append_wav_writer(&target.audio_path).map_err(|err| err.to_string())?;
+                let writer =
+                    append_wav_writer(&target.audio_path).map_err(|err| err.to_string())?;
                 let directory = target
                     .audio_path
                     .parent()
@@ -1063,11 +1067,8 @@ impl MeetingCaptureManager {
                         },
                     );
                 }
-                let _ = task_storage.finish_meeting_details(
-                    &task_id,
-                    &Utc::now().to_rfc3339(),
-                    false,
-                );
+                let _ =
+                    task_storage.finish_meeting_details(&task_id, &Utc::now().to_rfc3339(), false);
                 let previous = state.read().clone();
                 *state.write() = MeetingCaptureState {
                     phase: MeetingCapturePhase::Error,
@@ -1199,23 +1200,13 @@ impl MeetingCaptureManager {
             live_transcription.stop();
         }
         let result = match captured {
-            Ok(captured) => self.finalize_capture(
-                app,
-                app_state,
-                &id,
-                &partial_path,
-                &final_path,
-                captured,
-            ),
+            Ok(captured) => {
+                self.finalize_capture(app, app_state, &id, &partial_path, &final_path, captured)
+            }
             Err(message) => Err(message),
         };
 
         self.busy.store(false, Ordering::SeqCst);
-        if !app_state.pill().is_recording() {
-            if let Err(error) = pill::show_idle_sticky(app) {
-                tracing::error!("Failed to restore Dictation after meeting stop: {error}");
-            }
-        }
         self.refresh_menus(app, app_state);
 
         match result {
@@ -1227,6 +1218,18 @@ impl MeetingCaptureManager {
                     ..Default::default()
                 };
                 self.set_state(app, processing.clone());
+                // La captura ya terminó: el trabajo de transcripción continúa
+                // en segundo plano, pero la ventana tiene que volver al pill
+                // de dictado inmediatamente. Mantener el rail de reunión aquí
+                // hacía que una grabación larga pareciera bloqueada y dejaba
+                // expuesto un frame nativo intermedio durante el resize.
+                if !app_state.pill().is_recording() {
+                    if let Err(error) = pill::show_idle_sticky(app) {
+                        tracing::error!(
+                            "Failed to restore Dictation after meeting capture: {error}"
+                        );
+                    }
+                }
                 Ok(processing)
             }
             Err(message) => {
@@ -1254,6 +1257,13 @@ impl MeetingCaptureManager {
                     ..Default::default()
                 };
                 self.set_state(app, failed);
+                if !app_state.pill().is_recording() {
+                    if let Err(error) = pill::show_idle_sticky(app) {
+                        tracing::error!(
+                            "Failed to restore Dictation after meeting finalization error: {error}"
+                        );
+                    }
+                }
                 Err(message)
             }
         }
@@ -2282,6 +2292,7 @@ mod tests {
                 if message == "Audio device disconnected"
         ));
 
+        drop(storage);
         fs::remove_dir_all(directory).unwrap();
     }
 
@@ -2513,6 +2524,7 @@ mod tests {
         assert_eq!(important.marker.end_ms, 50_000);
         assert_eq!(important.details.note_markers.len(), 2);
 
+        drop(storage);
         fs::remove_dir_all(directory).unwrap();
     }
 
@@ -2692,6 +2704,8 @@ mod tests {
             }
         );
 
+        drop(reader);
+        drop(storage);
         fs::remove_dir_all(directory).unwrap();
     }
 

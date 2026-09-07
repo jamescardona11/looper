@@ -6,6 +6,9 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "capture:previews": "pnpm capture:previews:en && pnpm capture:previews:es",
+    "capture:previews:en": "LOOPER_PREVIEW_LOCALE=en node scripts/capture-product-previews.mjs",
+    "capture:previews:es": "LOOPER_PREVIEW_LOCALE=es node scripts/capture-product-previews.mjs",
     "routes:generate": "node scripts/generate-route-tree.mjs",
     "build": "pnpm run routes:generate && tsc --noEmit && vite build",
     "preview": "vite preview",

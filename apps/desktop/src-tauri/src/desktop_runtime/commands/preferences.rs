@@ -54,17 +54,26 @@ pub(crate) fn get_meeting_awareness_state(
     state.meeting_awareness().state()
 }
 
-/// La tarjeta se retira sola pasado su tiempo de vida; esto es "nunca más".
-/// Apaga el ajuste que gobierna todos los avisos de reunión, así que no
-/// vuelven hasta que se reactiven desde Ajustes.
+#[tauri::command]
+pub(crate) fn dismiss_meeting_awareness(
+    app: AppHandle<AppRuntime>,
+    state: tauri::State<AppState>,
+) {
+    state.meeting_awareness().dismiss(&app);
+}
+
+/// La tarjeta se retira sola pasado su tiempo de vida; esto es "nunca más"
+/// para la fuente que la originó. Calendario y actividad de micrófono tienen
+/// controles independientes y uno no puede apagar el otro.
 #[tauri::command]
 pub(crate) fn disable_meeting_awareness_notifications(
+    source: meeting_awareness::MeetingAwarenessSource,
     app: AppHandle<AppRuntime>,
     state: tauri::State<AppState>,
 ) -> Result<(), String> {
     let (_, next) = state
         .persist_settings_with(|_, settings| {
-            settings.calendar_meeting_awareness_enabled = false;
+            disable_awareness_source(settings, source);
         })
         .map_err(|failure| failure.to_string())?;
     state.meeting_awareness().dismiss(&app);
@@ -74,6 +83,20 @@ pub(crate) fn disable_meeting_awareness_notifications(
     #[cfg(target_os = "macos")]
     crate::set_app_menu(&app, &next).map_err(|failure| failure.to_string())?;
     Ok(())
+}
+
+fn disable_awareness_source(
+    settings: &mut UserSettings,
+    source: meeting_awareness::MeetingAwarenessSource,
+) {
+    match source {
+        meeting_awareness::MeetingAwarenessSource::Calendar => {
+            settings.calendar_meeting_awareness_enabled = false;
+        }
+        meeting_awareness::MeetingAwarenessSource::Microphone => {
+            settings.microphone_meeting_awareness_enabled = false;
+        }
+    }
 }
 
 #[tauri::command]
@@ -228,7 +251,9 @@ pub(crate) fn refresh_native_menus(app: &AppHandle<AppRuntime>, settings: &UserS
 
 #[cfg(test)]
 mod tests {
-    use super::DictationStats;
+    use super::{disable_awareness_source, DictationStats};
+    use crate::meeting_awareness::MeetingAwarenessSource;
+    use crate::settings::UserSettings;
 
     #[test]
     fn stats_payload_keeps_the_frontend_field_names() {
@@ -241,5 +266,23 @@ mod tests {
         assert_eq!(encoded["totalWords"], 12);
         assert_eq!(encoded["totalDurationMs"], 34);
         assert_eq!(encoded["totalDictations"], 5);
+    }
+
+    #[test]
+    fn meeting_opt_out_disables_only_the_selected_source() {
+        let mut settings = UserSettings {
+            calendar_meeting_awareness_enabled: true,
+            microphone_meeting_awareness_enabled: true,
+            ..UserSettings::default()
+        };
+
+        disable_awareness_source(&mut settings, MeetingAwarenessSource::Calendar);
+        assert!(!settings.calendar_meeting_awareness_enabled);
+        assert!(settings.microphone_meeting_awareness_enabled);
+
+        settings.calendar_meeting_awareness_enabled = true;
+        disable_awareness_source(&mut settings, MeetingAwarenessSource::Microphone);
+        assert!(settings.calendar_meeting_awareness_enabled);
+        assert!(!settings.microphone_meeting_awareness_enabled);
     }
 }

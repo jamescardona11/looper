@@ -38,8 +38,8 @@ export function activateLocale(locale: Locale) {
 export function detectLocale(): Locale {
   if (typeof globalThis === "undefined") return DEFAULT_LOCALE;
   const nav = (globalThis as any).navigator;
-  if (!nav) return DEFAULT_LOCALE;
-  const lang = nav.language?.split("-")[0];
+  const runtimeLocale = nav?.language ?? Intl.DateTimeFormat().resolvedOptions().locale;
+  const lang = runtimeLocale?.split("-")[0];
   if (SUPPORTED_LOCALES.includes(lang as Locale)) return lang as Locale;
   return DEFAULT_LOCALE;
 }

@@ -28,6 +28,5 @@ pub use types::{
 };
 #[cfg(test)]
 pub(crate) use types::{MeetingCalendarContext, MeetingTranscriptSource};
-#[cfg(debug_assertions)]
 pub(crate) use types::{MeetingCapturePhase, MeetingCaptureState};
 pub use watch::LibraryWatchFolder;

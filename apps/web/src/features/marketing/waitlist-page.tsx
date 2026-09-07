@@ -13,18 +13,22 @@ export function WaitlistPage({ referredBy }: { referredBy?: string }) {
   const [email, setEmail] = useState("");
   const [busy, setBusy] = useState(false);
   const [code, setCode] = useState<string | null>(null);
+  const [error, setError] = useState("");
 
   const { join, total, status } = useWaitlist(code);
 
   const submit = async () => {
     if (!email.trim() || busy) return;
     setBusy(true);
+    setError("");
     try {
       const res = await join({ email: email.trim(), ...(referredBy ? { referredBy } : {}) });
       setCode(res.referralCode);
       toast.success(res.alreadyJoined ? t("waitlist.alreadyOnList") : t("waitlist.onList"));
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : t("waitlist.joinError"));
+      const message = err instanceof Error ? err.message : t("waitlist.joinError");
+      setError(message);
+      toast.error(message);
     } finally {
       setBusy(false);
     }
@@ -135,7 +139,12 @@ export function WaitlistPage({ referredBy }: { referredBy?: string }) {
                 required
                 autoComplete="email"
                 value={email}
-                onChange={(event) => setEmail(event.target.value)}
+                onChange={(event) => {
+                  setEmail(event.target.value);
+                  setError("");
+                }}
+                aria-describedby={error ? "waitlist-error" : undefined}
+                aria-invalid={error ? true : undefined}
                 placeholder="you@example.com"
                 className="mt-2 w-full rounded-lg border border-border bg-background px-4 py-3 text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
               />
@@ -147,6 +156,11 @@ export function WaitlistPage({ referredBy }: { referredBy?: string }) {
                 {busy ? t("waitlist.joining") : t("waitlist.join")}
                 {!busy ? <IconArrowRight className="size-4" aria-hidden /> : null}
               </button>
+              {error ? (
+                <p id="waitlist-error" role="alert" className="mt-3 text-destructive text-sm">
+                  {error}
+                </p>
+              ) : null}
               <p className="mt-4 text-muted-foreground text-xs leading-relaxed">
                 {t("waitlist.termsNote")}{" "}
                 <Link to="/terms" className="underline underline-offset-4 hover:text-foreground">

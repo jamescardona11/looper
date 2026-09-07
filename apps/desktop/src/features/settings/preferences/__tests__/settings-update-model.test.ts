@@ -82,6 +82,8 @@ describe("settings update model", () => {
     expect(args.localModel).toBe(model.key);
     expect(args.smartShortcut).toBe("Fn");
     expect(args.llmEndpoint).toBe("https://openrouter.ai/api/v1");
+    expect(args.meetingSystemAudioEnabled).toBe(true);
+    expect(args.meetingLiveTranscriptEnabled).toBe(true);
   });
 
   test("disables gated behaviors when AI features are unavailable", () => {
@@ -135,5 +137,16 @@ describe("settings update model", () => {
     expect(buildSettingsUpdateArgs(context, { language: "fr" }).language).toBe(
       "fr",
     );
+  });
+
+  test("can persist Calendar awareness before the draft render catches up", () => {
+    const context = createContext();
+    context.draft.calendarMeetingAwarenessEnabled = false;
+
+    expect(
+      buildSettingsUpdateArgs(context, {
+        calendarMeetingAwarenessEnabled: true,
+      }).calendarMeetingAwarenessEnabled,
+    ).toBe(true);
   });
 });

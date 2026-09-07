@@ -8,10 +8,12 @@ import { formatShortcutForDisplay } from "../../../shared/lib/shortcuts";
 import { currentTimePreset, parseTranscriptionSearch } from "../searchQuery";
 import {
   buildTranscriptionListEntries,
+  filterHistoryTranscriptions,
   transcriptionEntryClassName,
   transcriptionGroupLabel,
   transcriptionListViewState,
   visibleTranscriptions,
+  type HistoryTranscriptionFilter,
   type TranscriptionListEntry,
 } from "../transcription-list-policy";
 import {
@@ -28,7 +30,10 @@ import {
   transcriptionDataKey,
   useFreshTranscriptionIds,
 } from "./transcription-list-lifecycle";
-import { TranscriptionListSearchControls } from "./transcription-list-search-controls";
+import {
+  HistoryTranscriptionControls,
+  TranscriptionListSearchControls,
+} from "./transcription-list-search-controls";
 import { TranscriptionListViewport } from "./transcription-list-viewport";
 
 interface TranscriptionListProps {
@@ -37,6 +42,9 @@ interface TranscriptionListProps {
   focusRecordId?: string | null;
   /** Home solo muestra el ahora; el archivo completo vive en Memory. */
   todayOnly?: boolean;
+  /** El historial completo expone sólo facetas que existen en el registro local. */
+  historyRoute?: boolean;
+  onOpenShortcutSettings?: () => void;
 }
 
 // Coincide con la animación looper-poof-out de app/animations.css.
@@ -51,6 +59,8 @@ function TranscriptionList({
   isActive = true,
   focusRecordId = null,
   todayOnly = false,
+  historyRoute = false,
+  onOpenShortcutSettings,
 }: TranscriptionListProps) {
   const { t } = useListTranslations();
   const { data: smartShortcut } = useSettings(
@@ -62,6 +72,8 @@ function TranscriptionList({
   const reducedMotion = useReducedMotion();
   const shiftHeld = useShiftHeld(isActive);
   const [query, setQuery] = useState("");
+  const [historyFilter, setHistoryFilter] =
+    useState<HistoryTranscriptionFilter>("all");
   const delayedQuery = useDebouncedValue(query, 300);
   const parsedQuery = useMemo(() => parseTranscriptionSearch(query), [query]);
   const delayedText = useMemo(
@@ -93,25 +105,28 @@ function TranscriptionList({
     () => new Set(),
   );
 
-  const visibleRecords = useMemo(
-    () =>
-      visibleTranscriptions(transcriptions, {
-        todayOnly,
-        text: delayedText,
-        after: parsedQuery.after,
-        before: parsedQuery.before,
-        sort: parsedQuery.sort,
-        now: new Date(),
-      }),
-    [
-      transcriptions,
+  const visibleRecords = useMemo(() => {
+    const matchingRecords = visibleTranscriptions(transcriptions, {
       todayOnly,
-      delayedText,
-      parsedQuery.after,
-      parsedQuery.before,
-      parsedQuery.sort,
-    ],
-  );
+      text: delayedText,
+      after: parsedQuery.after,
+      before: parsedQuery.before,
+      sort: parsedQuery.sort,
+      now: new Date(),
+    });
+    return historyRoute
+      ? filterHistoryTranscriptions(matchingRecords, historyFilter)
+      : matchingRecords;
+  }, [
+    transcriptions,
+    todayOnly,
+    delayedText,
+    parsedQuery.after,
+    parsedQuery.before,
+    parsedQuery.sort,
+    historyFilter,
+    historyRoute,
+  ]);
   const chronologicalSort =
     parsedQuery.sort === "recent" || parsedQuery.sort === "oldest";
   const groupLabelFor = useCallback(
@@ -235,23 +250,38 @@ function TranscriptionList({
         duration: reducedMotion ? 0 : 0.25,
         ease: "easeOut",
       }}
-      className="w-full flex-1 min-h-0 h-0 flex flex-col"
+      className={
+        todayOnly
+          ? "mt-[26px] w-full shrink-0"
+          : "w-full flex-1 min-h-0 h-0 flex flex-col"
+      }
     >
       <FreshAnimationExpiry
         key={transcriptionDataKey(transcriptions)}
         freshIds={freshIds}
       />
-      <TranscriptionListSearchControls
-        query={query}
-        sort={parsedQuery.sort}
-        time={currentTimePreset(parsedQuery.after, parsedQuery.before)}
-        records={transcriptions}
-        focusRecordId={focusRecordId}
-        onQueryChange={setQuery}
-      />
+      {!todayOnly && historyRoute ? (
+        <HistoryTranscriptionControls
+          query={query}
+          filter={historyFilter}
+          onFilterChange={setHistoryFilter}
+          onQueryChange={setQuery}
+        />
+      ) : !todayOnly ? (
+        <TranscriptionListSearchControls
+          query={query}
+          sort={parsedQuery.sort}
+          time={currentTimePreset(parsedQuery.after, parsedQuery.before)}
+          records={transcriptions}
+          focusRecordId={focusRecordId}
+          onQueryChange={setQuery}
+        />
+      ) : null}
       <TranscriptionListViewport
+        compact={todayOnly}
         state={listState}
         shortcutKeys={shortcutKeys}
+        onOpenShortcutSettings={onOpenShortcutSettings}
         entries={entries}
         computeItemKey={entryKey}
         renderEntry={renderEntry}

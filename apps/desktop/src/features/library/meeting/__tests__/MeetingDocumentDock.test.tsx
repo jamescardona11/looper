@@ -46,8 +46,6 @@ const renderDock = (overrides = {}) => {
     audioCurrentTime: 22,
     audioDuration: 60,
     scrubberPercent: 36,
-    transcriptOpen: false,
-    onTranscriptToggle: vi.fn(),
     ...overrides,
   };
   const view = render(
@@ -59,38 +57,93 @@ const renderDock = (overrides = {}) => {
 };
 
 describe("MeetingDocumentDock", () => {
-  test("keeps playback, Ask, and transcript controls in one bottom dock", () => {
+  test("keeps playback and Ask in the document instead of a global dock", () => {
     const { container, props } = renderDock();
     const dock = container.querySelector('[data-ui-dock="meeting-document"]');
+    const sourceStatus = screen.getByRole("status");
 
-    expect(dock?.className).toContain("absolute");
-    expect(dock?.className).toContain("bottom-0");
+    expect(dock?.className).not.toContain("absolute");
+    expect(screen.getByText("Source retained").isConnected).toBe(true);
+    expect(sourceStatus.getAttribute("data-state")).toBe("retained");
+    expect(
+      screen.getByText("Answers are generated from this recording.")
+        .isConnected,
+    ).toBe(true);
 
     fireEvent.click(screen.getByRole("button", { name: "Play audio" }));
-    fireEvent.click(screen.getByRole("button", { name: "Transcript" }));
 
     expect(props.onTogglePlayback).toHaveBeenCalledTimes(1);
-    expect(props.onTranscriptToggle).toHaveBeenCalledTimes(1);
   });
 
-  test("prefills a follow-up and submits it through the meeting API", () => {
+  test("shows loading without claiming retention before audio is ready", () => {
+    renderDock({ audioReady: false });
+
+    expect(screen.getByText("Loading source…").isConnected).toBe(true);
+    expect(screen.queryByText("Source retained")).toBeNull();
+    expect(screen.getByRole("status").getAttribute("data-state")).toBe(
+      "loading",
+    );
+    expect(
+      (
+        screen.getByRole("button", {
+          name: "Play audio",
+        }) as HTMLButtonElement
+      ).disabled,
+    ).toBe(true);
+  });
+
+  test("shows unavailable when loading or playback has failed", () => {
+    renderDock({
+      audioReady: true,
+      audioError: "Audio unavailable",
+      isPlaying: true,
+    });
+
+    expect(screen.getByText("Source unavailable").isConnected).toBe(true);
+    expect(screen.queryByText("Source retained")).toBeNull();
+    expect(screen.getByRole("status").getAttribute("data-state")).toBe(
+      "unavailable",
+    );
+    expect(
+      (
+        screen.getByRole("button", {
+          name: "Pause audio",
+        }) as HTMLButtonElement
+      ).disabled,
+    ).toBe(true);
+  });
+
+  test("keeps a playing source retained during a readiness handoff", () => {
+    renderDock({ audioReady: false, isPlaying: true });
+
+    expect(screen.getByText("Source retained").isConnected).toBe(true);
+    expect(screen.getByRole("status").getAttribute("data-state")).toBe(
+      "retained",
+    );
+    expect(
+      (
+        screen.getByRole("button", {
+          name: "Pause audio",
+        }) as HTMLButtonElement
+      ).disabled,
+    ).toBe(false);
+  });
+
+  test("submits a contextual question through the meeting API", () => {
     mutate.mockImplementation((_variables, options) => {
       options.onSuccess("The decision and owners are ready to share.");
     });
     renderDock();
 
-    fireEvent.click(screen.getByRole("button", { name: "Draft follow-up" }));
-    const input = screen.getByRole("textbox", { name: "Ask this recording…" });
-    expect((input as HTMLInputElement).value).toBe(
-      "Draft a concise follow-up with the decision and owners",
-    );
+    const input = screen.getByRole("textbox", { name: "Ask this note…" });
+    fireEvent.change(input, { target: { value: "What did we decide?" } });
 
     fireEvent.click(screen.getByRole("button", { name: "Ask recording" }));
 
     expect(mutate).toHaveBeenCalledWith(
       {
         id: "meeting-1",
-        question: "Draft a concise follow-up with the decision and owners",
+        question: "What did we decide?",
       },
       expect.objectContaining({ onSuccess: expect.any(Function) }),
     );
@@ -117,12 +170,13 @@ describe("MeetingDocumentDock", () => {
     expect(
       (
         screen.getByRole("textbox", {
-          name: "Ask this recording…",
+          name: "Ask this note…",
         }) as HTMLInputElement
       ).disabled,
     ).toBe(true);
     expect(
-      screen.getByPlaceholderText("Download a local model").isConnected,
+      screen.getByPlaceholderText("Meeting intelligence unavailable")
+        .isConnected,
     ).toBe(true);
   });
 
@@ -130,9 +184,10 @@ describe("MeetingDocumentDock", () => {
     askState.isPending = true;
     renderDock();
 
-    expect(screen.getByRole("status").textContent).toContain(
-      "Thinking locally…",
-    );
+    expect(
+      screen.getByText("Thinking locally…").closest('[role="status"]')
+        ?.textContent,
+    ).toContain("Thinking locally…");
     expect(
       (
         screen.getByRole("button", {

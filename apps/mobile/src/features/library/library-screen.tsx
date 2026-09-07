@@ -1,4 +1,5 @@
 import { useMeetingSessions, useNotes } from "@looper/data";
+import { useTranslation } from "@looper/i18n/react";
 import { type Href, useRouter } from "expo-router";
 import { type ReactNode, useCallback, useMemo, useState } from "react";
 import { Pressable, SectionList, StyleSheet, Text, TextInput, View } from "react-native";
@@ -14,65 +15,67 @@ import {
   buildLibraryItems,
   groupLibraryItemsByDay,
   type LibraryItem,
+  recentLibraryItems,
   searchLibraryItems,
 } from "./library-logic";
 
 type LibrarySection = { key: string; label: string; data: LibraryItem[] };
 type Starter = { icon: IconName; title: string; note: string; href: Href };
 
-const KIND: Record<LibraryItem["kind"], { icon: IconName; label: string }> = {
-  dictation: { icon: "dictado", label: "Dictado" },
-  meeting: { icon: "meeting", label: "Meeting" },
-  note: { icon: "nota", label: "Nota" },
+const KIND_ICON: Record<LibraryItem["kind"], IconName> = {
+  dictation: "dictado",
+  meeting: "meeting",
+  note: "nota",
 };
 
-/** El estado vacío ofrece las tres capturas, no un cartel: cada fila navega. */
-const STARTERS: Starter[] = [
-  {
-    icon: "meeting",
-    title: "Graba tu próximo meeting",
-    note: "Se transcribe solo al terminar",
-    href: "/capture",
-  },
-  {
-    icon: "dictado",
-    title: "Dicta una idea suelta",
-    note: "Más rápido que escribirla",
-    href: "/dictation",
-  },
-  { icon: "nota", title: "Escribe una nota", note: "Empieza en blanco", href: "/notes" },
-];
-
 const SKELETON_ROWS = ["a", "b", "c", "d", "e"];
-const libraryDateFormatter = new Intl.DateTimeFormat("es", { day: "numeric", month: "short" });
 
 export function LibraryScreen() {
+  const { locale, t } = useTranslation();
   const router = useRouter();
   const notes = useNotes();
   const meetings = useMeetingSessions();
   const [searching, setSearching] = useState(false);
   const [query, setQuery] = useState("");
+  const [rangeStart] = useState(() => Date.now() - 7 * 24 * 60 * 60 * 1_000);
 
   const items = useMemo(
-    () => buildLibraryItems(notes.notes, meetings.sessions, "all"),
-    [meetings.sessions, notes.notes],
+    () => buildLibraryItems(notes.notes, meetings.sessions, "all", locale),
+    [locale, meetings.sessions, notes.notes],
+  );
+  const rangedItems = useMemo(
+    () => items.filter((item) => item.updatedAt >= rangeStart),
+    [items, rangeStart],
+  );
+  const recentItems = useMemo(() => recentLibraryItems(items, rangeStart), [items, rangeStart]);
+  const wordCount = useMemo(
+    () => rangedItems.reduce((total, item) => total + wordCountFor(item.preview), 0),
+    [rangedItems],
   );
   const needle = searching ? query.trim() : "";
   const sections = useMemo<LibrarySection[]>(() => {
     if (needle) {
       const hits = searchLibraryItems(items, needle);
-      return [{ key: "results", label: resultsLabel(hits.length, needle), data: hits }];
+      return [
+        {
+          key: "results",
+          label: t("mobile.library.results", { count: hits.length, query: needle }),
+          data: hits,
+        },
+      ];
     }
-    return groupLibraryItemsByDay(items, Date.now()).map((group) => ({
+    return groupLibraryItemsByDay(recentItems, Date.now(), locale).map((group) => ({
       key: group.key,
       label: group.label,
       data: group.items,
     }));
-  }, [items, needle]);
+  }, [items, locale, needle, recentItems, t]);
 
   const openItem = useCallback(
     (item: LibraryItem) => {
-      router.push((item.kind === "meeting" ? `/meeting/${item.id}` : "/notes") as Href);
+      router.push(
+        (item.kind === "meeting" ? `/meeting/${item.id}` : `/notes?id=${item.id}`) as Href,
+      );
     },
     [router],
   );
@@ -100,18 +103,34 @@ export function LibraryScreen() {
       <View style={styles.emptyArea}>
         <EmptyState
           action={<StarterList onSelect={(href) => router.push(href)} />}
-          body="Empieza por donde te resulte natural. Todo lo que captures acaba aquí, buscable y citable."
-          title="Todavía no hay nada que recordar."
+          body={t("mobile.library.emptyBody")}
+          title={t("mobile.library.emptyTitle")}
         />
       </View>
     );
-  } else if (sections.every((section) => section.data.length === 0)) {
+  } else if (needle && sections.every((section) => section.data.length === 0)) {
     body = (
       <View style={styles.emptyArea}>
         <EmptyState
-          action={<Button label="Borrar búsqueda" onPress={() => setQuery("")} />}
-          body="La búsqueda mira el título y el contenido. Prueba con otra palabra."
-          title={`Sin resultados para «${needle}».`}
+          action={<Button label={t("mobile.library.clearSearch")} onPress={() => setQuery("")} />}
+          body={t("mobile.library.noResultsBody")}
+          title={t("mobile.library.noResultsTitle", { query: needle })}
+        />
+      </View>
+    );
+  } else if (recentItems.length === 0) {
+    body = (
+      <View style={styles.emptyArea}>
+        <EmptyState
+          action={
+            <Button
+              label={t("mobile.library.viewAll")}
+              onPress={() => router.push("/notes" as Href)}
+              variant="secondary"
+            />
+          }
+          body={t("mobile.library.noRecentBody")}
+          title={t("mobile.library.noRecentTitle")}
         />
       </View>
     );
@@ -122,12 +141,17 @@ export function LibraryScreen() {
         keyboardDismissMode="on-drag"
         keyboardShouldPersistTaps="handled"
         keyExtractor={(item) => `${item.kind}:${item.id}`}
+        ListHeaderComponent={null}
         renderItem={renderItem}
-        renderSectionHeader={({ section }) => (
-          <View style={styles.sectionHeader}>
-            <SectionLabel>{section.label}</SectionLabel>
-          </View>
-        )}
+        renderSectionHeader={
+          needle
+            ? ({ section }) => (
+                <View style={styles.sectionHeader}>
+                  <SectionLabel>{section.label}</SectionLabel>
+                </View>
+              )
+            : undefined
+        }
         sections={sections}
         stickySectionHeadersEnabled={false}
       />
@@ -140,8 +164,10 @@ export function LibraryScreen() {
         <SearchHeader onCancel={closeSearch} onChange={setQuery} query={query} />
       ) : (
         <BrowseHeader
+          hasLibraryItems={items.length > 0}
+          onOpenLibrary={() => router.push("/notes" as Href)}
           onOpenSearch={() => setSearching(true)}
-          onOpenStudio={() => router.push("/studio" as Href)}
+          wordCount={wordCount}
         />
       )}
       {body}
@@ -150,18 +176,45 @@ export function LibraryScreen() {
 }
 
 function BrowseHeader({
+  hasLibraryItems,
+  onOpenLibrary,
   onOpenSearch,
-  onOpenStudio,
+  wordCount,
 }: {
+  hasLibraryItems: boolean;
+  onOpenLibrary: () => void;
   onOpenSearch: () => void;
-  onOpenStudio: () => void;
+  wordCount: number;
 }) {
+  const { locale, t } = useTranslation();
+
   return (
-    <View style={styles.header}>
-      <Text style={styles.title}>Library</Text>
-      <View style={styles.headerActions}>
-        <HeaderIcon icon="search" label="Buscar en Library" onPress={onOpenSearch} />
-        <HeaderIcon icon="studio" label="Abrir Studio" onPress={onOpenStudio} />
+    <View style={styles.headerBlock}>
+      <View style={styles.header}>
+        <View>
+          <Text style={styles.kicker}>{t("mobile.library.kicker")}</Text>
+          <Text style={styles.title}>{t("mobile.library.greeting", { name: "James" })}</Text>
+        </View>
+        <HeaderIcon icon="search" label={t("mobile.library.search")} onPress={onOpenSearch} />
+      </View>
+      <View style={styles.signal}>
+        <Text style={styles.signalEyebrow}>{t("mobile.library.thisWeek")}</Text>
+        <View style={styles.signalMetric}>
+          <Text style={styles.signalValue}>{formatNumber(wordCount, locale)}</Text>
+          <Text style={styles.signalLabel}>{t("mobile.library.wordsCaptured")}</Text>
+        </View>
+        <Text style={styles.signalSummary}>{t("mobile.library.signalSummary")}</Text>
+        {hasLibraryItems ? (
+          <Pressable
+            accessibilityLabel={t("mobile.library.viewAll")}
+            accessibilityRole="button"
+            onPress={onOpenLibrary}
+            style={({ pressed }) => [styles.libraryLink, pressed && styles.sunk]}
+          >
+            <Text style={styles.libraryLinkText}>{t("mobile.library.viewAll")}</Text>
+            <Icon color={colors.accent} name="chevronRight" size={15} strokeWidth={2.2} />
+          </Pressable>
+        ) : null}
       </View>
     </View>
   );
@@ -197,16 +250,18 @@ function SearchHeader({
   onChange: (value: string) => void;
   onCancel: () => void;
 }) {
+  const { t } = useTranslation();
+
   return (
     <View style={styles.searchHeader}>
       <View style={styles.searchField}>
         <Icon color={colors.muted} name="search" size={17} />
         <TextInput
-          accessibilityLabel="Buscar en Library"
+          accessibilityLabel={t("mobile.library.search")}
           autoCorrect={false}
           autoFocus
           onChangeText={onChange}
-          placeholder="Meetings, dictados y notas"
+          placeholder={t("mobile.library.searchPlaceholder")}
           placeholderTextColor={colors.disabled}
           returnKeyType="search"
           style={styles.searchInput}
@@ -214,7 +269,7 @@ function SearchHeader({
         />
         {query ? (
           <Pressable
-            accessibilityLabel="Borrar búsqueda"
+            accessibilityLabel={t("mobile.library.clearSearch")}
             accessibilityRole="button"
             hitSlop={10}
             onPress={() => onChange("")}
@@ -225,7 +280,7 @@ function SearchHeader({
         ) : null}
       </View>
       <Pressable accessibilityRole="button" hitSlop={8} onPress={onCancel}>
-        <Text style={styles.cancel}>Cancelar</Text>
+        <Text style={styles.cancel}>{t("common.cancel")}</Text>
       </Pressable>
     </View>
   );
@@ -239,23 +294,25 @@ function LibraryRow({
   item: LibraryItem;
   onPress: (item: LibraryItem) => void;
 }) {
-  const kind = KIND[item.kind];
+  const { locale, t } = useTranslation();
+  const kindLabel = t(`mobile.library.kind.${item.kind}`);
   return (
     <Pressable
-      accessibilityLabel={`${kind.label}: ${item.title}`}
+      accessibilityLabel={`${kindLabel}: ${item.title}`}
       accessibilityRole="button"
       onPress={() => onPress(item)}
+      testID={`library-item-${item.kind}`}
       style={({ pressed }) => [styles.row, pressed && styles.rowPressed]}
     >
       <View style={styles.rowTile}>
-        <Icon color={colors.accent} name={kind.icon} size={16} />
+        <Icon color={colors.accent} name={KIND_ICON[item.kind]} size={16} />
       </View>
       <View style={styles.rowCopy}>
-        <Text numberOfLines={1} style={styles.rowTitle}>
+        <Text numberOfLines={2} style={styles.rowTitle}>
           {item.title}
         </Text>
         <Text numberOfLines={1} style={styles.rowMeta}>
-          {kind.label} · {relativeTime(item.updatedAt)}
+          {kindLabel} · {relativeTime(item.updatedAt, locale, t)}
         </Text>
       </View>
     </Pressable>
@@ -263,9 +320,31 @@ function LibraryRow({
 }
 
 function StarterList({ onSelect }: { onSelect: (href: Href) => void }) {
+  const { t } = useTranslation();
+  const starters: Starter[] = [
+    {
+      icon: "meeting",
+      title: t("mobile.library.starterMeeting"),
+      note: t("mobile.library.starterMeetingBody"),
+      href: "/capture",
+    },
+    {
+      icon: "dictado",
+      title: t("mobile.library.starterDictation"),
+      note: t("mobile.library.starterDictationBody"),
+      href: "/dictation",
+    },
+    {
+      icon: "nota",
+      title: t("mobile.library.starterNote"),
+      note: t("mobile.library.starterNoteBody"),
+      href: "/notes",
+    },
+  ];
+
   return (
     <View style={styles.starters}>
-      {STARTERS.map((starter) => (
+      {starters.map((starter) => (
         <Pressable
           accessibilityLabel={starter.title}
           accessibilityRole="button"
@@ -287,24 +366,29 @@ function StarterList({ onSelect }: { onSelect: (href: Href) => void }) {
   );
 }
 
-function resultsLabel(count: number, query: string): string {
-  const noun = count === 1 ? "resultado" : "resultados";
-  return `${count} ${noun} para «${query}»`;
-}
-
-function relativeTime(timestamp: number): string {
+function relativeTime(
+  timestamp: number,
+  locale: "en" | "es",
+  t: (id: string, values?: Record<string, unknown>) => string,
+): string {
   const minutes = Math.max(0, Math.round((Date.now() - timestamp) / 60_000));
-  if (minutes < 1) return "ahora";
-  if (minutes < 60) return `hace ${minutes} min`;
+  if (minutes < 1) return t("common.justNow");
+  if (minutes < 60) return t("common.minutesAgo", { min: minutes });
   const hours = Math.round(minutes / 60);
-  if (hours < 24) return `hace ${hours} h`;
-  return libraryDateFormatter.format(timestamp);
+  if (hours < 24) return t("common.hoursAgo", { hr: hours });
+  return new Intl.DateTimeFormat(locale, { day: "numeric", month: "short" }).format(timestamp);
 }
 
-/** Alto de fila del artboard: cuadro de 34 con 10 de aire arriba y abajo. */
-const ROW_HEIGHT = 55;
-/** El cuerpo de la lista respira a 8 para que el fondo de pulsación desborde el texto. */
-const LIST_GUTTER = space.sm;
+function wordCountFor(value: string): number {
+  return value.trim() ? value.trim().split(/\s+/).length : 0;
+}
+
+function formatNumber(value: number, locale: "en" | "es"): string {
+  return new Intl.NumberFormat(locale).format(value);
+}
+
+const ROW_HEIGHT = 72;
+const LIST_GUTTER = space.lg;
 
 const styles = StyleSheet.create({
   cancel: { ...typography.body, color: colors.accent, fontWeight: "500" },
@@ -312,45 +396,84 @@ const styles = StyleSheet.create({
   header: {
     alignItems: "center",
     flexDirection: "row",
-    gap: space.md,
+    gap: space.sm,
     justifyContent: "space-between",
     paddingBottom: 10,
-    paddingLeft: space.xl,
-    paddingRight: 10,
-    paddingTop: space.xs,
+    paddingHorizontal: space.lg,
+    paddingTop: space.md,
   },
-  headerActions: { alignItems: "center", flexDirection: "row", gap: 2 },
+  headerBlock: { gap: 0, paddingBottom: space.sm },
   headerIcon: {
     alignItems: "center",
-    borderRadius: radius.md,
+    backgroundColor: colors.background,
+    borderRadius: 15,
     height: hitTarget,
     justifyContent: "center",
     width: hitTarget,
   },
-  headerIconPressed: { backgroundColor: colors.surfaceMuted },
-  list: { paddingBottom: space.xxl, paddingHorizontal: LIST_GUTTER },
+  headerIconPressed: { backgroundColor: colors.surfaceMuted, transform: [{ scale: 0.95 }] },
+  kicker: { ...typography.label, color: colors.accent, letterSpacing: 1.2 },
+  libraryLink: {
+    alignItems: "center",
+    alignSelf: "flex-start",
+    flexDirection: "row",
+    gap: space.xs,
+    minHeight: hitTarget,
+    marginTop: space.sm,
+  },
+  libraryLinkText: { ...typography.meta, color: colors.accent, fontWeight: "700" },
+  list: { paddingBottom: 108, paddingHorizontal: LIST_GUTTER },
   row: {
     alignItems: "center",
-    borderRadius: radius.lg,
+    borderBottomColor: colors.border,
+    borderBottomWidth: 1,
+    borderRadius: 0,
     flexDirection: "row",
-    gap: 13,
+    gap: 11,
     minHeight: ROW_HEIGHT,
-    paddingHorizontal: space.md,
-    paddingVertical: 10,
+    paddingHorizontal: 2,
+    paddingVertical: 11,
   },
   rowCopy: { flex: 1, gap: 3, minWidth: 0 },
   rowMeta: { ...typography.meta, color: colors.muted },
-  rowPressed: { backgroundColor: colors.surfaceMuted },
+  rowPressed: { backgroundColor: colors.background, transform: [{ scale: 0.99 }] },
   rowTile: {
     alignItems: "center",
-    backgroundColor: colors.accentSubtle,
-    borderRadius: radius.md,
-    height: 34,
+    backgroundColor: colors.background,
+    borderRadius: 14,
+    height: 40,
     justifyContent: "center",
-    width: 34,
+    width: 40,
   },
-  rowTitle: { ...typography.item, color: colors.text },
+  rowTitle: {
+    ...typography.body,
+    color: colors.text,
+    fontSize: 14.5,
+    fontWeight: "600",
+    lineHeight: 19,
+  },
   safeArea: { backgroundColor: colors.background, flex: 1 },
+  signal: {
+    backgroundColor: colors.accentLight,
+    borderRadius: radius.xl,
+    marginHorizontal: space.lg,
+    padding: 20,
+  },
+  signalEyebrow: { ...typography.label, color: colors.textSecondary, letterSpacing: 1 },
+  signalLabel: { ...typography.item, color: colors.text, fontSize: 15, lineHeight: 19 },
+  signalMetric: {
+    alignItems: "baseline",
+    flexDirection: "row",
+    gap: space.sm,
+    marginTop: space.sm,
+  },
+  signalSummary: { ...typography.meta, color: colors.textSecondary, marginTop: 6 },
+  signalValue: {
+    ...typography.display,
+    color: colors.text,
+    fontSize: 38,
+    lineHeight: 42,
+  },
   searchClear: {
     alignItems: "center",
     backgroundColor: colors.borderStrong,
@@ -404,5 +527,16 @@ const styles = StyleSheet.create({
   starterTitle: { ...typography.item, color: colors.text },
   starters: { gap: 9 },
   sunk: relief.pressed,
-  title: { ...typography.title, color: colors.text },
+  title: { ...typography.title, color: colors.text, marginTop: 2 },
+  weekBar: { backgroundColor: colors.accent, borderRadius: radius.pill, minHeight: 4, width: 8 },
+  weekBarTrack: {
+    alignItems: "center",
+    backgroundColor: "rgba(72, 50, 158, 0.10)",
+    borderRadius: radius.pill,
+    height: 38,
+    justifyContent: "flex-end",
+    overflow: "hidden",
+    width: 8,
+  },
+  weekBars: { alignItems: "flex-end", flexDirection: "row", gap: 7, height: 38, marginTop: 13 },
 });

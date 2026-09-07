@@ -85,7 +85,7 @@ pub(crate) fn toggle_meeting_from_menu(app: &AppHandle<AppRuntime>) {
                     MeetingStartOptions {
                         model_key,
                         live_model_key,
-                        system_audio_enabled: true,
+                        system_audio_enabled: settings.meeting_system_audio_enabled,
                         calendar_context: None,
                     },
                 )
@@ -103,7 +103,14 @@ fn default_live_meeting_model(
     settings: &crate::settings::UserSettings,
 ) -> Option<String> {
     let models = crate::speech::list_models(app, settings);
-    select_default_live_meeting_model(&models)
+    select_live_meeting_model(settings.meeting_live_transcript_enabled, &models)
+}
+
+fn select_live_meeting_model(
+    enabled: bool,
+    models: &[crate::speech::SpeechModel],
+) -> Option<String> {
+    enabled.then(|| select_default_live_meeting_model(models)).flatten()
 }
 
 fn select_default_live_meeting_model(models: &[crate::speech::SpeechModel]) -> Option<String> {
@@ -162,14 +169,15 @@ pub(crate) fn require_meeting_license(state: &AppState) -> Result<(), String> {
     crate::license::require_license_gate(&state.settings_store, "Meeting recording")
 }
 
+/// Inicia una reunión con las preferencias persistentes. Mantener esta ruta
+/// junto a los inicios desde menú y detección evita que cada UI vuelva a crear
+/// su propio formulario y termine usando defaults distintos.
 #[tauri::command]
-pub async fn start_meeting_capture(
-    options: MeetingStartOptions,
+pub async fn start_default_meeting_capture(
     app: AppHandle<AppRuntime>,
     state: tauri::State<'_, AppState>,
 ) -> Result<MeetingCaptureState, String> {
-    require_meeting_license(&state)?;
-    state.meeting_capture().start(&app, &state, options).await
+    start_unscheduled_meeting(&app, &state).await
 }
 
 #[tauri::command]
@@ -233,22 +241,32 @@ pub async fn resume_capture(
         .await
 }
 
-/// El aviso llega por dos caminos: un evento del calendario o un micrófono que
-/// abrió otra aplicación. Exigir evento aquí rompía el segundo, que es
-/// precisamente el que no tiene ninguno: el botón fallaba con "The calendar
-/// meeting is no longer available" sobre una llamada que sí se podía grabar.
+#[tauri::command]
+pub async fn start_calendar_meeting_capture(
+    app: AppHandle<AppRuntime>,
+    state: tauri::State<'_, AppState>,
+    event_id: String,
+) -> Result<MeetingCaptureState, String> {
+    let meeting = state
+        .meeting_awareness()
+        .meeting_by_id(&event_id)
+        .ok_or_else(|| "The calendar meeting is no longer available.".to_string())?;
+    start_calendar_meeting(&app, &state, meeting).await
+}
+
+/// Este comando pertenece exclusivamente al aviso sin calendario que produce
+/// la detección del micrófono. Calendar envía su ID al comando dedicado para
+/// que un cambio de prompt no pueda sustituir silenciosamente la reunión.
 #[tauri::command]
 pub async fn start_prompted_meeting_capture(
     app: AppHandle<AppRuntime>,
     state: tauri::State<'_, AppState>,
 ) -> Result<MeetingCaptureState, String> {
     let awareness = state.meeting_awareness().state();
-    match awareness.meeting {
-        Some(meeting) => start_calendar_meeting(&app, &state, meeting).await,
-        None if awareness.phase == MeetingAwarenessPhase::Detected => {
-            start_unscheduled_meeting(&app, &state).await
-        }
-        None => Err("The meeting prompt is no longer available.".to_string()),
+    if awareness.phase == MeetingAwarenessPhase::Detected && awareness.meeting.is_none() {
+        start_unscheduled_meeting(&app, &state).await
+    } else {
+        Err("The detected call prompt is no longer available.".to_string())
     }
 }
 
@@ -266,7 +284,7 @@ async fn start_unscheduled_meeting(
             MeetingStartOptions {
                 model_key: default_meeting_model(app, &settings)?,
                 live_model_key: default_live_meeting_model(app, &settings),
-                system_audio_enabled: true,
+                system_audio_enabled: settings.meeting_system_audio_enabled,
                 calendar_context: None,
             },
         )
@@ -305,7 +323,7 @@ async fn start_calendar_meeting(
             MeetingStartOptions {
                 model_key: default_meeting_model(app, &settings)?,
                 live_model_key: default_live_meeting_model(app, &settings),
-                system_audio_enabled: true,
+                system_audio_enabled: settings.meeting_system_audio_enabled,
                 calendar_context: Some(context),
             },
         )
@@ -627,6 +645,13 @@ mod tests {
         ];
 
         assert!(select_default_live_meeting_model(&models).is_none());
+    }
+
+    #[test]
+    fn disabled_live_transcript_preference_skips_an_installed_parakeet() {
+        let models = vec![parakeet("parakeet_tdt_int8", true)];
+
+        assert!(select_live_meeting_model(false, &models).is_none());
     }
 
     #[test]

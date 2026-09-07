@@ -100,7 +100,7 @@ afterEach(() => {
 });
 
 describe("LibraryCard", () => {
-  test("preserves the row anatomy, metadata and pointer/keyboard opening", () => {
+  test("preserves the row anatomy, metadata and accessible opening", () => {
     const segments = [
       { start_ms: 0, end_ms: 1000, text: "First", speaker_id: "speaker-1" },
       { start_ms: 1000, end_ms: 3000, text: "Second", speaker_id: "speaker-2" },
@@ -108,20 +108,21 @@ describe("LibraryCard", () => {
     const { container, props } = renderCard({
       item: libraryItem({ segments }),
     });
-    const row = screen.getByRole("button", { name: /Planning/ });
+    const row = screen.getByTestId("library-card-library-1");
 
-    expect(row.className).toBe(
-      "group grid min-h-[88px] w-full min-w-0 grid-cols-[64px_minmax(0,1fr)_auto] items-center gap-3 overflow-visible rounded-xl border border-transparent px-2.5 py-2 outline-none transition-[background-color,border-color] hover:border-border-primary hover:bg-surface-secondary focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-border-hover ",
-    );
+    expect(row.className).toContain("min-h-16");
+    expect(row.className).toContain("grid-cols-[44px_minmax(0,1fr)_auto]");
+    expect(row.className).toContain("border-b");
     expect(container.querySelectorAll("svg rect")).toHaveLength(2);
     expect(screen.getByText("Planning wav")).toBeTruthy();
     expect(screen.getByText("1:05")).toBeTruthy();
     expect(screen.getByText("Imported")).toBeTruthy();
     expect(screen.getByText("1 speakers")).toBeTruthy();
     expect(screen.getByText("Ready")).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Open" })).toBeTruthy();
 
-    fireEvent.click(row);
-    fireEvent.keyDown(row, { key: " " });
+    fireEvent.click(screen.getByRole("button", { name: "Open Planning.wav" }));
+    fireEvent.click(screen.getByRole("button", { name: "Open" }));
     expect(props.onOpen).toHaveBeenCalledTimes(2);
 
     fireEvent.click(screen.getByRole("button", { name: "#planning" }));
@@ -179,22 +180,31 @@ describe("LibraryCard", () => {
     });
     const { props } = renderCard({}, distinctive);
 
-    fireEvent.click(screen.getByRole("button", { name: "More options" }));
+    const moreOptions = screen.getByRole("button", { name: "More options" });
+    expect(moreOptions.className).toContain("opacity-0");
+    expect(moreOptions.className).toContain("group-hover:opacity-100");
+    expect(moreOptions.className).toContain("group-focus-within:opacity-100");
+    expect(moreOptions.getAttribute("aria-expanded")).toBe("false");
+
+    fireEvent.focus(moreOptions);
+    fireEvent.click(moreOptions);
+    expect(moreOptions.getAttribute("aria-expanded")).toBe("true");
+    expect(screen.getByRole("menu")).toBeTruthy();
     expect(screen.getByText("DISTINCT RENAME")).toBeTruthy();
     expect(screen.getByText("DISTINCT RETRANSCRIBE")).toBeTruthy();
     expect(screen.getByText("DISTINCT DELETE")).toBeTruthy();
 
-    fireEvent.click(screen.getByRole("button", { name: "DISTINCT RENAME" }));
+    fireEvent.click(screen.getByRole("menuitem", { name: "DISTINCT RENAME" }));
     expect(props.onStartNameEdit).toHaveBeenCalledOnce();
 
     fireEvent.click(screen.getByRole("button", { name: "More options" }));
     fireEvent.click(
-      screen.getByRole("button", { name: "DISTINCT RETRANSCRIBE" }),
+      screen.getByRole("menuitem", { name: "DISTINCT RETRANSCRIBE" }),
     );
     expect(props.onRetry).toHaveBeenCalledOnce();
 
     fireEvent.click(screen.getByRole("button", { name: "More options" }));
-    fireEvent.click(screen.getByRole("button", { name: "DISTINCT DELETE" }));
+    fireEvent.click(screen.getByRole("menuitem", { name: "DISTINCT DELETE" }));
     expect(props.onDelete).toHaveBeenCalledOnce();
     expect(props.onOpen).not.toHaveBeenCalled();
   });
@@ -225,14 +235,14 @@ describe("LibraryCard", () => {
     );
 
     fireEvent.click(screen.getByRole("button", { name: "More options" }));
-    fireEvent.click(screen.getByRole("button", { name: "DISTINCT CANCEL" }));
+    fireEvent.click(screen.getByRole("menuitem", { name: "DISTINCT CANCEL" }));
     expect(props.onCancel).toHaveBeenCalledOnce();
     expect(props.onRetry).not.toHaveBeenCalled();
   });
 
   test("shift routes tags, context menu and overflow control to destructive actions", () => {
     const { props } = renderCard({ shiftHeld: true });
-    const row = screen.getByRole("button", { name: /Planning/ });
+    const row = screen.getByTestId("library-card-library-1");
 
     fireEvent.click(screen.getByRole("button", { name: "#planning" }));
     expect(props.onRemoveTag).toHaveBeenCalledWith("planning");
@@ -251,7 +261,7 @@ describe("LibraryCard", () => {
     renderCard({ onDelete });
 
     fireEvent.click(screen.getByRole("button", { name: "More options" }));
-    fireEvent.click(screen.getByRole("button", { name: "Delete" }));
+    fireEvent.click(screen.getByRole("menuitem", { name: "Delete" }));
 
     await waitFor(() =>
       expect(report).toHaveBeenCalledWith(

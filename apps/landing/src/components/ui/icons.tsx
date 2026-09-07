@@ -1,59 +1,27 @@
-/**
- * The two marks the page repeats. Both were re-declared inline in three and two
- * places respectively before assembly, at drifting sizes and stroke settings.
- * Decorative in every use: each one sits beside a visible label that already says
- * what it means, so both stay out of the accessibility tree.
- */
+/** Brand marks that sit beside a visible Looper wordmark stay decorative. */
 
 type IconProps = {
-  /** Square edge in px. The artboards use 15, 17, 18, 19 and 22 across the page. */
+  /** Square edge in px. */
   readonly size: number;
   readonly className?: string;
 };
 
-/** The Looper wordmark glyph: five bars, a waveform frozen mid-utterance. */
-export function WaveformMark({ size, className }: IconProps) {
+/** Exact geometry from assets/brand/looper-mark.svg, colored by the owning surface. */
+export function LooperMark({ size, className }: IconProps) {
   return (
     <svg
       aria-hidden="true"
       focusable="false"
       width={size}
       height={size}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
+      viewBox="0 0 80 80"
       className={className}
     >
-      <path d="M4 12v-1" />
-      <path d="M8 16V8" />
-      <path d="M12 20V4" />
-      <path d="M16 16V8" />
-      <path d="M20 13v-2" />
-    </svg>
-  );
-}
-
-/** Tray arrow. Sits inside every Download control. */
-export function DownloadIcon({ size, className }: IconProps) {
-  return (
-    <svg
-      aria-hidden="true"
-      focusable="false"
-      width={size}
-      height={size}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={className}
-    >
-      <path d="M12 3v12" />
-      <path d="m7 10 5 5 5-5" />
-      <path d="M5 21h14" />
+      <path
+        fill="currentColor"
+        d="M10 27c0-9.389 7.611-17 17-17h19v22h22v21c0 9.389-7.611 17-17 17H27c-9.389 0-17-7.611-17-17V27Z"
+      />
+      <rect width="20" height="20" x="52" y="4" rx="3" fill="currentColor" />
     </svg>
   );
 }

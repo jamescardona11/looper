@@ -10,6 +10,75 @@ export const EMPTY_TODAY_DICTATION_STATS: TodayDictationStats = {
   llmCleanedCount: 0,
 };
 
+export type WeeklyDictationDay = {
+  day: "L" | "M" | "X" | "J" | "V" | "S" | "D";
+  height: number;
+  words: number;
+};
+
+export type WeeklyDictationActivity = {
+  days: WeeklyDictationDay[];
+  words: number;
+};
+
+const WEEK_DAY_LABELS: WeeklyDictationDay["day"][] = [
+  "L",
+  "M",
+  "X",
+  "J",
+  "V",
+  "S",
+  "D",
+];
+
+export const EMPTY_WEEKLY_DICTATION_ACTIVITY: WeeklyDictationActivity = {
+  days: WEEK_DAY_LABELS.map((day) => ({ day, height: 0, words: 0 })),
+  words: 0,
+};
+
+export function deriveWeeklyDictationActivity(
+  records: TranscriptionRecord[],
+  now: Date = new Date(),
+): WeeklyDictationActivity {
+  const currentDay = now.getDay();
+  const mondayOffset = currentDay === 0 ? 6 : currentDay - 1;
+  const weekStart = new Date(
+    now.getFullYear(),
+    now.getMonth(),
+    now.getDate() - mondayOffset,
+  ).getTime();
+  const nextWeek = new Date(
+    now.getFullYear(),
+    now.getMonth(),
+    now.getDate() - mondayOffset + 7,
+  ).getTime();
+  const wordsByDay = Array.from({ length: 7 }, () => 0);
+
+  for (const record of records) {
+    if (record.status !== "success") continue;
+    const timestamp = new Date(record.timestamp).getTime();
+    if (
+      Number.isNaN(timestamp) ||
+      timestamp < weekStart ||
+      timestamp >= nextWeek
+    ) {
+      continue;
+    }
+    const dayIndex = Math.floor((timestamp - weekStart) / 86_400_000);
+    wordsByDay[dayIndex] += record.word_count;
+  }
+
+  const peak = Math.max(...wordsByDay, 0);
+  return {
+    days: WEEK_DAY_LABELS.map((day, index) => ({
+      day,
+      height: peak > 0 ? Math.round((wordsByDay[index] / peak) * 100) : 0,
+      words: wordsByDay[index],
+    })),
+    words: wordsByDay.reduce((total, words) => total + words, 0),
+  };
+}
+
 export function deriveTodayStats(
   records: TranscriptionRecord[],
 ): TodayDictationStats {

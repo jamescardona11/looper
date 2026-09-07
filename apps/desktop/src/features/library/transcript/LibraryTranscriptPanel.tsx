@@ -11,11 +11,6 @@ export function LibraryTranscriptPanel(props: LibraryTranscriptPanelProps) {
     <main
       data-testid={documentMode ? "meeting-transcript-document" : undefined}
       className={`h-full min-h-0 min-w-0 flex-1 overflow-hidden ${documentMode ? "px-0" : "px-4"}`}
-      style={
-        documentMode
-          ? { height: "clamp(520px, 65vh, 760px)", flex: "none" }
-          : undefined
-      }
     >
       {error ? (
         <LibraryTranscriptError message={error} />

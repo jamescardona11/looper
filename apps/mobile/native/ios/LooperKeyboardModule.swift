@@ -1,6 +1,7 @@
 import Foundation
 import React
 import UIKit
+import WidgetKit
 
 @objc(LooperKeyboard)
 class LooperKeyboardModule: NSObject {
@@ -39,6 +40,12 @@ class LooperKeyboardModule: NSObject {
         defaults.set(payload["activeToneIds"] as? [String] ?? [], forKey: "looper_active_tone_ids")
         writeJson(payload["toneById"], key: "looper_tone_by_id", defaults: defaults)
         writeJson(payload["smartModeRules"], key: "looper_smart_mode_rules", defaults: defaults)
+        if let summary = payload["widgetSummary"] as? NSDictionary {
+            defaults.set(summary["weeklyWordCount"] as? Int ?? 0, forKey: "looper_widget_weekly_word_count")
+            defaults.set(summary["lastCaptureTitle"] as? String, forKey: "looper_widget_last_capture_title")
+            defaults.set(summary["lastCaptureDetail"] as? String, forKey: "looper_widget_last_capture_detail")
+            WidgetCenter.shared.reloadAllTimelines()
+        }
         if let selectedToneId = payload["selectedToneId"] as? String, !selectedToneId.isEmpty {
             defaults.set(selectedToneId, forKey: "looper_selected_tone_id")
         } else {
@@ -71,8 +78,12 @@ class LooperKeyboardModule: NSObject {
         _ resolve: @escaping RCTPromiseResolveBlock,
         rejecter _: @escaping RCTPromiseRejectBlock
     ) {
-        // iOS intentionally does not expose the enabled custom keyboards list to apps.
-        resolve(false)
+        // iOS no expone la lista de teclados. La extensión sí puede confirmar
+        // acceso completo cuando se abre; reportamos esa última comprobación,
+        // no una afirmación sobre los ajustes actuales del sistema.
+        let defaults = UserDefaults(suiteName: appGroupId)
+        defaults?.synchronize()
+        resolve(defaults?.object(forKey: "looper_keyboard_has_full_access") as? Bool ?? false)
     }
 
     @objc(installDebugAudioFixture:resolver:rejecter:)

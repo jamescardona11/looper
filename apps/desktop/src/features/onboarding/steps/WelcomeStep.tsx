@@ -56,7 +56,7 @@ const WELCOME_TAGLINE_CLASS =
   "mt-8 text-[1.2rem] text-content-muted text-pretty";
 
 const startButtonClassName = [
-  "mt-[13vh]",
+  "mt-14",
   primaryActionClassName,
   "disabled:opacity-60",
 ].join(" ");

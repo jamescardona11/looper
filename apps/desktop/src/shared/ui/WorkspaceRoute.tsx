@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 
 const WIDTH_CLASS = {
-  reading: "max-w-[820px]",
+  reading: "max-w-[1040px]",
   full: "max-w-none",
 } as const;
 

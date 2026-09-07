@@ -1,6 +1,7 @@
 import { useMeetingCommands } from "@looper/data";
 import { useCallback, useRef, useState } from "react";
 import { type RecordedAudio, useAudioRecorder, useLocalStt } from "@/features/dictation";
+import { persistMeetingAudio } from "./meeting-audio-store";
 import { addMarkedMoment, createMeetingIdentity } from "./meeting-capture-logic";
 import { meetingLiveActivity } from "./native-live-activity";
 
@@ -26,6 +27,7 @@ export function useMeetingCapture() {
   const [moments, setMoments] = useState<number[]>([]);
   const [phase, setPhase] = useState<MeetingCapturePhase>("ready");
   const [error, setError] = useState<string | null>(null);
+  const [hasPersistedAudio, setHasPersistedAudio] = useState(false);
   const activeMeeting = useRef<ActiveMeeting | null>(null);
   const pendingAudio = useRef<RecordedAudio | null>(null);
 
@@ -36,6 +38,7 @@ export function useMeetingCapture() {
     }
     setPhase("starting");
     setError(null);
+    setHasPersistedAudio(false);
     const didStartRecording = await recorder.start();
     if (!didStartRecording) {
       setPhase("ready");
@@ -73,6 +76,9 @@ export function useMeetingCapture() {
         .update(active.meetingId, "processing", moments.length)
         .catch(() => undefined);
       try {
+        // El original debe sobrevivir aunque falle STT o cualquier escritura remota.
+        await persistMeetingAudio(active.meetingId, audio.uri);
+        setHasPersistedAudio(true);
         const resumed = await meetings.start({
           meetingId: active.meetingId,
           title: active.title,
@@ -174,6 +180,7 @@ export function useMeetingCapture() {
     durationMs: recorder.durationMs,
     audioLevel: recorder.audioLevel,
     error: error ?? recorder.error ?? localStt.error,
+    hasPersistedAudio,
     localSttStatus: localStt.status,
     localSttProgress: localStt.progress,
     localSttMemoryTier: localStt.memoryTier,

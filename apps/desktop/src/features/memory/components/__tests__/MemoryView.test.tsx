@@ -151,8 +151,8 @@ describe("MemoryView", () => {
 
     renderMemory();
     fireEvent.click(screen.getByRole("button", { name: "Meetings" }));
-    fireEvent.click(screen.getByRole("button", { name: "7 days" }));
     fireEvent.click(screen.getByRole("button", { name: "More filters…" }));
+    fireEvent.click(screen.getByRole("button", { name: "7 days" }));
     fireEvent.change(screen.getByLabelText("Filter Memory by app"), {
       target: { value: " com.apple.mail " },
     });

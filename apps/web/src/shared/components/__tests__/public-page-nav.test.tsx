@@ -34,7 +34,7 @@ describe("PublicPageNav", () => {
     renderNav(<PublicPageNav />);
 
     expect(screen.getByRole("link", { name: /Looper/ })).toHaveAttribute("href", "/landing");
-    expect(screen.getByRole("link", { name: "Pricing" })).toHaveAttribute("href", "/pricing");
+    expect(screen.queryByRole("link", { name: "Pricing" })).not.toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Changelog" })).toHaveAttribute("href", "/changelog");
     expect(screen.getByRole("link", { name: "Roadmap" })).toHaveAttribute("href", "/roadmap");
     expect(screen.getByRole("link", { name: "Contact" })).toHaveAttribute("href", "/contact");

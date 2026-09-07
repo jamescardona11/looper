@@ -71,7 +71,10 @@ pnpm-debug.log*
 
 # Agent metadata (subagent evidence/learnings)
 .tcompound/
-.argent/
+.argent/*
+!.argent/flows/
+.argent/flows/*
+!.argent/flows/store-*.yaml
 **/ai_docs/
 /corpus-inventory.csv
 /corpus-summary.json
@@ -82,6 +85,8 @@ pnpm-debug.log*
 apps/desktop/assets/
 apps/desktop/src-tauri/macos/*.png
 /tact-design/
+/goldie/out/
+/apps/web/product-preview/out/
 
 # Local audio model/test artifacts; source and manifests remain auditable.
 # The 128 weights are the default build and ship inside the binary, so they

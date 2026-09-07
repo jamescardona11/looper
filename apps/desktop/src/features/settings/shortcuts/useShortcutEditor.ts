@@ -286,36 +286,33 @@ export function useShortcutEditor({
   );
 
   const hydrate = useCallback(
-    (settings: StoredSettings) => {
-      const bindings = restoreShortcutBindings(settings);
-      commit(() => ({
-        primary: {
-          smart: settings.smart_shortcut,
-          hold: settings.hold_shortcut,
-          toggle: settings.toggle_shortcut,
-        },
-        enabled: {
-          smart: settings.smart_enabled,
-          hold: settings.hold_enabled,
-          toggle: settings.toggle_enabled,
-        },
-        bindings,
-        persistedBindings: bindings,
-        invalidDraft: null,
-        capture: null,
-        preview: "",
-      }));
+    (settings: StoredSettings, previous?: StoredSettings) => {
+      const next = editorStateFromSettings(settings);
+      const before = stateRef.current;
+      const hydrated = commit((current) => {
+        if (previous) {
+          const baseline = editorStateFromSettings(previous);
+          if (!editableShortcutStateMatches(current, baseline)) return current;
+        }
+        return editableShortcutStateMatches(current, next) ? current : next;
+      });
+      return hydrated !== before;
     },
     [commit],
   );
 
   const acceptSavedBindings = useCallback(
     (bindings: ShortcutBindings, draftTarget?: ShortcutTarget) => {
-      commit((current) => ({
-        ...current,
-        persistedBindings: bindings,
-        invalidDraft: draftTarget ? null : current.invalidDraft,
-      }));
+      commit((current) => {
+        const invalidDraft = draftTarget ? null : current.invalidDraft;
+        if (
+          invalidDraft === current.invalidDraft &&
+          shortcutBindingsMatch(current.persistedBindings, bindings)
+        ) {
+          return current;
+        }
+        return { ...current, persistedBindings: bindings, invalidDraft };
+      });
     },
     [commit],
   );
@@ -440,6 +437,51 @@ function createInitialEditorState(): ShortcutEditorState {
     capture: null,
     preview: "",
   };
+}
+
+function editorStateFromSettings(
+  settings: StoredSettings,
+): ShortcutEditorState {
+  const bindings = restoreShortcutBindings(settings);
+  return {
+    primary: {
+      smart: settings.smart_shortcut,
+      hold: settings.hold_shortcut,
+      toggle: settings.toggle_shortcut,
+    },
+    enabled: {
+      smart: settings.smart_enabled,
+      hold: settings.hold_enabled,
+      toggle: settings.toggle_enabled,
+    },
+    bindings,
+    persistedBindings: bindings,
+    invalidDraft: null,
+    capture: null,
+    preview: "",
+  };
+}
+
+function editableShortcutStateMatches(
+  current: ShortcutEditorState,
+  expected: ShortcutEditorState,
+): boolean {
+  return (
+    current.capture === null &&
+    current.invalidDraft === null &&
+    current.preview === "" &&
+    JSON.stringify(current.primary) === JSON.stringify(expected.primary) &&
+    JSON.stringify(current.enabled) === JSON.stringify(expected.enabled) &&
+    shortcutBindingsMatch(current.bindings, expected.bindings) &&
+    shortcutBindingsMatch(current.persistedBindings, expected.persistedBindings)
+  );
+}
+
+function shortcutBindingsMatch(
+  current: ShortcutBindings,
+  expected: ShortcutBindings,
+): boolean {
+  return JSON.stringify(current) === JSON.stringify(expected);
 }
 
 function withBindings(

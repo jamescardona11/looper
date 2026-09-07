@@ -16,24 +16,51 @@
 
 @custom-variant dark (&:is(.dark *));
 
-:root,
-.dark {
+:root {
   /* Colors come from ./tokens.generated.css. This block keeps only WEB-ONLY tokens. */
-
-  /* Periwinkle signal wash, fading into the graphite workspace. */
-  --hero-start: oklch(0.56 0.12 276.5);
-  --hero-mid: oklch(0.27 0.04 276.5);
-  --hero-end: var(--background);
 
   --radius: 0.625rem;
   --tracking-tight: -0.02em;
 }
 
 .light {
-  /* Colors come from ./tokens.generated.css. Web-only tokens below. */
+  /*
+   * Web is the one Looper surface that uses the paper workspace direction.
+   * The shared palette stays generated for Desktop and Mobile; these semantic
+   * aliases intentionally stay local to the browser app.
+   */
+  --web-canvas: #ecebe7;
+  --web-workspace: #f7f6f2;
+  --web-paper: #fffefa;
+  --web-raised: #ffffff;
+  --web-ink: #15161a;
+  --web-ink-muted: #62656d;
+  --web-line: #e3e1da;
+  --web-line-strong: #cfccc3;
+  --web-highlight: #edeaff;
+
+  /* The frame, workspace, and paper stay intentionally close in temperature;
+     their lightness, not a green cast, creates the product's depth. */
+  --background: var(--web-workspace);
+  --foreground: var(--web-ink);
+  --card: var(--web-paper);
+  --card-foreground: var(--web-ink);
+  --popover: var(--web-raised);
+  --popover-foreground: var(--web-ink);
+  --secondary: #f0efeb;
+  --secondary-foreground: var(--web-ink);
+  --muted: #f6f5f1;
+  --muted-foreground: var(--web-ink-muted);
+  --border: var(--web-line);
+  --input: var(--web-line-strong);
+  --success-subtle: rgba(8, 122, 93, 0.1);
+  --success-foreground: #087a5d;
+  --warning-subtle: rgba(164, 104, 31, 0.12);
+  --warning-foreground: #8a5718;
+
   --hero-start: oklch(0.86 0.07 276.5);
   --hero-mid: oklch(0.93 0.025 276.5);
-  --hero-end: var(--background);
+  --hero-end: var(--web-workspace);
 }
 
 @theme inline {
@@ -88,9 +115,6 @@
     @apply border-border;
   }
   html {
-    color-scheme: dark;
-  }
-  html.light {
     color-scheme: light;
   }
   html,
@@ -102,9 +126,124 @@
     font-feature-settings: "cv02", "cv03", "cv04", "cv11", "ss01";
     letter-spacing: var(--tracking-tight);
   }
+  body {
+    padding-bottom: var(--cookie-consent-height, 0px);
+  }
   button:not(:disabled),
   [role="button"]:not(:disabled) {
     cursor: pointer;
+  }
+}
+
+@layer components {
+  .web-product-workspace {
+    background: var(--web-workspace);
+  }
+
+  .web-product-canvas {
+    min-height: calc(100vh - var(--cookie-consent-height, 0px));
+    padding: 8px;
+    background: var(--web-canvas);
+  }
+
+  .web-product-shell {
+    position: relative;
+    display: flex;
+    min-height: 0;
+    height: calc(100vh - 16px - var(--cookie-consent-height, 0px));
+    overflow: hidden;
+    border: 1px solid var(--web-line-strong);
+    border-radius: 26px;
+    background: var(--web-paper);
+  }
+
+  .web-product-content-shell {
+    background: var(--web-paper);
+  }
+
+  .web-product-sidebar {
+    width: 224px;
+    border-right: 1px solid var(--web-line);
+    background: var(--web-paper);
+  }
+
+  .web-product-brand {
+    min-height: 88px;
+    padding: 28px 20px 14px;
+  }
+
+  .web-product-edition {
+    border-radius: 7px;
+    background: var(--web-highlight);
+    padding: 4px 7px;
+    color: var(--web-ink);
+    font-size: 10px;
+    font-weight: 700;
+    line-height: 1;
+  }
+
+  .web-memory-trigger {
+    display: inline-flex;
+    height: 42px;
+    align-items: center;
+    gap: 9px;
+    border: 1px solid var(--web-line);
+    border-radius: 999px;
+    background: var(--web-raised);
+    padding: 0 15px;
+    color: var(--web-ink);
+    font-size: 13px;
+    font-weight: 650;
+    transition:
+      border-color 150ms ease-out,
+      background-color 150ms ease-out;
+  }
+
+  .web-memory-trigger:hover {
+    border-color: var(--web-line-strong);
+    background: var(--secondary);
+  }
+
+  .web-memory-trigger:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 3px;
+  }
+
+  .web-memory-trigger kbd {
+    border-radius: 5px;
+    background: var(--web-highlight);
+    padding: 3px 5px;
+    color: var(--web-ink-muted);
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 600;
+  }
+
+  .web-product-highlight {
+    border: 1px solid var(--web-line-strong);
+    background: var(--web-highlight);
+  }
+
+  .web-product-panel {
+    border: 1px solid var(--web-line);
+    background: var(--web-paper);
+  }
+}
+
+@media (max-width: 1023px) {
+  .web-product-canvas {
+    min-height: calc(100dvh - var(--cookie-consent-height, 0px));
+    padding: 0;
+  }
+
+  .web-product-shell {
+    height: calc(100dvh - var(--cookie-consent-height, 0px));
+    border: 0;
+    border-radius: 0;
+  }
+
+  .web-product-sidebar {
+    border-right: 1px solid var(--web-line);
   }
 }
 

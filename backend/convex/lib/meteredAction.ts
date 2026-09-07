@@ -18,6 +18,7 @@
 // to return a canned result, and uses `apiKey` for the real call.
 
 import { getAuthUserId } from "@convex-dev/auth/server";
+import { PRODUCT_ACCESS_IS_FREE } from "@looper/config/billing";
 import { internal } from "../_generated/api";
 import type { Id } from "../_generated/dataModel";
 import type { ActionCtx } from "../_generated/server";
@@ -89,6 +90,10 @@ export async function beginMeteredAction(
   const mock = await ctx.runQuery(internal.mock.mockEnabledFor, { userId });
   if (mock) {
     return { userId, mock: true, apiKey: serverApiKey };
+  }
+
+  if (PRODUCT_ACCESS_IS_FREE) {
+    return { userId, mock: false, apiKey: serverApiKey };
   }
 
   const charge = await ctx.runMutation(internal.agent.credits.assertCredits, {

@@ -7,6 +7,7 @@ const mocks = vi.hoisted(() => ({
   save: vi.fn(),
   test: vi.fn(),
   clear: vi.fn(),
+  confirm: vi.fn(),
 }));
 
 vi.mock("@looper/data", () => ({
@@ -43,9 +44,10 @@ vi.mock("@/shared/components/ui", () => ({
     children,
     onClick,
     disabled,
+    className,
     type = "button",
   }: ButtonHTMLAttributes<HTMLButtonElement>) => (
-    <button type={type} onClick={onClick} disabled={disabled}>
+    <button type={type} onClick={onClick} disabled={disabled} className={className}>
       {children}
     </button>
   ),
@@ -55,6 +57,10 @@ vi.mock("@/shared/components/ui", () => ({
   CardContent: ({ children }: { children: ReactNode }) => <div>{children}</div>,
 }));
 
+vi.mock("@/shared/components/confirm-dialog", () => ({
+  useConfirm: () => mocks.confirm,
+}));
+
 import { ApiKeyPanel } from "../api-key-panel";
 
 afterEach(() => {
@@ -62,6 +68,8 @@ afterEach(() => {
   mocks.save.mockReset();
   mocks.test.mockReset();
   mocks.clear.mockReset();
+  mocks.confirm.mockReset();
+  mocks.confirm.mockResolvedValue(true);
 });
 
 describe("ApiKeyPanel", () => {
@@ -105,7 +113,51 @@ describe("ApiKeyPanel", () => {
     fireEvent.click(within(anthropic).getByRole("button", { name: "Remove" }));
 
     await waitFor(() => {
+      expect(mocks.confirm).toHaveBeenCalledWith({
+        title: "Remove key?",
+        description: "Messages will use the shared pool again.",
+        confirmLabel: "Remove",
+        destructive: true,
+      });
       expect(mocks.clear).toHaveBeenCalledWith("anthropic");
     });
+  });
+
+  it("keeps a configured key when removal is cancelled", async () => {
+    mocks.confirm.mockResolvedValue(false);
+
+    render(
+      <I18nProvider defaultLocale="en">
+        <ApiKeyPanel />
+      </I18nProvider>,
+    );
+
+    const anthropic = screen.getByRole("group", { name: "Anthropic" });
+    fireEvent.click(within(anthropic).getByRole("button", { name: "Remove" }));
+
+    await waitFor(() => expect(mocks.confirm).toHaveBeenCalled());
+    expect(mocks.clear).not.toHaveBeenCalled();
+  });
+
+  it("keeps API key actions reachable on touch screens", () => {
+    render(
+      <I18nProvider defaultLocale="en">
+        <ApiKeyPanel />
+      </I18nProvider>,
+    );
+
+    const openAi = screen.getByRole("group", { name: "OpenAI" });
+    expect(within(openAi).getByRole("button", { name: "Show key" })).toHaveClass("size-11");
+    expect(within(openAi).getByRole("button", { name: "Save" })).toHaveClass("min-h-11");
+  });
+
+  it("formats key status in the active locale", () => {
+    render(
+      <I18nProvider defaultLocale="es">
+        <ApiKeyPanel />
+      </I18nProvider>,
+    );
+
+    expect(screen.getByText(/Última prueba ahora/)).toBeVisible();
   });
 });

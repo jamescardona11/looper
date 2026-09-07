@@ -6,6 +6,7 @@ import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, test, vi } from "vitest";
 import { GeneralFeatureSection } from "../GeneralFeatureSection";
 import { GeneralProcessingSection } from "../GeneralProcessingSection";
+import { GeneralShortcutSection } from "../GeneralShortcutSection";
 
 const i18n = setupI18n();
 i18n.loadAndActivate({ locale: "en", messages: {} });
@@ -50,6 +51,54 @@ describe("general settings sections", () => {
     expect(download.parentElement?.textContent).toContain(
       "No model installed.",
     );
+  });
+
+  test("uses the shared light card treatment for processing and shortcuts", () => {
+    const view = render(
+      <I18nProvider i18n={i18n}>
+        <GeneralProcessingSection
+          transcriptionMode="local"
+          onTranscriptionModeChange={vi.fn()}
+          modelStatus={{}}
+          localModel="parakeet"
+          remoteSpeechEnabled={false}
+          remoteSpeechProvider="openai"
+          remoteSpeechEndpoint="https://api.openai.com/v1"
+          remoteSpeechModel="gpt-4o-transcribe"
+          onOpenModelsTab={vi.fn()}
+        />
+        <GeneralShortcutSection
+          smartEnabled
+          setSmartEnabled={vi.fn()}
+          holdEnabled={false}
+          setHoldEnabled={vi.fn()}
+          toggleEnabled={false}
+          setToggleEnabled={vi.fn()}
+          shortcutBindings={{ smart: [], hold: [], toggle: [] }}
+          invalidShortcutDrafts={{}}
+          captureActive={null}
+          capturePreview=""
+          onStartCapture={vi.fn()}
+          updateShortcutBinding={vi.fn()}
+          addShortcutBinding={vi.fn()}
+          removeShortcutBinding={vi.fn()}
+          aiFeaturesReady
+        />
+      </I18nProvider>,
+    );
+
+    for (const card of ["processing", "shortcuts"] as const) {
+      const classNames = view.container
+        .querySelector(`[data-settings-card="${card}"]`)
+        ?.className.split(" ");
+      expect(classNames).toEqual(
+        expect.arrayContaining([
+          "rounded-[16px]",
+          "bg-surface-surface",
+          "shadow-[0_1px_0_var(--desktop-depth-line)]",
+        ]),
+      );
+    }
   });
 
   test("routes Edit Mode prerequisites and keeps feature toggles connected", () => {

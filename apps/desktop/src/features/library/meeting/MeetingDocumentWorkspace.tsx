@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import type { TranscriptSegment } from "../../../contracts";
+import type { MeetingDocumentDockProps } from "./MeetingDocumentDock";
 import {
   MeetingReviewPanel,
   type MeetingReviewView,
@@ -18,6 +19,7 @@ type MeetingDocumentWorkspaceProps = {
   segments?: TranscriptSegment[] | null;
   audioAvailable: boolean;
   onPlayNote: (timestampMs: number) => void;
+  meetingDockProps?: Omit<MeetingDocumentDockProps, "id">;
   transcriptPanel: ReactNode;
 };
 

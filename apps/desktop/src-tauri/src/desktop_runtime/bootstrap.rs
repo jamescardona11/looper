@@ -174,6 +174,10 @@ fn start_runtime_services(app: &tauri::App<AppRuntime>) {
     handle.listen(tray::EVENT_SETTINGS_RENDERER_READY, move |_| {
         tray::mark_settings_renderer_ready(&application);
     });
+    let application = handle.clone();
+    handle.listen(crate::toast::EVENT_RENDERER_READY, move |_| {
+        crate::toast::mark_renderer_ready(&application);
+    });
 }
 
 fn synchronize_platform_state(app: &AppHandle<AppRuntime>) {
@@ -265,6 +269,7 @@ fn register_commands(builder: tauri::Builder<AppRuntime>) -> tauri::Builder<AppR
         preferences::request_calendar_access,
         preferences::get_upcoming_calendar_meetings,
         preferences::get_meeting_awareness_state,
+        preferences::dismiss_meeting_awareness,
         preferences::open_meeting_notification_settings,
         preferences::disable_meeting_awareness_notifications,
         preferences::set_shortcut_capture_active,
@@ -334,9 +339,10 @@ fn register_commands(builder: tauri::Builder<AppRuntime>) -> tauri::Builder<AppR
         crate::library::commands::get_library_translations,
         crate::library::commands::translate_library_item,
         crate::library::commands::delete_library_translation,
-        crate::library::meeting_commands::start_meeting_capture,
+        crate::library::meeting_commands::start_default_meeting_capture,
         crate::library::meeting_commands::start_note_from_dock,
         crate::library::meeting_commands::resume_capture,
+        crate::library::meeting_commands::start_calendar_meeting_capture,
         crate::library::meeting_commands::start_prompted_meeting_capture,
         crate::library::meeting_commands::stop_meeting_capture,
         crate::library::meeting_commands::continue_meeting_after_silence,

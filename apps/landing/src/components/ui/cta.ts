@@ -1,8 +1,8 @@
 /**
  * Call-to-action surfaces.
  *
- * Four Download controls exist on the page and, before assembly, four different
- * implementations of the same button did too: three hand-rolled hover/active
+ * Several call-to-action controls exist on the page and, before assembly,
+ * multiple implementations of the same button did too: hand-rolled hover/active
  * stacks that had already drifted (12px, 11px and 14px radii where the artboards
  * say 12, 11 and 12) plus a fourth in the header. The interaction is identical in
  * every artboard, so it lives once in `.lp-cta` in src/styles/index.css.
@@ -25,7 +25,7 @@ const interactive =
  */
 const base = `lp-cta inline-flex items-center justify-center font-medium whitespace-nowrap ${interactive}`;
 
-/** The accent button. Hero, pricing, and the closing card. */
+/** The accent button. Hero, access, and the closing card. */
 export const ctaPrimaryClass = `${base} bg-primary text-primary-foreground`;
 
 /** The black button. Header only, where the accent would compete with the wordmark. */

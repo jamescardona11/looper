@@ -33,10 +33,6 @@ function App() {
   useDocumentAppearance({
     windowLabel: settingsWindow ? "settings" : nativeWindowLabel,
     previewMode,
-    previewTheme: previewRoute === "pill" ? "dark" : "light",
-    settingsLoading,
-    onboardingVisible,
-    storedTheme: settingsQuery.data?.theme_mode,
   });
 
   if (settingsWindow) {

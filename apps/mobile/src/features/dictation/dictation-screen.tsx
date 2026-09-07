@@ -3,6 +3,7 @@ import { type Href, useRouter } from "expo-router";
 import { useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
+  Alert,
   Clipboard,
   Pressable,
   ScrollView,
@@ -45,6 +46,7 @@ export function DictationScreen() {
   const audioUri = useRef<string | null>(null);
   const starting = useRef<Promise<boolean> | null>(null);
   const holding = useRef(false);
+  const completedHold = useRef(false);
 
   const styleName = useMemo(() => {
     const settings = normalizeStudioSettings(studio.doc?.data);
@@ -60,6 +62,7 @@ export function DictationScreen() {
       : transcript
         ? "result"
         : "idle";
+  const focusedCapture = phase === "recording";
 
   const beginRecording = () => {
     setTranscript(null);
@@ -125,33 +128,70 @@ export function DictationScreen() {
     if (audioUri.current) void transcribe(audioUri.current);
   };
 
+  const openMore = () => {
+    const actions = [
+      {
+        text: "Abrir Studio",
+        onPress: () => router.push("/studio" as Href),
+      },
+      ...(modelReady && !focusedCapture
+        ? [
+            {
+              text: "Eliminar modelo",
+              style: "destructive" as const,
+              onPress: () => void localStt.remove(),
+            },
+          ]
+        : []),
+      { text: "Cancelar", style: "cancel" as const },
+    ];
+    Alert.alert(
+      "Opciones de dictado",
+      modelReady
+        ? "Eliminar el modelo libera su espacio. Podrás instalarlo de nuevo cuando quieras."
+        : "Abre Studio para elegir cómo se transforma el texto.",
+      actions,
+    );
+  };
+
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <View style={styles.header}>
+    <SafeAreaView style={[styles.safeArea, focusedCapture && styles.captureSafeArea]}>
+      <View style={[styles.header, focusedCapture && styles.captureHeader]}>
         <Pressable
           accessibilityLabel="Cerrar"
           accessibilityRole="button"
           onPress={() => (router.canGoBack() ? router.back() : router.replace("/" as Href))}
           style={styles.headerButton}
         >
-          <Icon color={colors.textSecondary} name="close" size={20} strokeWidth={2.4} />
+          <Icon
+            color={focusedCapture ? "#ffffff" : colors.textSecondary}
+            name="close"
+            size={20}
+            strokeWidth={2.4}
+          />
         </Pressable>
-        <Text style={styles.headerTitle}>Dictar</Text>
-        <Pressable
-          accessibilityLabel="Abrir Studio"
-          accessibilityRole="button"
-          onPress={() => router.push("/studio" as Href)}
-          style={styles.headerButton}
-        >
-          <Icon color={colors.textSecondary} name="studio" size={20} />
-        </Pressable>
+        <Text style={[styles.headerTitle, focusedCapture && styles.captureText]}>Dictar</Text>
+        {focusedCapture ? (
+          <View style={styles.headerButton} />
+        ) : (
+          <Pressable
+            accessibilityLabel="Más opciones de dictado"
+            accessibilityRole="button"
+            onPress={openMore}
+            style={styles.headerButton}
+          >
+            <Icon color={colors.textSecondary} name="more" size={20} />
+          </Pressable>
+        )}
       </View>
 
-      <View style={styles.chipRow}>
-        <Chip label={`Estilo: ${styleName}`} onPress={() => router.push("/studio" as Href)} />
-      </View>
+      {!focusedCapture ? (
+        <View style={styles.chipRow}>
+          <Chip label={`Estilo: ${styleName}`} onPress={() => router.push("/studio" as Href)} />
+        </View>
+      ) : null}
 
-      <View style={styles.body}>
+      <View style={[styles.body, focusedCapture && styles.captureBody]}>
         {failure ? (
           <ErrorState
             body={
@@ -172,7 +212,13 @@ export function DictationScreen() {
             onHoldEnd={() => {
               if (!holding.current) return;
               holding.current = false;
+              completedHold.current = true;
               void finishRecording();
+              // React Native emite `onPress` después de soltar un long press.
+              // Conservamos esta marca hasta que ese evento se descarte.
+              setTimeout(() => {
+                completedHold.current = false;
+              }, 0);
             }}
             onHoldStart={() => {
               holding.current = true;
@@ -180,7 +226,10 @@ export function DictationScreen() {
             }}
             onInstall={() => void localStt.install()}
             onRetryModel={() => void localStt.refresh()}
-            onTap={() => void beginRecording()}
+            onTap={() => {
+              if (completedHold.current) return;
+              void beginRecording();
+            }}
             progress={localStt.progress}
             ready={modelReady}
             unsupported={localStt.memoryTier === "unsupported"}
@@ -211,18 +260,11 @@ export function DictationScreen() {
         ) : null}
       </View>
 
-      <View style={styles.footer}>
+      <View style={[styles.footer, focusedCapture && styles.captureFooter]}>
         {recorder.error ? <Text style={styles.recorderError}>{recorder.error}</Text> : null}
 
         {phase === "idle" && modelReady && !failure ? (
-          <>
-            <Text style={styles.hint}>Mantén pulsado el botón para dictar sin soltarlo</Text>
-            <Button
-              label="Eliminar modelo"
-              onPress={() => void localStt.remove()}
-              variant="ghost"
-            />
-          </>
+          <Text style={styles.hint}>Mantén pulsado el botón para dictar sin soltarlo</Text>
         ) : null}
 
         {phase === "recording" ? (
@@ -230,7 +272,7 @@ export function DictationScreen() {
             icon="stop"
             label="Terminar"
             onPress={() => void finishRecording()}
-            variant="secondary"
+            variant="danger"
           />
         ) : null}
 
@@ -348,15 +390,23 @@ function IdleState({
 function RecordingState({ durationMs, level }: { durationMs: number; level: number }) {
   return (
     <View style={styles.recording}>
-      <View style={styles.signal}>
-        <Text style={styles.timer}>{formatPillDuration(durationMs)}</Text>
-        <LevelBars level={level} />
+      <View style={styles.captureHead}>
+        <Text style={styles.captureName}>Nota de voz</Text>
+        <View style={styles.captureState}>
+          <View style={styles.recordDot} />
+          <Text style={styles.captureStateText}>Grabando</Text>
+        </View>
+        <Text style={styles.captureClock}>{formatPillDuration(durationMs)}</Text>
       </View>
-      <View style={styles.rawBlock}>
-        <SectionLabel>En crudo</SectionLabel>
-        <Text style={styles.rawPending}>
-          El texto aparece al terminar: Parakeet transcribe la grabación entera en el teléfono.
+      <View style={styles.liveTranscript}>
+        <Text style={styles.transcriptOld}>La transcripción local se guarda junto al audio.</Text>
+        <Text style={styles.transcriptRecent}>Las últimas palabras aparecen aquí al terminar.</Text>
+        <Text style={styles.transcriptNow}>
+          Escuchando<Text style={styles.caret}>▌</Text>
         </Text>
+      </View>
+      <View style={styles.recordingBar}>
+        <LevelBars level={level} />
       </View>
     </View>
   );
@@ -377,7 +427,7 @@ function LevelBars({ level }: { level: number }) {
             style={[
               styles.bar,
               {
-                backgroundColor: reach > 0.06 ? colors.accent : colors.surfaceElevated,
+                backgroundColor: reach > 0.06 ? colors.accentLight : "rgba(255, 255, 255, 0.22)",
                 height: Math.round(BAR_MIN + (BAR_MAX - BAR_MIN) * reach),
               },
             ]}
@@ -445,18 +495,34 @@ const styles = StyleSheet.create({
   bar: { borderRadius: radius.pill, width: 3 },
   bars: {
     alignItems: "center",
-    backgroundColor: colors.backgroundSecondary,
-    borderColor: colors.border,
+    backgroundColor: colors.background,
+    borderColor: colors.background,
     borderCurve: "continuous",
     borderRadius: radius.xl,
     borderWidth: 1,
     flexDirection: "row",
     gap: 3,
-    height: 52,
+    height: 46,
     justifyContent: "center",
     width: "100%",
   },
   body: { flex: 1, gap: space.lg, paddingHorizontal: space.xl },
+  captureBody: { paddingHorizontal: 0, paddingTop: 0 },
+  captureFooter: { paddingBottom: 18, paddingHorizontal: space.md },
+  captureHeader: { borderBottomWidth: 0 },
+  captureClock: { ...typography.item, color: colors.onAccent, fontVariant: ["tabular-nums"] },
+  captureHead: {
+    alignItems: "center",
+    flexDirection: "row",
+    paddingHorizontal: space.xl,
+    paddingTop: space.sm,
+  },
+  captureName: { ...typography.item, color: colors.onAccent, flex: 1 },
+  captureState: { alignItems: "center", flexDirection: "row", gap: 6 },
+  captureStateText: { ...typography.label, color: colors.danger, fontSize: 9, letterSpacing: 0.8 },
+  captureSafeArea: { backgroundColor: colors.pillShell },
+  captureText: { color: "#ffffff" },
+  caret: { color: colors.accentLight },
   centered: { alignItems: "center", flex: 1, gap: space.md, justifyContent: "center" },
   chipRow: { alignItems: "center", paddingBottom: 6 },
   copyButton: {
@@ -496,11 +562,12 @@ const styles = StyleSheet.create({
     width: MIC_SIZE,
   },
   micPressed: relief.pressed,
-  rawBlock: { flex: 1, gap: 10 },
-  rawPending: { ...typography.body, color: colors.muted },
+  liveTranscript: { flex: 1, gap: 16, justifyContent: "center", paddingHorizontal: 22 },
   reading: { color: colors.text, fontSize: 17, lineHeight: 27 },
   recorderError: { ...typography.meta, color: colors.danger, textAlign: "center" },
-  recording: { flex: 1, gap: space.xxl, paddingTop: space.lg },
+  recording: { flex: 1 },
+  recordingBar: { marginHorizontal: space.md, marginBottom: space.md, padding: 9 },
+  recordDot: { backgroundColor: colors.danger, borderRadius: radius.pill, height: 7, width: 7 },
   resultActions: { flexDirection: "row", gap: 10 },
   resultCard: {
     backgroundColor: colors.surfaceMuted,
@@ -515,9 +582,11 @@ const styles = StyleSheet.create({
   resultNote: { ...typography.meta, color: colors.muted },
   safeArea: { backgroundColor: colors.background, flex: 1 },
   saveButton: { flex: 1 },
-  signal: { alignItems: "center", gap: space.lg },
   sunk: relief.pressed,
   supporting: { ...typography.body, color: colors.muted, maxWidth: 260, textAlign: "center" },
+  transcriptNow: { ...typography.title, color: colors.onAccent, lineHeight: 34 },
+  transcriptOld: { ...typography.body, color: "rgba(255,255,255,0.4)", lineHeight: 21 },
+  transcriptRecent: { ...typography.body, color: "rgba(255,255,255,0.72)", lineHeight: 22 },
   timer: {
     color: colors.accent,
     fontSize: 40,

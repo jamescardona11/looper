@@ -88,4 +88,15 @@ describe("ContactPage", () => {
     expect(await screen.findByText("Enter a valid GitHub username.")).toBeVisible();
     expect(submitContact).not.toHaveBeenCalled();
   });
+
+  it("keeps the primary form controls comfortably tappable on mobile", () => {
+    render(
+      <I18nProvider defaultLocale="en">
+        <ContactPage />
+      </I18nProvider>,
+    );
+
+    expect(screen.getByLabelText("Name")).toHaveClass("h-11", "sm:h-10");
+    expect(screen.getByRole("button", { name: "Send message" })).toHaveClass("h-11", "sm:h-10");
+  });
 });

@@ -1,7 +1,10 @@
 use serde::{Deserialize, Serialize};
 
-pub const WINDOW_WIDTH: f64 = 260.0;
-pub const WINDOW_HEIGHT: f64 = 60.0;
+pub const WINDOW_WIDTH: f64 = 264.0;
+pub const WINDOW_HEIGHT: f64 = 48.0;
+pub const COMPACT_WINDOW_WIDTH: f64 = 96.0;
+pub const COMPACT_WINDOW_HEIGHT: f64 = 36.0;
+pub const LANGUAGE_MENU_WINDOW_HEIGHT: f64 = 242.0;
 pub const EDGE_MARGIN: f64 = 8.0;
 
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
@@ -62,16 +65,130 @@ pub fn dock_origin(
 }
 
 /// Height of the expanded shell painted by `resolveDockLayout`.
-const SHELL_HEIGHT: f64 = 48.0;
-/// The collapsed floating launcher is a 44pt circle; the extra points keep it
-/// reachable without widening what the user sees.
-const FLOATING_LAUNCHER_SIZE: f64 = 48.0;
-/// The docked edge handle is painted 44x6; its active area is grown so a 6pt
-/// sliver stays hittable.
-const DOCK_HANDLE_LONG: f64 = 64.0;
-const DOCK_HANDLE_SHORT: f64 = 20.0;
+const SHELL_HEIGHT: f64 = WINDOW_HEIGHT;
+/// The collapsed launcher mirrors the 96 × 36pt React surface. Its left 50pt
+/// is the drag handle; the remaining area is the explicit expansion target.
+const FLOATING_LAUNCHER_WIDTH: f64 = COMPACT_WINDOW_WIDTH;
+const FLOATING_LAUNCHER_HEIGHT: f64 = COMPACT_WINDOW_HEIGHT;
+const FLOATING_DRAG_HANDLE_WIDTH: f64 = 50.0;
 /// Collapsing again takes a deliberate move away, not a pixel of jitter.
 const HOVER_EXIT_MARGIN: f64 = 10.0;
+
+/// Native geometry for the idle Capture pill.
+///
+/// `origin` is expressed in physical screen pixels because that is what Tauri
+/// uses to position a window. `logical_size` is expressed in points because
+/// `set_size` scales it for the target display.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub(crate) struct StickyWindowFrame {
+    pub origin: (i32, i32),
+    pub logical_size: (f64, f64),
+}
+
+fn compact_anchor_offset(
+    presentation: CapturePillPresentation,
+    dock_position: CapturePillDockPosition,
+) -> (f64, f64) {
+    let horizontal_inset = WINDOW_WIDTH - COMPACT_WINDOW_WIDTH;
+    let vertical_inset = WINDOW_HEIGHT - COMPACT_WINDOW_HEIGHT;
+
+    match presentation {
+        CapturePillPresentation::Floating => (horizontal_inset / 2.0, vertical_inset / 2.0),
+        CapturePillPresentation::Dock => match dock_position {
+            CapturePillDockPosition::TopCenter => (horizontal_inset / 2.0, 0.0),
+            CapturePillDockPosition::LeftCenter => (0.0, vertical_inset / 2.0),
+            CapturePillDockPosition::RightCenter => (horizontal_inset, vertical_inset / 2.0),
+            CapturePillDockPosition::BottomCenter => (horizontal_inset / 2.0, vertical_inset),
+        },
+    }
+}
+
+fn sticky_window_offset(
+    scale: f64,
+    presentation: CapturePillPresentation,
+    dock_position: CapturePillDockPosition,
+    expanded: bool,
+    language_menu_open: bool,
+) -> (i32, i32) {
+    let scale = if scale > 0.0 { scale } else { 1.0 };
+    let logical_offset = if language_menu_open {
+        if dock_position == CapturePillDockPosition::TopCenter {
+            (0.0, 0.0)
+        } else {
+            (0.0, -(LANGUAGE_MENU_WINDOW_HEIGHT - WINDOW_HEIGHT))
+        }
+    } else if expanded {
+        (0.0, 0.0)
+    } else {
+        compact_anchor_offset(presentation, dock_position)
+    };
+
+    (
+        logical_pixels(logical_offset.0, scale),
+        logical_pixels(logical_offset.1, scale),
+    )
+}
+
+pub(crate) fn sticky_window_size(expanded: bool, language_menu_open: bool) -> (f64, f64) {
+    if language_menu_open {
+        (WINDOW_WIDTH, LANGUAGE_MENU_WINDOW_HEIGHT)
+    } else if expanded {
+        (WINDOW_WIDTH, WINDOW_HEIGHT)
+    } else {
+        (COMPACT_WINDOW_WIDTH, COMPACT_WINDOW_HEIGHT)
+    }
+}
+
+/// Converts the stable, expanded-pill anchor into the actual native frame.
+/// Shrinking the NSPanel now removes the gray WebView rectangle without
+/// visually moving the pill on screen.
+pub(crate) fn sticky_window_frame(
+    canonical_origin: (i32, i32),
+    scale: f64,
+    presentation: CapturePillPresentation,
+    dock_position: CapturePillDockPosition,
+    expanded: bool,
+    language_menu_open: bool,
+) -> StickyWindowFrame {
+    let offset = sticky_window_offset(
+        scale,
+        presentation,
+        dock_position,
+        expanded,
+        language_menu_open,
+    );
+    StickyWindowFrame {
+        origin: (
+            canonical_origin.0.saturating_add(offset.0),
+            canonical_origin.1.saturating_add(offset.1),
+        ),
+        logical_size: sticky_window_size(expanded, language_menu_open),
+    }
+}
+
+/// Inverse of `sticky_window_frame`, used after a drag so persisted positions
+/// keep the same stable anchor regardless of the current compact/expanded
+/// frame.
+pub(crate) fn canonical_sticky_origin(
+    actual_origin: (i32, i32),
+    scale: f64,
+    presentation: CapturePillPresentation,
+    dock_position: CapturePillDockPosition,
+    expanded: bool,
+    language_menu_open: bool,
+) -> (i32, i32) {
+    let offset = sticky_window_offset(
+        scale,
+        presentation,
+        dock_position,
+        expanded,
+        language_menu_open,
+    );
+    (
+        actual_origin.0.saturating_sub(offset.0),
+        actual_origin.1.saturating_sub(offset.1),
+    )
+}
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 struct Rect {
@@ -120,44 +237,67 @@ fn collapsed_rect(
 ) -> Rect {
     match presentation {
         CapturePillPresentation::Floating => {
-            let size = FLOATING_LAUNCHER_SIZE * scale;
+            let width = FLOATING_LAUNCHER_WIDTH * scale;
+            let height = FLOATING_LAUNCHER_HEIGHT * scale;
             Rect {
-                x: (window_size.0 - size) / 2.0,
-                y: (window_size.1 - size) / 2.0,
-                width: size,
-                height: size,
+                x: (window_size.0 - width) / 2.0,
+                y: (window_size.1 - height) / 2.0,
+                width,
+                height,
             }
         }
         CapturePillPresentation::Dock => {
-            let long = DOCK_HANDLE_LONG * scale;
-            let short = DOCK_HANDLE_SHORT * scale;
+            let width = FLOATING_LAUNCHER_WIDTH * scale;
+            let height = FLOATING_LAUNCHER_HEIGHT * scale;
             match dock_position {
                 CapturePillDockPosition::TopCenter => Rect {
-                    x: (window_size.0 - long) / 2.0,
+                    x: (window_size.0 - width) / 2.0,
                     y: 0.0,
-                    width: long,
-                    height: short,
+                    width,
+                    height,
                 },
                 CapturePillDockPosition::LeftCenter => Rect {
                     x: 0.0,
-                    y: (window_size.1 - long) / 2.0,
-                    width: short,
-                    height: long,
+                    y: (window_size.1 - height) / 2.0,
+                    width,
+                    height,
                 },
                 CapturePillDockPosition::RightCenter => Rect {
-                    x: window_size.0 - short,
-                    y: (window_size.1 - long) / 2.0,
-                    width: short,
-                    height: long,
+                    x: window_size.0 - width,
+                    y: (window_size.1 - height) / 2.0,
+                    width,
+                    height,
                 },
                 CapturePillDockPosition::BottomCenter => Rect {
-                    x: (window_size.0 - long) / 2.0,
-                    y: window_size.1 - short,
-                    width: long,
-                    height: short,
+                    x: (window_size.0 - width) / 2.0,
+                    y: window_size.1 - height,
+                    width,
+                    height,
                 },
             }
         }
+    }
+}
+
+/// The part of a collapsed pill that can open the dock. The handle stays
+/// interactive for dragging, but does not count as hover intent.
+fn expand_rect(
+    window_size: (f64, f64),
+    scale: f64,
+    presentation: CapturePillPresentation,
+    dock_position: CapturePillDockPosition,
+) -> Rect {
+    let collapsed = collapsed_rect(window_size, scale, presentation, dock_position);
+    if presentation != CapturePillPresentation::Floating {
+        return collapsed;
+    }
+
+    let handle = FLOATING_DRAG_HANDLE_WIDTH * scale;
+    Rect {
+        x: collapsed.x + handle,
+        y: collapsed.y,
+        width: collapsed.width - handle,
+        height: collapsed.height,
     }
 }
 
@@ -202,7 +342,12 @@ fn exit_rect(
     dock_position: CapturePillDockPosition,
 ) -> Rect {
     collapsed_rect(window_size, scale, presentation, dock_position)
-        .union(expanded_rect(window_size, scale, presentation, dock_position))
+        .union(expanded_rect(
+            window_size,
+            scale,
+            presentation,
+            dock_position,
+        ))
         .inflate(HOVER_EXIT_MARGIN * scale)
 }
 
@@ -225,8 +370,16 @@ pub fn to_shared_points(
     size: (f64, f64),
     window_scale: f64,
 ) -> ((f64, f64), (f64, f64), (f64, f64)) {
-    let cursor_scale = if cursor_scale > 0.0 { cursor_scale } else { 1.0 };
-    let window_scale = if window_scale > 0.0 { window_scale } else { 1.0 };
+    let cursor_scale = if cursor_scale > 0.0 {
+        cursor_scale
+    } else {
+        1.0
+    };
+    let window_scale = if window_scale > 0.0 {
+        window_scale
+    } else {
+        1.0
+    };
     (
         (cursor.0 / cursor_scale, cursor.1 / cursor_scale),
         (origin.0 / window_scale, origin.1 / window_scale),
@@ -246,6 +399,21 @@ pub fn hit_test(
         exit_rect(window_size, scale, presentation, dock_position).contains(cursor)
     } else {
         collapsed_rect(window_size, scale, presentation, dock_position).contains(cursor)
+    }
+}
+
+pub fn hover_target(
+    cursor: (f64, f64),
+    window_size: (f64, f64),
+    scale: f64,
+    presentation: CapturePillPresentation,
+    dock_position: CapturePillDockPosition,
+    hovering: bool,
+) -> bool {
+    if hovering {
+        exit_rect(window_size, scale, presentation, dock_position).contains(cursor)
+    } else {
+        expand_rect(window_size, scale, presentation, dock_position).contains(cursor)
     }
 }
 
@@ -326,83 +494,6 @@ fn squared_distance_to_rect(point: (i32, i32), rect: (i32, i32, u32, u32)) -> i6
 mod tests {
     use super::*;
 
-    #[test]
-    fn docks_at_each_center_without_using_screen_corners() {
-        let work_origin = (-1_920, 25);
-        let work_size = (1_920, 1_055);
-        let window_size = (260, 60);
-
-        assert_eq!(
-            dock_origin(
-                work_origin,
-                work_size,
-                window_size,
-                8,
-                CapturePillDockPosition::TopCenter,
-            ),
-            (-1_090, 33)
-        );
-        assert_eq!(
-            dock_origin(
-                work_origin,
-                work_size,
-                window_size,
-                8,
-                CapturePillDockPosition::LeftCenter,
-            ),
-            (-1_912, 522)
-        );
-        assert_eq!(
-            dock_origin(
-                work_origin,
-                work_size,
-                window_size,
-                8,
-                CapturePillDockPosition::RightCenter,
-            ),
-            (-268, 522)
-        );
-        assert_eq!(
-            dock_origin(
-                work_origin,
-                work_size,
-                window_size,
-                8,
-                CapturePillDockPosition::BottomCenter,
-            ),
-            (-1_090, 1_012)
-        );
-    }
-
-    #[test]
-    fn dock_handle_expands_the_hit_area_to_the_full_pill() {
-        let size = (260.0, 60.0);
-        assert!(hit_test(
-            (130.0, 59.0),
-            size,
-            1.0,
-            CapturePillPresentation::Dock,
-            CapturePillDockPosition::BottomCenter,
-            false,
-        ));
-        assert!(!hit_test(
-            (130.0, 30.0),
-            size,
-            1.0,
-            CapturePillPresentation::Dock,
-            CapturePillDockPosition::BottomCenter,
-            false,
-        ));
-        assert!(hit_test(
-            (10.0, 30.0),
-            size,
-            1.0,
-            CapturePillPresentation::Dock,
-            CapturePillDockPosition::BottomCenter,
-            true,
-        ));
-    }
-
     const EVERY_PLACEMENT: [(CapturePillPresentation, CapturePillDockPosition); 8] = [
         (
             CapturePillPresentation::Dock,
@@ -438,28 +529,215 @@ mod tests {
         ),
     ];
 
-    /// The oscillation guard. Every point that expands the pill must still be
-    /// inside it once expanded, or hover flips back and forth forever.
+    fn visual_anchor(
+        origin: (i32, i32),
+        size: (u32, u32),
+        presentation: CapturePillPresentation,
+        dock: CapturePillDockPosition,
+    ) -> (i32, i32) {
+        let width = i32::try_from(size.0).unwrap();
+        let height = i32::try_from(size.1).unwrap();
+        match presentation {
+            CapturePillPresentation::Floating => (origin.0 + width / 2, origin.1 + height / 2),
+            CapturePillPresentation::Dock => match dock {
+                CapturePillDockPosition::TopCenter => (origin.0 + width / 2, origin.1),
+                CapturePillDockPosition::LeftCenter => (origin.0, origin.1 + height / 2),
+                CapturePillDockPosition::RightCenter => (origin.0 + width, origin.1 + height / 2),
+                CapturePillDockPosition::BottomCenter => (origin.0 + width / 2, origin.1 + height),
+            },
+        }
+    }
+
     #[test]
-    fn expanding_never_moves_the_pointer_out_of_the_pill() {
-        let size = (260.0, 60.0);
+    fn docks_at_each_center_without_using_screen_corners() {
+        let work_origin = (-1_920, 25);
+        let work_size = (1_920, 1_055);
+        let window_size = (WINDOW_WIDTH as u32, WINDOW_HEIGHT as u32);
+
+        assert_eq!(
+            dock_origin(
+                work_origin,
+                work_size,
+                window_size,
+                8,
+                CapturePillDockPosition::TopCenter,
+            ),
+            (-1_092, 33)
+        );
+        assert_eq!(
+            dock_origin(
+                work_origin,
+                work_size,
+                window_size,
+                8,
+                CapturePillDockPosition::LeftCenter,
+            ),
+            (-1_912, 528)
+        );
+        assert_eq!(
+            dock_origin(
+                work_origin,
+                work_size,
+                window_size,
+                8,
+                CapturePillDockPosition::RightCenter,
+            ),
+            (-272, 528)
+        );
+        assert_eq!(
+            dock_origin(
+                work_origin,
+                work_size,
+                window_size,
+                8,
+                CapturePillDockPosition::BottomCenter,
+            ),
+            (-1_092, 1_024)
+        );
+    }
+
+    #[test]
+    fn collapsed_native_frame_is_the_exact_launcher_not_the_expanded_webview() {
+        let canonical = (400, 700);
         for (presentation, dock) in EVERY_PLACEMENT {
             for scale in [1.0, 2.0] {
-                let window = (size.0 * scale, size.1 * scale);
-                let enter = collapsed_rect(window, scale, presentation, dock);
-                let exit = exit_rect(window, scale, presentation, dock);
+                let compact =
+                    sticky_window_frame(canonical, scale, presentation, dock, false, false);
+                let expanded =
+                    sticky_window_frame(canonical, scale, presentation, dock, true, false);
+
+                assert_eq!(
+                    compact.logical_size,
+                    (COMPACT_WINDOW_WIDTH, COMPACT_WINDOW_HEIGHT)
+                );
+                assert_eq!(expanded.logical_size, (WINDOW_WIDTH, WINDOW_HEIGHT));
+                assert_eq!(
+                    visual_anchor(
+                        compact.origin,
+                        physical_size(compact.logical_size, scale),
+                        presentation,
+                        dock,
+                    ),
+                    visual_anchor(
+                        expanded.origin,
+                        physical_size(expanded.logical_size, scale),
+                        presentation,
+                        dock,
+                    ),
+                    "{presentation:?}/{dock:?} moved its visual anchor at {scale}x",
+                );
+                assert_eq!(
+                    canonical_sticky_origin(
+                        compact.origin,
+                        scale,
+                        presentation,
+                        dock,
+                        false,
+                        false,
+                    ),
+                    canonical,
+                );
+            }
+        }
+    }
+
+    #[test]
+    fn dock_launcher_occupies_the_whole_compact_native_frame() {
+        let size = (COMPACT_WINDOW_WIDTH, COMPACT_WINDOW_HEIGHT);
+        assert!(hit_test(
+            (0.0, 0.0),
+            size,
+            1.0,
+            CapturePillPresentation::Dock,
+            CapturePillDockPosition::BottomCenter,
+            false,
+        ));
+        assert!(hit_test(
+            (95.0, 35.0),
+            size,
+            1.0,
+            CapturePillPresentation::Dock,
+            CapturePillDockPosition::BottomCenter,
+            false,
+        ));
+        assert!(!hit_test(
+            (96.0, 18.0),
+            size,
+            1.0,
+            CapturePillPresentation::Dock,
+            CapturePillDockPosition::BottomCenter,
+            false,
+        ));
+    }
+
+    #[test]
+    fn floating_drag_handle_is_interactive_without_triggering_expansion() {
+        let size = (COMPACT_WINDOW_WIDTH, COMPACT_WINDOW_HEIGHT);
+        let presentation = CapturePillPresentation::Floating;
+        let dock = CapturePillDockPosition::BottomCenter;
+
+        // Left area: logo + six dots. It must receive the pointer for a drag
+        // but never become hover intent.
+        let handle = (20.0, 18.0);
+        assert!(hit_test(handle, size, 1.0, presentation, dock, false));
+        assert!(!hover_target(handle, size, 1.0, presentation, dock, false));
+
+        // The expand zone begins immediately after the visible grip; there is
+        // no inert strip between the logo and the opening target.
+        let just_after_handle = (50.0, 18.0);
+        assert!(hover_target(
+            just_after_handle,
+            size,
+            1.0,
+            presentation,
+            dock,
+            false,
+        ));
+
+        // Right area: Looper label and status dot. This is the only entry
+        // target for opening the full capture dock.
+        let opener = (75.0, 18.0);
+        assert!(hit_test(opener, size, 1.0, presentation, dock, false));
+        assert!(hover_target(opener, size, 1.0, presentation, dock, false));
+    }
+
+    /// The oscillation guard. Every point that expands the pill must still be
+    /// inside the resized native window, or hover flips back and forth forever.
+    #[test]
+    fn expanding_never_moves_the_pointer_out_of_the_pill() {
+        let canonical = (400, 700);
+        for (presentation, dock) in EVERY_PLACEMENT {
+            for scale in [1.0, 2.0] {
+                let compact =
+                    sticky_window_frame(canonical, scale, presentation, dock, false, false);
+                let expanded =
+                    sticky_window_frame(canonical, scale, presentation, dock, true, false);
+                let enter = expand_rect(compact.logical_size, 1.0, presentation, dock);
                 for corner in [
                     (enter.x, enter.y),
                     (enter.x + enter.width - 1.0, enter.y),
                     (enter.x, enter.y + enter.height - 1.0),
                     (enter.x + enter.width - 1.0, enter.y + enter.height - 1.0),
                 ] {
-                    assert!(
-                        exit.contains(corner),
-                        "{presentation:?}/{dock:?} at {scale}x drops {corner:?} on expand",
+                    let global = (
+                        f64::from(compact.origin.0) + corner.0 * scale,
+                        f64::from(compact.origin.1) + corner.1 * scale,
                     );
-                    assert!(hit_test(corner, window, scale, presentation, dock, false));
-                    assert!(hit_test(corner, window, scale, presentation, dock, true));
+                    let expanded_cursor = (
+                        (global.0 - f64::from(expanded.origin.0)) / scale,
+                        (global.1 - f64::from(expanded.origin.1)) / scale,
+                    );
+                    assert!(
+                        hit_test(
+                            expanded_cursor,
+                            expanded.logical_size,
+                            1.0,
+                            presentation,
+                            dock,
+                            true,
+                        ),
+                        "{presentation:?}/{dock:?} at {scale}x drops {global:?} on native resize",
+                    );
                 }
             }
         }
@@ -471,19 +749,19 @@ mod tests {
     /// a pill it was sitting exactly on top of.
     #[test]
     fn a_retina_screen_beside_a_1x_primary_keeps_the_pill_reachable() {
-        // The pill sits at logical (254, 1474) on the 2x screen; the pointer is
-        // dead centre on its collapsed circle, at logical (384, 1504).
+        // The compact pill sits at logical (254, 1474) on the 2x screen; the
+        // pointer is dead centre on it at logical (302, 1492).
         let (cursor, origin, size) = to_shared_points(
-            (384.0, 1504.0), // cursor, scaled by the 1x primary
+            (302.0, 1492.0), // cursor, scaled by the 1x primary
             1.0,
             (508.0, 2948.0), // window origin, scaled by the 2x screen
-            (520.0, 120.0),
+            (192.0, 72.0),
             2.0,
         );
 
-        assert_eq!(cursor, (384.0, 1504.0));
+        assert_eq!(cursor, (302.0, 1492.0));
         assert_eq!(origin, (254.0, 1474.0));
-        assert_eq!(size, (260.0, 60.0));
+        assert_eq!(size, (96.0, 36.0));
         assert!(hit_test(
             (cursor.0 - origin.0, cursor.1 - origin.1),
             size,
@@ -497,18 +775,18 @@ mod tests {
     #[test]
     fn a_uniform_desktop_is_left_exactly_as_it_was() {
         let (cursor, origin, size) =
-            to_shared_points((384.0, 1504.0), 1.0, (254.0, 1474.0), (260.0, 60.0), 1.0);
+            to_shared_points((302.0, 1492.0), 1.0, (254.0, 1474.0), (96.0, 36.0), 1.0);
 
-        assert_eq!(cursor, (384.0, 1504.0));
+        assert_eq!(cursor, (302.0, 1492.0));
         assert_eq!(origin, (254.0, 1474.0));
-        assert_eq!(size, (260.0, 60.0));
+        assert_eq!(size, (96.0, 36.0));
     }
 
     /// No dead pixels: everything the user can see of the expanded pill still
     /// answers the pointer, so the shell never has an inert strip along an edge.
     #[test]
     fn the_whole_painted_shell_keeps_the_pill_expanded() {
-        let size = (260.0, 60.0);
+        let size = (WINDOW_WIDTH, WINDOW_HEIGHT);
         for (presentation, dock) in EVERY_PLACEMENT {
             let shell = expanded_rect(size, 1.0, presentation, dock);
             for corner in [
@@ -526,21 +804,12 @@ mod tests {
     }
 
     /// Regression: the floating launcher is centred while the expanded shell
-    /// used to be pinned to the bottom, so the pill's top 6pt expanded and
+    /// used to be pinned to the bottom, so its top edge expanded and
     /// immediately collapsed again.
     #[test]
     fn the_floating_pills_top_edge_stays_expanded() {
-        let size = (260.0, 60.0);
-        let top_edge = (130.0, 8.0);
-
-        assert!(hit_test(
-            top_edge,
-            size,
-            1.0,
-            CapturePillPresentation::Floating,
-            CapturePillDockPosition::BottomCenter,
-            false,
-        ));
+        let size = (WINDOW_WIDTH, WINDOW_HEIGHT);
+        let top_edge = (WINDOW_WIDTH / 2.0, 0.0);
         assert!(hit_test(
             top_edge,
             size,
@@ -553,8 +822,8 @@ mod tests {
 
     #[test]
     fn leaving_the_pill_needs_more_than_a_pixel_of_jitter() {
-        let size = (260.0, 60.0);
-        let just_outside = (130.0, 62.0);
+        let size = (WINDOW_WIDTH, WINDOW_HEIGHT);
+        let just_outside = (WINDOW_WIDTH / 2.0, WINDOW_HEIGHT + 2.0);
 
         assert!(hit_test(
             just_outside,
@@ -565,7 +834,7 @@ mod tests {
             true,
         ));
         assert!(!hit_test(
-            (130.0, 78.0),
+            (WINDOW_WIDTH / 2.0, WINDOW_HEIGHT + 12.0),
             size,
             1.0,
             CapturePillPresentation::Dock,
@@ -575,22 +844,47 @@ mod tests {
     }
 
     #[test]
-    fn floating_mode_activates_from_the_collapsed_circle() {
+    fn floating_mode_activates_only_from_the_compact_native_frame() {
         assert!(hit_test(
-            (130.0, 30.0),
-            (260.0, 60.0),
+            (75.0, 18.0),
+            (COMPACT_WINDOW_WIDTH, COMPACT_WINDOW_HEIGHT),
             1.0,
             CapturePillPresentation::Floating,
             CapturePillDockPosition::BottomCenter,
             false,
         ));
         assert!(!hit_test(
-            (20.0, 30.0),
-            (260.0, 60.0),
+            (97.0, 18.0),
+            (COMPACT_WINDOW_WIDTH, COMPACT_WINDOW_HEIGHT),
             1.0,
             CapturePillPresentation::Floating,
             CapturePillDockPosition::BottomCenter,
             false,
         ));
+    }
+
+    #[test]
+    fn language_menu_keeps_the_pill_at_the_same_global_y() {
+        let canonical = (400, 700);
+
+        for (presentation, dock) in EVERY_PLACEMENT {
+            let closed = sticky_window_frame(canonical, 1.0, presentation, dock, true, false);
+            let open = sticky_window_frame(canonical, 1.0, presentation, dock, true, true);
+            let open_shell_top = if dock == CapturePillDockPosition::TopCenter {
+                open.origin.1
+            } else {
+                open.origin.1 + (LANGUAGE_MENU_WINDOW_HEIGHT - WINDOW_HEIGHT) as i32
+            };
+
+            assert_eq!(
+                closed.origin,
+                (open.origin.0, open_shell_top),
+                "{presentation:?}/{dock:?} moved when Language opened",
+            );
+            assert_eq!(
+                canonical_sticky_origin(open.origin, 1.0, presentation, dock, true, true),
+                canonical,
+            );
+        }
     }
 }

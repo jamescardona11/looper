@@ -25,7 +25,8 @@ import {
   useLibraryTags,
   useMeetingCapture,
   useRetryLibraryTranscription,
-  useStartMeetingCapture,
+  useStartDefaultMeetingCapture,
+  useStartVoiceNoteCapture,
   useUpdateLibraryItem,
 } from "../queries";
 import { groupLibraryItemsByRecency } from "./library-inbox-groups";
@@ -54,6 +55,8 @@ import { LibraryViewToolbar } from "./library-view-toolbar";
 export type LibraryViewContentProps = {
   pendingImportPaths: string[] | null;
   onSetImportPaths: (paths: string[] | null) => void;
+  onOpenImportRoute?: () => void;
+  onDetailVisibilityChange?: (visible: boolean) => void;
   isActive: boolean;
   focusItem?: { id: string; query: string } | null;
   "data-notification-position": string;
@@ -62,6 +65,8 @@ export type LibraryViewContentProps = {
 export default function LibraryViewContent({
   pendingImportPaths,
   onSetImportPaths,
+  onOpenImportRoute,
+  onDetailVisibilityChange,
   isActive,
   focusItem = null,
   "data-notification-position": notificationPosition,
@@ -81,7 +86,6 @@ export default function LibraryViewContent({
   });
   const [followTimestamps, setFollowTimestamps] = useState(true);
   const [youtubeImportOpen, setYoutubeImportOpen] = useState(false);
-  const [meetingModalOpen, setMeetingModalOpen] = useState(false);
   const lastFocusItemId = useRef<string | null>(null);
   const openedFocusItemId = useRef<string | null>(null);
   const focusSearchQuery = useRef<string | null>(null);
@@ -102,6 +106,9 @@ export default function LibraryViewContent({
     () => selectedLibraryItem(items, selectedItemId),
     [items, selectedItemId],
   );
+  useEffect(() => {
+    onDetailVisibilityChange?.(selectedItem != null);
+  }, [onDetailVisibilityChange, selectedItem]);
   const inboxGroups = useMemo(() => groupLibraryItemsByRecency(items), [items]);
   useEffect(() => {
     if (!focusItem || lastFocusItemId.current === focusItem.id) return;
@@ -147,7 +154,8 @@ export default function LibraryViewContent({
   const exportItem = useExportLibraryItem();
   const { data: meetingCapture } = useMeetingCapture(isActive);
   const resumeCapture = useResumeCapture();
-  const startMeeting = useStartMeetingCapture();
+  const startMeeting = useStartDefaultMeetingCapture();
+  const startNote = useStartVoiceNoteCapture();
 
   const invalidateTags = useCallback(
     () => queryClient.invalidateQueries({ queryKey: libraryKeys.tags() }),
@@ -218,6 +226,15 @@ export default function LibraryViewContent({
     }
   };
 
+  const openImport = () => {
+    if (onOpenImportRoute) {
+      onOpenImportRoute();
+      return;
+    }
+
+    void openImportPicker();
+  };
+
   const commitNameEdit = async (item: LibraryItem) => {
     const patch = editNamePatch(items, item.id, nameEditor.draft);
     setNameEditor({ id: null, draft: "" });
@@ -267,15 +284,35 @@ export default function LibraryViewContent({
           <LibraryViewToolbar
             searchQuery={searchQuery}
             onSearchChange={setSearchQuery}
-            status={displayedStatusChoice(statusFilter)}
-            onStatusChange={(choice) =>
-              setStatusFilter((current) => nextStatusFilter(current, choice))
+            onStartNote={() => {
+              void startNote.mutateAsync().catch((error) => {
+                void showLibraryToast(
+                  "error",
+                  error instanceof Error ? error.message : String(error),
+                ).catch(() => {});
+              });
+            }}
+            noteDisabled={
+              startNote.isPending ||
+              Boolean(
+                meetingCapture &&
+                meetingCaptureBlocksStart(meetingCapture.phase),
+              )
             }
-            onOpenMeeting={() => setMeetingModalOpen(true)}
+            onOpenMeeting={() => {
+              void startMeeting.mutateAsync().catch((error) => {
+                void showLibraryToast(
+                  "error",
+                  error instanceof Error ? error.message : String(error),
+                ).catch(() => {});
+              });
+            }}
             meetingDisabled={Boolean(
-              meetingCapture && meetingCaptureBlocksStart(meetingCapture.phase),
+              startNote.isPending ||
+              (meetingCapture &&
+                meetingCaptureBlocksStart(meetingCapture.phase)),
             )}
-            onOpenImport={() => void openImportPicker()}
+            onOpenImport={openImport}
             onOpenYoutube={() => setYoutubeImportOpen(true)}
             youtubeDisabled={!models.detailDefault}
             error={libraryErrorMessage(itemsQuery.error)}
@@ -284,11 +321,17 @@ export default function LibraryViewContent({
           <LibraryViewList
             items={items}
             groups={inboxGroups}
+            status={displayedStatusChoice(statusFilter)}
+            onStatusChange={(choice) =>
+              setStatusFilter((current) =>
+                choice === "all" ? "all" : nextStatusFilter(current, choice),
+              )
+            }
             loading={itemsQuery.isLoading}
             fetchingNextPage={itemsQuery.isFetchingNextPage}
             hasNextPage={Boolean(itemsQuery.hasNextPage)}
             onFetchNextPage={() => void itemsQuery.fetchNextPage()}
-            onOpenImport={() => void openImportPicker()}
+            onOpenImport={openImport}
             nameEditor={{
               ...nameEditor,
               start: (item) => setNameEditor({ id: item.id, draft: item.name }),
@@ -335,23 +378,6 @@ export default function LibraryViewContent({
         installedModels={models.installed}
         defaultSpeechModelKey={models.detailDefault}
         defaultImportModelKey={models.importDefault}
-        meetingOpen={meetingModalOpen}
-        meetingModels={models.meeting}
-        liveMeetingModels={models.liveMeeting}
-        defaultMeetingModelKey={models.meetingDefault}
-        meetingPending={startMeeting.isPending}
-        meetingError={libraryErrorMessage(startMeeting.error)}
-        onCancelMeeting={() => {
-          if (!startMeeting.isPending) {
-            startMeeting.reset();
-            setMeetingModalOpen(false);
-          }
-        }}
-        onStartMeeting={async (options) => {
-          const result = await startMeeting.mutateAsync(options);
-          setMeetingModalOpen(false);
-          return result;
-        }}
       />
     </div>
   );

@@ -6,6 +6,7 @@ type PairInput = {
   onChange: (value: string) => void;
   placeholder: string;
   ariaLabel: string;
+  studioFocusTarget?: string;
 };
 
 type DictionaryPairFormProps = {
@@ -52,6 +53,7 @@ export function DictionaryPairForm(props: DictionaryPairFormProps) {
             onKeyDown={submitOnEnter}
             placeholder={props.primary.placeholder}
             aria-label={props.primary.ariaLabel}
+            data-studio-focus={props.primary.studioFocusTarget}
             className={INPUT_CLASS}
           />
         </div>

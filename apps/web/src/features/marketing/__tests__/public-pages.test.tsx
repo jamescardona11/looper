@@ -111,4 +111,23 @@ describe("public Web pages", () => {
     expect(await screen.findByRole("heading", { name: /You're in/ })).toBeVisible();
     expect(await screen.findByDisplayValue(/\/waitlist\?ref=ada7$/)).toBeVisible();
   });
+
+  it("keeps a failed waitlist submission visible in the form", async () => {
+    mocks.joinWaitlist.mockRejectedValue(new Error("The waitlist is temporarily unavailable."));
+
+    render(
+      <I18nProvider defaultLocale="en">
+        <WaitlistPage />
+      </I18nProvider>,
+    );
+
+    const email = screen.getByLabelText("Work email");
+    fireEvent.change(email, { target: { value: "ada@example.test" } });
+    fireEvent.click(screen.getByRole("button", { name: "Join" }));
+
+    expect(await screen.findByRole("alert")).toHaveTextContent(
+      "The waitlist is temporarily unavailable.",
+    );
+    expect(email).toHaveAttribute("aria-describedby", "waitlist-error");
+  });
 });

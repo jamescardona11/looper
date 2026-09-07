@@ -47,7 +47,6 @@ export function BillingPage() {
   const upgrading = busy?.kind === "upgrade";
   const selectedPlan = TIERS.find((tier) => tier.tier === selectedTier) ?? TIERS[1]!;
   const unavailablePlanLabel = t("billing.notConfigured");
-  const unavailableCheckoutHint = t("billing.notConfigured");
 
   if (gate) return gate;
 
@@ -71,6 +70,7 @@ export function BillingPage() {
             <Button
               variant="outline"
               size="sm"
+              className="h-11 sm:h-8"
               onClick={() => void openPortal()}
               disabled={busy !== null}
             >
@@ -274,9 +274,7 @@ export function BillingPage() {
                 ? t("billing.pricesViaStripeYearly")
                 : t("billing.pricesViaStripeMonthly")}
           </p>
-        ) : (
-          <p className="text-center text-muted-foreground text-xs">{unavailableCheckoutHint}</p>
-        )}
+        ) : null}
       </div>
     </ProductPageLayout>
   );
@@ -324,7 +322,7 @@ function CreditPackOption({
       </p>
       <Button
         variant={lifetime ? "primary" : "secondary"}
-        className="mt-5 w-full"
+        className="mt-5 h-11 w-full sm:h-9"
         disabled={disabled}
         onClick={onBuy}
       >
@@ -367,23 +365,27 @@ function PlanCard({
       role="article"
       aria-label={name}
       className={cn(
-        "relative flex flex-col",
+        "flex flex-col",
         recommended && "border-primary/60 bg-card",
         featured && "overflow-hidden",
       )}
     >
-      {recommended ? (
-        <div className="absolute -top-2.5 left-1/2 -translate-x-1/2">
-          <Badge variant="primary" className="text-[10px] uppercase tracking-widest">
-            {t("billing.recommended")}
-          </Badge>
-        </div>
-      ) : null}
       <div className={cn(featured && "grid flex-1 grid-cols-[minmax(0,0.9fr)_minmax(22rem,1fr)]")}>
         <CardHeader className={cn("pb-4", featured && "justify-center border-border border-r p-8")}>
-          <div className="flex items-baseline justify-between">
+          <div className="flex items-center justify-between gap-3">
             <CardTitle className="font-medium text-base">{name}</CardTitle>
-            {current ? <Eyebrow>{t("billing.current")}</Eyebrow> : null}
+            <div className="flex flex-wrap justify-end gap-2">
+              {current ? (
+                <Badge variant="muted" className="text-[9px] uppercase tracking-wider">
+                  {t("billing.current")}
+                </Badge>
+              ) : null}
+              {recommended ? (
+                <Badge variant="primary" className="text-[9px] uppercase tracking-wider">
+                  {t("billing.recommended")}
+                </Badge>
+              ) : null}
+            </div>
           </div>
           <p className="text-muted-foreground text-xs">{description}</p>
           <div className="mt-5 flex items-baseline gap-1">
@@ -412,7 +414,7 @@ function PlanCard({
             <Button
               onClick={onUpgrade}
               disabled={current || upgrading}
-              className="w-full"
+              className="h-11 w-full sm:h-9"
               variant={recommended ? "primary" : "secondary"}
             >
               {current
@@ -422,7 +424,7 @@ function PlanCard({
                   : `${t("billing.choosePlan").replace("{plan}", name)}`}
             </Button>
           ) : (
-            <Button disabled className="w-full" variant="secondary">
+            <Button disabled className="h-11 w-full sm:h-9" variant="secondary">
               {current
                 ? t("billing.currentPlanButton")
                 : billingConfigured

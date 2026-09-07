@@ -1,12 +1,13 @@
+use super::capture::{clamp_coordinates as clamp_overlay_coordinates, logical_pixels, EDGE_MARGIN};
 use super::{
     MeetingOverlayGeometry, MeetingOverlayPresentation, MeetingTranscriptPlacement,
     MeetingTranscriptSideAlignment, DICTATION_PILL_INSET_X, DICTATION_PILL_INSET_Y,
-    MEETING_COMPACT_PILL_SIZE, MEETING_OVERLAY_GAP, MEETING_OVERLAY_HEIGHT, MEETING_OVERLAY_WIDTH,
-    MEETING_PILL_ABOVE_INSET_X, MEETING_PILL_GUTTER, MEETING_PILL_HEIGHT, MEETING_PILL_SLOT_WIDTH,
-    MEETING_TRANSCRIPT_ABOVE_HEIGHT, MEETING_TRANSCRIPT_ABOVE_WIDTH, MEETING_TRANSCRIPT_HEIGHT,
-    MEETING_TRANSCRIPT_SIDE_HEIGHT, MEETING_TRANSCRIPT_SIDE_WIDTH, MEETING_TRANSCRIPT_WIDTH,
+    MEETING_COMPACT_PILL_HEIGHT, MEETING_COMPACT_PILL_WIDTH, MEETING_OVERLAY_GAP,
+    MEETING_OVERLAY_HEIGHT, MEETING_OVERLAY_WIDTH, MEETING_PILL_ABOVE_INSET_X, MEETING_PILL_GUTTER,
+    MEETING_PILL_HEIGHT, MEETING_PILL_SLOT_WIDTH, MEETING_TRANSCRIPT_ABOVE_HEIGHT,
+    MEETING_TRANSCRIPT_ABOVE_WIDTH, MEETING_TRANSCRIPT_HEIGHT, MEETING_TRANSCRIPT_SIDE_HEIGHT,
+    MEETING_TRANSCRIPT_SIDE_WIDTH, MEETING_TRANSCRIPT_WIDTH,
 };
-use super::capture::{clamp_coordinates as clamp_overlay_coordinates, logical_pixels};
 
 /// Converts the visible pill anchor into the larger dictation window origin.
 pub(super) fn dictation_origin_from_canonical(canonical: (i32, i32), scale: f64) -> (i32, i32) {
@@ -32,7 +33,7 @@ pub(super) fn canonical_meeting_overlay_origin(
     if !presentation.transcript_visible {
         let compact_offset = if presentation.compact {
             logical_pixels(
-                (MEETING_PILL_SLOT_WIDTH - MEETING_COMPACT_PILL_SIZE) / 2.0,
+                (MEETING_PILL_SLOT_WIDTH - MEETING_COMPACT_PILL_WIDTH) / 2.0,
                 scale,
             )
         } else {
@@ -64,6 +65,30 @@ pub(super) fn canonical_meeting_overlay_origin(
         MeetingTranscriptPlacement::Right => (
             current_origin.0 + logical_pixels(MEETING_PILL_GUTTER, scale),
             canonical_side_overlay_y(current_origin.1, scale, presentation.side_alignment),
+        ),
+    }
+}
+
+pub(super) fn meeting_overlay_logical_size(presentation: MeetingOverlayPresentation) -> (f64, f64) {
+    if !presentation.transcript_visible {
+        return if presentation.compact {
+            (
+                MEETING_COMPACT_PILL_WIDTH + MEETING_PILL_GUTTER * 2.0,
+                MEETING_COMPACT_PILL_HEIGHT + MEETING_PILL_GUTTER * 2.0,
+            )
+        } else {
+            (MEETING_OVERLAY_WIDTH, MEETING_OVERLAY_HEIGHT)
+        };
+    }
+
+    match presentation.placement {
+        MeetingTranscriptPlacement::Above => (
+            MEETING_TRANSCRIPT_ABOVE_WIDTH,
+            MEETING_TRANSCRIPT_ABOVE_HEIGHT,
+        ),
+        MeetingTranscriptPlacement::Left | MeetingTranscriptPlacement::Right => (
+            MEETING_TRANSCRIPT_SIDE_WIDTH,
+            MEETING_TRANSCRIPT_SIDE_HEIGHT,
         ),
     }
 }
@@ -109,6 +134,10 @@ pub(super) fn meeting_overlay_geometry(
             ),
     );
     if above_origin.1 >= monitor_position.1 {
+        let physical_size = (
+            logical_pixels(MEETING_TRANSCRIPT_ABOVE_WIDTH, scale) as u32,
+            logical_pixels(MEETING_TRANSCRIPT_ABOVE_HEIGHT, scale) as u32,
+        );
         return MeetingOverlayGeometry {
             placement: MeetingTranscriptPlacement::Above,
             side_alignment: MeetingTranscriptSideAlignment::Bottom,
@@ -116,7 +145,13 @@ pub(super) fn meeting_overlay_geometry(
                 MEETING_TRANSCRIPT_ABOVE_WIDTH as i32,
                 MEETING_TRANSCRIPT_ABOVE_HEIGHT as i32,
             ),
-            origin: above_origin,
+            origin: clamp_transcript_coordinates(
+                above_origin,
+                physical_size,
+                scale,
+                monitor_position,
+                monitor_size,
+            ),
         };
     }
 
@@ -131,14 +166,16 @@ fn hidden_overlay_geometry(
     monitor_size: (u32, u32),
 ) -> MeetingOverlayGeometry {
     let logical_size = if compact {
-        let side = (MEETING_COMPACT_PILL_SIZE + MEETING_PILL_GUTTER * 2.0) as i32;
-        (side, side)
+        (
+            (MEETING_COMPACT_PILL_WIDTH + MEETING_PILL_GUTTER * 2.0) as i32,
+            (MEETING_COMPACT_PILL_HEIGHT + MEETING_PILL_GUTTER * 2.0) as i32,
+        )
     } else {
         (MEETING_OVERLAY_WIDTH as i32, MEETING_OVERLAY_HEIGHT as i32)
     };
     let centered_compact_offset = if compact {
         logical_pixels(
-            (MEETING_PILL_SLOT_WIDTH - MEETING_COMPACT_PILL_SIZE) / 2.0,
+            (MEETING_PILL_SLOT_WIDTH - MEETING_COMPACT_PILL_WIDTH) / 2.0,
             scale,
         )
     } else {
@@ -225,14 +262,46 @@ fn side_overlay_geometry(
             MEETING_TRANSCRIPT_SIDE_WIDTH as i32,
             MEETING_TRANSCRIPT_SIDE_HEIGHT as i32,
         ),
-        origin: clamp_overlay_coordinates(
-            raw_x,
-            raw_y,
+        origin: clamp_transcript_coordinates(
+            (raw_x, raw_y),
             physical_size,
+            scale,
             monitor_position,
             monitor_size,
         ),
     }
+}
+
+fn clamp_transcript_coordinates(
+    origin: (i32, i32),
+    window_size: (u32, u32),
+    scale: f64,
+    monitor_position: (i32, i32),
+    monitor_size: (u32, u32),
+) -> (i32, i32) {
+    let margin = logical_pixels(EDGE_MARGIN, scale).max(0);
+    let double_margin = u32::try_from(margin.saturating_mul(2)).unwrap_or(u32::MAX);
+    if window_size.0.saturating_add(double_margin) > monitor_size.0
+        || window_size.1.saturating_add(double_margin) > monitor_size.1
+    {
+        return clamp_overlay_coordinates(
+            origin.0,
+            origin.1,
+            window_size,
+            monitor_position,
+            monitor_size,
+        );
+    }
+
+    let safe_position = (
+        monitor_position.0.saturating_add(margin),
+        monitor_position.1.saturating_add(margin),
+    );
+    let safe_size = (
+        monitor_size.0.saturating_sub(double_margin),
+        monitor_size.1.saturating_sub(double_margin),
+    );
+    clamp_overlay_coordinates(origin.0, origin.1, window_size, safe_position, safe_size)
 }
 
 fn choose_side_alignment(

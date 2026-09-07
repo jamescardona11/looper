@@ -1,9 +1,8 @@
 import type { ReactNode } from "react";
 import { cn } from "@/lib/cn";
 
-// Centered placeholder for "nothing here yet" states. Mirrors the mobile
-// EmptyState (haloed icon + title + description) so both platforms read the
-// same, while keeping the web dashed-border drop-zone aesthetic.
+// Compact placeholder for "nothing here yet" states. It explains the next
+// state without turning absence into the largest object on the page.
 export function EmptyState({
   icon,
   title,
@@ -18,17 +17,21 @@ export function EmptyState({
   return (
     <div
       className={cn(
-        "flex flex-col items-center justify-center gap-3 rounded-2xl border border-border border-dashed px-6 py-20 text-center",
+        "web-product-panel flex min-h-40 flex-col items-center justify-center gap-4 rounded-xl px-6 py-8 text-center sm:flex-row sm:justify-start sm:px-7 sm:text-left",
         className,
       )}
     >
-      <div className="grid size-14 place-items-center rounded-full border border-border bg-card">
+      <div className="grid size-10 shrink-0 place-items-center rounded-lg bg-[var(--web-highlight)] [&_svg]:size-5">
         {icon}
       </div>
-      <h3 className="font-medium text-foreground tracking-tight">{title}</h3>
-      {description ? (
-        <p className="max-w-xs text-muted-foreground text-sm leading-relaxed">{description}</p>
-      ) : null}
+      <div>
+        <h3 className="font-medium text-foreground tracking-tight">{title}</h3>
+        {description ? (
+          <p className="mt-1 max-w-md text-pretty text-muted-foreground text-sm leading-relaxed">
+            {description}
+          </p>
+        ) : null}
+      </div>
     </div>
   );
 }

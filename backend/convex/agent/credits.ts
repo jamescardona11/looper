@@ -11,6 +11,7 @@
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { RateLimiter } from "@convex-dev/rate-limiter";
 import { getActiveModel, RATE_LIMITS, type RateLimitTier } from "@looper/config/agent";
+import { PRODUCT_ACCESS_IS_FREE } from "@looper/config/billing";
 import { v } from "convex/values";
 import { components } from "../_generated/api";
 import { internalMutation, query } from "../_generated/server";
@@ -70,6 +71,17 @@ export const balance = query({
   handler: async (ctx) => {
     const userId = await getAuthUserId(ctx);
     if (!userId) return null;
+    if (PRODUCT_ACCESS_IS_FREE) {
+      return {
+        tier: "free" as const,
+        byok: false,
+        creditBalance: 0,
+        used: 0,
+        limit: null,
+        remaining: null,
+        resetAtMs: Date.now(),
+      };
+    }
     const tier = await resolveTier(ctx, userId);
     const byok = await userHasOwnKey(ctx, userId);
     const creditBalance = await getCreditBalance(ctx, userId);
@@ -116,6 +128,7 @@ export const assertWithinLimit = internalMutation({
     consumeCreditKey: v.optional(v.string()),
   },
   handler: async (ctx, { userId, consumeCreditKey }) => {
+    if (PRODUCT_ACCESS_IS_FREE) return { ok: true, tier: "free" as const };
     if (await userHasOwnKey(ctx, userId)) {
       const tier = await resolveTier(ctx, userId);
       return { ok: true, byok: true as const, tier };
@@ -165,6 +178,7 @@ export const assertCredits = internalMutation({
     provider: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
+    if (PRODUCT_ACCESS_IS_FREE) return { ok: true, tier: "free" as const };
     const { userId, cost, provider } = args;
     const amount = Math.max(1, Math.ceil(cost));
     if (provider && (await userHasKeyForProvider(ctx, userId, provider))) {

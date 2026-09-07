@@ -23,13 +23,10 @@ export function exceedsDragThreshold(
   );
 }
 
-// Drag the overlay from anywhere on it.
-//
-// A press only becomes a drag once the pointer actually moves, so the pill
-// needs no dedicated grip - the whole shell is both draggable and clickable,
-// and whichever the user meant is decided by what they do next. The native
-// drag also freezes hover tracking: polling through a drag used to collapse
-// the pill mid-move and hand the panel back to click-through.
+// Drag starts only from the visible 2 × 3 grip. This leaves the rest of the
+// pill free for capture controls and makes the affordance unambiguous. The
+// native drag also freezes hover tracking: polling through a drag used to
+// collapse the pill mid-move and hand the panel back to click-through.
 export function useOverlayDrag() {
   const draggingRef = useRef(false);
   const suppressClickRef = useRef(false);

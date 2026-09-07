@@ -3,6 +3,7 @@ import { lazy, Suspense, type ReactNode } from "react";
 import AneCompileOverlay from "../../features/settings/models/AneCompileOverlay";
 import ModelDownloadActivityBar from "../../features/settings/models/ModelDownloadActivityBar";
 import { ModelDownloadActivityProvider } from "../../features/settings/models/modelDownloadActivity";
+import { LooperLogo } from "../../shared/ui/LooperLogo";
 import type { PreviewRoute } from "./window-route";
 
 const Home = lazy(() => import("../home/Home"));
@@ -33,7 +34,37 @@ type SettingsWindowProps = {
 };
 
 const frameClass = "settings-view h-screen w-screen overflow-hidden";
-const loadingFrame = <div className={`${frameClass} bg-surface-secondary`} />;
+
+function SettingsLoadingFrame() {
+  return (
+    <main
+      aria-busy="true"
+      aria-label="Preparing your workspace"
+      className={`${frameClass} bg-[var(--desktop-paper)] px-10 py-9`}
+    >
+      <section className="mx-auto flex h-full w-full max-w-[1040px] flex-col">
+        <div className="flex items-center gap-3 border-b border-border-primary pb-4">
+          <span className="ui-color-accent">
+            <LooperLogo size="md" />
+          </span>
+          <p className="font-display ui-text-title font-semibold ui-color-primary">
+            Looper
+          </p>
+          <p className="ui-text-body-sm ui-color-muted">
+            Preparing your workspace
+          </p>
+          <span aria-hidden="true" className="ml-auto flex items-end gap-1">
+            <i className="h-1.5 w-1 rounded-full bg-[var(--color-accent-30)]" />
+            <i className="h-2.5 w-1 rounded-full bg-[var(--color-accent-50)]" />
+            <i className="h-4 w-1 rounded-full bg-[var(--color-accent)]" />
+          </span>
+        </div>
+      </section>
+    </main>
+  );
+}
+
+const loadingFrame = <SettingsLoadingFrame />;
 
 export function SettingsWindow({
   loading,

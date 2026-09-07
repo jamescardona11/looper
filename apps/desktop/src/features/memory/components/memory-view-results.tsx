@@ -1,4 +1,5 @@
 import type { MemorySearchResult } from "../../../data/memory";
+import { useLingui } from "@lingui/react/macro";
 import DotMatrix from "../../../shared/ui/DotMatrix";
 import Shimmer from "../../../shared/ui/Shimmer";
 import { MemoryResultRow } from "./memory-result-row";
@@ -24,7 +25,7 @@ type MemoryViewResultsProps = {
 
 export function MemoryViewResults(props: MemoryViewResultsProps) {
   return (
-    <div className="min-h-0 flex-1 overflow-y-auto px-2 pt-1 pb-2">
+    <div className="min-h-0 flex-1 overflow-y-auto pb-2">
       {props.loading ? (
         <div aria-hidden="true" className="space-y-1 px-2 pt-2">
           {[0, 1, 2].map((row) => (
@@ -63,35 +64,100 @@ export function MemoryViewResults(props: MemoryViewResultsProps) {
           ) : null}
         </div>
       ) : (
-        props.groups.map((group) => (
-          <div key={group.key}>
-            <p className="px-3 pt-3 pb-1 ui-text-uppercase-micro ui-color-disabled">
-              {group.label}
-            </p>
-            {group.results.map((result) => (
-              <MemoryResultRow
-                key={`${result.source}:${result.id}`}
-                result={result}
-                query={props.highlightQuery}
-                selected={
-                  props.orderedResults[props.activeResultIndex]?.id ===
-                    result.id &&
-                  props.orderedResults[props.activeResultIndex]?.source ===
-                    result.source
-                }
-                onSelect={() =>
-                  props.onActiveResultChange(
-                    props.resultIndexes.get(`${result.source}:${result.id}`) ??
-                      0,
-                  )
-                }
-                onOpen={() => props.onOpenResult(result)}
-              />
-            ))}
-          </div>
-        ))
+        <>
+          <MemorySearchEvidence
+            query={props.query}
+            results={props.results}
+            onOpenResult={props.onOpenResult}
+          />
+          {props.groups.map((group) => (
+            <div key={group.key}>
+              <p className="px-[15px] pt-[14px] pb-1 ui-text-uppercase-micro ui-color-muted">
+                {group.label}
+              </p>
+              {group.results.map((result) => (
+                <MemoryResultRow
+                  key={`${result.source}:${result.id}`}
+                  result={result}
+                  query={props.highlightQuery}
+                  selected={
+                    props.orderedResults[props.activeResultIndex]?.id ===
+                      result.id &&
+                    props.orderedResults[props.activeResultIndex]?.source ===
+                      result.source
+                  }
+                  onSelect={() =>
+                    props.onActiveResultChange(
+                      props.resultIndexes.get(
+                        `${result.source}:${result.id}`,
+                      ) ?? 0,
+                    )
+                  }
+                  onOpen={() => props.onOpenResult(result)}
+                />
+              ))}
+            </div>
+          ))}
+        </>
       )}
     </div>
+  );
+}
+
+function MemorySearchEvidence({
+  query,
+  results,
+  onOpenResult,
+}: Pick<MemoryViewResultsProps, "query" | "results" | "onOpenResult">) {
+  const { t } = useLingui();
+  if (!query.trim() || results.length === 0) return null;
+
+  return (
+    <section
+      aria-label={t({
+        id: "memory.evidence.label",
+        message: "Local search evidence",
+      })}
+      className="m-[14px] rounded-[19px] bg-[var(--desktop-highlight)] p-5"
+    >
+      <p className="ui-text-body-sm font-semibold text-[var(--color-text-secondary)]">
+        {t({ id: "memory.evidence.searched", message: "Searched" })}{" "}
+        <b className="font-semibold text-[var(--color-text-primary)]">
+          {results.length}{" "}
+          {t({ id: "memory.evidence.sources", message: "local sources" })}
+        </b>
+        {query.trim() ? ` · “${query.trim()}”` : null}
+      </p>
+      <div className="mt-3 max-w-[700px] space-y-3">
+        {results.slice(0, 3).map((result) => (
+          <p
+            key={`${result.source}:${result.id}`}
+            className="ui-text-body-lg leading-relaxed text-[var(--color-text-primary)]"
+          >
+            {result.excerpt}{" "}
+            <button
+              type="button"
+              onClick={() => onOpenResult(result)}
+              aria-label={result.title}
+              className="inline-flex max-w-full items-center gap-1 rounded-lg bg-[var(--color-bg-primary)] px-2 py-1 align-baseline ui-text-micro font-semibold text-[var(--color-accent)] transition-colors hover:bg-[var(--color-bg-tertiary)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-accent-50)]"
+            >
+              <span aria-hidden="true">▶</span>
+              <span className="truncate">{result.title}</span>
+            </button>
+          </p>
+        ))}
+      </div>
+      <p className="mt-[15px] flex items-center gap-2 border-t border-[var(--desktop-answer-divider)] pt-3 ui-text-micro text-[var(--color-text-secondary)]">
+        <span
+          className="h-1.5 w-1.5 rounded-full bg-[var(--color-accent)]"
+          aria-hidden="true"
+        />
+        {t({
+          id: "memory.evidence.local",
+          message: "Searched on this Mac. None of it left the machine.",
+        })}
+      </p>
+    </section>
   );
 }
 

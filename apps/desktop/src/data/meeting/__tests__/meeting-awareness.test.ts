@@ -9,11 +9,13 @@ vi.mock("@tauri-apps/api/core", () => ({ invoke: tauri.invoke }));
 vi.mock("@tauri-apps/api/event", () => ({ listen: tauri.listen }));
 
 import {
+  dismissMeetingAwareness,
   disableMeetingAwarenessNotifications,
   getCalendarAccessStatus,
   getMeetingAwarenessState,
   openMeetingNotificationSettings,
   requestCalendarAccess,
+  startCalendarMeetingCapture,
   startPromptedMeetingCapture,
   subscribeMeetingAwareness,
 } from "../meeting-awareness";
@@ -28,20 +30,32 @@ describe("meeting awareness native gateway", () => {
     tauri.invoke.mockResolvedValue(undefined);
 
     await getMeetingAwarenessState();
-    await disableMeetingAwarenessNotifications();
+    await dismissMeetingAwareness();
+    await disableMeetingAwarenessNotifications("microphone");
     await openMeetingNotificationSettings();
     await getCalendarAccessStatus();
     await requestCalendarAccess();
+    await startCalendarMeetingCapture("calendar-event-1");
     await startPromptedMeetingCapture();
 
     expect(tauri.invoke.mock.calls.map(([command]) => command)).toEqual([
       "get_meeting_awareness_state",
+      "dismiss_meeting_awareness",
       "disable_meeting_awareness_notifications",
       "open_meeting_notification_settings",
       "get_calendar_access_status",
       "request_calendar_access",
+      "start_calendar_meeting_capture",
       "start_prompted_meeting_capture",
     ]);
+    expect(tauri.invoke).toHaveBeenCalledWith(
+      "disable_meeting_awareness_notifications",
+      { source: "microphone" },
+    );
+    expect(tauri.invoke).toHaveBeenCalledWith(
+      "start_calendar_meeting_capture",
+      { eventId: "calendar-event-1" },
+    );
   });
 
   test("unwraps meeting awareness state events", async () => {

@@ -1,5 +1,5 @@
 import { invoke } from "@tauri-apps/api/core";
-import { listen, type UnlistenFn } from "@tauri-apps/api/event";
+import { emit, listen, type UnlistenFn } from "@tauri-apps/api/event";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import type { ToastPayload } from "../../contracts/index";
 
@@ -11,6 +11,10 @@ export function subscribeToastShow(
 
 export function subscribeToastHide(handler: () => void): Promise<UnlistenFn> {
   return listen("toast:hide", handler);
+}
+
+export function notifyToastRendererReady(): Promise<void> {
+  return emit("toast:renderer_ready");
 }
 
 export async function setToastInteractive(interactive: boolean): Promise<void> {

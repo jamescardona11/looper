@@ -25,10 +25,13 @@ fn resolve_settings_window(app: &AppHandle<AppRuntime>) -> tauri::Result<Setting
 
     let builder = WebviewWindowBuilder::new(app, SETTINGS_WINDOW_LABEL, WebviewUrl::default())
         .title("Looper")
-        .inner_size(900.0, 750.0)
+        .inner_size(1350.0, 830.0)
         .min_inner_size(900.0, 750.0)
         .resizable(true)
-        .background_color(tauri::window::Color(25, 26, 32, 255))
+        // El canvas nativo debe coincidir con el margen visible del workspace.
+        // Sin esto, macOS deja una franja negra en la barra de título antes de
+        // que WebKit pinte la superficie cálida de React.
+        .background_color(tauri::window::Color(223, 227, 220, 255))
         .visible(false);
     #[cfg(target_os = "macos")]
     let builder = builder.hidden_title(true);

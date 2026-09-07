@@ -1,7 +1,7 @@
 import type { CSSProperties } from "react";
+import { useLandingCopy } from "../lib/landing-copy";
 import { containerClass } from "../lib/layout";
 import {
-  CELL_STATE_LABEL,
   COMPARISON_REVIEW_DATE,
   COMPARISON_ROWS,
   COMPETITORS,
@@ -9,54 +9,35 @@ import {
 } from "./comparison-data";
 import { mutedLinkClass } from "./ui/link";
 
-/*
- * The reveal is `.lp-reveal` in src/styles/index.css, shared with every other
- * section. This file used to carry a private `compare-reveal` copy of it.
- */
-
 /**
- * The design derives the tinted Looper column from the accent, so we do too
- * rather than pasting a second literal: rgb(88 83 250) at 4.5% alpha.
+ * The Looper column uses the same lavender surface as the rest of the Purple
+ * direction, in both color schemes.
  */
 const TINT_STYLE = {
-  "--compare-tint": "color-mix(in srgb, var(--brand) 4.5%, transparent)",
+  "--compare-tint": "var(--lp-lavender)",
 } as CSSProperties;
 
 type MarkProps = { readonly className: string };
 
 function CheckMark({ className }: MarkProps) {
   return (
-    <svg
-      className={className}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2.4"
-      strokeLinecap="round"
-      strokeLinejoin="round"
+    <span
+      className={`${className} inline-flex items-center justify-center font-mono font-semibold leading-none`}
       aria-hidden="true"
-      focusable="false"
     >
-      <path d="M20 6 9 17l-5-5" />
-    </svg>
+      ✓
+    </span>
   );
 }
 
 function CrossMark({ className }: MarkProps) {
   return (
-    <svg
-      className={className}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2.4"
-      strokeLinecap="round"
+    <span
+      className={`${className} inline-flex items-center justify-center font-mono font-semibold leading-none`}
       aria-hidden="true"
-      focusable="false"
     >
-      <path d="M18 6 6 18" />
-      <path d="m6 6 12 12" />
-    </svg>
+      ×
+    </span>
   );
 }
 
@@ -67,9 +48,11 @@ function CrossMark({ className }: MarkProps) {
 function VerdictMark({
   cell,
   isLooper,
+  labels,
 }: {
   readonly cell: ComparisonCell;
   readonly isLooper: boolean;
+  readonly labels: Record<ComparisonCell["state"], string>;
 }) {
   const size = isLooper ? "size-4 md:size-[17px]" : "size-3.5 md:size-[17px]";
 
@@ -87,7 +70,7 @@ function VerdictMark({
           ?
         </span>
       ) : null}
-      <span className="sr-only">{CELL_STATE_LABEL[cell.state]}</span>
+      <span className="sr-only">{labels[cell.state]}</span>
     </>
   );
 }
@@ -108,31 +91,36 @@ function VerdictMark({
  * That is why the names are spans rather than a ::before with attr().
  */
 export function ComparisonTable() {
+  const copy = useLandingCopy();
+  const reviewDate = new Intl.DateTimeFormat(copy.locale, {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+    timeZone: "UTC",
+  }).format(new Date(`${COMPARISON_REVIEW_DATE}T00:00:00Z`));
+  const labels = {
+    confirmed: copy.compare.confirmed,
+    notOffered: copy.compare.notOffered,
+    notAdvertised: copy.compare.notAdvertised,
+  };
+
   return (
-    <section id="compare" style={TINT_STYLE} className={`${containerClass} py-12 md:py-[104px]`}>
-      <div className="lp-reveal flex flex-col gap-3.5 md:mb-10 md:max-w-[640px] md:gap-4">
-        <h2 className="text-[31px] leading-[1.06] tracking-[-0.045em] md:hidden">
-          Where Looper sits among the tools you are weighing.
+    <section id="compare" style={TINT_STYLE} className={`${containerClass} py-16 md:py-28`}>
+      <div data-reveal className="flex max-w-[760px] flex-col gap-4 md:mb-12">
+        <h2 className="text-[39px] leading-[0.98] tracking-[-0.05em] md:text-[58px]">
+          {copy.compare.title}
         </h2>
-        <h2 className="hidden tracking-tighter md:block md:text-[44px] md:leading-[1.04]">
-          Where Looper sits among the tools you are probably weighing.
-        </h2>
-        <p className="text-[15px] text-ink-secondary leading-[1.6] md:hidden">
-          Two rows go against us, and they stay in. A comparison that wins everything is an
-          advertisement.
-        </p>
-        <p className="hidden text-ink-secondary md:block md:text-[17px] md:leading-[1.6]">
-          Two rows go against us, and they stay in. A comparison that wins everything is not a
-          comparison, it is an advertisement.
+        <p className="max-w-[620px] text-[15px] text-ink-secondary leading-[1.65] md:text-[17px]">
+          {copy.compare.body}
         </p>
       </div>
 
-      <div className="lp-reveal mt-2.5 overflow-hidden md:mt-0 md:rounded-[18px] md:border md:border-border">
+      <div
+        data-reveal
+        className="mt-8 overflow-hidden md:mt-0 md:rounded-[24px] md:border md:border-border"
+      >
         <table className="w-full max-md:block md:table-fixed">
-          <caption className="sr-only">
-            Looper compared with Wispr Flow, Granola, Humla and Meetily. Competitor entries reflect
-            official pages reviewed {COMPARISON_REVIEW_DATE}.
-          </caption>
+          <caption className="sr-only">{copy.compare.caption(reviewDate)}</caption>
 
           <colgroup>
             <col className="w-[27.54%]" />
@@ -149,7 +137,7 @@ export function ComparisonTable() {
                 scope="col"
                 className="text-left font-normal text-[13px] text-ink-muted md:px-[26px] md:py-[22px]"
               >
-                Capability
+                {copy.compare.capability}
               </th>
               <th scope="col" className="bg-[var(--compare-tint)] text-center md:px-5 md:py-[22px]">
                 <span className="font-display font-semibold text-[17px] text-primary tracking-[-0.03em]">
@@ -175,24 +163,24 @@ export function ComparisonTable() {
           </thead>
 
           <tbody className="max-md:flex max-md:flex-col max-md:gap-2.5">
-            {COMPARISON_ROWS.map((row) => (
+            {COMPARISON_ROWS.map((row, rowIndex) => (
               <tr
                 key={row.capability}
-                className="lp-row max-md:grid max-md:grid-cols-4 max-md:overflow-hidden max-md:rounded-[12px] max-md:border max-md:border-border md:border-b md:border-b-[#f0f0f0]"
+                className="max-md:grid max-md:grid-cols-4 max-md:overflow-hidden max-md:rounded-[12px] max-md:border max-md:border-border md:border-b md:border-b-border"
               >
                 <th
                   scope="row"
                   className="px-4 py-3.5 text-left font-normal text-[14px] leading-[1.35] max-md:col-span-3 max-md:bg-[var(--compare-tint)] md:px-[26px] md:py-[18px] md:align-middle md:text-[15px]"
                 >
-                  {row.capability}
+                  {copy.compare.rows[rowIndex] ?? row.capability}
                 </th>
 
                 <td className="bg-[var(--compare-tint)] px-4 py-3.5 max-md:col-start-4 md:px-3 md:py-[18px] md:align-middle">
                   <div className="flex items-center justify-end gap-1.5 md:flex-col md:justify-center md:gap-[5px]">
-                    <VerdictMark cell={row.looper} isLooper={true} />
+                    <VerdictMark cell={row.looper} isLooper={true} labels={labels} />
                     {row.looper.note ? (
                       <span className="whitespace-nowrap font-mono text-[10px] text-ink-muted tracking-normal md:tracking-[0.02em]">
-                        {row.looper.note}
+                        {copy.compare.notes[row.looper.note]}
                       </span>
                     ) : null}
                   </div>
@@ -207,10 +195,10 @@ export function ComparisonTable() {
                       <span className="whitespace-nowrap text-[10px] text-ink-muted md:hidden">
                         {verdict.competitor.name}
                       </span>
-                      <VerdictMark cell={verdict} isLooper={false} />
+                      <VerdictMark cell={verdict} isLooper={false} labels={labels} />
                       {verdict.note ? (
                         <span className="whitespace-nowrap font-mono text-[10px] text-ink-muted tracking-[0.02em] max-md:hidden">
-                          {verdict.note}
+                          {copy.compare.notes[verdict.note]}
                         </span>
                       ) : null}
                     </div>
@@ -224,11 +212,11 @@ export function ComparisonTable() {
         <div className="hidden flex-wrap items-center gap-5 bg-muted px-[26px] py-[18px] md:flex">
           <span className="inline-flex items-center gap-[7px] text-[12px] text-ink-muted">
             <CheckMark className="size-[13px] text-ink-secondary" />
-            Confirmed
+            {copy.compare.confirmed}
           </span>
           <span className="inline-flex items-center gap-[7px] text-[12px] text-ink-muted">
             <CrossMark className="size-[13px] text-ink-faint" />
-            Not offered or limited
+            {copy.compare.notOffered}
           </span>
           <span className="inline-flex items-center gap-[7px] text-[12px] text-ink-muted">
             <span
@@ -237,17 +225,13 @@ export function ComparisonTable() {
             >
               ?
             </span>
-            Not advertised
+            {copy.compare.notAdvertised}
           </span>
-          <span className="text-[12px] text-ink-muted">
-            Competitor entries reflect official pages reviewed {COMPARISON_REVIEW_DATE}. Plans and
-            platforms can change.
-          </span>
+          <span className="text-[12px] text-ink-muted">{copy.compare.plansChange(reviewDate)}</span>
         </div>
 
         <p className="mt-1.5 text-[12px] text-ink-muted leading-[1.6] md:hidden">
-          Confirmed, not offered, or not advertised. Competitor entries reflect official pages
-          reviewed {COMPARISON_REVIEW_DATE}.
+          {copy.compare.compactLegend(reviewDate)}
         </p>
       </div>
     </section>

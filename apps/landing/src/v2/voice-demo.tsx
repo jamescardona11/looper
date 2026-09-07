@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { WaveformMark } from "../components/ui/icons";
+import { WaveformMark } from "./waveform-mark";
 
 const examples = [
   {

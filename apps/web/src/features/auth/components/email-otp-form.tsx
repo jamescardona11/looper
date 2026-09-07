@@ -72,9 +72,14 @@ export function EmailOtpForm() {
           placeholder="you@example.com"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
+          className="h-11 sm:h-10"
         />
-        {error ? <p className="text-destructive text-sm">{error}</p> : null}
-        <Button type="submit" disabled={!email || submitting} className="w-full">
+        {error ? (
+          <p role="alert" className="text-destructive text-sm">
+            {error}
+          </p>
+        ) : null}
+        <Button type="submit" disabled={!email || submitting} className="h-11 w-full sm:h-9">
           <IconMail className="size-4" />
           {submitting ? t("auth.sendingCode") : t("auth.emailMeCode")}
         </Button>
@@ -97,9 +102,14 @@ export function EmailOtpForm() {
         placeholder={t("auth.codePlaceholder")}
         value={code}
         onChange={(e) => setCode(e.target.value)}
+        className="h-11 sm:h-10"
       />
-      {error ? <p className="text-destructive text-sm">{error}</p> : null}
-      <Button type="submit" disabled={!code || submitting} className="w-full">
+      {error ? (
+        <p role="alert" className="text-destructive text-sm">
+          {error}
+        </p>
+      ) : null}
+      <Button type="submit" disabled={!code || submitting} className="h-11 w-full sm:h-9">
         {submitting ? t("auth.verifying") : t("auth.signIn")}
       </Button>
       <Button
@@ -110,7 +120,7 @@ export function EmailOtpForm() {
           setCode("");
           setStep({ kind: "email" });
         }}
-        className="w-full"
+        className="h-11 w-full sm:h-9"
       >
         {t("auth.useDifferentEmail")}
       </Button>

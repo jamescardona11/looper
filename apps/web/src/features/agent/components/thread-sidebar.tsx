@@ -71,7 +71,7 @@ export function ThreadSidebar({ onNavigate }: { onNavigate?: () => void }) {
             size="icon"
             type="button"
             onClick={() => void onNewChat()}
-            className="size-7 text-muted-foreground hover:bg-secondary hover:text-foreground"
+            className="size-11 text-muted-foreground hover:bg-secondary hover:text-foreground sm:size-7"
             aria-label={t("agent.newChat")}
           >
             <IconPlus className="size-4" aria-hidden />
@@ -89,7 +89,7 @@ export function ThreadSidebar({ onNavigate }: { onNavigate?: () => void }) {
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder={t("agent.searchChats")}
-          className="h-8 bg-background pr-2.5 pl-8 text-xs shadow-none"
+          className="h-11 bg-background pr-2.5 pl-8 text-xs shadow-none sm:h-8"
         />
       </div>
 
@@ -206,7 +206,7 @@ function ThreadItem({
   return (
     <li
       className={cn(
-        "group relative flex items-start gap-2 rounded-md px-2 py-1.5 text-xs transition-colors",
+        "group relative flex min-h-11 items-center gap-2 rounded-md px-2 py-1.5 text-xs transition-colors sm:min-h-0 sm:items-start",
         active
           ? "bg-secondary text-foreground"
           : "text-muted-foreground hover:bg-secondary/60 hover:text-foreground",
@@ -247,7 +247,7 @@ function ThreadItem({
       <Menu>
         <MenuTrigger
           aria-label={t("agent.threadActions")}
-          className="grid size-5 shrink-0 place-items-center rounded text-muted-foreground opacity-100 transition-opacity hover:bg-secondary hover:text-foreground data-[popup-open]:opacity-100 sm:opacity-0 sm:group-hover:opacity-100"
+          className="grid size-11 shrink-0 place-items-center rounded text-muted-foreground opacity-100 transition-opacity hover:bg-secondary hover:text-foreground data-[popup-open]:opacity-100 sm:size-5 sm:opacity-0 sm:group-hover:opacity-100"
         >
           <IconDots className="size-3" aria-hidden />
         </MenuTrigger>

@@ -4,6 +4,7 @@ import {
   buildLibraryItems,
   groupLibraryItemsByDay,
   type LibraryItem,
+  recentLibraryItems,
   searchLibraryItems,
 } from "../library-logic";
 
@@ -120,5 +121,18 @@ describe("Library", () => {
 
     expect(searchLibraryItems(items, "volumen").map((item) => item.id)).toEqual(["uno"]);
     expect(searchLibraryItems(items, "  ")).toHaveLength(2);
+  });
+
+  it("keeps Home recent while preserving the full Library collection", () => {
+    const since = new Date(2024, 2, 5).getTime();
+    const items = [
+      itemAt("nuevo", new Date(2024, 2, 12, 9, 0)),
+      itemAt("reciente", new Date(2024, 2, 11, 9, 0)),
+      itemAt("tercero", new Date(2024, 2, 10, 9, 0)),
+      itemAt("antiguo", new Date(2024, 2, 1, 9, 0)),
+    ];
+
+    expect(recentLibraryItems(items, since).map((item) => item.id)).toEqual(["nuevo", "reciente"]);
+    expect(items).toHaveLength(4);
   });
 });

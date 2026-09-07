@@ -13,6 +13,7 @@ type MemoryViewControlsProps = {
   onToggleSource: (source: MemorySource) => void;
   days: number | null;
   onDaysChange: (days: number | null) => void;
+  onResetFilters: () => void;
   advanced: boolean;
   onShowAdvanced: () => void;
   appId: string;
@@ -23,9 +24,11 @@ type MemoryViewControlsProps = {
 
 export function MemoryViewControls(props: MemoryViewControlsProps) {
   const selectedSources = new Set(props.sources);
+  const everythingSelected = props.sources.length === 0 && props.days === null;
+  const monthWindow = MEMORY_DATE_WINDOWS.find((window) => window.days === 30);
   return (
     <>
-      <label className="flex shrink-0 items-center gap-3 border-b border-border-primary px-5 py-4">
+      <label className="flex shrink-0 items-center gap-3 bg-[var(--desktop-highlight)] px-[18px] py-[17px] focus-within:ring-2 focus-within:ring-inset focus-within:ring-[var(--color-accent-30)]">
         <MagnifyingGlass
           size={17}
           className="shrink-0 text-content-disabled"
@@ -34,7 +37,7 @@ export function MemoryViewControls(props: MemoryViewControlsProps) {
         <input
           value={props.query}
           onChange={(event) => props.onQueryChange(event.target.value)}
-          placeholder="Search everything you said — or just browse below"
+          placeholder="Ask about a decision, person, or project…"
           className="min-w-0 flex-1 bg-transparent ui-text-body-lg ui-color-primary outline-none placeholder:text-content-disabled"
           aria-label="Search Memory"
         />
@@ -49,9 +52,24 @@ export function MemoryViewControls(props: MemoryViewControlsProps) {
             aria-label="Updating results"
           />
         ) : null}
+        <span className="rounded-md bg-[var(--color-bg-primary)] px-1.5 py-1 ui-text-micro font-semibold text-[var(--color-text-secondary)]">
+          ⌘K
+        </span>
       </label>
 
-      <div className="flex shrink-0 flex-wrap items-center gap-1.5 px-4 pt-3 pb-1">
+      <div className="flex shrink-0 flex-wrap items-center gap-[7px] border-b border-border-primary px-[15px] py-[11px]">
+        <button
+          type="button"
+          onClick={props.onResetFilters}
+          aria-pressed={everythingSelected}
+          className={`h-[30px] rounded-[9px] px-2.5 ui-text-micro font-semibold transition-colors duration-150 ease-out motion-reduce:transition-none ${
+            everythingSelected
+              ? "bg-[var(--color-text-primary)] text-[var(--color-bg-primary)]"
+              : "bg-[var(--color-bg-tertiary)] ui-color-muted hover:bg-surface-secondary"
+          }`}
+        >
+          Everything
+        </button>
         {(Object.keys(MEMORY_SOURCE_LABELS) as MemorySource[]).map((source) => {
           const active = selectedSources.has(source);
           return (
@@ -60,37 +78,35 @@ export function MemoryViewControls(props: MemoryViewControlsProps) {
               type="button"
               onClick={() => props.onToggleSource(source)}
               aria-pressed={active}
-              className={`h-6 rounded-full border px-2.5 ui-text-micro font-semibold transition-colors duration-150 ease-out motion-reduce:transition-none ${
+              className={`h-[30px] rounded-[9px] px-2.5 ui-text-micro font-semibold transition-colors duration-150 ease-out motion-reduce:transition-none ${
                 active
-                  ? "border-[var(--color-accent)] bg-accent-10 text-[var(--color-accent)]"
-                  : "border-transparent ui-color-muted hover:bg-surface-secondary"
+                  ? "bg-[var(--color-text-primary)] text-[var(--color-bg-primary)]"
+                  : "bg-[var(--color-bg-tertiary)] ui-color-muted hover:bg-surface-secondary"
               }`}
             >
               {MEMORY_SOURCE_LABELS[source]}
             </button>
           );
         })}
-        <span className="mx-1 h-3.5 w-px bg-border-primary" aria-hidden />
-        {MEMORY_DATE_WINDOWS.map((window) => (
+        {monthWindow ? (
           <button
-            key={window.label}
             type="button"
-            onClick={() => props.onDaysChange(window.days)}
-            aria-pressed={props.days === window.days}
-            className={`h-6 rounded-full px-2.5 ui-text-micro font-semibold transition-colors duration-150 ease-out motion-reduce:transition-none ${
-              props.days === window.days
-                ? "bg-accent-10 text-[var(--color-accent)]"
-                : "ui-color-muted hover:bg-surface-secondary"
+            onClick={() => props.onDaysChange(monthWindow.days)}
+            aria-pressed={props.days === monthWindow.days}
+            className={`h-[30px] rounded-[9px] px-2.5 ui-text-micro font-semibold transition-colors duration-150 ease-out motion-reduce:transition-none ${
+              props.days === monthWindow.days
+                ? "bg-[var(--color-text-primary)] text-[var(--color-bg-primary)]"
+                : "bg-[var(--color-bg-tertiary)] ui-color-muted hover:bg-surface-secondary"
             }`}
           >
-            {window.label}
+            This month
           </button>
-        ))}
+        ) : null}
         {props.advanced ? null : (
           <button
             type="button"
             onClick={props.onShowAdvanced}
-            className="h-6 rounded-full px-2 ui-text-micro ui-color-disabled transition-colors hover:text-content-muted"
+            className="h-[30px] rounded-[9px] px-2 ui-text-micro ui-color-disabled transition-colors hover:bg-surface-secondary hover:text-content-muted"
           >
             More filters…
           </button>
@@ -98,7 +114,26 @@ export function MemoryViewControls(props: MemoryViewControlsProps) {
       </div>
 
       {props.advanced ? (
-        <div className="grid shrink-0 grid-cols-2 gap-2 px-4 pt-2">
+        <div className="grid shrink-0 grid-cols-2 gap-2 border-b border-border-primary px-4 py-3">
+          <div className="col-span-2 flex flex-wrap gap-1.5">
+            {MEMORY_DATE_WINDOWS.map((window) =>
+              window.days === 30 ? null : (
+                <button
+                  key={window.label}
+                  type="button"
+                  onClick={() => props.onDaysChange(window.days)}
+                  aria-pressed={props.days === window.days}
+                  className={`h-[30px] rounded-[9px] px-2.5 ui-text-micro font-semibold transition-colors ${
+                    props.days === window.days
+                      ? "bg-[var(--color-text-primary)] text-[var(--color-bg-primary)]"
+                      : "bg-[var(--color-bg-tertiary)] ui-color-muted hover:bg-surface-secondary"
+                  }`}
+                >
+                  {window.label}
+                </button>
+              ),
+            )}
+          </div>
           <input
             value={props.appId}
             onChange={(event) => props.onAppIdChange(event.target.value)}

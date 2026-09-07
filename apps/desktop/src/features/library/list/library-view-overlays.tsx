@@ -1,20 +1,14 @@
 import { useLingui } from "@lingui/react/macro";
 import { AnimatePresence } from "framer-motion";
 
-import {
-  openMicrophoneSettings,
-  openSystemAudioSettings,
-  showLibraryToast,
-} from "../../../data/library";
+import { showLibraryToast } from "../../../data/library";
 import type {
   LibraryImportOptions,
-  MeetingStartOptions,
   SpeechModel,
   YoutubeImportMetadata,
 } from "../../../contracts";
 import LibraryImportModal from "../import/LibraryImportModal";
 import LibraryYoutubeImportModal from "../import/LibraryYoutubeImportModal";
-import MeetingStartModal from "../meeting/MeetingStartModal";
 import { formatImportErrorMessage } from "../shared/library-utils";
 import { partitionImportPaths } from "./library-view-model";
 
@@ -34,14 +28,6 @@ type LibraryViewOverlaysProps = {
   installedModels: SpeechModel[];
   defaultSpeechModelKey?: string;
   defaultImportModelKey?: string;
-  meetingOpen: boolean;
-  meetingModels: SpeechModel[];
-  liveMeetingModels: SpeechModel[];
-  defaultMeetingModelKey?: string;
-  meetingPending: boolean;
-  meetingError: string | null;
-  onCancelMeeting: () => void;
-  onStartMeeting: (options: MeetingStartOptions) => Promise<unknown>;
 };
 
 export function LibraryViewOverlays(props: LibraryViewOverlaysProps) {
@@ -98,33 +84,6 @@ export function LibraryViewOverlays(props: LibraryViewOverlaysProps) {
           defaultModelKey={props.defaultImportModelKey}
           onCancel={() => props.onSetImportPaths(null)}
           onConfirm={confirmImport}
-        />
-      ) : null}
-      {props.meetingOpen ? (
-        <MeetingStartModal
-          models={props.meetingModels}
-          liveModels={props.liveMeetingModels}
-          defaultModelKey={props.defaultMeetingModelKey}
-          isStarting={props.meetingPending}
-          error={props.meetingError}
-          onCancel={props.onCancelMeeting}
-          onConfirm={async (options) => {
-            try {
-              await props.onStartMeeting(options);
-            } catch {
-              return;
-            }
-          }}
-          onOpenSystemAudioSettings={() =>
-            openSystemAudioSettings().catch((error) => {
-              console.error("Failed to open system audio settings:", error);
-            })
-          }
-          onOpenMicrophoneSettings={() =>
-            openMicrophoneSettings().catch((error) => {
-              console.error("Failed to open microphone settings:", error);
-            })
-          }
         />
       ) : null}
     </AnimatePresence>

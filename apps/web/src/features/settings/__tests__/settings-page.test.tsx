@@ -33,7 +33,8 @@ describe("SettingsPage", () => {
       </I18nProvider>,
     );
 
-    expect(screen.getAllByRole("heading", { name: "Settings" })).toHaveLength(2);
+    expect(screen.getAllByRole("heading", { name: "Setup" })).toHaveLength(2);
+    expect(screen.getByRole("heading", { name: "Language" })).toBeVisible();
     const navigation = screen.getByRole("navigation", { name: "Settings section" });
     expect(navigation).toBeVisible();
     expect(within(navigation).getByRole("button", { name: /Language/ })).toHaveAttribute(
@@ -54,5 +55,27 @@ describe("SettingsPage", () => {
     const navigation = screen.getByRole("navigation", { name: "Settings section" });
     expect(within(navigation).queryByRole("button", { name: "Subscription" })).toBeNull();
     expect(screen.queryByText("Manage your plan and billing.")).toBeNull();
+  });
+
+  it("hides appearance while light is the only available theme", () => {
+    render(
+      <I18nProvider defaultLocale="en">
+        <SettingsPage activeTab="language" onTabChange={vi.fn()} />
+      </I18nProvider>,
+    );
+
+    const navigation = screen.getByRole("navigation", { name: "Settings section" });
+    expect(within(navigation).queryByRole("button", { name: "Appearance" })).toBeNull();
+  });
+
+  it("keeps account data actions reachable on touch screens", () => {
+    render(
+      <I18nProvider defaultLocale="en">
+        <SettingsPage activeTab="profile" onTabChange={vi.fn()} />
+      </I18nProvider>,
+    );
+
+    expect(screen.getByRole("button", { name: "Export my data" })).toHaveClass("min-h-11");
+    expect(screen.getByRole("button", { name: "Delete account" })).toHaveClass("min-h-11");
   });
 });

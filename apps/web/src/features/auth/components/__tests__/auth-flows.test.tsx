@@ -74,6 +74,27 @@ describe("web auth flows", () => {
     });
   });
 
+  it("exposes authentication errors inline and keeps mobile actions tappable", async () => {
+    auth.signIn.mockRejectedValueOnce(new Error("Sign-in is unavailable."));
+    renderWithI18n(<AnonymousButton />);
+
+    const anonymousButton = screen.getByRole("button", { name: /Continue without an account/ });
+    expect(anonymousButton).toHaveClass("h-11", "sm:h-9");
+    fireEvent.click(anonymousButton);
+
+    expect(await screen.findByRole("alert")).toHaveTextContent("Sign-in is unavailable.");
+
+    cleanup();
+    auth.signIn.mockResolvedValue(undefined);
+    renderWithI18n(<SignInPage />);
+
+    expect(screen.getByRole("button", { name: /Continue with Google/ })).toHaveClass(
+      "h-11",
+      "sm:h-10",
+    );
+    expect(screen.getByRole("button", { name: /Email me a code/ })).toHaveClass("h-11", "sm:h-9");
+  });
+
   it("requests and verifies an email OTP with the resend provider", async () => {
     renderWithI18n(<EmailOtpForm />);
 

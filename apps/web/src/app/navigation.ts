@@ -8,6 +8,7 @@ import {
   IconSettings,
 } from "@tabler/icons-react";
 import { IconCreditCard } from "@tabler/icons-react";
+import type { TranslationKey } from "@looper/i18n";
 
 type DestinationIcon = typeof IconHome;
 export type NavGroup = "workspace" | "voice" | "manage" | "account" | null;
@@ -16,6 +17,7 @@ interface AppDestination {
   id: string;
   to: string;
   labelKey: string;
+  sidebarLabelKey?: TranslationKey;
   commandLabelKey?: string;
   badge?: "unread";
   keywords: string;
@@ -30,18 +32,9 @@ export const APP_DESTINATIONS = [
     id: "home",
     to: "/home",
     labelKey: "nav.home",
+    sidebarLabelKey: "nav.home",
     keywords: "home overview recent workspace",
     icon: IconHome,
-    navGroup: "workspace",
-    command: true,
-    productRoute: true,
-  },
-  {
-    id: "agent",
-    to: "/agent",
-    labelKey: "nav.chat",
-    keywords: "recording assistant transcript dictation notes",
-    icon: IconMessage,
     navGroup: "workspace",
     command: true,
     productRoute: true,
@@ -50,6 +43,7 @@ export const APP_DESTINATIONS = [
     id: "library",
     to: "/library",
     labelKey: "nav.library",
+    sidebarLabelKey: "nav.notes",
     keywords: "library transcriptions notes meetings synced text",
     icon: IconFileText,
     navGroup: "voice",
@@ -57,9 +51,21 @@ export const APP_DESTINATIONS = [
     productRoute: true,
   },
   {
+    id: "agent",
+    to: "/agent",
+    labelKey: "nav.chat",
+    sidebarLabelKey: "nav.memory",
+    keywords: "recording assistant transcript dictation notes",
+    icon: IconMessage,
+    navGroup: "workspace",
+    command: true,
+    productRoute: true,
+  },
+  {
     id: "dictation",
     to: "/dictation",
     labelKey: "nav.dictation",
+    sidebarLabelKey: "nav.studio",
     keywords: "dictation dictionary replacements styles tones",
     icon: IconNotebook,
     navGroup: "voice",
@@ -70,6 +76,7 @@ export const APP_DESTINATIONS = [
     id: "usage",
     to: "/usage",
     labelKey: "nav.usage",
+    sidebarLabelKey: "nav.insights",
     commandLabelKey: "cmd.usage",
     keywords: "stats metrics",
     icon: IconChartBar,
@@ -81,6 +88,7 @@ export const APP_DESTINATIONS = [
     id: "billing",
     to: "/billing",
     labelKey: "nav.billing",
+    sidebarLabelKey: "nav.billing",
     commandLabelKey: "cmd.pricingBilling",
     keywords: "plans subscription upgrade",
     icon: IconCreditCard,
@@ -92,6 +100,7 @@ export const APP_DESTINATIONS = [
     id: "settings",
     to: "/settings",
     labelKey: "settings.title",
+    sidebarLabelKey: "nav.setup",
     keywords: "api key preferences account",
     icon: IconSettings,
     navGroup: null,

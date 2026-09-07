@@ -1,5 +1,5 @@
 import { I18nProvider } from "@looper/i18n/react";
-import { cleanup, render, screen } from "@testing-library/react";
+import { cleanup, render, screen, within } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("@looper/data", () => ({
@@ -73,11 +73,21 @@ describe("UsageDashboard", () => {
       </I18nProvider>,
     );
 
-    expect(screen.getByRole("heading", { name: "Cloud audio activity" })).toBeVisible();
+    expect(screen.getByRole("heading", { name: "Cloud activity, clearly scoped." })).toBeVisible();
     expect(screen.getAllByText("5 min").length).toBeGreaterThan(0);
     expect(screen.getByText("2 MB")).toBeVisible();
     expect(screen.getByText("512 KB")).toBeVisible();
     expect(screen.getByText("deepgram")).toBeVisible();
     expect(screen.queryByText(/tokens?/i)).not.toBeInTheDocument();
+
+    const monthlySummary = screen.getByRole("region", { name: "Cloud audio activity" });
+    const primaryMetric = within(monthlySummary).getByTestId("usage-primary-metric");
+    const secondaryMetrics = within(monthlySummary).getByTestId("usage-secondary-metrics");
+
+    expect(within(primaryMetric).getByText("Transcriptions")).toBeVisible();
+    expect(within(primaryMetric).getByText("5")).toBeVisible();
+    expect(within(secondaryMetrics).getByText("Audio duration")).toBeVisible();
+    expect(within(secondaryMetrics).getByText("Processed audio")).toBeVisible();
+    expect(within(secondaryMetrics).getByText("Stored audio")).toBeVisible();
   });
 });

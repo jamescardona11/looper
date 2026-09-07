@@ -10,7 +10,7 @@ import WindowControls from "../../shared/ui/WindowControls";
 import { StepIndicator } from "./steps/shared";
 
 const SCREEN_CLASS_NAME =
-  "onboarding-shell relative flex h-screen w-screen flex-col overflow-hidden bg-surface-secondary ui-color-on-solid select-none";
+  "onboarding-shell relative flex h-screen w-screen flex-col overflow-hidden bg-surface-secondary text-content-primary select-none";
 const CONTENT_CLASS_NAME =
   "onboarding-content relative z-10 flex flex-1 flex-col items-center overflow-y-auto px-10 pb-6";
 const BACK_BUTTON_CLASS_NAME =
@@ -39,11 +39,6 @@ export function OnboardingScreenShell(props: OnboardingScreenShellProps) {
     <MotionPreferences reducedMotion="user">
       <div className={SCREEN_CLASS_NAME}>
         {props.bridges}
-        <div aria-hidden="true" className="onboarding-atmosphere">
-          <span className="onboarding-atmosphere-orb onboarding-atmosphere-orb-primary" />
-          <span className="onboarding-atmosphere-orb onboarding-atmosphere-orb-secondary" />
-          <span className="onboarding-atmosphere-scanline" />
-        </div>
         <WindowControls />
         <div
           data-tauri-drag-region

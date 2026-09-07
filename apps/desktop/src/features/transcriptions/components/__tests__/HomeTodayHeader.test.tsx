@@ -26,14 +26,10 @@ afterEach(() => {
 });
 
 describe("HomeTodayHeader", () => {
-  test("keeps the date and greeting hierarchy while stats are loading", () => {
+  test("keeps the Dictation and greeting hierarchy without a duplicate stat line", () => {
     const { container } = render(
       <I18nProvider i18n={i18n}>
-        <HomeTodayHeader
-          transcriptionsFetched={false}
-          stats={EMPTY_TODAY_DICTATION_STATS}
-          active={false}
-        />
+        <HomeTodayHeader stats={EMPTY_TODAY_DICTATION_STATS} active={false} />
       </I18nProvider>,
     );
 
@@ -46,7 +42,8 @@ describe("HomeTodayHeader", () => {
       "mt-1 font-display ui-text-screen-title ui-color-primary font-semibold",
     );
     expect(header.firstElementChild?.className).toBe(
-      "ui-text-uppercase-micro ui-color-muted capitalize",
+      "ui-text-uppercase-micro ui-color-accent",
     );
+    expect(header.firstElementChild?.textContent).toBe("Dictation");
   });
 });

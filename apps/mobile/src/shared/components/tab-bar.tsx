@@ -1,38 +1,12 @@
+import { useTranslation } from "@looper/i18n/react";
 import * as Haptics from "expo-haptics";
-import { useEffect } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
-import Animated, {
-  useAnimatedStyle,
-  useSharedValue,
-  withSpring,
-  withTiming,
-} from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { colors } from "../theme/colors";
 import { radius, space } from "../theme/layout";
 import { Icon, type IconName } from "./icon";
 
 type Slot = { route: string; label: string; icon: IconName };
-
-const SLOTS: Slot[] = [
-  { route: "index", label: "Library", icon: "library" },
-  { route: "ask", label: "Ask", icon: "ask" },
-];
-
-/**
- * Una píldora que se encoge a su contenido, no una barra que estira slots
- * vacíos a lo ancho: con solo dos destinos, repartir 393 px entre tres huecos
- * es lo que hacía que se viera despoblada.
- *
- * El botón de captura va al ras dentro de la píldora en vez de elevado. Un
- * bloque sobresaliendo con labio duro pesaba demasiado al lado de dos iconos
- * de trazo fino.
- */
-const ITEM_WIDTH = 78;
-const ITEM_HEIGHT = 52;
-const CAPTURE_SIZE = 48;
-/** Muelle corto: la cápsula debe llegar antes de que sueltes el dedo. */
-const SPRING = { damping: 18, stiffness: 260, mass: 0.6 } as const;
 
 function tap(style: Haptics.ImpactFeedbackStyle) {
   void Haptics.impactAsync(style).catch(() => {});
@@ -50,63 +24,38 @@ export function TabBar({
   captureOpen?: boolean;
 }) {
   const insets = useSafeAreaInsets();
-  const activeIndex = Math.max(
-    0,
-    SLOTS.findIndex((slot) => slot.route === activeRoute),
-  );
+  const { t } = useTranslation();
+  const slots: Slot[] = [
+    { route: "index", label: t("nav.home"), icon: "dictado" },
+    { route: "notes", label: t("nav.library"), icon: "library" },
+    { route: "ask", label: t("mobile.nav.ask"), icon: "ask" },
+    { route: "studio", label: t("nav.studio"), icon: "studio" },
+  ];
 
   return (
     <View style={[styles.root, { paddingBottom: insets.bottom + space.md }]}>
-      <View style={styles.pill}>
-        <Capsule index={activeIndex} />
-        <TabItem
-          active={activeIndex === 0}
-          onPress={() => onSelect(SLOTS[0].route)}
-          slot={SLOTS[0]}
-        />
+      <View style={styles.dock}>
+        <View style={styles.pill}>
+          {slots.map((slot) => (
+            <TabItem
+              active={activeRoute === slot.route}
+              key={slot.route}
+              onPress={() => onSelect(slot.route)}
+              slot={slot}
+            />
+          ))}
+        </View>
         <CaptureButton onPress={onCapture} open={captureOpen} />
-        <TabItem
-          active={activeIndex === 1}
-          onPress={() => onSelect(SLOTS[1].route)}
-          slot={SLOTS[1]}
-        />
       </View>
     </View>
   );
 }
 
-/** El indicador de posición: se desliza entre pestañas en vez de aparecer. */
-function Capsule({ index }: { index: number }) {
-  const offset = useSharedValue(0);
-  const travel = ITEM_WIDTH + CAPTURE_SIZE + space.sm * 2;
-
-  useEffect(() => {
-    offset.value = withSpring(index * travel, SPRING);
-  }, [index, offset, travel]);
-
-  const style = useAnimatedStyle(() => ({
-    transform: [{ translateX: offset.value }],
-  }));
-
-  return <Animated.View style={[styles.capsule, style]} />;
-}
-
 function TabItem({ slot, active, onPress }: { slot: Slot; active: boolean; onPress: () => void }) {
-  const scale = useSharedValue(1);
-
-  useEffect(() => {
-    if (!active) return;
-    // Un rebote corto al llegar, no un pulso permanente.
-    scale.value = withSpring(1.14, { damping: 9, stiffness: 320 }, () => {
-      scale.value = withSpring(1, SPRING);
-    });
-  }, [active, scale]);
-
-  const iconStyle = useAnimatedStyle(() => ({ transform: [{ scale: scale.value }] }));
-  const tint = active ? colors.accent : colors.muted;
-
+  const tint = active ? colors.accentLight : "rgba(255, 255, 255, 0.58)";
   return (
     <Pressable
+      accessible
       accessibilityLabel={slot.label}
       accessibilityRole="tab"
       accessibilityState={{ selected: active }}
@@ -114,85 +63,64 @@ function TabItem({ slot, active, onPress }: { slot: Slot; active: boolean; onPre
         if (!active) tap(Haptics.ImpactFeedbackStyle.Light);
         onPress();
       }}
-      style={styles.item}
+      testID={`tab-${slot.route}`}
+      style={({ pressed }) => [styles.item, pressed && styles.itemPressed]}
     >
-      <Animated.View style={iconStyle}>
-        <Icon color={tint} name={slot.icon} size={22} />
-      </Animated.View>
-      <Text style={[styles.label, { color: tint }]}>{slot.label}</Text>
+      <Icon color={tint} name={slot.icon} size={18} strokeWidth={active ? 2.4 : 2} />
+      <Text style={[styles.label, { color: tint }, active && styles.labelActive]}>
+        {slot.label}
+      </Text>
     </Pressable>
   );
 }
 
-/** El "+" gira a "×" cuando la hoja está abierta: un control, dos estados. */
 function CaptureButton({ onPress, open }: { onPress: () => void; open: boolean }) {
-  const press = useSharedValue(1);
-  const turn = useSharedValue(0);
-
-  useEffect(() => {
-    turn.value = withSpring(open ? 1 : 0, SPRING);
-  }, [open, turn]);
-
-  const style = useAnimatedStyle(() => ({
-    transform: [{ scale: press.value }, { rotate: `${turn.value * 45}deg` }],
-  }));
-
+  const { t } = useTranslation();
   return (
     <Pressable
-      accessibilityLabel="Capturar"
+      accessibilityLabel={open ? t("mobile.capture.close") : t("mobile.capture.open")}
       accessibilityRole="button"
       onPress={() => {
         tap(Haptics.ImpactFeedbackStyle.Medium);
         onPress();
       }}
-      onPressIn={() => {
-        press.value = withTiming(0.9, { duration: 90 });
-      }}
-      onPressOut={() => {
-        press.value = withSpring(1, SPRING);
-      }}
+      testID="capture-button"
+      style={({ pressed }) => [styles.capture, pressed && styles.capturePressed]}
     >
-      <Animated.View style={[styles.capture, style]}>
-        <Icon color={colors.text} name="plus" size={24} strokeWidth={2.4} />
-      </Animated.View>
+      <Icon color={colors.onAccent} name={open ? "close" : "dictado"} size={22} strokeWidth={2.1} />
     </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
-  capsule: {
-    backgroundColor: colors.surface,
-    borderRadius: radius.xl,
-    height: ITEM_HEIGHT,
-    left: space.xs,
-    position: "absolute",
-    top: space.xs,
-    width: ITEM_WIDTH,
-  },
   capture: {
     alignItems: "center",
     backgroundColor: colors.accent,
-    borderRadius: CAPTURE_SIZE / 2,
-    height: CAPTURE_SIZE,
+    borderRadius: 20,
+    height: 62,
     justifyContent: "center",
-    marginHorizontal: space.sm,
-    width: CAPTURE_SIZE,
+    marginHorizontal: 3,
+    width: 62,
   },
-  item: {
+  capturePressed: { opacity: 0.72, transform: [{ scale: 0.94 }] },
+  dock: {
     alignItems: "center",
-    gap: 3,
-    height: ITEM_HEIGHT,
-    justifyContent: "center",
-    width: ITEM_WIDTH,
+    flexDirection: "row",
+    gap: 8,
+    paddingHorizontal: space.md,
   },
-  label: { fontSize: 11, fontWeight: "500", lineHeight: 14 },
+  item: { alignItems: "center", flex: 1, gap: 3, height: 48, justifyContent: "center" },
+  itemPressed: { opacity: 0.68, transform: [{ scale: 0.96 }] },
+  label: { fontSize: 10, fontWeight: "500", lineHeight: 13 },
+  labelActive: { fontWeight: "700" },
   pill: {
     alignItems: "center",
-    backgroundColor: colors.surfaceMuted,
-    borderColor: colors.border,
+    backgroundColor: colors.pillShell,
+    borderColor: colors.pillBorder,
     borderCurve: "continuous",
-    borderRadius: radius.xl + space.xs,
+    borderRadius: radius.xl + 4,
     borderWidth: 1,
+    flex: 1,
     flexDirection: "row",
     padding: space.xs,
   },

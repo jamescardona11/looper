@@ -42,6 +42,12 @@ export function WelcomePage({ launchTarget }: { launchTarget?: LaunchTarget }) {
     if (launchTarget === "/settings") {
       return <Navigate to="/settings" search={{ tab: "keys" }} replace />;
     }
+    if (launchTarget === "/library") {
+      return <Navigate to="/library" search={{ note: undefined }} replace />;
+    }
+    if (launchTarget === "/agent") {
+      return <Navigate to="/agent" search={{ thread: undefined }} replace />;
+    }
     if (launchTarget) return <Navigate to={launchTarget} replace />;
     return <Navigate to="/home" replace />;
   }
@@ -202,10 +208,10 @@ function StepFooter({
   const { t } = useTranslation();
   return (
     <div className="mt-8 flex items-center justify-between gap-3 border-border border-t pt-5">
-      <Button variant="ghost" onClick={onSkip} disabled={busy}>
+      <Button variant="ghost" onClick={onSkip} disabled={busy} className="min-h-11 sm:min-h-10">
         {t("onboarding.skipStep")}
       </Button>
-      <Button onClick={onNext} disabled={busy} size="lg">
+      <Button onClick={onNext} disabled={busy} size="lg" className="min-h-11 sm:min-h-10">
         {busy ? t("common.loading") : t("onboarding.continueLabel")}
         <IconArrowRight className="size-4" />
       </Button>
@@ -418,7 +424,7 @@ function LaunchStep({
               : t("onboarding.step3Subtitle", { outcome: intentLabel })
           }
         />
-        <Button onClick={onLaunch} disabled={busy} size="lg">
+        <Button onClick={onLaunch} disabled={busy} size="lg" className="min-h-11 sm:min-h-10">
           {busy
             ? t("common.loading")
             : byok

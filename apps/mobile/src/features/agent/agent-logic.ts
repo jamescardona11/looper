@@ -12,10 +12,22 @@ export interface AgentCitation {
   title: string;
 }
 
+export type AnswerPart =
+  | { kind: "text"; start: number; value: string }
+  | { kind: "citation"; start: number; citation: AgentCitation };
+
+export type InlineEmphasisPart = {
+  emphasized: boolean;
+  start: number;
+  value: string;
+};
+
+const CITATION_PATTERN = /\[(Note|Dictation|Meeting):\s*([^\]]+)]/g;
+
 export function citationsFromAnswer(answer: string): AgentCitation[] {
   const citations: AgentCitation[] = [];
   const seen = new Set<string>();
-  for (const match of answer.matchAll(/\[(Note|Dictation|Meeting):\s*([^\]]+)]/g)) {
+  for (const match of answer.matchAll(CITATION_PATTERN)) {
     const kind = match[1] as AgentCitation["kind"];
     const title = match[2]?.trim();
     if (!title) continue;
@@ -25,4 +37,53 @@ export function citationsFromAnswer(answer: string): AgentCitation[] {
     citations.push({ kind, title });
   }
   return citations;
+}
+
+/** Conserva las frases y sustituye únicamente la referencia por un chip inline. */
+export function answerParts(answer: string): AnswerPart[] {
+  const parts: AnswerPart[] = [];
+  let cursor = 0;
+  for (const match of answer.matchAll(CITATION_PATTERN)) {
+    const index = match.index ?? cursor;
+    if (index > cursor) {
+      parts.push({ kind: "text", start: cursor, value: answer.slice(cursor, index) });
+    }
+    const title = match[2]?.trim();
+    if (title) {
+      parts.push({
+        kind: "citation",
+        start: index,
+        citation: { kind: match[1] as AgentCitation["kind"], title },
+      });
+    } else {
+      parts.push({ kind: "text", start: index, value: match[0] });
+    }
+    cursor = index + match[0].length;
+  }
+  if (cursor < answer.length) {
+    parts.push({ kind: "text", start: cursor, value: answer.slice(cursor) });
+  }
+  return parts.length ? parts : [{ kind: "text", start: 0, value: answer }];
+}
+
+/** Renderiza el énfasis breve del agente sin enseñar los marcadores Markdown. */
+export function inlineEmphasisParts(value: string): InlineEmphasisPart[] {
+  const parts: InlineEmphasisPart[] = [];
+  const pattern = /\*\*(.+?)\*\*/g;
+  let cursor = 0;
+
+  for (const match of value.matchAll(pattern)) {
+    const index = match.index ?? cursor;
+    if (index > cursor) {
+      parts.push({ emphasized: false, start: cursor, value: value.slice(cursor, index) });
+    }
+    parts.push({ emphasized: true, start: index, value: match[1] ?? "" });
+    cursor = index + match[0].length;
+  }
+
+  if (cursor < value.length) {
+    parts.push({ emphasized: false, start: cursor, value: value.slice(cursor) });
+  }
+
+  return parts.length ? parts : [{ emphasized: false, start: 0, value }];
 }

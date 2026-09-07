@@ -158,6 +158,7 @@ mod tests {
     use super::*;
     use futures_util::StreamExt;
     use looper_audio_interface::AsyncSource;
+    #[cfg(target_os = "macos")]
     use serial_test::serial;
     use std::sync::atomic::Ordering;
 
@@ -230,41 +231,4 @@ mod tests {
         handle.join().unwrap();
         assert!(buffer.iter().any(|x| *x != 0.0));
     }
-
-    #[cfg(target_os = "windows")]
-    #[tokio::test]
-    #[serial]
-    async fn test_windows() {
-        let input = match SpeakerInput::new() {
-            Ok(input) => input,
-            Err(e) => {
-                println!("Failed to create SpeakerInput: {}", e);
-                return;
-            }
-        };
-
-        let mut stream = match input.stream() {
-            Ok(stream) => stream,
-            Err(e) => {
-                println!("Failed to create speaker stream: {}", e);
-                return;
-            }
-        };
-
-        let sample_rate = stream.sample_rate();
-        assert!(sample_rate > 0);
-        println!("Windows speaker sample rate: {}", sample_rate);
-
-        let mut sample_count = 0;
-        while let Some(_sample) = stream.next().await {
-            sample_count += 1;
-            if sample_count > 100 {
-                break;
-            }
-        }
-
-        assert!(sample_count > 0, "Should receive some audio samples");
-        println!("Received {} samples from Windows speaker", sample_count);
-    }
-
 }

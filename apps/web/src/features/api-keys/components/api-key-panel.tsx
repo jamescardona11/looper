@@ -10,6 +10,7 @@ import {
 import { useState } from "react";
 import { cn } from "@/lib/cn";
 import { reportError } from "@/lib/errors";
+import { useConfirm } from "@/shared/components/confirm-dialog";
 import { Button, Card, CardContent } from "@/shared/components/ui";
 import { type ApiKeyProvider, type ProviderKeyStatus, useApiKeys } from "../hooks/use-api-key";
 
@@ -55,7 +56,8 @@ function ProviderKeyRow({
   onTest: (provider: ApiKeyProvider) => Promise<{ ok: boolean; error: string | null }>;
   onClear: (provider: ApiKeyProvider) => Promise<unknown>;
 }) {
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
+  const confirm = useConfirm();
   const [draft, setDraft] = useState("");
   const [showKey, setShowKey] = useState(false);
   const [busy, setBusy] = useState<"save" | "test" | "clear" | null>(null);
@@ -94,6 +96,14 @@ function ProviderKeyRow({
 
   const onClearClick = async () => {
     setError(null);
+    const confirmed = await confirm({
+      title: t("settings.removeKey"),
+      description: t("settings.removeKeyHint"),
+      confirmLabel: t("settings.remove"),
+      destructive: true,
+    });
+    if (!confirmed) return;
+
     setBusy("clear");
     try {
       await onClear(status.provider);
@@ -151,13 +161,17 @@ function ProviderKeyRow({
                 <button
                   type="button"
                   onClick={() => setShowKey((v) => !v)}
-                  className="grid size-7 place-items-center rounded-md text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+                  className="grid size-11 shrink-0 place-items-center rounded-md text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground sm:size-10"
                   aria-label={showKey ? t("apiKeys.hideKey") : t("apiKeys.showKey")}
                 >
                   {showKey ? <IconEyeOff className="size-3.5" /> : <IconEye className="size-3.5" />}
                 </button>
               </div>
-              <Button onClick={onSaveClick} disabled={busy !== null}>
+              <Button
+                onClick={onSaveClick}
+                disabled={busy !== null}
+                className="min-h-11 sm:min-h-10"
+              >
                 {busy === "save" ? (
                   <IconLoader2 className="size-3.5 motion-safe:animate-spin" />
                 ) : null}
@@ -171,7 +185,7 @@ function ProviderKeyRow({
               <p className="text-muted-foreground text-xs">
                 {status.lastTestedAt
                   ? t("apiKeys.lastTested", {
-                      when: relativeTime(status.lastTestedAt),
+                      when: relativeTime(status.lastTestedAt, locale),
                       result: status.lastTestOk ? t("apiKeys.ok") : t("apiKeys.failed"),
                     })
                   : t("apiKeys.notTestedYet")}
@@ -181,7 +195,12 @@ function ProviderKeyRow({
               ) : null}
             </div>
             <div className="flex gap-2">
-              <Button variant="secondary" onClick={onTestClick} disabled={busy !== null}>
+              <Button
+                variant="secondary"
+                onClick={onTestClick}
+                disabled={busy !== null}
+                className="min-h-11 sm:min-h-10"
+              >
                 {busy === "test" ? (
                   <IconLoader2 className="size-3.5 motion-safe:animate-spin" />
                 ) : (
@@ -189,7 +208,12 @@ function ProviderKeyRow({
                 )}
                 {t("settings.testKey")}
               </Button>
-              <Button variant="outline" onClick={onClearClick} disabled={busy !== null}>
+              <Button
+                variant="outline"
+                onClick={onClearClick}
+                disabled={busy !== null}
+                className="min-h-11 sm:min-h-10"
+              >
                 {busy === "clear" ? (
                   <IconLoader2 className="size-3.5 motion-safe:animate-spin" />
                 ) : (
@@ -212,7 +236,7 @@ function StatusPill({ configured }: { configured: boolean }) {
   return (
     <span
       className={cn(
-        "rounded-full border px-2 py-0.5 font-mono text-[10px] uppercase tracking-wide",
+        "whitespace-nowrap rounded-full border px-2 py-0.5 font-mono text-[10px] uppercase tracking-wide",
         configured
           ? "border-primary/30 bg-primary/10 text-primary"
           : "border-border bg-card text-muted-foreground",
@@ -223,13 +247,13 @@ function StatusPill({ configured }: { configured: boolean }) {
   );
 }
 
-function relativeTime(ms: number): string {
-  const diff = Date.now() - ms;
-  const min = Math.floor(diff / 60_000);
-  if (min < 1) return "just now";
-  if (min < 60) return `${min}m ago`;
-  const hr = Math.floor(min / 60);
-  if (hr < 24) return `${hr}h ago`;
-  const days = Math.floor(hr / 24);
-  return `${days}d ago`;
+function relativeTime(ms: number, locale: string): string {
+  const formatter = new Intl.RelativeTimeFormat(locale, { numeric: "auto" });
+  const delta = ms - Date.now();
+  const absoluteDelta = Math.abs(delta);
+
+  if (absoluteDelta < 60_000) return formatter.format(0, "second");
+  if (absoluteDelta < 3_600_000) return formatter.format(Math.round(delta / 60_000), "minute");
+  if (absoluteDelta < 86_400_000) return formatter.format(Math.round(delta / 3_600_000), "hour");
+  return formatter.format(Math.round(delta / 86_400_000), "day");
 }

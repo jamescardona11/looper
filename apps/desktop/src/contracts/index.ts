@@ -43,7 +43,6 @@ export type {
   MeetingNoteMarker,
   MeetingNoteSelection,
   MeetingNotesUpdate,
-  MeetingStartOptions,
   MeetingSummaryStatus,
   MeetingTranscriptSegment,
   MeetingTranscriptSource,

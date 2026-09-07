@@ -37,6 +37,9 @@ type DictionaryReplacementsSectionProps = {
   actionGradientStyle: CSSProperties;
   deleteButtonActiveClassName: string;
   deleteButtonClassName: string;
+  embeddedTitle?: string;
+  embeddedDescription?: string;
+  studioFocusTarget?: string;
 };
 
 const FORM_GRID =
@@ -75,16 +78,19 @@ export function DictionaryReplacementsSection(
       <DictionaryPairForm
         title={
           props.embedded
-            ? null
+            ? (props.embeddedTitle ?? null)
             : t({
                 id: "dictionary.section.replacements_title",
                 message: "Replacements",
               })
         }
-        description={t({
-          id: "dictionary.section.replacements_description",
-          message: "Swap common phrases automatically after transcription.",
-        })}
+        description={
+          props.embeddedDescription ??
+          t({
+            id: "dictionary.section.replacements_description",
+            message: "Swap common phrases automatically after transcription.",
+          })
+        }
         gridClassName={FORM_GRID}
         primary={{
           value: props.newFrom,
@@ -97,6 +103,7 @@ export function DictionaryReplacementsSection(
             id: "dictionary.replacements.find_aria",
             message: "Find word to replace",
           }),
+          studioFocusTarget: props.studioFocusTarget,
         }}
         secondary={{
           value: props.newTo,

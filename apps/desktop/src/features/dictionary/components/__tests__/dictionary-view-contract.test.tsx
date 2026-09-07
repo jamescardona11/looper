@@ -88,6 +88,10 @@ i18n.loadAndActivate({
     "dictionary.suggested_corrections.dismiss_aria": "DISMISS-{0}-UNIQUE",
     "dictionary.warning_aria": "MODEL-WARNING-UNIQUE",
     "dictionary.warning": "MODEL-{0}-UNSUPPORTED-UNIQUE",
+    "voice.words.vocabulary": "STUDIO-VOCABULARY-UNIQUE",
+    "voice.words.correction_suggestions": "STUDIO-SUGGESTIONS-UNIQUE",
+    "voice.building_blocks.rules": "STUDIO-RULES-UNIQUE",
+    "voice.building_blocks.snippets": "STUDIO-SNIPPETS-UNIQUE",
   },
 });
 
@@ -251,6 +255,41 @@ describe("DictionaryView contract", () => {
         { trigger: "sig", expansion: "Best regards" },
       ]),
     );
+  });
+
+  test("composes Studio Words as vocabulary and real suggestions together", () => {
+    const { container } = renderDictionary(
+      <DictionaryView embedded section="words" />,
+    );
+
+    expect(screen.getByText("STUDIO-VOCABULARY-UNIQUE")).toBeTruthy();
+    expect(screen.getByText("STUDIO-SUGGESTIONS-UNIQUE")).toBeTruthy();
+    expect(
+      screen.getByRole("button", { name: "ACCEPT-address-UNIQUE" }),
+    ).toBeTruthy();
+    expect(container.querySelector(".grid")?.className).toContain(
+      "md:grid-cols-[minmax",
+    );
+    expect(
+      screen.getByLabelText("Find word to replace").closest(".hidden"),
+    ).toBeTruthy();
+  });
+
+  test("composes Rules and Snippets in one Building blocks grid", () => {
+    const { container } = renderDictionary(
+      <DictionaryView embedded section="building-blocks" />,
+    );
+
+    expect(screen.getByText("STUDIO-RULES-UNIQUE")).toBeTruthy();
+    expect(screen.getByText("STUDIO-SNIPPETS-UNIQUE")).toBeTruthy();
+    expect(screen.getByLabelText("Find word to replace")).toBeTruthy();
+    expect(screen.getByLabelText("Snippet trigger word")).toBeTruthy();
+    expect(container.querySelector(".grid")?.className).toContain(
+      "md:grid-cols-[minmax",
+    );
+    expect(
+      screen.getByLabelText("DICTIONARY-INPUT-UNIQUE").closest(".hidden"),
+    ).toBeTruthy();
   });
 
   test("accepts and dismisses corrections with the original cache refresh policy", async () => {

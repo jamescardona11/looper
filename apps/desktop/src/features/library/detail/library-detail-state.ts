@@ -66,7 +66,7 @@ export function initialDetailState(item: LibraryItem): DetailState {
     speakersMenuOpen: false,
     speakerFilter: null,
     filterMenuOpen: false,
-    meetingView: "enhanced",
+    meetingView: "notes",
   };
 }
 

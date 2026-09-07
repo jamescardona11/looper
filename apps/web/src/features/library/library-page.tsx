@@ -6,20 +6,33 @@ import { cn } from "@/lib/cn";
 import { EmptyState } from "@/shared/components/empty-state";
 import { ProductPageHeader } from "@/shared/components/product-page-header";
 import { ProductPageLayout } from "@/shared/components/product-page-layout";
-import { VoiceToolNav } from "@/shared/components/voice-tool-nav";
 import { MeetingList } from "./components/meeting-list";
+import { NoteDetail } from "./components/note-detail";
 import { NoteList } from "./components/note-list";
 import { TranscriptionList } from "./components/transcription-list";
 
 type LibraryView = "transcriptions" | "notes" | "meetings";
 
-export function LibraryPage() {
+export function LibraryPage({
+  selectedNoteId,
+  onSelectNote,
+  onCloseNote,
+}: {
+  selectedNoteId?: string | null;
+  onSelectNote?: (noteId: string) => void;
+  onCloseNote?: () => void;
+}) {
   const { t } = useTranslation();
   const transcriptions = useDictationHistory();
   const notes = useNotes();
   const meetings = useMeetingSessions();
   const [view, setView] = useState<LibraryView>("transcriptions");
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [localSelectedNoteId, setLocalSelectedNoteId] = useState<string | null>(null);
+  const activeNoteId = selectedNoteId ?? localSelectedNoteId;
+  const selectedNote = activeNoteId
+    ? notes.notes.find((candidate) => candidate.id === activeNoteId)
+    : null;
 
   const views: Array<{ id: LibraryView; label: string; count: number }> = [
     {
@@ -34,7 +47,8 @@ export function LibraryPage() {
   const isLoading =
     (view === "transcriptions" && transcriptions.isLoading) ||
     (view === "notes" && notes.isLoading) ||
-    (view === "meetings" && meetings.isLoading);
+    (view === "meetings" && meetings.isLoading) ||
+    (activeNoteId !== null && notes.isLoading);
 
   function copyTranscription(id: string, text: string) {
     void navigator.clipboard.writeText(text).then(() => {
@@ -43,15 +57,37 @@ export function LibraryPage() {
     });
   }
 
+  function selectNote(noteId: string) {
+    if (onSelectNote) {
+      onSelectNote(noteId);
+      return;
+    }
+    setLocalSelectedNoteId(noteId);
+  }
+
+  function closeNote() {
+    if (onCloseNote) {
+      onCloseNote();
+      return;
+    }
+    setLocalSelectedNoteId(null);
+  }
+
+  if (selectedNote) {
+    return (
+      <ProductPageLayout width="compact" compactTop>
+        <NoteDetail note={selectedNote} onBack={closeNote} />
+      </ProductPageLayout>
+    );
+  }
+
   return (
     <ProductPageLayout>
       <ProductPageHeader
-        eyebrow={t("nav.workspace")}
-        title={t("library.title")}
-        description={t("library.subtitle")}
-      >
-        <VoiceToolNav />
-      </ProductPageHeader>
+        eyebrow={t("nav.notes")}
+        title={t("web.notes.title")}
+        description={t("web.notes.subtitle")}
+      />
 
       <div
         role="tablist"
@@ -100,7 +136,7 @@ export function LibraryPage() {
         )
       ) : view === "notes" ? (
         notes.notes.length > 0 ? (
-          <NoteList notes={notes.notes} />
+          <NoteList notes={notes.notes} onSelect={selectNote} />
         ) : (
           <LibraryEmpty
             icon={<IconNotes className="size-6 text-primary" />}

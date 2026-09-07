@@ -2,7 +2,6 @@ import { useEffect } from "react";
 
 import {
   subscribeTextSizeChanged,
-  subscribeThemeChanged,
 } from "../data/settings";
 import { detectAppPlatform } from "../platform/service";
 import { setWindowBackgroundColor } from "../data/system/window";
@@ -11,16 +10,10 @@ import {
   resolveTextScale,
   TEXT_SIZE_MODE_STORAGE_KEY,
 } from "../shared/lib/textSize";
-import type { ThemeMode } from "../contracts";
-import { parseThemePreference, themeForDocument } from "./document-theme";
 
 type DocumentAppearanceOptions = {
   windowLabel: string;
   previewMode: boolean;
-  previewTheme: "light" | "dark";
-  settingsLoading: boolean;
-  onboardingVisible: boolean;
-  storedTheme: string | null | undefined;
 };
 
 /**
@@ -28,27 +21,39 @@ type DocumentAppearanceOptions = {
  * puede leer una variable CSS. Se toma del token que el documento acaba de
  * aplicar, de forma que sigue a la paleta en vez de duplicar sus valores.
  */
-const SETTINGS_WINDOW_BACKGROUND_TOKEN = "--color-bg-secondary";
+const SETTINGS_WINDOW_BACKGROUND_TOKEN = "--desktop-canvas";
 
 export function useDocumentAppearance({
   windowLabel,
   previewMode,
-  previewTheme,
-  settingsLoading,
-  onboardingVisible,
-  storedTheme,
 }: DocumentAppearanceOptions) {
   useContextMenuBlock();
+  useWindowSurface(windowLabel);
   useTextScale(windowLabel, previewMode);
   useTheme({
     windowLabel,
     previewMode,
-    previewTheme,
-    settingsLoading,
-    onboardingVisible,
-    storedTheme,
   });
   useSettingsBackground(windowLabel);
+}
+
+function useWindowSurface(windowLabel: string) {
+  useEffect(() => {
+    const root = document.documentElement;
+    // `main` es el panel flotante de Dictation, no el workspace. Settings
+    // necesita el canvas cálido para que el fondo nativo coincida con la
+    // lámina paper; no se reserva un margen exterior adicional.
+    if (windowLabel === "settings") {
+      root.dataset.windowSurface = "workspace";
+      return () => {
+        delete root.dataset.windowSurface;
+      };
+    }
+
+    // Las ventanas auxiliares (pill/main, toast y meeting awareness) son
+    // transparentes. Nunca deben heredar el canvas del workspace.
+    delete root.dataset.windowSurface;
+  }, [windowLabel]);
 }
 
 function useContextMenuBlock() {
@@ -90,10 +95,6 @@ function useTextScale(windowLabel: string, previewMode: boolean) {
 function useTheme({
   windowLabel,
   previewMode,
-  previewTheme,
-  settingsLoading,
-  onboardingVisible,
-  storedTheme,
 }: DocumentAppearanceOptions) {
   useEffect(() => {
     const root = document.documentElement;
@@ -108,52 +109,23 @@ function useTheme({
       void setWindowBackgroundColor(background).catch(() => undefined);
     };
     if (previewMode) {
-      root.dataset.theme = previewTheme;
-      applyNativeBackground();
+      root.dataset.theme = "light";
       return;
     }
-    if (windowLabel !== "settings" || settingsLoading) {
-      root.dataset.theme = "dark";
-      return;
-    }
-
-    const mediaQuery = window.matchMedia("(prefers-color-scheme: light)");
-    let selected: ThemeMode = onboardingVisible
-      ? "system"
-      : parseThemePreference(storedTheme ?? null);
-    const apply = (mode: ThemeMode) => {
-      selected = mode;
-      const theme = themeForDocument(mode, mediaQuery.matches);
-      root.dataset.theme = theme;
-      applyNativeBackground();
-    };
-    const followSystem = () => {
-      if (selected === "system") apply("system");
-    };
-
-    apply(selected);
-    mediaQuery.addEventListener("change", followSystem);
-    const pendingStop = subscribeThemeChanged((mode) =>
-      apply(parseThemePreference(mode ?? null)),
-    );
-
-    return () => {
-      mediaQuery.removeEventListener("change", followSystem);
-      void pendingStop.then((stop) => stop()).catch(() => undefined);
-    };
+    // Todo el renderer de escritorio comparte la misma superficie clara.
+    // Ni la preferencia persistida, ni el sistema, ni una ventana auxiliar
+    // pueden reactivar una variante oscura.
+    root.dataset.theme = "light";
+    if (windowLabel === "settings") applyNativeBackground();
   }, [
-    onboardingVisible,
     previewMode,
-    previewTheme,
-    settingsLoading,
-    storedTheme,
     windowLabel,
   ]);
 }
 
 function useSettingsBackground(windowLabel: string) {
   useEffect(() => {
-    const color = windowLabel === "settings" ? "var(--color-bg-secondary)" : "";
+    const color = windowLabel === "settings" ? "var(--desktop-canvas)" : "";
     document.documentElement.style.backgroundColor = color;
     document.body.style.backgroundColor = color;
     return () => {

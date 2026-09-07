@@ -48,7 +48,7 @@ export function OnboardingWizard({
           <button
             type="button"
             onClick={onSkipAll}
-            className="text-muted-foreground text-xs transition-colors hover:text-foreground"
+            className="inline-flex min-h-11 items-center rounded-md px-2 text-muted-foreground text-xs transition-colors hover:bg-secondary hover:text-foreground sm:min-h-10"
           >
             {t("onboarding.skipSetup")}
           </button>

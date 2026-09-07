@@ -3,10 +3,11 @@
 </h1>
 
 <p align="center">
-  <strong>Voice productivity across desktop, mobile, and web.</strong>
+  <strong>Turn voice into useful work across desktop, mobile, and web.</strong>
 </p>
 
 <p align="center">
+  <a href="https://github.com/jamescardona11/looper/releases/latest"><strong>Download Desktop</strong></a> ·
   <a href="#product">Product</a> ·
   <a href="#getting-started">Getting started</a> ·
   <a href="#architecture">Architecture</a> ·
@@ -18,44 +19,30 @@
 
 ## Product
 
-Looper turns speech into text where you are already working. On desktop, hold
-the shortcut, speak, and release: Looper transcribes locally or through the
-configured cloud provider, then inserts the result into the focused app.
+Looper turns speech into text where you are already working. Hold the desktop
+shortcut, speak, and release. Looper transcribes locally or through a
+configured provider, then inserts the result into the focused app.
 
-Longer recordings and meetings live in the Library with playback, searchable
-transcripts, speakers, markers, exports, and a unified local Memory. Voice
-profiles, dictionary entries, replacements, snippets, and workflows control
-how the final text is written.
+Notes and meetings keep their source audio beside transcripts, moments,
+decisions, and exports. Your vocabulary and writing preferences travel with
+you across the surfaces that support them.
 
 <p align="center">
   <img src="assets/product/desktop-workspace.png" alt="Looper desktop workspace showing local dictation activity, recoverable history, and the next meeting" width="100%">
 </p>
 
 <p align="center">
-  <sub>Desktop product direction: local dictation, recoverable history, and meeting context in one workspace.</sub>
+  <sub>Desktop design preview: local dictation, recoverable history, and meeting context in one workspace.</sub>
 </p>
 
-### What you can do
+### One product, three places
 
-- Dictate into any desktop app with global shortcuts and text insertion.
-- Choose local transcription for on-device processing or configure a remote
-  speech provider.
-- Record meetings, import media, follow live transcription, and export the
-  result.
-- Search dictations, recordings, and meetings from one local index.
-- Capture from mobile and send remote dictation to an authenticated desktop.
-- Use the browser workspace to review synchronized transcriptions, notes, and
-  meetings, ask the recording assistant, and manage account and billing.
-
-### Meetings stay reviewable
-
-Looper keeps the source audio, transcript, decisions, moments, and assistant in
-one note. Generated summaries remain connected to the recording they came
-from, so the useful output never replaces the original.
-
-<p align="center">
-  <img src="assets/product/desktop-note-detail.png" alt="Looper desktop meeting note with retained source audio, decisions, transcript tabs, and an assistant input" width="100%">
-</p>
+- **Desktop** captures dictation and meetings, keeps a searchable local
+  Library, and inserts text into the app you are using.
+- **Mobile** captures when you are away from your computer and returns to a
+  structured recording or note.
+- **Web** reviews synchronized content and manages shared preferences. Native
+  capture stays on Desktop and Mobile.
 
 ### Mobile capture
 
@@ -68,8 +55,33 @@ recording, and return to a structured meeting note.
 
 _These mobile screenshots come from the real Expo Release app with sample data,
 captured through Goldie and integrated on September 2, 2026 (commit `827d65d`).
-The Desktop previews above remain design artifacts. Availability can vary by
-platform and release._
+Availability can vary by platform and release._
+
+### Web review
+
+The browser workspace reads synchronized content and manages vocabulary,
+styles, and account preferences. Recording and native capture remain owned by
+Desktop and Mobile.
+
+<p align="center">
+  <img src="assets/product/looper-web-home-campaign-en.png" alt="Looper Web home showing synchronized dictations, notes, and meetings" width="100%">
+</p>
+
+_These Web previews are Retina captures of the real Vite application. Run
+`pnpm web:previews` to seed an isolated anonymous preview account and reproduce
+the campaign assets._
+
+### Meetings stay reviewable
+
+Looper keeps the source audio, transcript, decisions, moments, and assistant in
+one note. Generated summaries remain connected to the recording they came
+from, so the useful output never replaces the original.
+
+<p align="center">
+  <img src="assets/product/desktop-note-detail.png" alt="Looper desktop meeting note with retained source audio, decisions, transcript tabs, and an assistant input" width="100%">
+</p>
+
+_Desktop design preview; this is not a runtime capture._
 
 ### Repository surfaces
 
@@ -77,14 +89,33 @@ platform and release._
 | --- | --- | --- |
 | `apps/desktop` | Tauri, Rust, React | Native capture, local transcription, insertion, Library, Memory, meetings, and settings |
 | `apps/mobile` | React Native, Expo | Mobile capture, notes, meetings, Library, Android local STT, and the iOS keyboard extension |
-| `apps/web` | React, Vite | Browser-only workspace for synchronized Library views, agent, voice preferences, account, usage, and billing; never capture |
-| `backend` | Convex | Authentication, sync, meetings, notes, AI/provider calls, usage, and payments |
+| `apps/web` | React, Vite | Browser-only workspace for synchronized Library views, agent, and voice preferences; never capture |
+| `backend` | Convex | Authentication, sync, meetings, notes, and AI/provider calls |
 | `packages/ts` | TypeScript | Shared configuration, i18n, domain types, and the web/mobile Convex client boundary |
 | `packages/rust` | Rust | Shared audio and transcription engines |
 
 ---
 
 ## Getting started
+
+### Download Desktop
+
+Desktop installers for macOS 14+ and Windows are published through the manual
+[GitHub Releases](https://github.com/jamescardona11/looper/releases/latest)
+workflow. Looper is free for now. Preview installers
+may show an operating-system warning until distribution certificates are added.
+
+To create a local macOS download for QA or a private handoff, run:
+
+```sh
+make build-download
+```
+
+This produces unsigned `Looper.app` and `.dmg` bundles under
+`apps/desktop/src-tauri/target/release/bundle/`. They are suitable for local
+testing only. Public installers come from the manual `Desktop release` workflow
+on `main`, which builds macOS Apple Silicon and Windows x64 assets as a GitHub
+Release draft for review before publishing.
 
 ### Requirements
 

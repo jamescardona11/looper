@@ -98,6 +98,10 @@ export function buildCompletedOnboardingSettings({
     autoUpdateEnabled: true,
     autoLaunchEnabled,
     startInBackground: latest.start_in_background ?? false,
+    calendarMeetingAwarenessEnabled:
+      latest.calendar_meeting_awareness_enabled ?? false,
+    microphoneMeetingAwarenessEnabled:
+      latest.microphone_meeting_awareness_enabled ?? true,
     autoDeleteTarget: latest.auto_delete_target ?? "transcripts",
     autoDeleteDuration: latest.auto_delete_duration ?? "never",
     analyticsEnabled: latest.analytics_enabled ?? true,

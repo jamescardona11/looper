@@ -36,6 +36,8 @@ type DictionarySnippetsSectionProps = {
   actionGradientStyle: CSSProperties;
   deleteButtonActiveClassName: string;
   deleteButtonClassName: string;
+  embeddedTitle?: string;
+  embeddedDescription?: string;
 };
 
 const FORM_GRID =
@@ -69,16 +71,19 @@ export function DictionarySnippetsSection(
       <DictionaryPairForm
         title={
           props.embedded
-            ? null
+            ? (props.embeddedTitle ?? null)
             : t({
                 id: "dictionary.snippets.section_title",
                 message: "Snippets",
               })
         }
-        description={t({
-          id: "dictionary.snippets.section_description",
-          message: "Dictate a trigger word to insert its full snippet text.",
-        })}
+        description={
+          props.embeddedDescription ??
+          t({
+            id: "dictionary.snippets.section_description",
+            message: "Dictate a trigger word to insert its full snippet text.",
+          })
+        }
         gridClassName={FORM_GRID}
         primary={{
           value: props.newTrigger,

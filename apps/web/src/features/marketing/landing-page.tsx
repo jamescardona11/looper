@@ -1,4 +1,4 @@
-import { TIERS } from "@looper/config/billing";
+import { PRODUCT_ACCESS_IS_FREE, TIERS } from "@looper/config/billing";
 import { useTranslation } from "@looper/i18n/react";
 import { IconArrowRight, IconCheck, IconMenu2, IconX } from "@tabler/icons-react";
 import { Link } from "@tanstack/react-router";
@@ -8,13 +8,11 @@ import { LooperMark } from "@/shared/components/looper-mark";
 import { PageSurface } from "@/shared/components/page-surface";
 import { buttonVariants } from "@/shared/components/ui/button";
 
-// "Buy" stays in-app (/pricing) so the landing page enters the real checkout
-// flow (Stripe/Polar).
-// The marketing surface keeps a dark campaign treatment while reusing the
-// product's semantic tokens, typography, controls, and radius scale.
+// The marketing surface shares the paper workspace direction with the product
+// while reusing its semantic tokens, typography, controls, and radius scale.
 export function LandingPage() {
   return (
-    <div className="dark relative min-h-screen overflow-x-clip bg-background text-foreground">
+    <div className="relative min-h-screen overflow-x-clip bg-background text-foreground">
       <GrainOverlay />
       <Nav />
       <PageSurface>
@@ -23,7 +21,7 @@ export function LandingPage() {
         <ReasonsSection />
         <ProofSection />
         <ComparisonSection />
-        <PricingSection />
+        {!PRODUCT_ACCESS_IS_FREE ? <PricingSection /> : null}
         <LandingFAQSection />
         <FinalCTA />
       </PageSurface>
@@ -84,7 +82,7 @@ function Window({
   );
 }
 
-/** Paper-grain overlay (sales landing body::before). Scoped to the `.dark`
+/** Paper-grain overlay (sales landing body::before). Scoped to the landing
  *  marketing subtree, not global, so the in-app surfaces stay clean. Data-URI
  *  SVG noise, no color literal, so it passes j11/no-color-literal. */
 function GrainOverlay() {
@@ -113,13 +111,12 @@ function Nav() {
 
   const NAV_LINKS = [
     { label: t("landing.nav.features"), href: "#features" },
-    { label: t("landing.nav.pricing"), href: "#pricing" },
   ];
 
   return (
     <header className="sticky top-0 z-50 border-border/60 border-b bg-background/90 backdrop-blur">
       <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-6">
-        <a href="#top" className="flex items-center gap-2.5">
+        <a href="#top" className="flex min-h-11 items-center gap-2.5 sm:min-h-10">
           <span className="grid size-7 place-items-center rounded-lg bg-primary text-primary-foreground">
             <LooperMark className="size-3.5" />
           </span>
@@ -132,11 +129,10 @@ function Nav() {
             </a>
           ))}
           <Link
-            to="/pricing"
+            to="/sign-in"
             className="flex items-center gap-1.5 transition-colors hover:text-primary"
           >
-            {t("landing.nav.buy")}
-            <span className="font-mono text-primary text-xs tabular-nums">$10</span>
+            {t("landing.getStarted")}
           </Link>
         </nav>
         <div className="flex items-center gap-3">
@@ -151,7 +147,7 @@ function Nav() {
             className={buttonVariants({
               variant: "primary",
               size: "sm",
-              className: "rounded-lg",
+              className: "min-h-11 rounded-lg sm:min-h-10",
             })}
           >
             {t("landing.getStarted")}
@@ -161,7 +157,7 @@ function Nav() {
             onClick={() => setMenuOpen((v) => !v)}
             aria-label={menuOpen ? t("landing.nav.closeMenu") : t("landing.nav.openMenu")}
             aria-expanded={menuOpen}
-            className="text-muted-foreground transition-colors hover:text-foreground md:hidden"
+            className="touch-target relative grid size-8 place-items-center rounded-md text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground md:hidden"
           >
             {menuOpen ? <IconX className="size-5" /> : <IconMenu2 className="size-5" />}
           </button>
@@ -176,22 +172,22 @@ function Nav() {
               key={l.label}
               href={l.href}
               onClick={close}
-              className="rounded-lg px-2 py-2 text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+              className="flex min-h-11 items-center rounded-lg px-2 py-2 text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
             >
               {l.label}
             </a>
           ))}
           <Link
-            to="/pricing"
+            to="/sign-in"
             onClick={close}
-            className="rounded-lg px-2 py-2 text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+            className="flex min-h-11 items-center rounded-lg px-2 py-2 text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
           >
-            {t("landing.nav.buy")}
+            {t("landing.getStarted")}
           </Link>
           <Link
             to="/sign-in"
             onClick={close}
-            className="rounded-lg px-2 py-2 text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+            className="flex min-h-11 items-center rounded-lg px-2 py-2 text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
           >
             {t("auth.signIn")}
           </Link>
@@ -226,11 +222,10 @@ function HeroSection() {
               <IconArrowRight className="size-4" />
             </Link>
             <Link
-              to="/pricing"
+              to="/sign-in"
               className={buttonVariants({ variant: "outline", className: SECONDARY_CTA })}
             >
-              {t("landing.nav.buy")}
-              <span className="font-mono text-primary text-xs tabular-nums">$10</span>
+              {t("landing.getStarted")}
             </Link>
           </div>
           <ul className="mt-10 flex flex-wrap gap-x-6 gap-y-2 text-muted-foreground text-sm">
@@ -407,7 +402,7 @@ function ProofSection() {
               <span className="text-primary">packages/</span>
               {"\n"}
               {"│   ├── theme/      "}
-              <span className="text-muted-foreground">semantic tokens · light + dark</span>
+              <span className="text-muted-foreground">semantic tokens · light</span>
               {"\n"}
               {"│   └── i18n/       "}
               <span className="text-muted-foreground">en + es, parity-checked</span>
@@ -879,10 +874,10 @@ function FinalCTA() {
             <IconArrowRight className="size-4" />
           </Link>
           <Link
-            to="/pricing"
+            to="/sign-in"
             className={buttonVariants({ variant: "outline", className: SECONDARY_CTA })}
           >
-            {t("landing.nav.buy")}
+            {t("landing.getStarted")}
           </Link>
         </div>
       </div>
@@ -912,11 +907,6 @@ function FooterSection() {
         <div className="md:col-span-2">
           <Eyebrow className="text-muted-foreground">{t("landing.footer.productLabel")}</Eyebrow>
           <ul className="mt-4 space-y-2 text-muted-foreground text-sm">
-            <li>
-              <a href="#pricing" className="transition-colors hover:text-primary">
-                {t("landing.nav.pricing")}
-              </a>
-            </li>
             <li>
               <a href="#features" className="transition-colors hover:text-primary">
                 {t("landing.nav.features")}

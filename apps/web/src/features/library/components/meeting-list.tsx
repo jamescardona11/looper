@@ -1,17 +1,65 @@
 import { type MeetingSession, useMeetingDetail } from "@looper/data";
 import { useTranslation } from "@looper/i18n/react";
-import { useState } from "react";
+import { IconArrowLeft } from "@tabler/icons-react";
+import { useState, useSyncExternalStore } from "react";
 import { cn } from "@/lib/cn";
-import { Badge, Card } from "@/shared/components/ui";
+import { Badge, Button, Card } from "@/shared/components/ui";
+
+const NARROW_MEETING_LAYOUT = "(max-width: 1023px)";
+
+function getMeetingMediaQuery() {
+  return typeof window.matchMedia === "function" ? window.matchMedia(NARROW_MEETING_LAYOUT) : null;
+}
+
+function subscribeToMeetingLayout(onChange: () => void) {
+  const mediaQuery = getMeetingMediaQuery();
+  if (!mediaQuery) return () => undefined;
+  mediaQuery.addEventListener("change", onChange);
+  return () => mediaQuery.removeEventListener("change", onChange);
+}
+
+function getMeetingLayoutSnapshot() {
+  return getMeetingMediaQuery()?.matches ?? false;
+}
+
+function getServerMeetingLayoutSnapshot() {
+  return false;
+}
+
+function useNarrowMeetingLayout() {
+  return useSyncExternalStore(
+    subscribeToMeetingLayout,
+    getMeetingLayoutSnapshot,
+    getServerMeetingLayoutSnapshot,
+  );
+}
 
 export function MeetingList({ sessions }: { sessions: MeetingSession[] }) {
-  const { locale } = useTranslation();
+  const { t, locale } = useTranslation();
+  const isNarrow = useNarrowMeetingLayout();
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const activeId = selectedId ?? sessions[0]?.meetingId ?? null;
+  const activeId = selectedId ?? (isNarrow ? null : (sessions[0]?.meetingId ?? null));
   const formatter = new Intl.DateTimeFormat(locale, {
     dateStyle: "medium",
     timeStyle: "short",
   });
+
+  if (isNarrow && activeId) {
+    return (
+      <div>
+        <Button
+          type="button"
+          variant="ghost"
+          className="mb-3 min-h-11 px-2"
+          onClick={() => setSelectedId(null)}
+        >
+          <IconArrowLeft className="size-4" aria-hidden />
+          {t("common.back")}
+        </Button>
+        <MeetingDetail meetingId={activeId} />
+      </div>
+    );
+  }
 
   return (
     <div className="grid gap-4 lg:grid-cols-[280px_minmax(0,1fr)]">
@@ -22,7 +70,7 @@ export function MeetingList({ sessions }: { sessions: MeetingSession[] }) {
               type="button"
               onClick={() => setSelectedId(session.meetingId)}
               className={cn(
-                "w-full rounded-xl border border-border bg-card p-4 text-left transition-colors hover:bg-secondary/50",
+                "w-full rounded-lg border border-border bg-card p-4 text-left transition-colors hover:bg-secondary/70",
                 activeId === session.meetingId && "border-primary/40 bg-secondary/60",
               )}
             >
@@ -34,7 +82,7 @@ export function MeetingList({ sessions }: { sessions: MeetingSession[] }) {
           </li>
         ))}
       </ol>
-      <MeetingDetail meetingId={activeId} />
+      {isNarrow ? null : <MeetingDetail meetingId={activeId} />}
     </div>
   );
 }

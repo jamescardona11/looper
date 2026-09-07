@@ -10,56 +10,87 @@ import {
 import { useOverlayDrag } from "./use-overlay-drag";
 import { usePillPreflight } from "./use-pill-preflight";
 
-const tenPixelTextClass = `text-[${10}px]`;
-const elevenPixelTextClass = `text-[${11}px]`;
+const tenPixelTextClass = "ui-text-meta";
+const elevenPixelTextClass = "ui-text-label";
 
 export type CapturePreflightProps = {
   sticky?: boolean;
   isHovered?: boolean;
 };
 
-function FloatingLauncher({
-  onPointerDown,
-}: Pick<ReturnType<typeof useOverlayDrag>, "onPointerDown">) {
+type DragHandleProps = Pick<
+  ReturnType<typeof useOverlayDrag>,
+  "onPointerDown"
+> & {
+  compact?: boolean;
+};
+
+function DragHandle({ onPointerDown, compact = false }: DragHandleProps) {
   const { t } = useLingui();
   return (
-    <div
+    <button
+      type="button"
       data-overlay-drag-handle
       onPointerDown={onPointerDown}
-      role="img"
       aria-label={t({
         id: "pill.preflight.drag_floating",
         message: "Move Capture pill",
       })}
-      className="ui-sticky-launcher absolute left-1/2 top-1/2 grid h-11 w-11 -translate-x-1/2 -translate-y-1/2 cursor-grab place-items-center rounded-full text-content-primary active:cursor-grabbing"
+      className={`flex shrink-0 cursor-grab items-center text-[var(--color-pill-preview-text)] active:cursor-grabbing ${
+        compact
+          ? "h-full w-[50px] gap-2 pl-3 pr-1"
+          : "h-10 justify-center gap-1 px-2"
+      }`}
     >
-      <span aria-hidden="true">
-        <LooperLogo size="sm" />
+      <span
+        data-pill-drag-dots
+        aria-hidden="true"
+        className="grid grid-cols-2 gap-0.5"
+      >
+        {Array.from({ length: 6 }, (_, dot) => (
+          <span
+            key={dot}
+            data-pill-drag-dot
+            className="h-0.5 w-0.5 rounded-full bg-[var(--ui-capture-muted)]"
+          />
+        ))}
+      </span>
+      {compact ? (
+        <span data-pill-drag-logo aria-hidden="true">
+          <LooperLogo size="sm" />
+        </span>
+      ) : null}
+    </button>
+  );
+}
+
+function FloatingLauncher({
+  onPointerDown,
+  placement,
+}: Pick<ReturnType<typeof useOverlayDrag>, "onPointerDown"> & {
+  placement?: string;
+}) {
+  return (
+    <div
+      className={`ui-sticky-launcher absolute flex h-9 w-24 overflow-hidden rounded-full ${
+        placement ?? "left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2"
+      }`}
+    >
+      <DragHandle onPointerDown={onPointerDown} compact />
+      <span
+        data-overlay-expand-zone
+        aria-hidden="true"
+        className="flex h-full w-[46px] shrink-0 items-center justify-center gap-1.5 border-l border-white/10 px-2 ui-text-meta font-semibold text-[var(--color-pill-preview-text)]"
+      >
+        <span>Fn</span>
+        <span className="h-1 w-1 shrink-0 rounded-full bg-[var(--color-accent)]" />
       </span>
     </div>
   );
 }
 
-// Signals that the pill can be moved. The whole shell is the drag surface, so
-// these dots are a hint, not a target.
-function FloatingGrip() {
-  return (
-    <span
-      aria-hidden="true"
-      className="pointer-events-none flex h-10 w-2.5 shrink-0 flex-col items-center justify-center gap-[2px]"
-    >
-      {[0, 1, 2, 3].map((dot) => (
-        <span
-          key={dot}
-          className="h-0.5 w-0.5 rounded-full bg-[var(--ui-capture-muted)]"
-        />
-      ))}
-    </span>
-  );
-}
-
 type DockControlsProps = {
-  floating: boolean;
+  onPointerDown: ReturnType<typeof useOverlayDrag>["onPointerDown"];
   language: string;
   menuOpen: boolean;
   starting: boolean;
@@ -70,7 +101,7 @@ type DockControlsProps = {
 };
 
 function DockControls({
-  floating,
+  onPointerDown,
   language,
   menuOpen,
   starting,
@@ -82,12 +113,12 @@ function DockControls({
   const { t } = useLingui();
   return (
     <>
-      {floating ? <FloatingGrip /> : <span className="w-2.5 shrink-0" />}
+      <DragHandle onPointerDown={onPointerDown} />
       <button
         type="button"
         onClick={beginDictation}
         disabled={starting}
-        className="ui-text-body-sm inline-flex h-10 w-[149px] shrink-0 cursor-pointer items-center gap-2 rounded-full px-2 font-semibold text-[var(--ui-capture-fg-strong)] transition-colors duration-150 hover:bg-white/6 active:bg-white/10 disabled:opacity-60"
+        className="ui-text-body-sm inline-flex h-10 w-[149px] shrink-0 cursor-pointer items-center gap-2 rounded-full px-2 font-semibold text-[var(--ui-capture-fg-strong)] transition-colors duration-150 hover:bg-[var(--surface-pill-control-muted)] active:bg-[var(--surface-pill-control-active)] disabled:opacity-60"
       >
         <span className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[var(--color-accent)] ui-color-on-solid [box-shadow:var(--ui-pill-signal-shadow)]">
           <Microphone size={13} weight="fill" />
@@ -101,7 +132,10 @@ function DockControls({
           Fn
         </kbd>
       </button>
-      <span aria-hidden="true" className="h-5 w-px shrink-0 bg-white/10" />
+      <span
+        aria-hidden="true"
+        className="h-5 w-px shrink-0 bg-[var(--color-pill-control-border)]"
+      />
       <button
         type="button"
         aria-expanded={menuOpen}
@@ -111,7 +145,7 @@ function DockControls({
           message: "Dictation language",
         })}
         onClick={() => setMenuOpen(!menuOpen)}
-        className={`inline-flex h-8 min-w-9 shrink-0 cursor-pointer items-center justify-center gap-0.5 rounded-xl px-1 ${tenPixelTextClass} font-semibold text-[var(--ui-capture-fg)] transition-colors duration-150 hover:bg-white/6 active:bg-white/10`}
+        className={`inline-flex h-8 min-w-9 shrink-0 cursor-pointer items-center justify-center gap-0.5 rounded-xl px-1 ${tenPixelTextClass} font-semibold text-[var(--ui-capture-fg)] transition-colors duration-150 hover:bg-[var(--surface-pill-control-muted)] active:bg-[var(--surface-pill-control-active)]`}
       >
         {language ? language.toUpperCase() : "AUTO"}
         <CaretDown
@@ -125,7 +159,7 @@ function DockControls({
         aria-label={t({ id: "pill.preflight.new_note", message: "New note" })}
         title={t({ id: "pill.preflight.new_note", message: "New note" })}
         onClick={beginNote}
-        className="inline-flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-full text-[var(--ui-capture-fg)] transition-colors duration-150 hover:bg-white/6 hover:text-[var(--ui-capture-fg-strong)] active:bg-white/10"
+        className="inline-flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-full text-[var(--ui-capture-fg)] transition-colors duration-150 hover:bg-[var(--surface-pill-control-muted)] hover:text-[var(--ui-capture-fg-strong)] active:bg-[var(--surface-pill-control-active)]"
       >
         <Plus size={17} weight="bold" />
       </button>
@@ -172,7 +206,7 @@ function LanguageMenu({
             role="menuitemradio"
             aria-checked={option.code === language}
             onClick={() => selectLanguage(option.code)}
-            className={`relative z-30 flex w-full items-center justify-between rounded-xl px-2 py-1.5 text-left ${elevenPixelTextClass} text-[var(--ui-capture-fg)] transition-colors duration-150 hover:bg-white/6 active:bg-white/10`}
+            className={`relative z-30 flex w-full items-center justify-between rounded-xl px-2 py-1.5 text-left ${elevenPixelTextClass} text-[var(--ui-capture-fg)] transition-colors duration-150 hover:bg-[var(--surface-pill-control-muted)] active:bg-[var(--surface-pill-control-active)]`}
           >
             <span>{option.name}</span>
             {option.code === language ? (
@@ -207,25 +241,25 @@ export function CapturePreflight({
       className={`flex h-full w-full select-none ${sticky ? layout.alignment : "items-start justify-center"}`}
     >
       <div
-        className={`relative ${sticky ? "h-full w-full" : "h-12 w-[260px]"}`}
+        className={`relative ${sticky ? "h-full w-full" : "h-12 w-[264px]"}`}
         onPointerLeave={() => {
           if (preflight.menuOpen) preflight.setMenuOpen(false);
         }}
       >
-        {sticky && !expanded && preflight.presentation === "dock" ? (
-          <div
-            aria-hidden="true"
-            className={`absolute bg-white/45 ${layout.edgeHandle}`}
+        {sticky && !expanded ? (
+          <FloatingLauncher
+            onPointerDown={drag.onPointerDown}
+            placement={
+              preflight.presentation === "dock"
+                ? layout.launcherPlacement
+                : undefined
+            }
           />
-        ) : null}
-        {sticky && !expanded && preflight.presentation === "floating" ? (
-          <FloatingLauncher onPointerDown={drag.onPointerDown} />
         ) : null}
         {expanded ? (
           <section
-            onPointerDown={drag.onPointerDown}
             onClickCapture={drag.onClickCapture}
-            className={`ui-pill-shell relative flex h-12 w-[260px] cursor-grab items-center overflow-hidden rounded-full border border-[var(--ui-pill-shell-border)] px-1 text-white active:cursor-grabbing ${sticky ? `ui-capture-dock absolute z-20 ${layout.shellPlacement}` : ""}`}
+            className={`ui-pill-shell relative flex h-12 w-[264px] items-center overflow-hidden rounded-full border border-[var(--ui-pill-shell-border)] px-1 text-[var(--ui-capture-fg)] ${sticky ? `ui-capture-dock absolute z-20 ${layout.shellPlacement}` : ""}`}
             role="group"
             aria-label={t({
               id: "pill.preflight.label",
@@ -233,7 +267,7 @@ export function CapturePreflight({
             })}
           >
             <DockControls
-              floating={preflight.presentation === "floating"}
+              onPointerDown={drag.onPointerDown}
               language={preflight.language}
               menuOpen={preflight.menuOpen}
               starting={preflight.starting}
