@@ -15,6 +15,13 @@ export default defineConfig({
   build: {
     target: "es2022",
     sourcemap: true,
+    rollupOptions: {
+      input: {
+        main: path.resolve(__dirname, "index.html"),
+        v2: path.resolve(__dirname, "v2/index.html"),
+        v3: path.resolve(__dirname, "v3/index.html"),
+      },
+    },
   },
   resolve: {
     alias: {

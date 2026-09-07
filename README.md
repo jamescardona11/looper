@@ -31,6 +31,10 @@ you across the surfaces that support them.
   <img src="assets/product/desktop-workspace.png" alt="Looper desktop workspace showing local dictation activity, recoverable history, and the next meeting" width="100%">
 </p>
 
+<p align="center">
+  <sub>Desktop design preview: local dictation, recoverable history, and meeting context in one workspace.</sub>
+</p>
+
 ### One product, three places
 
 - **Desktop** captures dictation and meetings, keeps a searchable local
@@ -43,15 +47,15 @@ you across the surfaces that support them.
 ### Mobile capture
 
 Mobile covers the same lifecycle at phone scale: dictate, follow a live
-recording, and return to a meeting note with the original audio.
+recording, and return to a structured meeting note.
 
-<p align="center">
-  <img src="assets/product/mobile-meeting.png" alt="Looper mobile meeting note with summary, actions, moments, and source audio" width="300">
-</p>
+| Home | Capture options | Meeting note |
+| --- | --- | --- |
+| ![Looper mobile home with weekly activity and recent recordings](assets/product/mobile-dictation.png) | ![Looper mobile capture options for a meeting or voice note](assets/product/mobile-capture.png) | ![Looper mobile meeting note with summary, decisions, pending tasks, and transcript access](assets/product/mobile-meeting.png) |
 
-_These mobile previews come from the real Expo Release app through the
-repository's deterministic Goldie capture flows. Availability can vary by
-platform and release._
+_These mobile screenshots come from the real Expo Release app with sample data,
+captured through Goldie and integrated on September 2, 2026 (commit `827d65d`).
+Availability can vary by platform and release._
 
 ### Web review
 
@@ -66,6 +70,18 @@ Desktop and Mobile.
 _These Web previews are Retina captures of the real Vite application. Run
 `pnpm web:previews` to seed an isolated anonymous preview account and reproduce
 the campaign assets._
+
+### Meetings stay reviewable
+
+Looper keeps the source audio, transcript, decisions, moments, and assistant in
+one note. Generated summaries remain connected to the recording they came
+from, so the useful output never replaces the original.
+
+<p align="center">
+  <img src="assets/product/desktop-note-detail.png" alt="Looper desktop meeting note with retained source audio, decisions, transcript tabs, and an assistant input" width="100%">
+</p>
+
+_Desktop design preview; this is not a runtime capture._
 
 ### Repository surfaces
 
