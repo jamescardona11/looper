@@ -1,5 +1,5 @@
-import { convexCapabilities } from "@looper/data";
 import { PRODUCT_ACCESS_IS_FREE } from "@looper/config/billing";
+import { convexCapabilities } from "@looper/data";
 import { useTranslation } from "@looper/i18n/react";
 import { IconArrowUp, IconPlayerStopFilled } from "@tabler/icons-react";
 import { Link } from "@tanstack/react-router";

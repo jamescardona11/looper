@@ -109,9 +109,7 @@ function Nav() {
   const [menuOpen, setMenuOpen] = useState(false);
   const close = () => setMenuOpen(false);
 
-  const NAV_LINKS = [
-    { label: t("landing.nav.features"), href: "#features" },
-  ];
+  const NAV_LINKS = [{ label: t("landing.nav.features"), href: "#features" }];
 
   return (
     <header className="sticky top-0 z-50 border-border/60 border-b bg-background/90 backdrop-blur">

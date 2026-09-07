@@ -1,8 +1,9 @@
 import type { CSSProperties } from "react";
-import dictationImage from "../../../../assets/product/mobile-dictation.png";
 import captureImage from "../../../../assets/product/mobile-capture.png";
+import dictationImage from "../../../../assets/product/mobile-dictation.png";
 import meetingImage from "../../../../assets/product/mobile-meeting.png";
 import { revealWhenVisible } from "./reveal";
+
 const releases = "https://github.com/jamescardona11/looper/releases";
 const faq = [
   [

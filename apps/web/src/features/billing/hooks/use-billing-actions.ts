@@ -7,8 +7,8 @@
 
 import {
   isConfiguredBillingId,
-  PRODUCT_ACCESS_IS_FREE,
   type OneTimePack,
+  PRODUCT_ACCESS_IS_FREE,
   resolveStripeOneTimePriceId,
   resolveStripeTierPriceId,
   TIERS,

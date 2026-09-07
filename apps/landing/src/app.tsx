@@ -1,3 +1,4 @@
+import { Access } from "./components/access";
 import { ComparisonTable } from "./components/comparison-table";
 import { Features } from "./components/features";
 import { FinalCta } from "./components/final-cta";
@@ -5,7 +6,6 @@ import { Hero } from "./components/hero";
 import { HowItWorks } from "./components/how-it-works";
 import { LocalModel } from "./components/local-model";
 import { PlatformStrip } from "./components/platform-strip";
-import { Access } from "./components/access";
 import { ProductSurfaces } from "./components/product-surfaces";
 import { Roadmap } from "./components/roadmap";
 import { ScrollMotionController } from "./components/scroll-motion-controller";

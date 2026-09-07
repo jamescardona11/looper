@@ -1,5 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { Navigate } from "@tanstack/react-router";
+import { createFileRoute, Navigate } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/billing")({
   component: () => <Navigate to="/settings" replace />,

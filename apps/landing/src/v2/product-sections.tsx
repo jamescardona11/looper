@@ -1,5 +1,5 @@
-import mobileHome from "../../../../assets/product/mobile-dictation.png";
 import mobileCapture from "../../../../assets/product/mobile-capture.png";
+import mobileHome from "../../../../assets/product/mobile-dictation.png";
 import mobileMeeting from "../../../../assets/product/mobile-meeting.png";
 
 const features = [

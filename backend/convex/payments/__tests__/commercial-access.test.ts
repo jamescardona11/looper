@@ -13,8 +13,7 @@ const modules = rerootModules(
   "payments",
 );
 
-const disabledMessage =
-  "Commercial billing is unavailable while Looper is free to use";
+const disabledMessage = "Commercial billing is unavailable while Looper is free to use";
 
 describe("commercial billing during the free launch", () => {
   it("rejects every public checkout and portal action before authenticating or charging", async () => {
@@ -46,8 +45,6 @@ describe("commercial billing during the free launch", () => {
         successUrl: "https://looper.local/success",
       }),
     ).rejects.toThrow(disabledMessage);
-    await expect(
-      t.action(api.payments.polar.customerPortal, {}),
-    ).rejects.toThrow(disabledMessage);
+    await expect(t.action(api.payments.polar.customerPortal, {})).rejects.toThrow(disabledMessage);
   });
 });
