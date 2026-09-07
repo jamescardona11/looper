@@ -346,7 +346,7 @@ const ToastOverlay: React.FC = () => {
                   id: "toast.close",
                   message: "Close notification",
                 })}
-                className="absolute right-1 top-1 z-10 grid size-10 place-items-center rounded-xl ui-text-body-sm text-[var(--ui-capture-muted)] transition-colors hover:text-[var(--ui-capture-fg-strong)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-white"
+                className="absolute right-1 top-1 z-10 grid size-10 place-items-center rounded-xl ui-text-body-sm text-content-muted transition-colors hover:text-content-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-accent"
               >
                 <span aria-hidden="true">✕</span>
               </button>
@@ -372,7 +372,7 @@ const ToastOverlay: React.FC = () => {
                       LOOPER
                     </p>
                   ) : null}
-                  <p className="break-words ui-text-body leading-relaxed text-[var(--ui-capture-fg-strong)]">
+                  <p className="break-words ui-text-body leading-relaxed text-content-primary">
                     {toast.message}
                   </p>
                   {showRetry ||
@@ -407,7 +407,7 @@ const ToastOverlay: React.FC = () => {
                               );
                             }
                           }}
-                          className="min-h-10 ui-text-body-sm ui-color-info-strong transition-colors ui-hover-on-solid"
+                          className="min-h-10 ui-text-body-sm ui-color-info-strong transition-colors hover:text-content-primary"
                         >
                           {retryingId === toast.id
                             ? t({
@@ -426,7 +426,7 @@ const ToastOverlay: React.FC = () => {
                           onClick={() =>
                             void handleToastAction(toast, toast.action!)
                           }
-                          className="min-h-10 ui-text-body-sm font-medium ui-color-info-strong transition-colors ui-hover-on-solid"
+                          className="min-h-10 ui-text-body-sm font-medium ui-color-info-strong transition-colors hover:text-content-primary"
                         >
                           {toast.actionLabel} →
                         </button>
@@ -440,7 +440,7 @@ const ToastOverlay: React.FC = () => {
                               toast.secondaryAction!,
                             )
                           }
-                          className={`min-h-10 ui-text-body-sm font-medium transition-colors ${copySecondary ? "ui-color-info-strong ui-hover-on-solid" : "ui-color-error-soft ui-hover-error-strong"}`}
+                          className={`min-h-10 ui-text-body-sm font-medium transition-colors ${copySecondary ? "ui-color-info-strong hover:text-content-primary" : "ui-color-error-soft ui-hover-error-strong"}`}
                         >
                           {copySecondary ? (
                             <Copy size={12} aria-hidden />
@@ -460,7 +460,7 @@ const ToastOverlay: React.FC = () => {
                                   message: "Copy message",
                                 })
                           }
-                          className="ml-auto grid size-10 place-items-center rounded-xl text-[var(--ui-capture-muted)] transition-colors hover:text-[var(--ui-capture-fg-strong)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-white"
+                          className="ml-auto grid size-10 place-items-center rounded-xl text-content-muted transition-colors hover:text-content-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-accent"
                         >
                           {copied ? <Check size={12} /> : <Copy size={12} />}
                         </button>

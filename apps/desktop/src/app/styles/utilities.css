@@ -309,13 +309,9 @@
     color: var(--color-pill-preview-text);
   }
   .ui-overlay-notification {
-    border: 1px solid var(--ui-pill-shell-border);
-    background: linear-gradient(
-      145deg,
-      color-mix(in srgb, var(--ui-pill-shell-bg) 90%, white 10%) 0%,
-      var(--ui-pill-shell-bg) 58%,
-      color-mix(in srgb, var(--ui-pill-shell-bg) 86%, black 14%) 100%
-    );
+    border: 1px solid var(--color-border-primary);
+    background: var(--color-bg-primary);
+    color: var(--color-text-primary);
     box-shadow: var(--ui-notification-shadow);
   }
   .ui-capture-dot {

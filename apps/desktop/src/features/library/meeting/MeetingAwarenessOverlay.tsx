@@ -116,25 +116,25 @@ export default function MeetingAwarenessOverlay({
       <div>
         <section
           aria-label={ariaLabel}
-          className="ui-overlay-notification relative flex h-[72px] w-[404px] items-center gap-2.5 overflow-hidden rounded-[18px] px-3 text-white"
+          className="ui-overlay-notification relative flex h-[72px] w-[404px] items-center gap-2.5 overflow-hidden rounded-[18px] px-3"
         >
-          <div className="relative z-10 grid h-10 w-10 shrink-0 place-items-center rounded-[12px] border border-white/10 bg-white/6 [box-shadow:var(--ui-notification-icon-shadow)]">
+          <div className="relative z-10 grid h-10 w-10 shrink-0 place-items-center rounded-[12px] border border-accent/20 bg-accent/10">
             <SignalIcon
               size={19}
               weight="fill"
-              className="text-[var(--color-meeting-awareness)]"
+              className="text-accent"
             />
           </div>
 
           <div className="relative z-10 min-w-0 flex-1">
-            <p className="ui-text-body-sm truncate font-semibold tracking-[-0.01em] text-[var(--ui-capture-fg-strong)]">
+            <p className="ui-text-body-sm truncate font-semibold tracking-[-0.01em] text-content-primary">
               {title}
             </p>
             <p
               role={error ? "alert" : undefined}
               title={meta}
               className={`truncate text-[10px] leading-4 ${
-                error ? "text-error" : "text-[var(--ui-capture-muted)]"
+                error ? "text-error" : "text-content-secondary"
               }`}
             >
               {meta}
@@ -147,7 +147,7 @@ export default function MeetingAwarenessOverlay({
             onClick={() => void joinAndRecord()}
             aria-label={actionAriaLabel}
             title={actionAriaLabel}
-            className="ui-text-label relative z-30 inline-flex h-10 shrink-0 items-center gap-1.5 rounded-[12px] border border-white/30 bg-[var(--ui-capture-fg-strong)] px-3 font-semibold text-[var(--color-mask-opaque)] [box-shadow:var(--ui-notification-action-shadow)] transition-[transform,opacity] duration-150 hover:opacity-90 active:scale-[0.97] disabled:opacity-60"
+            className="ui-text-label relative z-30 inline-flex h-10 shrink-0 items-center gap-1.5 rounded-[12px] border border-accent bg-accent px-3 font-semibold ui-color-on-solid transition-[transform,opacity] duration-150 hover:opacity-90 active:scale-[0.97] disabled:opacity-60"
           >
             <VideoCamera size={13} weight="fill" />
             {actionLabel}
@@ -155,7 +155,7 @@ export default function MeetingAwarenessOverlay({
 
           <button
             aria-label={closeLabel}
-            className="group relative z-30 grid h-10 w-10 shrink-0 place-items-center rounded-[12px] text-[var(--ui-capture-muted)] transition-[background-color,color] duration-150 hover:bg-white/10 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-white"
+            className="group relative z-30 grid h-10 w-10 shrink-0 place-items-center rounded-[12px] text-content-secondary transition-[background-color,color] duration-150 hover:bg-surface-hover hover:text-content-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-accent"
             onClick={() => void dismissPrompt()}
             title={closeLabel}
             type="button"
