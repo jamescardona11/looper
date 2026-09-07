@@ -11,6 +11,7 @@
   background: var(--v3-paper);
   color: var(--v3-ink);
   font-family: "Bricolage Grotesque Variable", sans-serif;
+  letter-spacing: normal;
   overflow: clip;
   -webkit-font-smoothing: antialiased;
 }
@@ -41,11 +42,12 @@
 }
 .v3-page h2 {
   font-size: clamp(46px, 6.2vw, 88px);
-  line-height: 0.99;
-  letter-spacing: -0.045em;
-  font-weight: 600;
+  line-height: 1.08;
+  letter-spacing: -0.02em;
+  font-weight: 500;
 }
 .v3-page em {
+  font-style: normal;
   font-weight: inherit;
   color: var(--primary);
 }
@@ -174,11 +176,14 @@
   margin-right: 7px;
 }
 .v3-hero h1 {
-  font-size: clamp(100px, 12.8vw, 184px);
-  line-height: 0.84;
-  letter-spacing: -0.055em;
-  font-weight: 600;
+  font-size: clamp(100px, 11.8vw, 164px);
+  line-height: 0.96;
+  letter-spacing: -0.03em;
+  font-weight: 500;
   margin: 35px 0 28px;
+}
+.v3-hero h1 em {
+  font-style: italic;
 }
 .v3-hero-description {
   font-size: 19px;
@@ -528,10 +533,10 @@
 }
 .v3-scene h3 {
   font-size: clamp(36px, 4.3vw, 60px);
-  line-height: 1.02;
-  letter-spacing: -0.04em;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
   margin-block: 32px 24px;
-  font-weight: 600;
+  font-weight: 500;
 }
 .v3-scene-copy > p {
   font-size: 17px;
@@ -789,7 +794,8 @@
 }
 .v3-route-description h3 {
   font-size: 28px;
-  letter-spacing: -0.04em;
+  font-weight: 500;
+  letter-spacing: -0.02em;
 }
 .v3-route-description p {
   font-size: 15px;
