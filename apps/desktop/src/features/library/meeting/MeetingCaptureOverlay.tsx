@@ -396,7 +396,7 @@ const MeetingCaptureOverlay = ({ state }: { state: MeetingCaptureState }) => {
         {recordingSignal}
       </button>
       <div className="min-w-0 flex-1 pl-1">
-        <p className="truncate text-[12px] font-semibold leading-4 text-white">
+        <p className="truncate ui-text-body-sm font-semibold leading-4 text-white">
           {captureLabel}
         </p>
         <p className="truncate text-[10px] leading-3 text-white/60 tabular-nums">
@@ -412,7 +412,7 @@ const MeetingCaptureOverlay = ({ state }: { state: MeetingCaptureState }) => {
               console.error("Failed to open the Fn help:", error),
             );
           }}
-          className="mr-1 inline-flex h-8 shrink-0 items-center rounded-[9px] border border-amber-300/25 bg-amber-300/10 px-1.5 text-[9px] font-semibold text-amber-100 hover:bg-amber-300/20"
+          className="mr-1 inline-flex h-8 shrink-0 items-center rounded-[9px] border border-amber-300/25 bg-amber-300/10 px-1.5 ui-text-micro font-semibold text-amber-100 hover:bg-amber-300/20"
         >
           <Key size={11} weight="bold" className="mr-1" />
           {t({ id: "meeting.capture.shortcut_enable", message: "Fix Fn" })}

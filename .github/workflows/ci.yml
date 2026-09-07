@@ -141,7 +141,7 @@ jobs:
         with:
           node-version: 22.18.0
           cache: pnpm
-      - run: pnpm install --frozen-lockfile
+      - run: pnpm install --frozen-lockfile --config.node-linker=isolated --package-import-method copy
       - run: pnpm run qa:desktop-native
       - run: pnpm run qa:meeting-audio
       - uses: actions/upload-artifact@v4
