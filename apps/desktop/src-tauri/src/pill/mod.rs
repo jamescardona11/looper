@@ -2544,7 +2544,7 @@ mod meeting_overlay_tests {
         assert!(presentation.compact);
         assert!(!presentation.transcript_visible);
         assert!(!presentation.transcript_pinned);
-        assert_eq!(meeting_overlay_logical_size(presentation), (136.0, 44.0));
+        assert_eq!(meeting_overlay_logical_size(presentation), (252.0, 52.0));
     }
 
     #[test]
@@ -2866,8 +2866,8 @@ mod meeting_overlay_tests {
 
         let compact =
             meeting_overlay_geometry((100, 500), 1.0, true, false, (0, 0), (1_920, 1_080));
-        assert_eq!(compact.logical_size, (136, 44));
-        assert_eq!(compact.origin, (162, 496));
+        assert_eq!(compact.logical_size, (252, 52));
+        assert_eq!(compact.origin, (104, 496));
         assert_eq!(
             canonical_meeting_overlay_origin(
                 compact.origin,

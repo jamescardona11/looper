@@ -1,5 +1,5 @@
-import { COMPETITORS } from "../components/comparison-data";
 import type { FocusEvent } from "react";
+import { COMPETITORS } from "../components/comparison-data";
 
 function revealColumn(event: FocusEvent<HTMLAnchorElement>) {
   event.currentTarget.scrollIntoView({ block: "nearest", inline: "nearest", behavior: "instant" });

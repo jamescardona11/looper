@@ -37,7 +37,9 @@ export function Access() {
         </article>
 
         <aside className="flex flex-col rounded-[24px] bg-[var(--lp-lavender)] p-6 md:rounded-[30px] md:p-9">
-          <h3 className="text-[27px] tracking-[-0.045em] md:text-[34px]">{copy.access.noPlansTitle}</h3>
+          <h3 className="text-[27px] tracking-[-0.045em] md:text-[34px]">
+            {copy.access.noPlansTitle}
+          </h3>
           <p className="mt-3 text-[14px] text-ink-secondary leading-[1.6] md:text-[15px]">
             {copy.access.noPlansBody}
           </p>

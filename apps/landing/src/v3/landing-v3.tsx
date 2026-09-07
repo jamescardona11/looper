@@ -1,11 +1,11 @@
-import { useState, type CSSProperties } from "react";
+import { type CSSProperties, useState } from "react";
 import { ComparisonV2 } from "../v2/comparison-v2";
-import { MobilePreview, DownloadSection, FrequentlyAsked } from "./launch-sections";
-import { LocalChoice } from "./local-choice";
-import { FeatureStudio } from "./feature-studio";
 import { DesktopPreview } from "./desktop-preview";
-import { WordMachine } from "./word-machine";
+import { FeatureStudio } from "./feature-studio";
+import { DownloadSection, FrequentlyAsked, MobilePreview } from "./launch-sections";
+import { LocalChoice } from "./local-choice";
 import { revealWhenVisible } from "./reveal";
+import { WordMachine } from "./word-machine";
 
 const releases = "https://github.com/jamescardona11/looper/releases";
 

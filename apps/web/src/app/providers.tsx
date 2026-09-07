@@ -1,6 +1,6 @@
+import { ProductPreviewSeeder } from "virtual:product-preview-seeder";
 import { ConvexProvider, configFromEnv, type RawEnv } from "@looper/data";
 import type { PropsWithChildren } from "react";
-import { ProductPreviewSeeder } from "virtual:product-preview-seeder";
 import { AnonymousAutoSignIn } from "@/features/auth";
 import { browserAuthStorage, browserQueryCache } from "@/lib/query-cache";
 import { browserStorageUploader } from "@/lib/upload";

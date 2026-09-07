@@ -13,7 +13,9 @@ test("creates dictation dictionary terms, replacements and styles", async ({ pag
 
   await stepWithShot(page, testInfo, "open dictation", async () => {
     await page.goto("/dictation");
-    await expect(page.getByRole("heading", { name: /dictation/i })).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: /shape how looper writes/i, level: 1 }),
+    ).toBeVisible();
     await expect(page.getByRole("heading", { name: /dictionary/i })).toBeVisible();
     await expect(page.getByRole("heading", { name: /replacements/i })).toBeVisible();
     await expect(page.getByRole("heading", { name: /styles/i })).toBeVisible();
