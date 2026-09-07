@@ -168,11 +168,16 @@ export function LandingV3() {
       </main>
       <footer className="v3-footer v3-wrap">
         <div className="v3-footer-top">
-          <p>
-            A little less between
-            <br />
-            you and your ideas.
-          </p>
+          <div className="v3-footer-brand">
+            <a href="#top" className="v3-footer-logo" aria-label="Looper, back to top">
+              looper
+            </a>
+            <p>
+              A little less between
+              <br />
+              you and your ideas.
+            </p>
+          </div>
           <nav aria-label="Footer navigation">
             <a href="https://github.com/jamescardona11/looper">GitHub</a>
             <a href={releases}>Releases</a>
@@ -181,9 +186,6 @@ export function LandingV3() {
             <a href="#top">Back to top ↑</a>
           </nav>
         </div>
-        <a href="#top" className="v3-footer-word" aria-label="Looper, back to top">
-          looper
-        </a>
       </footer>
     </div>
   );

@@ -917,12 +917,12 @@
 }
 .v3-footer {
   border-top: 1px solid var(--v3-line);
-  padding-top: 30px;
+  padding-block: 28px 32px;
 }
 .v3-footer-top {
   display: flex;
   justify-content: space-between;
-  align-items: start;
+  align-items: center;
   gap: 30px;
   font-size: 14px;
   line-height: 1.5;
@@ -935,15 +935,16 @@
 .v3-footer nav a {
   padding-block: 8px;
 }
-.v3-footer-word {
+.v3-footer-brand {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  font-size: clamp(100px, 23vw, 330px);
+  gap: 24px;
+}
+.v3-footer-logo {
+  font-size: 36px;
   line-height: 1;
   letter-spacing: -0.055em;
   font-weight: 650;
-  padding-block: 20px;
 }
 @keyframes v3-wave {
   from {
@@ -1397,14 +1398,12 @@
   }
   .v3-footer-top {
     flex-direction: column;
+    align-items: start;
     gap: 20px;
   }
   .v3-footer nav {
     font-size: 12px;
     gap: 16px;
-  }
-  .v3-footer-word {
-    padding-block: 25px;
   }
 }
 
