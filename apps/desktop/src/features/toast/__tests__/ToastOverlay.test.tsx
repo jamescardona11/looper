@@ -123,11 +123,11 @@ describe("ToastOverlay", () => {
     showToast({ type: "info", message: "Processing" });
 
     const message = screen.getByText("Processing");
-    expect(message.className).toContain("text-[var(--ui-capture-fg-strong)]");
+    expect(message.className).toContain("text-content-primary");
     expect(message.parentElement?.children).toHaveLength(1);
 
     const close = screen.getByRole("button", { name: "Close notification" });
-    expect(close.className).toContain("text-[var(--ui-capture-muted)]");
+    expect(close.className).toContain("text-content-muted");
   });
 
   test("pauses auto-dismiss on hover and restarts at 2.5 seconds", async () => {
