@@ -59,7 +59,7 @@ export function LandingV3() {
             {dark ? "☼" : "◐"}
           </button>
           <a className="v3-button v3-button-small" href="#download">
-            Get Looper <span aria-hidden="true">↗</span>
+            Get Looper
           </a>
         </div>
       </header>
@@ -78,7 +78,7 @@ export function LandingV3() {
               Turn the thoughts in your head into words, notes and your next big thing.
             </p>
             <a className="v3-button" href="#download">
-              Get Looper <span aria-hidden="true">↗</span>
+              Get Looper
             </a>
             <p className="v3-platforms">macOS & Windows · Free for now</p>
           </div>
@@ -100,12 +100,10 @@ export function LandingV3() {
                   <i key={height} style={{ "--height": `${height}%`, "--i": i } as CSSProperties} />
                 ))}
               </div>
-              <span>
-                LET’S HEAR IT <b aria-hidden="true">↗</b>
-              </span>
+              <span>LET’S HEAR IT</span>
             </a>
             <div className="v3-thought v3-thought-three" aria-hidden="true">
-              <span>YOUR NEXT BIG THING</span>starts with a little thought. <b>↗</b>
+              <span>YOUR NEXT BIG THING</span>starts with a little thought.
             </div>
             <p className="v3-orbit-caption">YOUR VOICE. A LITTLE MORE POSSIBILITY.</p>
           </div>
@@ -164,7 +162,7 @@ export function LandingV3() {
         </section>
         <MobilePreview />
         <LocalChoice />
-        <ComparisonV2 />
+        <ComparisonV2 showLinkArrows={false} />
         <DownloadSection />
         <FrequentlyAsked />
       </main>
@@ -176,15 +174,15 @@ export function LandingV3() {
             you and your ideas.
           </p>
           <nav aria-label="Footer navigation">
-            <a href="https://github.com/jamescardona11/looper">GitHub ↗</a>
-            <a href={releases}>Releases ↗</a>
+            <a href="https://github.com/jamescardona11/looper">GitHub</a>
+            <a href={releases}>Releases</a>
             <a href="/">V1</a>
             <a href="/v2/">V2</a>
             <a href="#top">Back to top ↑</a>
           </nav>
         </div>
         <a href="#top" className="v3-footer-word" aria-label="Looper, back to top">
-          looper<span aria-hidden="true">↗</span>
+          looper
         </a>
       </footer>
     </div>

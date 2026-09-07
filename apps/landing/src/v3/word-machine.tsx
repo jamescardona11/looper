@@ -82,7 +82,7 @@ export function WordMachine() {
           </div>
         </div>
         <span className="v3-transform-arrow" aria-hidden="true">
-          ↗
+          →
         </span>
         <div className="v3-clean">
           <span className="v3-micro">{original ? "THE ORIGINAL" : "YOUR WORDS, READY"}</span>

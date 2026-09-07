@@ -138,17 +138,9 @@
     transform 0.25s,
     box-shadow 0.25s;
 }
-.v3-button span {
-  font-size: 23px;
-  line-height: 1;
-  transition: transform 0.25s;
-}
 .v3-button:hover {
   transform: translateY(-3px);
   box-shadow: 0 6px 0 color-mix(in srgb, var(--primary) 18%, transparent);
-}
-.v3-button:hover span {
-  transform: translate(2px, -2px);
 }
 .v3-button-small {
   padding: 12px 20px;
@@ -253,10 +245,6 @@
     monospace;
   letter-spacing: 0.08em;
 }
-.v3-voice-puck b {
-  font-size: 17px;
-  margin-left: 6px;
-}
 .v3-puck-wave {
   height: 100px;
   display: flex;
@@ -309,12 +297,6 @@
     monospace;
   margin-bottom: 12px;
   color: var(--muted-foreground);
-}
-.v3-thought-three b {
-  display: block;
-  text-align: right;
-  font-size: 30px;
-  color: var(--primary);
 }
 .v3-orbit-caption {
   position: absolute;
@@ -578,13 +560,6 @@
   line-height: 1.25;
   margin-top: 22px;
 }
-.v3-demo-paper > span:last-child {
-  display: block;
-  text-align: right;
-  font-size: 25px;
-  margin-top: 20px;
-  color: var(--primary);
-}
 .v3-scene small {
   font-size: 11px;
   color: var(--muted-foreground);
@@ -612,10 +587,6 @@
 }
 .v3-snippet-paper > span {
   display: block;
-}
-.v3-snippet-paper b {
-  float: right;
-  color: var(--primary);
 }
 .v3-signature {
   font-size: 19px;
@@ -973,10 +944,6 @@
   letter-spacing: -0.055em;
   font-weight: 650;
   padding-block: 20px;
-}
-.v3-footer-word span {
-  color: var(--primary);
-  font-size: 0.65em;
 }
 @keyframes v3-wave {
   from {

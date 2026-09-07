@@ -21,7 +21,7 @@ export function LocalChoice() {
           happens.
         </p>
         <a className="v3-text-link" href="https://github.com/jamescardona11/looper">
-          Open source. Open to a look. ↗
+          Open source. Open to a look.
         </a>
       </div>
       <div className="v3-routing">

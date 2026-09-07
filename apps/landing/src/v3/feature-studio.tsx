@@ -52,7 +52,6 @@ export function FeatureStudio() {
                   ? "Thanks for today. Shall we pick this up tomorrow at 10?"
                   : "Loved catching up! Same time tomorrow?"}
               </p>
-              <span aria-hidden="true">↗</span>
             </div>
             <small>Style example · output depends on your model</small>
           </div>
@@ -90,9 +89,7 @@ export function FeatureStudio() {
                   <small>Product designer · Looper</small>
                 </span>
               ) : (
-                <span>
-                  Expand the snippet <b aria-hidden="true">↗</b>
-                </span>
+                <span>Expand the snippet</span>
               )}
             </button>
             <small>Interactive example</small>

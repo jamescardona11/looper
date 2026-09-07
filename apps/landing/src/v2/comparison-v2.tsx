@@ -39,7 +39,7 @@ const rows = [
   },
 ] as const;
 
-export function ComparisonV2() {
+export function ComparisonV2({ showLinkArrows = true }: { showLinkArrows?: boolean }) {
   return (
     <section className="v2-compare v2-container" id="compare" aria-labelledby="compare-title">
       <div className="v2-section-heading">
@@ -71,13 +71,14 @@ export function ComparisonV2() {
               <th scope="col">What matters to you</th>
               <th scope="col">
                 <a href="https://github.com/jamescardona11/looper" onFocus={revealColumn}>
-                  looper ↗
+                  looper{showLinkArrows && " ↗"}
                 </a>
               </th>
               {COMPETITORS.map((competitor) => (
                 <th scope="col" key={competitor.name}>
                   <a href={competitor.url} onFocus={revealColumn}>
-                    {competitor.name} ↗
+                    {competitor.name}
+                    {showLinkArrows && " ↗"}
                   </a>
                 </th>
               ))}

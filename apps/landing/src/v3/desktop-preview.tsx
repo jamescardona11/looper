@@ -49,7 +49,7 @@ export function DesktopPreview() {
             alt="Real Looper desktop app showing the Hold Fn shortcut, recent dictations and navigation to Meetings and Memory, with sample data in Spanish."
           />
           <span className="v3-capture-expand" aria-hidden="true">
-            Take a closer look ↗
+            Take a closer look
           </span>
         </a>
         <figcaption>Desktop app · Sample data · Captured August 22, 2026</figcaption>

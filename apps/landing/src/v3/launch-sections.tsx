@@ -112,13 +112,13 @@ export function DownloadSection() {
         </h2>
         <div className="v3-download-links">
           <a className="v3-button" href={`${releases}/latest/download/Looper_darwin_aarch64.dmg`}>
-            Download for macOS <span aria-hidden="true">↗</span>
+            Download for macOS
           </a>
           <a
             className="v3-button v3-button-outline"
             href={`${releases}/latest/download/Looper_windows_x64_setup.exe`}
           >
-            Download for Windows <span aria-hidden="true">↗</span>
+            Download for Windows
           </a>
         </div>
         <p className="v3-download-note">
@@ -134,7 +134,7 @@ export function DownloadSection() {
           <p>
             Sync across devices <span>Coming</span>
           </p>
-          <a href={releases}>Follow the releases ↗</a>
+          <a href={releases}>Follow the releases</a>
         </div>
       </div>
     </section>
