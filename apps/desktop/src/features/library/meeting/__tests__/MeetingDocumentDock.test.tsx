@@ -57,6 +57,21 @@ const renderDock = (overrides = {}) => {
 };
 
 describe("MeetingDocumentDock", () => {
+  test("explains an unavailable AI model and offers setup", () => {
+    useMeetingAiStatus.mockReturnValue({
+      data: {
+        state: "not_installed",
+        actionableMessage: "Download Qwen in Settings -> Providers.",
+      },
+    });
+    renderDock();
+    expect(
+      screen.getByText("Download Qwen in Settings -> Providers."),
+    ).toBeTruthy();
+    expect(
+      screen.getByRole("button", { name: "Set up meeting intelligence" }),
+    ).toBeTruthy();
+  });
   test("keeps playback and Ask in the document instead of a global dock", () => {
     const { container, props } = renderDock();
     const dock = container.querySelector('[data-ui-dock="meeting-document"]');

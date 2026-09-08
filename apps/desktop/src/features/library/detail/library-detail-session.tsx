@@ -429,17 +429,20 @@ export function LibraryDetailSession(props: LibraryDetailProps) {
       importStatusText={importStatusText}
       transcriptAreaRef={refs.transcriptArea}
       transcriptDraft={state.transcriptDraft}
-      setTranscriptDraft={transcriptDraft}
+      setTranscriptDraft={transcriptDraft.change}
       transcriptAvailable={transcriptAvailable}
       copyConfirmed={copyConfirmed}
       onCopy={() => copyTranscript(state.transcriptDraft)}
     />
   );
 
+  const closeAfterSave = () => transcriptDraft.close(props.onClose);
+
   return (
     <div className="relative flex h-full w-full min-h-0 flex-col">
       <LibraryDetailHeader
         {...props}
+        onClose={closeAfterSave}
         onSummarize={handleSummarize}
         nameDraft={state.nameDraft}
         isEditingName={state.isEditingName}
@@ -497,6 +500,10 @@ export function LibraryDetailSession(props: LibraryDetailProps) {
         handleRemoveSpeaker={handleRemoveSpeaker}
         handleAddSpeaker={handleAddSpeaker}
       />
+      <TranscriptSaveStatus
+        status={transcriptDraft.status}
+        onRetry={transcriptDraft.save}
+      />
       <LibraryDetailBody
         meeting={isCaptureItem(item)}
         transcriptPanel={transcriptPanel}
@@ -539,7 +546,7 @@ export function LibraryDetailSession(props: LibraryDetailProps) {
         onUpdate={props.onUpdate}
       />
       <LibraryDetailKeyboardBridge
-        close={props.onClose}
+        close={closeAfterSave}
         togglePlayback={player.handleTogglePlayback}
         timestampStep={handleTimestampStep}
         deleteOpen={state.showDeleteConfirm}
@@ -573,6 +580,42 @@ export function LibraryDetailSession(props: LibraryDetailProps) {
           stop={stopFollowScroll}
         />
       ) : null}
+    </div>
+  );
+}
+
+function TranscriptSaveStatus({
+  status,
+  onRetry,
+}: {
+  status: "saved" | "pending" | "saving" | "error";
+  onRetry: () => Promise<boolean>;
+}) {
+  const { t } = useLingui();
+  if (status === "saved") return null;
+  return (
+    <div
+      role={status === "error" ? "alert" : "status"}
+      className="flex shrink-0 items-center gap-3 px-4 py-2 ui-text-body-sm text-content-primary"
+    >
+      <span>
+        {status === "error"
+          ? t({
+              id: "library.save.failed",
+              message:
+                "Not saved. Your edits are still here. Retry before leaving.",
+            })
+          : t({ id: "library.save.saving", message: "Saving changes…" })}
+      </span>
+      {status === "error" && (
+        <button
+          type="button"
+          className="underline"
+          onClick={() => void onRetry()}
+        >
+          {t({ id: "library.save.retry", message: "Retry saving" })}
+        </button>
+      )}
     </div>
   );
 }

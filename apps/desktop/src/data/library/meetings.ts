@@ -5,11 +5,14 @@ import type {
   MeetingNoteMarker,
   MeetingNotesUpdate,
 } from "../../contracts";
+import { rejectCaptureStart } from "../meeting/capture-start-error";
 
 // El inicio normal no debería abrir un segundo formulario. El backend resuelve
 // el modelo compatible y las preferencias guardadas en un único sitio.
 export const startDefaultMeetingCapture = (): Promise<MeetingCaptureState> =>
-  invoke("start_default_meeting_capture");
+  invoke<MeetingCaptureState>("start_default_meeting_capture").catch(
+    rejectCaptureStart,
+  );
 
 export const stopMeetingCapture = (): Promise<MeetingCaptureState> =>
   invoke("stop_meeting_capture");
@@ -17,7 +20,9 @@ export const stopMeetingCapture = (): Promise<MeetingCaptureState> =>
 // Sigue grabando sobre una captura terminada: el audio nuevo va detrás del que
 // ya había, y el fichero entero se vuelve a transcribir.
 export const resumeCapture = (id: string): Promise<MeetingCaptureState> =>
-  invoke("resume_capture", { id });
+  invoke<MeetingCaptureState>("resume_capture", { id }).catch(
+    rejectCaptureStart,
+  );
 
 export const getMeetingCaptureState = (): Promise<MeetingCaptureState> =>
   invoke("get_meeting_capture_state");

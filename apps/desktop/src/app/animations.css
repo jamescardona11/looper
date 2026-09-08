@@ -134,3 +134,42 @@
   overflow: hidden;
   font-variant-numeric: tabular-nums;
 }
+
+/* Keep the shell continuous while controls and results change size. */
+.pill-size-transition {
+  transition:
+    width 280ms cubic-bezier(0.22, 1, 0.36, 1),
+    height 280ms cubic-bezier(0.22, 1, 0.36, 1),
+    border-radius 280ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.pill-preflight-reveal {
+  animation: pill-preflight-reveal 180ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+@keyframes pill-preflight-reveal {
+  from {
+    clip-path: var(--pill-reveal-from);
+  }
+  to {
+    clip-path: inset(0px 0px 0px 0px round 24px);
+  }
+}
+.pill-controls-reveal {
+  animation: pill-controls-reveal 100ms ease-out both;
+}
+@keyframes pill-controls-reveal {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pill-size-transition {
+    transition: none;
+  }
+  .pill-preflight-reveal,
+  .pill-controls-reveal {
+    animation: none;
+  }
+}

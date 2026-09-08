@@ -78,3 +78,8 @@ export const subscribeThemeChanged = (
 
 export const notifySettingsRendererReady = () =>
   emit("settings:renderer_ready");
+
+export const openModelsSettings = () =>
+  invoke<void>("open_llm_cleanup_settings");
+export const openMeetingAiSettings = () =>
+  invoke<void>("open_meeting_ai_settings");

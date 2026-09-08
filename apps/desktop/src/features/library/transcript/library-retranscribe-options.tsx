@@ -1,6 +1,7 @@
 import { msg } from "@lingui/core/macro";
 import { useLingui } from "@lingui/react";
 import { Warning } from "@phosphor-icons/react";
+import { LibrarySetupAction } from "../library-setup-action";
 
 import { Dropdown, type DropdownOption } from "../../../shared/ui/Dropdown";
 import ToggleSwitch from "../../../shared/ui/ToggleSwitch";
@@ -87,7 +88,10 @@ export function LibraryRetranscribeOptions({
       {modelOptions.length === 0 ? (
         <div className={EMPTY_CLASS}>
           <Warning size={15} className="mt-0.5 shrink-0" aria-hidden="true" />
-          <span>{i18n._(OPTIONS_COPY.noModels)}</span>
+          <div>
+            {i18n._(OPTIONS_COPY.noModels)}
+            <LibrarySetupAction />
+          </div>
         </div>
       ) : null}
 

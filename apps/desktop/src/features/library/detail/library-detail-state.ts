@@ -99,7 +99,10 @@ export function synchronizeDetailState(
     sourceTimestampPreference: timestamps,
     nameDraft:
       nameChanged && !current.isEditingName ? item.name : current.nameDraft,
-    transcriptDraft: transcriptChanged ? transcript : current.transcriptDraft,
+    transcriptDraft:
+      transcriptChanged && current.transcriptDraft === current.sourceTranscript
+        ? transcript
+        : current.transcriptDraft,
     showTimestamps: timestampsChanged
       ? timestampDefault(item)
       : current.showTimestamps,

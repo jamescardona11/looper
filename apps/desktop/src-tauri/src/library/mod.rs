@@ -1,4 +1,5 @@
 pub(crate) mod commands;
+mod capture_start_failure;
 mod meeting_capture;
 pub(crate) mod meeting_commands;
 #[cfg(not(all(target_os = "macos", target_arch = "x86_64")))]

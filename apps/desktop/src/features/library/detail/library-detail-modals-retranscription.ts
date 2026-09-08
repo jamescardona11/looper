@@ -34,11 +34,7 @@ export async function completeLibraryRetranscription(
 ) {
   const patch = buildRetranscriptionPatch(request.item, request.options);
 
-  try {
-    await request.onUpdate(patch);
-    await request.onRetry();
-    request.onClose();
-  } catch (reason) {
-    console.error("Failed to retranscribe:", reason);
-  }
+  await request.onUpdate(patch);
+  await request.onRetry();
+  request.onClose();
 }

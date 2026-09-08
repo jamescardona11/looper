@@ -75,7 +75,7 @@ fn toast_blocks_awareness(visible: bool, preemptible: bool) -> bool {
     visible && !preemptible
 }
 
-fn awareness_is_current(app: &AppHandle<AppRuntime>) -> bool {
+pub(crate) fn awareness_is_current(app: &AppHandle<AppRuntime>) -> bool {
     let Some(state) = app.try_state::<AppState>() else {
         return false;
     };

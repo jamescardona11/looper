@@ -252,7 +252,7 @@ const DictationPillOverlay: React.FC<PillOverlayProps> = ({
               onClickCapture={
                 isResultDraggable ? drag.onClickCapture : undefined
               }
-              className={`${SIGNAL_RAIL_SHELL_CLASS} flex-col ${pillTone === "cleanup" ? "pill-shell-cleanup" : ""} ${isErrorFlashing ? "animate-shake" : ""}`}
+              className={`${SIGNAL_RAIL_SHELL_CLASS} pill-size-transition flex-col ${pillTone === "cleanup" ? "pill-shell-cleanup" : ""} ${isErrorFlashing ? "animate-shake" : ""}`}
               initial={false}
               animate={{
                 opacity: 1,

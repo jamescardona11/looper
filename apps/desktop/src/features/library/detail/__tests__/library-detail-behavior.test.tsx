@@ -2,7 +2,13 @@
 
 import { setupI18n } from "@lingui/core";
 import { I18nProvider } from "@lingui/react";
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import {
+  act,
+  cleanup,
+  fireEvent,
+  render,
+  screen,
+} from "@testing-library/react";
 import type { ReactNode } from "react";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 
@@ -320,21 +326,45 @@ describe("LibraryDetail", () => {
     ).toBe("true");
   });
 
-  test("debounces transcript persistence and ignores an obsolete draft", () => {
+  test("keeps the detail open after a failed save and allows retry", async () => {
+    vi.useFakeTimers();
+    const { props } = renderDetail(libraryItem());
+    props.onUpdate.mockRejectedValueOnce(new Error("disk unavailable"));
+    fireEvent.change(screen.getByLabelText("TRANSCRIPT EDITOR DISTINCT"), {
+      target: { value: "Keep this edit" },
+    });
+    await act(async () => {
+      fireEvent.keyDown(document.body, { key: "Escape" });
+    });
+    expect(props.onClose).not.toHaveBeenCalled();
+    expect(screen.getByRole("alert").textContent).toContain("Not saved");
+    expect(
+      (
+        screen.getByLabelText(
+          "TRANSCRIPT EDITOR DISTINCT",
+        ) as HTMLTextAreaElement
+      ).value,
+    ).toBe("Keep this edit");
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: "Retry saving" }));
+    });
+    expect(screen.queryByRole("alert")).toBeNull();
+  });
+  test("debounces persistence and keeps edits across a server refresh", async () => {
     vi.useFakeTimers();
     const first = libraryItem();
     const { props, rerender } = renderDetail(first);
     const editor = screen.getByLabelText("TRANSCRIPT EDITOR DISTINCT");
     fireEvent.change(editor, { target: { value: "Edited transcript" } });
-    vi.advanceTimersByTime(599);
+    await act(() => vi.advanceTimersByTimeAsync(599));
     expect(props.onUpdate).not.toHaveBeenCalled();
-    vi.advanceTimersByTime(1);
+    await act(() => vi.advanceTimersByTimeAsync(1));
     expect(props.onUpdate).toHaveBeenCalledWith({
       transcript: "Edited transcript",
     });
 
     props.onUpdate.mockClear();
-    fireEvent.change(editor, { target: { value: "Obsolete draft" } });
+    fireEvent.change(editor, { target: { value: "New local draft" } });
     rerender(
       <I18nProvider i18n={i18n}>
         <LibraryDetail
@@ -343,15 +373,17 @@ describe("LibraryDetail", () => {
         />
       </I18nProvider>,
     );
-    vi.advanceTimersByTime(600);
-    expect(props.onUpdate).not.toHaveBeenCalled();
+    await act(() => vi.advanceTimersByTimeAsync(600));
+    expect(props.onUpdate).toHaveBeenCalledWith({
+      transcript: "New local draft",
+    });
     expect(
       (
         screen.getByLabelText(
           "TRANSCRIPT EDITOR DISTINCT",
         ) as HTMLTextAreaElement
       ).value,
-    ).toBe("External transcript");
+    ).toBe("New local draft");
   });
 
   test("preserves global playback, timestamp and escape keyboard behavior", () => {

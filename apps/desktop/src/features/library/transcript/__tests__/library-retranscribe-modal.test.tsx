@@ -78,6 +78,19 @@ function renderModal(overrides = {}) {
 }
 
 describe("library retranscription modal", () => {
+  test("shows a failed submission and permits retry", async () => {
+    const onConfirm = vi
+      .fn()
+      .mockRejectedValueOnce(new Error("Audio unavailable"))
+      .mockResolvedValue(undefined);
+    renderModal({ onConfirm });
+    fireEvent.click(screen.getByRole("button", { name: "Retranscribe" }));
+    expect((await screen.findByRole("alert")).textContent).toContain(
+      "Audio unavailable",
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Retranscribe" }));
+    await waitFor(() => expect(onConfirm).toHaveBeenCalledTimes(2));
+  });
   test("keeps the overlay, panel, copy, and click boundaries", () => {
     const { props } = renderModal();
     const overlay = screen.getByRole("dialog");

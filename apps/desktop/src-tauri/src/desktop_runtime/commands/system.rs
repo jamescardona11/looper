@@ -87,6 +87,18 @@ pub(crate) fn open_llm_cleanup_settings(app: AppHandle<AppRuntime>) -> Result<()
 }
 
 #[tauri::command]
+pub(crate) fn open_meeting_ai_settings(
+    app: AppHandle<AppRuntime>,
+    state: tauri::State<'_, AppState>,
+) -> Result<(), String> {
+    tray::open_meeting_ai_settings(
+        &app,
+        crate::license::license_gate_active(&state.settings_store),
+    )
+    .map_err(|failure| failure.to_string())
+}
+
+#[tauri::command]
 pub(crate) fn open_ffmpeg_install(app: AppHandle<AppRuntime>) -> Result<(), String> {
     app.opener()
         .open_url(FFMPEG_HELP_URL, None::<&str>)

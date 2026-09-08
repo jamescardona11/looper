@@ -20,6 +20,7 @@ import {
 } from "../../shared/lib/transcriptionLanguages";
 import { isRemoteSpeechConfigured } from "../../shared/lib/speechProviders";
 import { safeUnlisten } from "../../shared/lib/safeUnlisten";
+import { showCaptureStartError } from "../../data/meeting/capture-start-error";
 
 type PreflightState = {
   language: string;
@@ -157,7 +158,7 @@ export function usePillPreflight() {
 
   const beginNote = useCallback(() => {
     void startNoteFromDock().catch((error) => {
-      console.error("Failed to start a note from dock:", error);
+      void showCaptureStartError(error).catch(() => {});
     });
   }, []);
 

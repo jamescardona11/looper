@@ -1,6 +1,7 @@
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import type { MeetingCaptureState } from "../../contracts";
+import { rejectCaptureStart } from "./capture-start-error";
 
 export type CalendarMeeting = {
   id: string;
@@ -40,6 +41,28 @@ export const subscribeMeetingAwareness = (
     handler(payload),
   );
 
+export async function observeMeetingAwareness(
+  handler: (state: MeetingAwarenessState) => void,
+) {
+  let active = true;
+  let receivedEvent = false;
+  const stop = await subscribeMeetingAwareness((state) => {
+    receivedEvent = true;
+    if (active) handler(state);
+  });
+  void getMeetingAwarenessState()
+    .then((snapshot) => {
+      if (active && !receivedEvent) handler(snapshot);
+    })
+    .catch(() => {
+      console.warn("Meeting notification snapshot unavailable");
+    });
+  return () => {
+    active = false;
+    stop();
+  };
+}
+
 export const disableMeetingAwarenessNotifications = (
   source: MeetingAwarenessSource,
 ) => invoke<void>("disable_meeting_awareness_notifications", { source });
@@ -56,7 +79,11 @@ export const requestCalendarAccess = () =>
 export const startCalendarMeetingCapture = (
   eventId: string,
 ): Promise<MeetingCaptureState> =>
-  invoke("start_calendar_meeting_capture", { eventId });
+  invoke<MeetingCaptureState>("start_calendar_meeting_capture", {
+    eventId,
+  }).catch(rejectCaptureStart);
 
 export const startPromptedMeetingCapture = (): Promise<MeetingCaptureState> =>
-  invoke("start_prompted_meeting_capture");
+  invoke<MeetingCaptureState>("start_prompted_meeting_capture").catch(
+    rejectCaptureStart,
+  );
