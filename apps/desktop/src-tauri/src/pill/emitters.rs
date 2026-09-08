@@ -1,7 +1,5 @@
 use super::hover_intent::HoverIntent;
-use super::{
-    cursor_over_pill_window, idle_sticky, set_overlay_interactive, EVENT_PILL_HOVER,
-};
+use super::{cursor_over_pill_window, idle_sticky, set_overlay_interactive, EVENT_PILL_HOVER};
 use crate::{
     emit_event, recorder::RecorderManager, AppRuntime, AppState, AudioSpectrumPayload,
     EVENT_AUDIO_SPECTRUM,
@@ -134,7 +132,10 @@ impl PillHoverEmitter {
                 // through it would collapse the pill mid-drag and, worse, hand
                 // the panel back to click-through while the user still holds it.
                 if app.state::<AppState>().pill().is_dragging() {
+                    super::position::finish_drag_if_released(&app);
                     intent.forget_travel();
+                    last_hovering = None;
+                    last_interactive = None;
                     std::thread::sleep(interval);
                     continue;
                 }
@@ -159,13 +160,19 @@ impl PillHoverEmitter {
                     last_hovering = Some(decision.hovering);
                     let hovering = decision.hovering;
                     tracing::debug!(hovering, "Capture pill hover changed");
-                    if let Err(error) = idle_sticky::resize_for_hover(&app, hovering) {
-                        tracing::error!(
-                            "Failed to resize the native Capture pill on hover: {error}"
-                        );
-                    }
-                    app.state::<AppState>().pill().set_hovering(hovering);
-                    emit_event(&app, EVENT_PILL_HOVER, PillHoverPayload { hovering });
+                    let hover_app = app.clone();
+                    let _ = app.run_on_main_thread(move || {
+                        if hover_app.state::<AppState>().pill().is_dragging() {
+                            return;
+                        }
+                        if let Err(error) = idle_sticky::resize_for_hover(&hover_app, hovering) {
+                            tracing::error!(
+                                "Failed to resize the native Capture pill on hover: {error}"
+                            );
+                        }
+                        hover_app.state::<AppState>().pill().set_hovering(hovering);
+                        emit_event(&hover_app, EVENT_PILL_HOVER, PillHoverPayload { hovering });
+                    });
                 }
                 std::thread::sleep(interval);
             }

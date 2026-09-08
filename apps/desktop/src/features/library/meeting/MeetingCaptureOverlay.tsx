@@ -13,13 +13,10 @@ import {
   type MeetingTranscriptPlacement,
   type MeetingTranscriptSideAlignment,
 } from "../../../data/capture/overlay";
-import {
-  checkShortcutPermission,
-  openShortcutPermissionHelp,
-  retryShortcuts,
-} from "../../../data/capture/shortcuts";
+import { openShortcutPermissionHelp } from "../../../data/capture/shortcuts";
 import { useMountEffect } from "../../../shared/hooks/useMountEffect";
 import { SIGNAL_RAIL_SHELL_CLASS } from "../../pill/SignalRail";
+import { useShortcutStatus } from "../../pill/use-shortcut-status";
 import { useOverlayDrag } from "../../pill/use-overlay-drag";
 import { useMeetingDetails, useStopMeetingCapture } from "../queries";
 import { formatDuration } from "../shared/library-utils";
@@ -28,7 +25,6 @@ import { MeetingTranscriptPanel } from "./MeetingTranscriptPanel";
 
 const NOTE_SAVED_VISIBLE_MS = 2_400;
 const HOVER_PREVIEW_DELAY_MS = 300;
-const PERMISSION_NOTICE_VISIBLE_MS = 6_000;
 const TRANSCRIPT_PANEL_ID = "meeting-live-transcript";
 
 type TranscriptMode = "hidden" | "preview" | "pinned";
@@ -94,14 +90,9 @@ const MeetingCaptureOverlay = ({ state }: { state: MeetingCaptureState }) => {
     useState<MeetingTranscriptPlacement>("above");
   const [sideAlignment, setSideAlignment] =
     useState<MeetingTranscriptSideAlignment>("bottom");
-  const [shortcutPermission, setShortcutPermission] = useState<boolean | null>(
-    null,
-  );
-  const [permissionNoticeVisible, setPermissionNoticeVisible] =
-    useState(false);
+  const shortcutStatus = useShortcutStatus();
   const presentationRequestInFlight = useRef(false);
   const hoverPreviewTimer = useRef<number | null>(null);
-  const permissionNoticeTimer = useRef<number | null>(null);
   const transcriptModeRef = useRef<TranscriptMode>("hidden");
 
   const clearHoverPreviewTimer = () => {
@@ -110,75 +101,7 @@ const MeetingCaptureOverlay = ({ state }: { state: MeetingCaptureState }) => {
     hoverPreviewTimer.current = null;
   };
 
-  const hidePermissionNotice = () => {
-    if (permissionNoticeTimer.current != null) {
-      window.clearTimeout(permissionNoticeTimer.current);
-      permissionNoticeTimer.current = null;
-    }
-    setPermissionNoticeVisible(false);
-  };
-
-  const showPermissionNotice = () => {
-    if (permissionNoticeTimer.current != null) {
-      window.clearTimeout(permissionNoticeTimer.current);
-    }
-    setPermissionNoticeVisible(true);
-    permissionNoticeTimer.current = window.setTimeout(() => {
-      permissionNoticeTimer.current = null;
-      setPermissionNoticeVisible(false);
-    }, PERMISSION_NOTICE_VISIBLE_MS);
-  };
-
-  useMountEffect(() => {
-    let cancelled = false;
-    let shortcutWasReady = false;
-    let missingPermissionWasReported = false;
-    let pollTimer: number | null = null;
-
-    const refreshShortcutPermission = async () => {
-      try {
-        const permitted = await checkShortcutPermission();
-        if (cancelled) return;
-        if (permitted && !shortcutWasReady) {
-          await retryShortcuts();
-          if (cancelled) return;
-        }
-        shortcutWasReady = permitted;
-        setShortcutPermission(permitted);
-        if (permitted) {
-          if (pollTimer != null) {
-            window.clearInterval(pollTimer);
-            pollTimer = null;
-          }
-          hidePermissionNotice();
-        } else if (!missingPermissionWasReported) {
-          missingPermissionWasReported = true;
-          showPermissionNotice();
-        }
-      } catch (error) {
-        if (cancelled) return;
-        shortcutWasReady = false;
-        setShortcutPermission(false);
-        if (!missingPermissionWasReported) {
-          missingPermissionWasReported = true;
-          showPermissionNotice();
-        }
-        console.error("Failed to verify meeting shortcut:", error);
-      }
-    };
-
-    void refreshShortcutPermission();
-    pollTimer = window.setInterval(refreshShortcutPermission, 1_500);
-    return () => {
-      cancelled = true;
-      clearHoverPreviewTimer();
-      if (pollTimer != null) window.clearInterval(pollTimer);
-      if (permissionNoticeTimer.current != null) {
-        window.clearTimeout(permissionNoticeTimer.current);
-        permissionNoticeTimer.current = null;
-      }
-    };
-  });
+  useMountEffect(() => () => clearHoverPreviewTimer());
 
   const applyOverlayPresentation = async (
     next: Parameters<typeof setMeetingOverlayPresentation>[0],
@@ -297,33 +220,41 @@ const MeetingCaptureOverlay = ({ state }: { state: MeetingCaptureState }) => {
                     message: "Moment saved",
                   })
               : null;
-  const recordingSignal = processing || finalizing ? (
-    <Sparkle size={15} weight="fill" className="animate-pulse text-white/70" />
-  ) : importantMoment ? (
-    <BookmarkSimple size={15} weight="fill" className="text-red-400" />
-  ) : selection ? (
-    <span aria-hidden="true" className="relative grid h-4 w-4 place-items-center">
-      <span
-        className="absolute inset-0 rounded-full"
-        style={{
-          background: `conic-gradient(var(--color-error) ${progress}%, var(--ui-fn-ring-track) 0)`,
-          WebkitMaskImage:
-            "radial-gradient(farthest-side, transparent 55%, black 57%)",
-          maskImage:
-            "radial-gradient(farthest-side, transparent 55%, black 57%)",
-        }}
+  const recordingSignal =
+    processing || finalizing ? (
+      <Sparkle
+        size={15}
+        weight="fill"
+        className="animate-pulse text-white/70"
       />
-      <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-[var(--color-error)]" />
-    </span>
-  ) : noteSaved ? (
-    <CheckCircle
-      size={15}
-      weight="fill"
-      className="text-[var(--color-success)]"
-    />
-  ) : (
-    <RecordingSignal />
-  );
+    ) : importantMoment ? (
+      <BookmarkSimple size={15} weight="fill" className="text-red-400" />
+    ) : selection ? (
+      <span
+        aria-hidden="true"
+        className="relative grid h-4 w-4 place-items-center"
+      >
+        <span
+          className="absolute inset-0 rounded-full"
+          style={{
+            background: `conic-gradient(var(--color-error) ${progress}%, var(--ui-fn-ring-track) 0)`,
+            WebkitMaskImage:
+              "radial-gradient(farthest-side, transparent 55%, black 57%)",
+            maskImage:
+              "radial-gradient(farthest-side, transparent 55%, black 57%)",
+          }}
+        />
+        <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-[var(--color-error)]" />
+      </span>
+    ) : noteSaved ? (
+      <CheckCircle
+        size={15}
+        weight="fill"
+        className="text-[var(--color-success)]"
+      />
+    ) : (
+      <RecordingSignal />
+    );
 
   const previewSegment = state.live_transcript?.trim()
     ? {
@@ -341,8 +272,11 @@ const MeetingCaptureOverlay = ({ state }: { state: MeetingCaptureState }) => {
       ? (details?.live_transcript ?? [])
       : [previewSegment];
   const transcriptVisible = transcriptMode !== "hidden";
-  const transientPermissionWarning =
-    shortcutPermission === false && permissionNoticeVisible && !statusLabel;
+  const shortcutWarning =
+    (shortcutStatus === "accessibility_required" ||
+      shortcutStatus === "unavailable" ||
+      shortcutStatus === "disabled") &&
+    !statusLabel;
 
   const transcriptPanel = transcriptVisible ? (
     <div
@@ -403,11 +337,10 @@ const MeetingCaptureOverlay = ({ state }: { state: MeetingCaptureState }) => {
           {statusLabel ?? formatDuration(state.elapsed_seconds)}
         </p>
       </div>
-      {transientPermissionWarning ? (
+      {shortcutWarning ? (
         <button
           type="button"
           onClick={() => {
-            hidePermissionNotice();
             void openShortcutPermissionHelp().catch((error) =>
               console.error("Failed to open the Fn help:", error),
             );
@@ -417,7 +350,8 @@ const MeetingCaptureOverlay = ({ state }: { state: MeetingCaptureState }) => {
           <Key size={11} weight="bold" className="mr-1" />
           {t({ id: "meeting.capture.shortcut_enable", message: "Fix Fn" })}
         </button>
-      ) : processing || finalizing || state.phase === "starting" ? (
+      ) : null}
+      {processing || finalizing || state.phase === "starting" ? (
         <span className="mr-1 grid h-8 w-8 shrink-0 place-items-center rounded-[9px] text-white/45">
           <Sparkle size={13} className="animate-pulse" />
         </span>

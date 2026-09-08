@@ -29,8 +29,9 @@ mod emitters;
 mod hover_intent;
 mod idle_sticky;
 mod layout;
+pub(crate) mod position;
 
-pub use idle_sticky::show as show_idle_sticky;
+pub use idle_sticky::{show as show_idle_sticky, recover as recover_idle_sticky};
 
 use emitters::{AudioSpectrumEmitter, PillHoverEmitter, PillHoverPayload};
 #[cfg(test)]
@@ -311,7 +312,7 @@ fn overlay_geometry_in_points(window: &WebviewWindow<AppRuntime>) -> Option<Over
     let cursor = window.cursor_position().ok()?;
     let origin = window.outer_position().ok()?;
     let size = window.outer_size().ok()?;
-    let (cursor, origin, size) = capture::to_shared_points(
+    let (cursor, origin, size) = platform::coordinates::CursorCoordinates::native().to_shared_points(
         (cursor.x, cursor.y),
         primary_scale_factor(window),
         (f64::from(origin.x), f64::from(origin.y)),
@@ -340,9 +341,8 @@ fn primary_scale_factor(window: &WebviewWindow<AppRuntime>) -> f64 {
 /// pointer is moving, not only from where it ended up.
 fn cursor_over_pill_window(app: &AppHandle<AppRuntime>) -> Option<(bool, bool, (f64, f64))> {
     let window = app.get_webview_window(MAIN_WINDOW_LABEL)?;
-    // Everything below is in logical points. See `to_shared_points`: the
-    // toolkit scales the cursor and the window frame differently once two
-    // screens have different densities, and points are where they agree.
+    // The platform adapter puts the cursor and frame into the same units
+    // before the pill's hit test applies its logical dimensions.
     let OverlayGeometry {
         cursor,
         origin: pos,
@@ -1521,10 +1521,6 @@ pub(crate) fn handle_registered_hotkey_event(
 
 pub fn register_shortcuts(app: &AppHandle<AppRuntime>) -> anyhow::Result<()> {
     let state = app.state::<AppState>();
-    if state.is_shortcut_capture_active() {
-        return Ok(());
-    }
-
     let settings = state.current_settings();
     let candidates = configured_shortcut_candidates(&settings);
     state
@@ -1650,230 +1646,6 @@ fn compile_shortcut_candidates(
     registrations
 }
 
-#[derive(Serialize)]
-pub struct OverlayPositionPayload {
-    pub x: i32,
-    pub y: i32,
-}
-
-#[tauri::command]
-pub fn set_overlay_position(
-    x: i32,
-    y: i32,
-    app: AppHandle<AppRuntime>,
-) -> Result<OverlayPositionPayload, String> {
-    let window = app
-        .get_webview_window(MAIN_WINDOW_LABEL)
-        .ok_or_else(|| "Overlay window not found.".to_string())?;
-    let app_state = app.state::<AppState>();
-    let meeting_surface = app_state.meeting_capture().is_active();
-    let idle_sticky = !meeting_surface && app_state.pill().status() == PillStatus::Idle;
-    let scale = window
-        .scale_factor()
-        .map_err(|err| format!("Failed to read overlay scale: {err}"))?;
-    let sticky_menu_open = idle_sticky && *app_state.pill().preflight_language_menu_open.lock();
-    let sticky_expanded = idle_sticky && app_state.pill().is_hovering();
-    let settings = app_state.current_settings_unmasked();
-    let sticky_frame = idle_sticky.then(|| {
-        capture::sticky_window_frame(
-            (x, y),
-            scale,
-            settings.capture_pill_presentation,
-            settings.capture_pill_dock_position,
-            sticky_expanded,
-            sticky_menu_open,
-        )
-    });
-    let meeting_frame = if meeting_surface {
-        let presentation = app_state.pill().meeting_overlay_presentation();
-        let monitor = monitor_for_overlay_origin(&window, (x, y))
-            .ok_or_else(|| "No display is available for the overlay.".to_string())?;
-        Some(meeting_overlay_geometry(
-            (x, y),
-            scale,
-            presentation.compact,
-            presentation.transcript_visible,
-            (monitor.position().x, monitor.position().y),
-            (monitor.size().width, monitor.size().height),
-        ))
-    } else {
-        None
-    };
-    // Lo que llega es la posición canónica: es la que este mismo comando
-    // devolvió y la que el frontend guardó. Colocarla tal cual como origen de
-    // ventana desplazaba la píldora en cada restauración.
-    let requested = if let Some(frame) = meeting_frame {
-        frame.origin
-    } else if let Some(frame) = sticky_frame {
-        frame.origin
-    } else {
-        dictation_origin_from_capture_anchor(
-            (x, y),
-            scale,
-            settings.capture_pill_presentation,
-            settings.capture_pill_dock_position,
-        )
-    };
-    let logical_size = if let Some(frame) = meeting_frame {
-        (
-            f64::from(frame.logical_size.0),
-            f64::from(frame.logical_size.1),
-        )
-    } else if let Some(frame) = sticky_frame {
-        frame.logical_size
-    } else {
-        (DICTATION_OVERLAY_WIDTH, DICTATION_OVERLAY_HEIGHT)
-    };
-    let physical_size = physical_overlay_size(logical_size, scale);
-    let restored_on_cursor_screen = window
-        .cursor_position()
-        .ok()
-        .and_then(|cursor| {
-            let monitors = window.available_monitors().ok()?;
-            let bounds = monitors
-                .iter()
-                .map(|monitor| {
-                    let position = monitor.position();
-                    let size = monitor.size();
-                    (position.x, position.y, size.width, size.height)
-                })
-                .collect::<Vec<_>>();
-            let requested_center = (
-                requested.0 + i32::try_from(physical_size.0 / 2).unwrap_or(i32::MAX),
-                requested.1 + i32::try_from(physical_size.1 / 2).unwrap_or(i32::MAX),
-            );
-            Some(points_share_closest_monitor(
-                requested_center,
-                (cursor.x.round() as i32, cursor.y.round() as i32),
-                &bounds,
-            ))
-        })
-        .unwrap_or(true);
-    let position = if idle_sticky && !restored_on_cursor_screen {
-        cursor_screen_overlay_position(&window, logical_size)
-            .or_else(|| clamp_overlay_position(&window, requested.0, requested.1, physical_size))
-    } else {
-        clamp_overlay_position(&window, requested.0, requested.1, physical_size)
-    }
-    .ok_or_else(|| "No display is available for the overlay.".to_string())?;
-    if let Some(frame) = meeting_frame {
-        window
-            .set_size(LogicalSize::new(
-                f64::from(frame.logical_size.0),
-                f64::from(frame.logical_size.1),
-            ))
-            .map_err(|err| format!("Failed to resize the overlay: {err}"))?;
-    } else if let Some(frame) = sticky_frame {
-        window
-            .set_size(LogicalSize::new(frame.logical_size.0, frame.logical_size.1))
-            .map_err(|err| format!("Failed to resize the overlay: {err}"))?;
-    }
-    if window
-        .outer_position()
-        .map(|current| (current.x, current.y) != position)
-        .unwrap_or(true)
-    {
-        window
-            .set_position(tauri::PhysicalPosition::new(position.0, position.1))
-            .map_err(|err| format!("Failed to position the overlay: {err}"))?;
-    }
-    let canonical_position = if meeting_surface {
-        canonical_meeting_overlay_origin(
-            position,
-            scale,
-            app_state.pill().meeting_overlay_presentation(),
-        )
-    } else if idle_sticky {
-        capture::canonical_sticky_origin(
-            position,
-            scale,
-            settings.capture_pill_presentation,
-            settings.capture_pill_dock_position,
-            sticky_expanded,
-            sticky_menu_open,
-        )
-    } else {
-        canonical_from_capture_dictation_origin(
-            position,
-            scale,
-            settings.capture_pill_presentation,
-            settings.capture_pill_dock_position,
-        )
-    };
-    app_state.pill().set_overlay_position(canonical_position);
-    Ok(OverlayPositionPayload {
-        x: canonical_position.0,
-        y: canonical_position.1,
-    })
-}
-
-#[tauri::command]
-pub fn persist_overlay_position(
-    x: i32,
-    y: i32,
-    app: AppHandle<AppRuntime>,
-) -> Result<OverlayPositionPayload, String> {
-    let window = app
-        .get_webview_window(MAIN_WINDOW_LABEL)
-        .ok_or_else(|| "Overlay window not found.".to_string())?;
-    // Ocultar la píldora la manda fuera de la pantalla, y eso dispara un
-    // `onMoved`. Guardar esa posición la convierte en la preferida del
-    // usuario: el siguiente `clamp` la pega a una esquina, el resultado se
-    // vuelve a guardar y ya no hay forma de salir de ahí.
-    if x <= OVERLAY_OFFSCREEN_LIMIT || y <= OVERLAY_OFFSCREEN_LIMIT {
-        return Err("The overlay is off-screen; nothing to remember.".to_string());
-    }
-    let app_state = app.state::<AppState>();
-    let meeting_surface = app_state.meeting_capture().is_active();
-    let idle_sticky = !meeting_surface && app_state.pill().status() == PillStatus::Idle;
-    let scale = window
-        .scale_factor()
-        .map_err(|err| format!("Failed to read overlay scale: {err}"))?;
-    let sticky_menu_open = idle_sticky && *app_state.pill().preflight_language_menu_open.lock();
-    let sticky_expanded = idle_sticky && app_state.pill().is_hovering();
-    let settings = app_state.current_settings_unmasked();
-    let logical_size = if meeting_surface {
-        meeting_overlay_logical_size(app_state.pill().meeting_overlay_presentation())
-    } else if idle_sticky {
-        capture::sticky_window_size(sticky_expanded, sticky_menu_open)
-    } else {
-        (DICTATION_OVERLAY_WIDTH, DICTATION_OVERLAY_HEIGHT)
-    };
-    let physical_size = physical_overlay_size(logical_size, scale);
-    // Y aunque esté en pantalla, tiene que caber en un display real antes de
-    // convertirse en la posición canónica.
-    let (x, y) = clamp_overlay_position(&window, x, y, physical_size)
-        .ok_or_else(|| "No display is available for the overlay.".to_string())?;
-    let canonical_position = if meeting_surface {
-        canonical_meeting_overlay_origin(
-            (x, y),
-            scale,
-            app_state.pill().meeting_overlay_presentation(),
-        )
-    } else if idle_sticky {
-        capture::canonical_sticky_origin(
-            (x, y),
-            scale,
-            settings.capture_pill_presentation,
-            settings.capture_pill_dock_position,
-            sticky_expanded,
-            sticky_menu_open,
-        )
-    } else {
-        canonical_from_capture_dictation_origin(
-            (x, y),
-            scale,
-            settings.capture_pill_presentation,
-            settings.capture_pill_dock_position,
-        )
-    };
-    app_state.pill().set_overlay_position(canonical_position);
-    Ok(OverlayPositionPayload {
-        x: canonical_position.0,
-        y: canonical_position.1,
-    })
-}
-
 /// La píldora avisa de lo que acaba de dibujar. Sin esto la zona clicable era
 /// una constante que no seguía a la píldora: sobraba área encima y faltaban
 /// unos puntos arriba del rail.
@@ -1972,21 +1744,22 @@ fn preferred_capture_monitor(window: &WebviewWindow<AppRuntime>) -> Option<tauri
     // debe seguir la pantalla en la que está trabajando el usuario; el frame
     // anterior del NSPanel puede pertenecer a un monitor distinto.
     if let (Ok(cursor), Ok(monitors)) = (window.cursor_position(), window.available_monitors()) {
-        // Compared in logical points, for the same reason the hit test is:
-        // the cursor carries the primary screen's scale and each monitor
-        // carries its own, so the raw numbers only agree on a uniform desktop.
-        let cursor_scale = primary_scale_factor(window);
-        let cursor = (cursor.x / cursor_scale, cursor.y / cursor_scale);
+        let primary_scale = primary_scale_factor(window);
         if let Some(monitor) = monitors.into_iter().find(|monitor| {
-            let scale = monitor.scale_factor();
             let position = monitor.position();
             let size = monitor.size();
-            let left = f64::from(position.x) / scale;
-            let top = f64::from(position.y) / scale;
-            cursor.0 >= left
-                && cursor.0 < left + f64::from(size.width) / scale
-                && cursor.1 >= top
-                && cursor.1 < top + f64::from(size.height) / scale
+            let (cursor, origin, size) =
+                platform::coordinates::CursorCoordinates::native().to_shared_points(
+                    (cursor.x, cursor.y),
+                    primary_scale,
+                    (f64::from(position.x), f64::from(position.y)),
+                    (f64::from(size.width), f64::from(size.height)),
+                    monitor.scale_factor(),
+                );
+            cursor.0 >= origin.0
+                && cursor.0 < origin.0 + size.0
+                && cursor.1 >= origin.1
+                && cursor.1 < origin.1 + size.1
         }) {
             return Some(monitor);
         }
@@ -2112,11 +1885,14 @@ pub fn set_capture_pill_dock_position(
     })
 }
 
-/// Freezes hover tracking while the user drags the pill. A lost pointer-up
-/// cannot strand the pill: `is_dragging` expires on its own.
+/// The native mouse state owns release, including a pointer-up lost by the webview.
 #[tauri::command]
 pub fn set_pill_dragging(dragging: bool, app: AppHandle<AppRuntime>) {
-    app.state::<AppState>().pill().set_dragging(dragging);
+    if dragging {
+        app.state::<AppState>().pill().set_dragging(true);
+    } else {
+        position::finish_drag_if_released(&app);
+    }
 }
 
 #[tauri::command]
@@ -2237,8 +2013,9 @@ pub fn show_overlay(app: &AppHandle<AppRuntime>) {
         }
 
         if let Some((logical_size, origin)) = frame {
+            let scale = window.scale_factor().unwrap_or(1.0);
             if let Err(error) =
-                platform::overlay::schedule_frame(app, &window, logical_size, origin)
+                platform::overlay::schedule_frame(app, &window, logical_size, origin, scale)
             {
                 tracing::error!("Failed to schedule overlay frame before showing it: {error}");
                 let _ = window.set_size(LogicalSize::new(logical_size.0, logical_size.1));

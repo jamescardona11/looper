@@ -2855,6 +2855,11 @@ msgid "settings.sync.email_aria"
 msgstr "Email address"
 
 #. js-lingui-explicit-id
+#: src/features/pill/pill-preflight.tsx
+msgid "pill.shortcut.permission"
+msgstr "Enable Accessibility to use Fn. You can still click Dictate."
+
+#. js-lingui-explicit-id
 #: src/features/onboarding/steps/PermissionsStep.tsx
 msgid "onboarding.accessibility.enable"
 msgstr "Enable in Settings"
@@ -3067,8 +3072,9 @@ msgstr "First dictation test field"
 #. js-lingui-explicit-id
 #: src/__tests__/i18n.test.ts
 #: src/features/library/meeting/MeetingCaptureOverlay.tsx
+#: src/features/pill/pill-preflight.tsx
 msgid "meeting.capture.shortcut_enable"
-msgstr "Why?"
+msgstr "Fix Fn"
 
 #. js-lingui-explicit-id
 #: src/features/voice/components/VoiceView.tsx
@@ -3459,6 +3465,11 @@ msgstr "Keep vocabulary and review correction suggestions in one place."
 #: src/features/import/components/import-step-categories.tsx
 msgid "import.cat.shortcut"
 msgstr "Keyboard shortcut"
+
+#. js-lingui-explicit-id
+#: src/features/pill/pill-preflight.tsx
+msgid "pill.shortcut.unavailable"
+msgstr "Keyboard shortcut unavailable. Open settings to fix it, or click Dictate."
 
 #. js-lingui-explicit-id
 #: src/features/library/transcript/library-retranscribe-options.tsx
@@ -5593,11 +5604,6 @@ msgid "library.import.importing"
 msgstr "Importing..."
 
 #. js-lingui-explicit-id
-#: src/features/library/meeting/MeetingCaptureOverlay.tsx
-msgid "meeting.capture.starting"
-msgstr "Starting…"
-
-#. js-lingui-explicit-id
 #: src/features/pill/pill-preflight.tsx
 msgid "pill.preflight.starting"
 msgstr "Starting…"
@@ -5605,6 +5611,11 @@ msgstr "Starting…"
 #. js-lingui-explicit-id
 #: src/features/library/meeting/MeetingAwarenessOverlay.tsx
 msgid "meeting.awareness.starting"
+msgstr "Starting…"
+
+#. js-lingui-explicit-id
+#: src/features/library/meeting/MeetingCaptureOverlay.tsx
+msgid "meeting.capture.starting"
 msgstr "Starting…"
 
 #. js-lingui-explicit-id

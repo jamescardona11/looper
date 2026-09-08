@@ -3,7 +3,7 @@ use tauri::{AppHandle, Manager};
 use super::super::contracts::AppRuntime;
 use super::super::state::AppState;
 use crate::settings::UserSettings;
-use crate::{core, license, markdown_mirror, meeting_awareness, pill, tray};
+use crate::{core, license, markdown_mirror, meeting_awareness, tray};
 
 #[derive(serde::Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -55,10 +55,7 @@ pub(crate) fn get_meeting_awareness_state(
 }
 
 #[tauri::command]
-pub(crate) fn dismiss_meeting_awareness(
-    app: AppHandle<AppRuntime>,
-    state: tauri::State<AppState>,
-) {
+pub(crate) fn dismiss_meeting_awareness(app: AppHandle<AppRuntime>, state: tauri::State<AppState>) {
     state.meeting_awareness().dismiss(&app);
 }
 
@@ -100,9 +97,7 @@ fn disable_awareness_source(
 }
 
 #[tauri::command]
-pub(crate) fn open_meeting_notification_settings(
-    app: AppHandle<AppRuntime>,
-) -> Result<(), String> {
+pub(crate) fn open_meeting_notification_settings(app: AppHandle<AppRuntime>) -> Result<(), String> {
     tray::open_settings_calendar(&app).map_err(|failure| failure.to_string())
 }
 
@@ -129,33 +124,38 @@ pub(crate) fn set_shortcut_capture_active(
     app: AppHandle<AppRuntime>,
 ) -> Result<(), String> {
     let state = app.state::<AppState>();
-    state.set_shortcut_capture_active(active);
-    if !active {
-        return restore_recording_shortcuts(&app).map_err(|failure| failure.to_string());
+    if active {
+        state.hotkeys.start_capture(&app)
+    } else {
+        state.hotkeys.finish_capture(&app)
     }
-    state.hotkeys.stop_registration();
-    if let Err(failure) = state.hotkeys.start_capture(&app) {
-        state.set_shortcut_capture_active(false);
-        if let Err(restore_failure) = pill::register_shortcuts(&app) {
-            tracing::error!(
-                "Failed to restore shortcuts after capture start error: {restore_failure}"
-            );
-        }
-        return Err(failure.to_string());
-    }
-    Ok(())
+    .map_err(|failure| failure.to_string())
 }
 
 pub(crate) fn restore_recording_shortcuts(app: &AppHandle<AppRuntime>) -> anyhow::Result<()> {
-    let state = app.state::<AppState>();
-    state.set_shortcut_capture_active(false);
-    state.hotkeys.stop_capture();
-    pill::register_shortcuts(app)
+    app.state::<AppState>().hotkeys.finish_capture(app)
+}
+
+/// Refreshes permissions and the worker as one serialized coordinator operation.
+#[tauri::command]
+pub(crate) async fn refresh_shortcut_status(
+    app: AppHandle<AppRuntime>,
+) -> Result<crate::core::hotkeys::ShortcutStatus, String> {
+    tauri::async_runtime::spawn_blocking(move || app.state::<AppState>().hotkeys.recover(&app))
+        .await
+        .map_err(|failure| failure.to_string())
 }
 
 #[tauri::command]
 pub(crate) fn retry_shortcuts(app: AppHandle<AppRuntime>) -> Result<(), String> {
-    pill::register_shortcuts(&app).map_err(|failure| failure.to_string())
+    use crate::core::hotkeys::ShortcutStatus;
+    match app.state::<AppState>().hotkeys.recover(&app) {
+        ShortcutStatus::Capturing | ShortcutStatus::Disabled | ShortcutStatus::Ready => Ok(()),
+        ShortcutStatus::AccessibilityRequired => {
+            Err("Accessibility permission is required.".into())
+        }
+        ShortcutStatus::Unavailable => Err("The shortcut listener is unavailable.".into()),
+    }
 }
 
 #[tauri::command]

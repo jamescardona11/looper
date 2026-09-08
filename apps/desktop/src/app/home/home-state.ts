@@ -1,3 +1,4 @@
+import type { SettingsSection } from "../../features/settings/preferences/settings-navigation";
 import type { MemorySearchResult } from "../../data/memory";
 import type { SignalStage } from "../../features/transcriptions/components/CaptureStatusCard";
 
@@ -28,6 +29,8 @@ export type HomeState = {
   pendingImportPaths: string[] | null;
   scratchpadOpen: boolean;
   settingsTab: HomeSettingsTab;
+  settingsSection?: SettingsSection;
+  settingsRequest: number;
   signalStage: SignalStage;
   supportMenuOpen: boolean;
 };
@@ -45,7 +48,7 @@ export type HomeAction =
   | { type: "open-memory-result"; result: MemorySearchResult }
   | { type: "open-memory-shortcut" }
   | { type: "open-meeting"; item: LibraryFocus }
-  | { type: "open-settings"; tab: HomeSettingsTab }
+  | { type: "open-settings"; tab: HomeSettingsTab; section?: SettingsSection }
   | { type: "return-home" }
   | { type: "show-feature-lab" }
   | { type: "set-drag-active"; active: boolean }
@@ -65,6 +68,7 @@ export function createHomeState(licensed: boolean): HomeState {
     pendingImportPaths: null,
     scratchpadOpen: false,
     settingsTab: "general",
+    settingsRequest: 0,
     signalStage: "ready",
     supportMenuOpen: false,
   };
@@ -140,6 +144,8 @@ export function reduceHomeState(
         ...state,
         activeView: "settings",
         settingsTab: action.tab,
+        settingsSection: action.section,
+        settingsRequest: state.settingsRequest + 1,
       };
     case "return-home":
       return leaveTransientRouteState(state);

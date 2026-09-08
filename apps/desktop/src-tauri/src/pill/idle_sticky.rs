@@ -3,7 +3,6 @@ use super::{
     preferred_capture_monitor, AppHandle, AppRuntime, AppState, CapturePillDockPosition,
     CapturePillPresentation, LogicalSize, Manager, PillStatus, MAIN_WINDOW_LABEL,
 };
-use tauri::PhysicalPosition;
 
 /// Resizes the native idle window together with the React pill. Keeping a
 /// permanent expanded NSPanel behind the compact launcher left a visible gray
@@ -50,15 +49,7 @@ pub(super) fn resize_for_hover(
     let origin = clamp_overlay_position(&window, desired.origin.0, desired.origin.1, physical_size)
         .ok_or_else(|| "No display is available for the Capture pill.".to_string())?;
 
-    window
-        .set_size(LogicalSize::new(
-            desired.logical_size.0,
-            desired.logical_size.1,
-        ))
-        .map_err(|error| format!("Failed to resize Dictation sticky: {error}"))?;
-    window
-        .set_position(PhysicalPosition::new(origin.0, origin.1))
-        .map_err(|error| format!("Failed to position Dictation sticky: {error}"))?;
+    super::platform::overlay::schedule_frame(app, &window, desired.logical_size, origin, scale)?;
 
     state
         .pill()
@@ -74,6 +65,16 @@ pub(super) fn resize_for_hover(
 }
 
 pub fn show(app: &AppHandle<AppRuntime>) -> Result<(), String> {
+    let task_app = app.clone();
+    app.run_on_main_thread(move || {
+        if let Err(error) = show_on_main_thread(&task_app) {
+            tracing::error!("Failed to restore Capture pill: {error}");
+        }
+    })
+    .map_err(|error| error.to_string())
+}
+
+fn show_on_main_thread(app: &AppHandle<AppRuntime>) -> Result<(), String> {
     let state = app.state::<AppState>();
     if state.pill().status() != PillStatus::Idle || state.meeting_capture().is_active() {
         return Ok(());
@@ -92,7 +93,9 @@ pub fn show(app: &AppHandle<AppRuntime>) -> Result<(), String> {
 
     // AppKit can restore the NSPanel's previous frame when it is shown. Make
     // the panel visible first, then apply the canonical dock/floating anchor.
-    super::platform::overlay::show(app, &window, true);
+    if !window.is_visible().unwrap_or(false) {
+        super::platform::overlay::show(app, &window, true);
+    }
 
     let target_origin = match settings.capture_pill_presentation {
         CapturePillPresentation::Dock => preferred_capture_monitor(&window).map(|monitor| {
@@ -130,7 +133,7 @@ pub fn show(app: &AppHandle<AppRuntime>) -> Result<(), String> {
                 window_height = frame.logical_size.1,
                 "Positioning Capture pill"
             );
-            frame.origin
+            (frame.origin, monitor_scale)
         }),
         CapturePillPresentation::Floating => state
             .pill()
@@ -145,6 +148,7 @@ pub fn show(app: &AppHandle<AppRuntime>) -> Result<(), String> {
                     language_menu_open,
                 );
                 clamp_overlay_position(&window, frame.origin.0, frame.origin.1, physical_size)
+                    .map(|origin| (origin, scale))
             })
             .or_else(|| {
                 let monitor = preferred_capture_monitor(&window)?;
@@ -161,7 +165,7 @@ pub fn show(app: &AppHandle<AppRuntime>) -> Result<(), String> {
                     capture::logical_pixels(85.0, monitor_scale),
                     CapturePillDockPosition::BottomCenter,
                 );
-                Some(
+                Some((
                     capture::sticky_window_frame(
                         base_origin,
                         monitor_scale,
@@ -171,21 +175,21 @@ pub fn show(app: &AppHandle<AppRuntime>) -> Result<(), String> {
                         language_menu_open,
                     )
                     .origin,
-                )
+                    monitor_scale,
+                ))
             }),
     };
 
-    if let Some(origin) = target_origin {
-        let task_app = app.clone();
-        let task_window = window.clone();
-        tauri::async_runtime::spawn(async move {
-            if let Err(error) =
-                super::platform::overlay::set_frame(&task_app, &task_window, logical_size, origin)
-                    .await
-            {
-                tracing::error!("Failed to restore the Dictation sticky frame: {error}");
-            }
-        });
+    if let Some((origin, target_scale)) = target_origin {
+        super::platform::overlay::schedule_frame(app, &window, logical_size, origin, target_scale)?;
+        pill.set_overlay_position(capture::canonical_sticky_origin(
+            origin,
+            target_scale,
+            settings.capture_pill_presentation,
+            settings.capture_pill_dock_position,
+            hovering,
+            language_menu_open,
+        ));
     } else {
         window
             .set_size(LogicalSize::new(logical_size.0, logical_size.1))
@@ -195,4 +199,16 @@ pub fn show(app: &AppHandle<AppRuntime>) -> Result<(), String> {
 
     state.pill().start_hover_emitter(app);
     Ok(())
+}
+
+/// Manual recovery works without the keyboard listener and preserves the
+/// configured dock edge. Floating launchers return to the cursor's display.
+pub fn recover(app: &AppHandle<AppRuntime>) -> Result<(), String> {
+    let state = app.state::<AppState>();
+    if state.pill().status() != PillStatus::Idle || state.meeting_capture().is_active() {
+        super::show_overlay(app);
+        return Ok(());
+    }
+    *state.pill().overlay_position.lock() = None;
+    show(app)
 }

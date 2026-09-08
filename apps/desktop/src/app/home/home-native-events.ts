@@ -106,7 +106,7 @@ function installSettingsNavigation(
     retainSubscription(
       scope,
       subscribeNavigateAppPrivacy(() =>
-        dispatch({ type: "open-settings", tab: "app" }),
+        dispatch({ type: "open-settings", tab: "app", section: "privacy" }),
       ),
     ),
   ];

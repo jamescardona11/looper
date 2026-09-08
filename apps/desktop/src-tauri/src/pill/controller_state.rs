@@ -5,10 +5,7 @@ use super::{
     UserSettings, EVENT_PILL_MODE, EVENT_PILL_STATE, OVERLAY_OFFSCREEN_LIMIT,
 };
 use parking_lot::Mutex;
-use std::time::{Duration, Instant};
-
-/// A drag that never reported its end stops freezing hover after this long.
-const DRAG_FREEZE_TIMEOUT: Duration = Duration::from_secs(10);
+use std::time::Instant;
 
 impl PillController {
     pub fn new(recorder: Arc<RecorderManager>) -> Self {
@@ -62,6 +59,7 @@ impl PillController {
 
         self.update_overlay_visibility(app, previous, next);
         self.emit_state(app);
+        crate::tray::refresh_capture_menus(app);
     }
 
     pub(super) fn freeze_recording_personality(&self, personality: Option<Personality>) {
@@ -120,13 +118,17 @@ impl PillController {
         self.drag_started_at.lock().clone_from(&started);
     }
 
-    /// True while a drag holds the pill. The timeout is the safety net for a
-    /// pointer-up the webview never sees, which would otherwise freeze hover
-    /// tracking for the rest of the session.
     pub(super) fn is_dragging(&self) -> bool {
-        self.drag_started_at
-            .lock()
-            .is_some_and(|started| started.elapsed() < DRAG_FREEZE_TIMEOUT)
+        self.drag_started_at.lock().is_some()
+    }
+
+    /// Called on the main thread, before queued hover work can resize the frame.
+    pub(super) fn finish_drag(&self, primary_button_pressed: bool, remember: impl FnOnce()) {
+        if primary_button_pressed || !self.is_dragging() {
+            return;
+        }
+        remember();
+        self.set_dragging(false);
     }
 
     pub(super) fn overlay_position(&self) -> Option<(i32, i32)> {
@@ -198,5 +200,34 @@ impl PillController {
         if slot.is_none() {
             slot.replace(PillHoverEmitter::start(app.clone()));
         }
+    }
+}
+
+#[cfg(test)]
+mod drag_tests {
+    use super::*;
+    use std::time::Duration;
+
+    #[test]
+    fn drag_stays_owned_until_release_even_after_ten_seconds() {
+        let pill = PillController::new(Arc::new(RecorderManager::new()));
+        *pill.drag_started_at.lock() = Some(Instant::now() - Duration::from_secs(30));
+        assert!(pill.is_dragging());
+        pill.set_dragging(false);
+        assert!(!pill.is_dragging());
+    }
+    #[test]
+    fn native_release_remembers_once_before_unfreezing_even_without_dom_pointer_up() {
+        let pill = PillController::new(Arc::new(RecorderManager::new()));
+        pill.set_dragging(true);
+        pill.finish_drag(true, || panic!("The button is still held"));
+        assert!(pill.is_dragging());
+        pill.finish_drag(false, || {
+            assert!(pill.is_dragging(), "Hover must still be frozen when saving");
+            pill.set_overlay_position((2400, 60));
+        });
+        assert!(!pill.is_dragging());
+        assert_eq!(pill.overlay_position(), Some((2400, 60)));
+        pill.finish_drag(false, || panic!("Release must not save twice"));
     }
 }

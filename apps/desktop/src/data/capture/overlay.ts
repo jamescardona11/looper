@@ -20,14 +20,6 @@ export type MeetingOverlayPresentation = {
   transcriptPinned: boolean;
 };
 
-export const OVERLAY_POSITION_AUTOMATIC_MOVE_EVENT =
-  "looper:overlay-automatic-move";
-
-// Un arrastre de la persona empieza cuando el puntero viaja, no en el
-// pointerdown, y puede nacer sobre cualquier control. Anunciarlo evita que
-// quien guarda la posición tenga que deducirlo del DOM.
-export const OVERLAY_USER_DRAG_EVENT = "looper:overlay-user-drag";
-
 export type PillInsertedPayload = {
   chars: number;
   can_undo: boolean;
@@ -66,10 +58,12 @@ export async function setOverlayPosition(
   return invoke<OverlayPosition>("set_overlay_position", position);
 }
 
-export async function persistOverlayPosition(
-  position: OverlayPosition,
-): Promise<OverlayPosition> {
-  return invoke<OverlayPosition>("persist_overlay_position", position);
+export function subscribeOverlayPosition(
+  handler: (position: OverlayPosition) => void,
+): Promise<UnlistenFn> {
+  return listen<OverlayPosition>("pill:position", ({ payload }) =>
+    handler(payload),
+  );
 }
 
 // El área que acepta clics se deduce de esto: la píldora es la única que sabe
@@ -84,10 +78,6 @@ export async function setMeetingOverlayPresentation(
   placement: MeetingTranscriptPlacement;
   sideAlignment: MeetingTranscriptSideAlignment;
 }> {
-  // Cambiar el tamaño de la superficie de reunión también cambia la posición
-  // nativa. No es un arrastre de la persona y no debe convertirse en su
-  // posición preferida.
-  window.dispatchEvent(new Event(OVERLAY_POSITION_AUTOMATIC_MOVE_EVENT));
   return invoke<{
     placement: MeetingTranscriptPlacement;
     sideAlignment: MeetingTranscriptSideAlignment;

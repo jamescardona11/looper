@@ -1,181 +1,93 @@
 // @vitest-environment jsdom
-
-import { act, cleanup, fireEvent, renderHook } from "@testing-library/react";
-import { afterEach, describe, expect, test, vi } from "vitest";
+import { act, cleanup, renderHook } from "@testing-library/react";
+import { afterEach, beforeEach, expect, test, vi } from "vitest";
 import { useOverlayPosition } from "../useOverlayPosition";
 
-const overlayActions = vi.hoisted(() => ({
-  persist: vi.fn(),
+const native = vi.hoisted(() => ({
   restore: vi.fn(),
-}));
-const windowEvents = vi.hoisted(() => ({
-  moved: undefined as
-    ((event: { payload: { x: number; y: number } }) => void) | undefined,
+  subscribe: vi.fn(),
   dispose: vi.fn(),
+  position: undefined as
+    ((position: { x: number; y: number }) => void) | undefined,
 }));
-
 vi.mock("../../../data/capture/overlay", () => ({
-  OVERLAY_POSITION_AUTOMATIC_MOVE_EVENT: "looper:overlay-automatic-move",
-  OVERLAY_USER_DRAG_EVENT: "looper:overlay-user-drag",
-  persistOverlayPosition: overlayActions.persist,
-  setOverlayPosition: overlayActions.restore,
+  setOverlayPosition: native.restore,
+  subscribeOverlayPosition: native.subscribe,
 }));
-
-vi.mock("@tauri-apps/api/window", () => ({
-  getCurrentWindow: () => ({
-    onMoved: (
-      listener: (event: { payload: { x: number; y: number } }) => void,
-    ) => {
-      windowEvents.moved = listener;
-      return Promise.resolve(windowEvents.dispose);
-    },
-  }),
-}));
-
+const key = "looper:overlay-position:v5";
+beforeEach(() => {
+  native.subscribe.mockImplementation((handler) => {
+    native.position = handler;
+    return Promise.resolve(native.dispose);
+  });
+});
 afterEach(() => {
   cleanup();
   localStorage.clear();
-  overlayActions.persist.mockReset();
-  overlayActions.restore.mockReset();
-  windowEvents.dispose.mockReset();
-  windowEvents.moved = undefined;
-  vi.useRealTimers();
+  vi.resetAllMocks();
+  native.position = undefined;
 });
 
-describe("useOverlayPosition", () => {
-  test("persists a user drag without repositioning the native window", async () => {
-    vi.useFakeTimers();
-    overlayActions.persist.mockResolvedValue({ x: 2_100, y: 24 });
+test("stores the native final anchor without moving the window again", async () => {
+  renderHook(() => useOverlayPosition());
+  await act(async () => {});
+  native.position?.({ x: 2100, y: 24 });
+  expect(JSON.parse(localStorage.getItem(key)!)).toEqual({ x: 2100, y: 24 });
+  expect(native.restore).not.toHaveBeenCalled();
+});
 
-    renderHook(() => useOverlayPosition(true));
-    await act(async () => {
-      await Promise.resolve();
-    });
-    expect(windowEvents.moved).toBeTypeOf("function");
+test("keeps the latest release even when the previous drag took over ten seconds", async () => {
+  renderHook(() => useOverlayPosition());
+  await act(async () => {});
+  native.position?.({ x: 150, y: 40 });
+  native.position?.({ x: 3000, y: 120 });
+  expect(JSON.parse(localStorage.getItem(key)!)).toEqual({ x: 3000, y: 120 });
+});
 
-    const dragRegion = document.createElement("div");
-    dragRegion.dataset.tauriDragRegion = "true";
-    document.body.append(dragRegion);
-    fireEvent.pointerDown(dragRegion);
+test("restores the saved anchor and remembers its native correction", async () => {
+  localStorage.setItem(key, JSON.stringify({ x: 2000, y: 10 }));
+  native.restore.mockResolvedValue({ x: 1800, y: 10 });
+  renderHook(() => useOverlayPosition());
+  await act(async () => {});
+  expect(native.restore).toHaveBeenCalledWith({ x: 2000, y: 10 });
+  expect(JSON.parse(localStorage.getItem(key)!)).toEqual({ x: 1800, y: 10 });
+});
 
-    act(() => {
-      windowEvents.moved?.({ payload: { x: 2_100, y: 24 } });
-      vi.advanceTimersByTime(120);
-    });
-    await act(async () => {
-      await Promise.resolve();
-    });
-    expect(overlayActions.persist).toHaveBeenCalledWith({
-      x: 2_100,
-      y: 24,
-    });
-
-    expect(overlayActions.restore).not.toHaveBeenCalled();
+test("does not overwrite a new drag when restoration resolves late", async () => {
+  localStorage.setItem(key, JSON.stringify({ x: 100, y: 10 }));
+  let finish!: (position: { x: number; y: number }) => void;
+  native.restore.mockReturnValue(
+    new Promise((resolve) => {
+      finish = resolve;
+    }),
+  );
+  renderHook(() => useOverlayPosition());
+  await act(async () => {});
+  native.position?.({ x: 300, y: 40 });
+  await act(async () => {
+    finish({ x: 100, y: 10 });
   });
+  expect(JSON.parse(localStorage.getItem(key)!)).toEqual({ x: 300, y: 40 });
+});
 
-  test("persists a drag started from the compact pill handle", async () => {
-    vi.useFakeTimers();
-    overlayActions.persist.mockResolvedValue({ x: 1_900, y: 32 });
+test("ignores the hidden window sentinel", async () => {
+  renderHook(() => useOverlayPosition());
+  await act(async () => {});
+  native.position?.({ x: -10000, y: -10000 });
+  expect(localStorage.getItem(key)).toBeNull();
+});
 
-    renderHook(() => useOverlayPosition(true));
-    await act(async () => {
-      await Promise.resolve();
-    });
-
-    const compactHandle = document.createElement("button");
-    compactHandle.dataset.overlayDragHandle = "true";
-    document.body.append(compactHandle);
-    fireEvent.pointerDown(compactHandle);
-
-    act(() => {
-      windowEvents.moved?.({ payload: { x: 1_900, y: 32 } });
-      vi.advanceTimersByTime(120);
-    });
-    await act(async () => {
-      await Promise.resolve();
-    });
-
-    expect(overlayActions.persist).toHaveBeenCalledWith({ x: 1_900, y: 32 });
+test("disposes a listener that arrives after unmount", async () => {
+  let finish!: (dispose: () => void) => void;
+  native.subscribe.mockReturnValue(
+    new Promise((resolve) => {
+      finish = resolve;
+    }),
+  );
+  const view = renderHook(() => useOverlayPosition());
+  view.unmount();
+  await act(async () => {
+    finish(native.dispose);
   });
-
-  test("persists a drag that began on a control", async () => {
-    vi.useFakeTimers();
-    overlayActions.persist.mockResolvedValue({ x: 1_450, y: 900 });
-
-    renderHook(() => useOverlayPosition(true));
-    await act(async () => {
-      await Promise.resolve();
-    });
-
-    // The pill drags from anywhere, so a press on the Dictate button that then
-    // travels is a real move. Nothing in the DOM says so - the drag announces
-    // itself.
-    act(() => {
-      window.dispatchEvent(new Event("looper:overlay-user-drag"));
-      windowEvents.moved?.({ payload: { x: 1_450, y: 900 } });
-      vi.advanceTimersByTime(120);
-    });
-    await act(async () => {
-      await Promise.resolve();
-    });
-
-    expect(overlayActions.persist).toHaveBeenCalledWith({ x: 1_450, y: 900 });
-  });
-
-  test("does not persist a programmatic overlay move", async () => {
-    vi.useFakeTimers();
-    overlayActions.persist.mockResolvedValue({ x: 2_100, y: 24 });
-    renderHook(() => useOverlayPosition(true));
-    await act(async () => {
-      await Promise.resolve();
-    });
-
-    act(() => {
-      windowEvents.moved?.({ payload: { x: 2_100, y: 24 } });
-      vi.advanceTimersByTime(120);
-    });
-
-    expect(overlayActions.persist).not.toHaveBeenCalled();
-  });
-
-  test("does not persist the automatic reposition after a compact-pill click", async () => {
-    vi.useFakeTimers();
-    overlayActions.persist.mockResolvedValue({ x: 2_100, y: 24 });
-    renderHook(() => useOverlayPosition(true));
-    await act(async () => {
-      await Promise.resolve();
-    });
-
-    const compactHandle = document.createElement("button");
-    compactHandle.dataset.overlayDragHandle = "true";
-    document.body.append(compactHandle);
-    fireEvent.pointerDown(compactHandle, {
-      clientX: 12,
-      clientY: 12,
-      pointerId: 1,
-    });
-    window.dispatchEvent(new Event("looper:overlay-automatic-move"));
-
-    act(() => {
-      windowEvents.moved?.({ payload: { x: 2_100, y: 24 } });
-      vi.advanceTimersByTime(120);
-    });
-
-    expect(overlayActions.persist).not.toHaveBeenCalled();
-  });
-
-  test("does not restore the automatic-position storage version", async () => {
-    overlayActions.restore.mockResolvedValue({ x: 2_100, y: 24 });
-    localStorage.setItem(
-      "looper:overlay-position:v4",
-      JSON.stringify({ x: 2_100, y: 24 }),
-    );
-
-    renderHook(() => useOverlayPosition(true));
-    await act(async () => {
-      await Promise.resolve();
-    });
-
-    expect(overlayActions.restore).not.toHaveBeenCalled();
-  });
+  expect(native.dispose).toHaveBeenCalledOnce();
 });

@@ -156,6 +156,20 @@ describe("Home native event bridge", () => {
     });
   });
 
+  test("routes Fn help directly to Privacy and renews repeated navigation", async () => {
+    render(<BridgeHarness />);
+    await finishRegistrations();
+    act(bridge.state.handlers["navigate-app-privacy"] as () => void);
+    expect(currentState()).toMatchObject({
+      activeView: "settings",
+      settingsTab: "app",
+      settingsSection: "privacy",
+    });
+    const request = currentState().settingsRequest;
+    act(bridge.state.handlers["navigate-app-privacy"] as () => void);
+    expect(currentState().settingsRequest).toBe(request + 1);
+  });
+
   test("deduplicates native drops and routes returned checkout events", async () => {
     render(<BridgeHarness />);
     await finishRegistrations();

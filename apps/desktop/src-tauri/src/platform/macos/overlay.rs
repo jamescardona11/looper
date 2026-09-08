@@ -85,7 +85,38 @@ pub fn init(app: &AppHandle<AppRuntime>, overlay_window: &WebviewWindow<AppRunti
     // overlay alrededor de la pill.
     panel.set_transparent(policy.transparent);
     panel.set_ignores_mouse_events(PointerPolicy::PassThrough.ignores_mouse_events());
+    observe_space_changes(app);
     Ok(())
+}
+
+// NSWorkspace retains the block for the lifetime of this observer. Registration
+// is owned by the main thread, just like the panel it restores.
+thread_local! {
+    static SPACE_OBSERVER: std::cell::RefCell<Option<objc2::rc::Retained<NSObject>>> = const { std::cell::RefCell::new(None) };
+}
+
+fn observe_space_changes(app: &AppHandle<AppRuntime>) {
+    use objc2::{class, msg_send, rc::Retained};
+    use objc2_foundation::{NSNotificationCenter, NSOperationQueue, NSString};
+    SPACE_OBSERVER.with(|slot| {
+        if slot.borrow().is_some() { return; }
+        let app = app.clone();
+        let block = block2::RcBlock::new(move |_notification: *const NSNotification| {
+            // A Space transition must not re-dock or re-expand the window.
+            // Reassert visibility only, keeping the person's current anchor.
+            if let Ok(panel) = app.get_webview_panel(crate::MAIN_WINDOW_LABEL) {
+                let interactive = !panel.as_panel().ignoresMouseEvents();
+                schedule_reveal(&app, PointerPolicy::from_interactive(interactive));
+            }
+        });
+        let observer: Retained<NSObject> = unsafe {
+            let workspace: *mut NSObject = msg_send![class!(NSWorkspace), sharedWorkspace];
+            let center: Retained<NSNotificationCenter> = msg_send![workspace, notificationCenter];
+            let name = NSString::from_str("NSWorkspaceActiveSpaceDidChangeNotification");
+            msg_send![&*center, addObserverForName: &*name, object: std::ptr::null::<NSObject>(), queue: &*NSOperationQueue::mainQueue(), usingBlock: &*block]
+        };
+        *slot.borrow_mut() = Some(observer);
+    });
 }
 
 fn initial_style() -> StyleMask {
@@ -123,6 +154,7 @@ fn schedule_reveal(app: &AppHandle<AppRuntime>, pointer: PointerPolicy) {
         };
         panel.set_alpha_value(policy.alpha);
         panel.set_level(PanelLevel::Floating.into());
+        panel.set_collection_behavior(space_behavior().into());
         panel.set_hides_on_deactivate(policy.hides_on_deactivate);
         panel.show();
         panel.order_front_regardless();
@@ -141,22 +173,17 @@ pub async fn set_frame(
     logical_size: (f64, f64),
     physical_origin: (i32, i32),
 ) -> Result<()> {
-    let current_origin = overlay_window
-        .outer_position()
-        .context("read current macOS overlay position")?;
-    let scale = overlay_window
-        .scale_factor()
-        .context("read macOS overlay scale")?;
+    let overlay_window = overlay_window.clone();
     let app_handle = app.clone();
     let (sender, receiver) = tokio::sync::oneshot::channel();
 
     app.run_on_main_thread(move || {
         let result = apply_frame(
             &app_handle,
-            (current_origin.x, current_origin.y),
+            &overlay_window,
             logical_size,
             physical_origin,
-            scale,
+            None,
         );
         let _ = sender.send(result);
     })
@@ -175,22 +202,18 @@ pub fn schedule_frame(
     overlay_window: &WebviewWindow<AppRuntime>,
     logical_size: (f64, f64),
     physical_origin: (i32, i32),
+    target_scale: f64,
 ) -> Result<()> {
-    let current_origin = overlay_window
-        .outer_position()
-        .context("read current macOS overlay position")?;
-    let scale = overlay_window
-        .scale_factor()
-        .context("read macOS overlay scale")?;
+    let overlay_window = overlay_window.clone();
     let app_handle = app.clone();
 
     app.run_on_main_thread(move || {
         if let Err(error) = apply_frame(
             &app_handle,
-            (current_origin.x, current_origin.y),
+            &overlay_window,
             logical_size,
             physical_origin,
-            scale,
+            Some(target_scale),
         ) {
             tracing::error!("Failed to apply scheduled macOS overlay frame: {error}");
         }
@@ -200,22 +223,27 @@ pub fn schedule_frame(
 
 fn apply_frame(
     app: &AppHandle<AppRuntime>,
-    current_tauri_origin: (i32, i32),
+    overlay_window: &WebviewWindow<AppRuntime>,
     logical_size: (f64, f64),
     physical_origin: (i32, i32),
-    scale: f64,
+    target_scale: Option<f64>,
 ) -> Result<()> {
     let panel = app
         .get_webview_panel(crate::MAIN_WINDOW_LABEL)
         .map_err(|error| anyhow!(format!("{error:?}")))
         .context("get macOS overlay panel")?;
+    // Read both coordinate systems in the same main-thread turn. A queued
+    // hover/restore can otherwise combine the old origin with a new frame.
+    let current_origin = overlay_window.outer_position()?;
+    let scale = overlay_window.scale_factor()?;
     let current_frame = panel.as_panel().frame();
     let target_frame = panel_frame_for_tauri_target(
         current_frame,
-        current_tauri_origin,
+        (current_origin.x, current_origin.y),
         physical_origin,
         logical_size,
         scale,
+        target_scale.unwrap_or(scale),
     );
     panel.as_panel().setFrame_display(target_frame, true);
     Ok(())
@@ -226,10 +254,13 @@ fn panel_frame_for_tauri_target(
     current_tauri_origin: (i32, i32),
     target_tauri_origin: (i32, i32),
     target_logical_size: (f64, f64),
-    scale: f64,
+    current_scale: f64,
+    target_scale: f64,
 ) -> NSRect {
-    let delta_x = f64::from(target_tauri_origin.0 - current_tauri_origin.0) / scale;
-    let delta_y = f64::from(target_tauri_origin.1 - current_tauri_origin.1) / scale;
+    let delta_x = f64::from(target_tauri_origin.0) / target_scale
+        - f64::from(current_tauri_origin.0) / current_scale;
+    let delta_y = f64::from(target_tauri_origin.1) / target_scale
+        - f64::from(current_tauri_origin.1) / current_scale;
     let target_x = current_frame.origin.x + delta_x;
 
     // Tauri mide Y hacia abajo desde la esquina superior; AppKit, hacia arriba
@@ -283,15 +314,25 @@ mod tests {
     fn panel_frame_updates_size_and_top_left_in_one_step() {
         let current = NSRect::new(NSPoint::new(100.0, 500.0), NSSize::new(268.0, 56.0));
 
-        let target = panel_frame_for_tauri_target(
-            current,
-            (200, 300),
-            (170, -4),
-            (328.0, 360.0),
-            2.0,
-        );
+        let target =
+            panel_frame_for_tauri_target(current, (200, 300), (170, -4), (328.0, 360.0), 2.0, 2.0);
 
         assert_eq!(target.origin, NSPoint::new(85.0, 348.0));
         assert_eq!(target.size, NSSize::new(328.0, 360.0));
     }
+    #[test]
+    fn moving_from_retina_to_standard_density_uses_the_target_displays_scale() {
+        let current = NSRect::new(NSPoint::new(100.0, 500.0), NSSize::new(96.0, 36.0));
+        let target =
+            panel_frame_for_tauri_target(current, (200, 600), (1600, 400), (264.0, 48.0), 2.0, 1.0);
+        assert_eq!(target.origin, NSPoint::new(1600.0, 388.0));
+        assert_eq!(target.size, NSSize::new(264.0, 48.0));
+        let restored =
+            panel_frame_for_tauri_target(target, (1600, 400), (200, 600), (96.0, 36.0), 1.0, 2.0);
+        assert_eq!(restored, current);
+    }
+}
+
+pub fn primary_button_pressed() -> bool {
+    cidre::cg::EventSrcState::CombinedSession.button_state(cidre::cg::MouseButton::Left)
 }

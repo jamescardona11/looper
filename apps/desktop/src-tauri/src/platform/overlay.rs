@@ -116,10 +116,7 @@ pub async fn set_frame(
             .set_size(LogicalSize::new(logical_size.0, logical_size.1))
             .map_err(|error| format!("Failed to resize overlay: {error}"))?;
         overlay_window
-            .set_position(PhysicalPosition::new(
-                physical_origin.0,
-                physical_origin.1,
-            ))
+            .set_position(PhysicalPosition::new(physical_origin.0, physical_origin.1))
             .map_err(|error| format!("Failed to position overlay: {error}"))?;
         Ok(())
     }
@@ -130,6 +127,7 @@ pub fn schedule_frame(
     overlay_window: &WebviewWindow<AppRuntime>,
     logical_size: (f64, f64),
     physical_origin: (i32, i32),
+    target_scale: f64,
 ) -> Result<(), String> {
     #[cfg(target_os = "macos")]
     {
@@ -138,13 +136,14 @@ pub fn schedule_frame(
             overlay_window,
             logical_size,
             physical_origin,
+            target_scale,
         )
         .map_err(|error| format!("Failed to schedule macOS overlay frame: {error}"));
     }
 
     #[cfg(not(target_os = "macos"))]
     {
-        let _ = app;
+        let _ = (app, target_scale);
         overlay_window
             .set_size(LogicalSize::new(logical_size.0, logical_size.1))
             .map_err(|error| format!("Failed to resize overlay: {error}"))?;
@@ -153,4 +152,18 @@ pub fn schedule_frame(
             .map_err(|error| format!("Failed to position overlay: {error}"))?;
         Ok(())
     }
+}
+
+/// The window server may consume pointer-up during its native drag loop.
+pub fn primary_button_pressed() -> bool {
+    #[cfg(target_os = "macos")]
+    {
+        return crate::platform::macos::overlay::primary_button_pressed();
+    }
+    #[cfg(target_os = "windows")]
+    {
+        return crate::platform::windows::overlay::primary_button_pressed();
+    }
+    #[cfg(not(any(target_os = "macos", target_os = "windows")))]
+    false
 }

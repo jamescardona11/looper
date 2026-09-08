@@ -116,7 +116,8 @@ vi.mock("../../../../data/capture/dictation", () => ({
 }));
 
 vi.mock("../../../../data/capture/shortcuts", () => ({
-  checkShortcutPermission: shortcutPermission.check,
+  refreshShortcutStatus: async () =>
+    (await shortcutPermission.check()) ? "ready" : "accessibility_required",
   retryShortcuts: shortcutPermission.retry,
   openShortcutPermissionSettings: shortcutPermission.open,
   openShortcutPermissionHelp: shortcutPermission.help,
@@ -300,7 +301,7 @@ describe("MeetingCaptureOverlay", () => {
     });
   });
 
-  test("re-registers Fn after Accessibility becomes available", async () => {
+  test("updates Fn after native recovery and continues checking for revocation", async () => {
     vi.useFakeTimers();
     shortcutPermission.allowed = false;
     renderOverlay(recordingState());
@@ -314,16 +315,16 @@ describe("MeetingCaptureOverlay", () => {
       await vi.advanceTimersByTimeAsync(1_500);
     });
 
-    expect(shortcutPermission.retry).toHaveBeenCalledTimes(1);
+    expect(shortcutPermission.retry).not.toHaveBeenCalled();
     expect(screen.getByText("1:24")).toBeTruthy();
 
     await act(async () => {
       await vi.advanceTimersByTimeAsync(4_500);
     });
-    expect(shortcutPermission.check).toHaveBeenCalledTimes(2);
+    expect(shortcutPermission.check).toHaveBeenCalledTimes(5);
   });
 
-  test("removes the transient Fn notice even when Accessibility remains blocked", async () => {
+  test("keeps Fn help and Stop available while Accessibility remains blocked", async () => {
     vi.useFakeTimers();
     shortcutPermission.allowed = false;
     renderOverlay(recordingState());
@@ -333,11 +334,13 @@ describe("MeetingCaptureOverlay", () => {
       await vi.advanceTimersByTimeAsync(12_000);
     });
 
-    expect(screen.queryByRole("button", { name: "Why?" })).toBeNull();
+    expect(screen.getByRole("button", { name: "Why?" })).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Stop" }));
+    expect(stopMutation.mutate).toHaveBeenCalledOnce();
     expect(screen.getByText("Meeting")).toBeTruthy();
   });
 
-  test("does not poll again when Accessibility is already available", async () => {
+  test("detects Accessibility revoked after the listener was ready", async () => {
     vi.useFakeTimers();
     renderOverlay(recordingState());
 
@@ -346,15 +349,20 @@ describe("MeetingCaptureOverlay", () => {
       await vi.advanceTimersByTimeAsync(6_000);
     });
 
-    expect(shortcutPermission.check).toHaveBeenCalledTimes(1);
-    expect(shortcutPermission.retry).toHaveBeenCalledTimes(1);
+    expect(shortcutPermission.check).toHaveBeenCalledTimes(5);
     expect(screen.queryByRole("button", { name: "Why?" })).toBeNull();
+    shortcutPermission.allowed = false;
+    await act(() => vi.advanceTimersByTimeAsync(1500));
+    expect(screen.getByRole("button", { name: "Why?" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Stop" })).toBeTruthy();
   });
 
   test("shows recording state and stops from the same draggable pill", async () => {
     renderOverlay(recordingState());
 
-    expect(screen.getByText("Meeting").hasAttribute("data-tauri-drag-region")).toBe(false);
+    expect(
+      screen.getByText("Meeting").hasAttribute("data-tauri-drag-region"),
+    ).toBe(false);
     expect(screen.queryByText("1:24 · You + Them")).toBeNull();
     expect(screen.queryByText("You + Them")).toBeNull();
     expect(screen.getByText("1:24")).toBeTruthy();

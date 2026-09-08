@@ -17,6 +17,7 @@ export { SettingsErrorBanner } from "./SettingsErrorBanner";
 
 type SettingsRouteProps = Parameters<typeof useSettingsForm>[0] & {
   isOpen: boolean;
+  initialSection?: SettingsSection;
 };
 
 const pageFrameClass =
@@ -29,6 +30,7 @@ function SettingsRoute({
   isOpen,
   onClose,
   initialTab = "general",
+  initialSection,
   transcriptionMode,
 }: SettingsRouteProps) {
   const { t } = useLingui();
@@ -39,7 +41,7 @@ function SettingsRoute({
     transcriptionMode,
   });
   const [activeSection, setActiveSection] = useState<SettingsSection>(
-    initialSettingsSection[initialTab],
+    initialSection ?? initialSettingsSection[initialTab],
   );
 
   const selectSection = (section: SettingsSection) => {

@@ -9,8 +9,8 @@ use super::contracts::{AppRuntime, MAIN_WINDOW_LABEL, SETTINGS_WINDOW_LABEL};
 use super::state::AppState;
 use crate::settings::{default_local_model, SettingsStore, UserSettings};
 use crate::{
-    analytics, assistive, library, license, local_llm, model_manager, pill, platform,
-    recent_transcriptions, tray, update_checker,
+    analytics, assistive, library, license, local_llm, model_manager, pill, platform, tray,
+    update_checker,
 };
 
 #[cfg(target_os = "macos")]
@@ -274,6 +274,7 @@ fn register_commands(builder: tauri::Builder<AppRuntime>) -> tauri::Builder<AppR
         preferences::disable_meeting_awareness_notifications,
         preferences::set_shortcut_capture_active,
         preferences::retry_shortcuts,
+        preferences::refresh_shortcut_status,
         preferences::update_settings,
         preferences::set_dictation_language,
         preferences::get_license_state,
@@ -317,8 +318,7 @@ fn register_commands(builder: tauri::Builder<AppRuntime>) -> tauri::Builder<AppR
         history::retry_llm_cleanup,
         history::undo_llm_cleanup,
         history::cancel_retry_transcription,
-        crate::pill::set_overlay_position,
-        crate::pill::persist_overlay_position,
+        crate::pill::position::set_overlay_position,
         crate::pill::set_meeting_overlay_presentation,
         crate::pill::set_pill_hit_size,
         crate::library::commands::create_library_item,
@@ -552,61 +552,9 @@ pub(crate) fn set_app_menu(
 
 #[cfg(target_os = "macos")]
 fn handle_app_menu_event(app: &AppHandle<AppRuntime>, id: &str) {
-    use crate::platform::macos::menu::{
-        MENU_ID_CHECK_UPDATES, MENU_ID_FEATURE_LAB, MENU_ID_MIC_DEFAULT, MENU_ID_MIC_PREFIX,
-        MENU_ID_SETTINGS,
-    };
-    use crate::recent_transcriptions::MENU_ID_RECENT_TRANSCRIPTION_PREFIX;
-
-    #[cfg(debug_assertions)]
-    if crate::qa_lab::handle_menu_event(app, id) {
-        let settings = app.state::<AppState>().current_settings_unmasked();
-        preferences::refresh_native_menus(app, &settings);
-        return;
-    }
-    if let Some(settings) = crate::speech::menu::handle_speech_menu_event(app, id) {
-        preferences::refresh_native_menus(app, &settings);
-        return;
-    }
-    match id {
-        library::meeting_commands::MENU_ID_MEETING_TOGGLE => {
-            library::meeting_commands::toggle_meeting_from_menu(app)
-        }
-        MENU_ID_SETTINGS => {
-            let _ = tray::open_settings_general(app);
-        }
-        MENU_ID_CHECK_UPDATES => {
-            let _ = tray::open_settings_about(app);
-        }
-        MENU_ID_FEATURE_LAB => {
-            let _ = tray::open_settings_feature_lab(app);
-        }
-        MENU_ID_MIC_DEFAULT => set_microphone(app, None),
-        _ => {
-            if let Some(transcription_id) = id.strip_prefix(MENU_ID_RECENT_TRANSCRIPTION_PREFIX) {
-                recent_transcriptions::copy_transcription_to_clipboard(app, transcription_id);
-            } else if let Some(raw_id) = id.strip_prefix(MENU_ID_MIC_PREFIX) {
-                set_microphone(app, Some(raw_id.strip_prefix("dev:").unwrap_or(raw_id)));
-            }
-        }
-    }
-}
-
-#[cfg(target_os = "macos")]
-fn set_microphone(app: &AppHandle<AppRuntime>, device_id: Option<&str>) {
-    let state = app.state::<AppState>();
-    let mut settings = state.current_settings_unmasked();
-    if settings.microphone_device.as_deref() == device_id {
-        return;
-    }
-    let previous = settings.clone();
-    settings.microphone_device = device_id.map(str::to_owned);
-    match state.persist_settings(settings) {
-        Ok(saved) => {
-            analytics::track_settings_changes(app, &previous, &saved);
-            preferences::refresh_native_menus(app, &saved);
-            state.emit_settings_changed(app, &saved);
-        }
-        Err(failure) => tracing::error!("Failed to update microphone selection: {failure}"),
+    if id == crate::platform::macos::menu::MENU_ID_SETTINGS {
+        let _ = tray::open_settings_general(app);
+    } else {
+        tray::handle_native_menu_event(app, id);
     }
 }

@@ -1,4 +1,5 @@
 use std::collections::BTreeSet;
+use std::sync::atomic::{AtomicBool, Ordering};
 use std::thread::{self, JoinHandle};
 use std::time::Duration;
 
@@ -53,65 +54,196 @@ pub(crate) enum ShortcutCapturePayload {
     Error { message: String },
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "snake_case")]
+pub(crate) enum ShortcutStatus {
+    Capturing,
+    Disabled,
+    AccessibilityRequired,
+    Ready,
+    Unavailable,
+}
+
 #[derive(Default)]
 pub(crate) struct HotkeyCoordinator {
+    // Transitions serialize listener creation and editing. Event dispatch only
+    // reads `editing`, so stopping a worker cannot deadlock against this lock.
+    transition: Mutex<()>,
     registration: Mutex<Option<WorkerLease>>,
+    bindings: Mutex<Vec<RegisteredHotkey>>,
     capture: Mutex<Option<WorkerLease>>,
+    editing: AtomicBool,
 }
 
 impl HotkeyCoordinator {
+    pub(crate) fn is_capturing(&self) -> bool {
+        self.editing.load(Ordering::SeqCst)
+    }
+
     pub(crate) fn replace_registrations(
         &self,
         app: &AppHandle<AppRuntime>,
         bindings: Vec<RegisteredHotkey>,
     ) -> Result<()> {
+        self.replace_with(bindings, |bindings| spawn_registration(app, bindings))
+    }
+
+    fn replace_with(
+        &self,
+        bindings: Vec<RegisteredHotkey>,
+        create: impl FnOnce(Vec<RegisteredHotkey>) -> Result<WorkerLease>,
+    ) -> Result<()> {
+        let _transition = self.transition.lock();
+        *self.bindings.lock() = bindings;
+        if self.is_capturing() {
+            return Ok(());
+        }
         self.stop_registration();
+        self.install_registration(create)
+    }
+
+    pub(crate) fn recover(&self, app: &AppHandle<AppRuntime>) -> ShortcutStatus {
+        self.recover_with(
+            crate::permissions::check_accessibility_permission(),
+            |bindings| spawn_registration(app, bindings),
+        )
+    }
+
+    fn recover_with(
+        &self,
+        accessible: bool,
+        create: impl FnOnce(Vec<RegisteredHotkey>) -> Result<WorkerLease>,
+    ) -> ShortcutStatus {
+        let _transition = self.transition.lock();
+        if self.is_capturing() {
+            return ShortcutStatus::Capturing;
+        }
+        if self.bindings.lock().is_empty() {
+            return ShortcutStatus::Disabled;
+        }
+        if !accessible {
+            self.stop_registration();
+            return ShortcutStatus::AccessibilityRequired;
+        }
+        if !self.registration_is_running() {
+            if let Err(error) = self.install_registration(create) {
+                tracing::warn!("Failed to recover shortcut listener: {error}");
+                return ShortcutStatus::Unavailable;
+            }
+        }
+        if self.registration_is_running() {
+            ShortcutStatus::Ready
+        } else {
+            ShortcutStatus::Unavailable
+        }
+    }
+
+    fn install_registration(
+        &self,
+        create: impl FnOnce(Vec<RegisteredHotkey>) -> Result<WorkerLease>,
+    ) -> Result<()> {
+        let bindings = self.bindings.lock().clone();
         if bindings.is_empty() {
             return Ok(());
         }
-
-        let blocked = blocking_hotkeys(bindings.iter().map(|binding| binding.hotkey).collect());
-        let listener = KeyboardListener::new(blocked)?;
-        let app = app.clone();
-        let worker = WorkerLease::spawn("shortcut-registration", move |stop| {
-            registration_loop(stop, listener, bindings, |action, state, options| {
-                pill::handle_registered_hotkey_event(&app, action, state, options);
-            });
-            Ok(())
-        })?;
-        *self.registration.lock() = Some(worker);
+        *self.registration.lock() = Some(create(bindings)?);
         Ok(())
     }
 
-    pub(crate) fn stop_registration(&self) {
+    fn registration_is_running(&self) -> bool {
+        self.registration.lock().as_ref().is_some_and(|lease| {
+            lease
+                .worker
+                .as_ref()
+                .is_some_and(|worker| !worker.is_finished())
+        })
+    }
+
+    fn stop_registration(&self) {
         self.registration.lock().take();
     }
 
     pub(crate) fn start_capture(&self, app: &AppHandle<AppRuntime>) -> Result<()> {
-        self.stop_capture();
-        let listener = KeyboardListener::new(empty_blocking_hotkeys()).map_err(|error| {
-            let message = error.to_string();
-            emit_capture_event(
-                app,
-                ShortcutCapturePayload::Error {
-                    message: message.clone(),
-                },
-            );
-            anyhow!(message)
-        })?;
-
-        let app = app.clone();
-        let worker = WorkerLease::spawn("shortcut-capture", move |stop| {
-            capture_loop(stop, listener, |payload| emit_capture_event(&app, payload));
-            Ok(())
-        })?;
-        *self.capture.lock() = Some(worker);
-        Ok(())
+        self.start_capture_with(
+            || spawn_capture(app),
+            |bindings| spawn_registration(app, bindings),
+        )
     }
 
-    pub(crate) fn stop_capture(&self) {
+    fn start_capture_with(
+        &self,
+        create: impl FnOnce() -> Result<WorkerLease>,
+        restore: impl FnOnce(Vec<RegisteredHotkey>) -> Result<WorkerLease>,
+    ) -> Result<()> {
+        let _transition = self.transition.lock();
+        self.editing.store(true, Ordering::SeqCst);
+        self.stop_registration();
         self.capture.lock().take();
+        match create() {
+            Ok(worker) => {
+                *self.capture.lock() = Some(worker);
+                Ok(())
+            }
+            Err(error) => {
+                self.editing.store(false, Ordering::SeqCst);
+                if let Err(restore_error) = self.install_registration(restore) {
+                    tracing::warn!(
+                        "Failed to restore shortcuts after editing failed: {restore_error}"
+                    );
+                }
+                Err(error)
+            }
+        }
     }
+
+    pub(crate) fn finish_capture(&self, app: &AppHandle<AppRuntime>) -> Result<()> {
+        self.finish_capture_with(|bindings| spawn_registration(app, bindings))
+    }
+
+    fn finish_capture_with(
+        &self,
+        create: impl FnOnce(Vec<RegisteredHotkey>) -> Result<WorkerLease>,
+    ) -> Result<()> {
+        let _transition = self.transition.lock();
+        self.editing.store(false, Ordering::SeqCst);
+        self.capture.lock().take();
+        if self.registration_is_running() {
+            return Ok(());
+        }
+        self.install_registration(create)
+    }
+}
+
+fn spawn_registration(
+    app: &AppHandle<AppRuntime>,
+    bindings: Vec<RegisteredHotkey>,
+) -> Result<WorkerLease> {
+    let blocked = blocking_hotkeys(bindings.iter().map(|binding| binding.hotkey).collect());
+    let listener = KeyboardListener::new(blocked)?;
+    let app = app.clone();
+    WorkerLease::spawn("shortcut-registration", move |stop| {
+        registration_loop(stop, listener, bindings, |action, state, options| {
+            pill::handle_registered_hotkey_event(&app, action, state, options);
+        });
+        Ok(())
+    })
+}
+
+fn spawn_capture(app: &AppHandle<AppRuntime>) -> Result<WorkerLease> {
+    let listener = KeyboardListener::new(empty_blocking_hotkeys()).map_err(|error| {
+        emit_capture_event(
+            app,
+            ShortcutCapturePayload::Error {
+                message: error.to_string(),
+            },
+        );
+        error
+    })?;
+    let app = app.clone();
+    WorkerLease::spawn("shortcut-capture", move |stop| {
+        capture_loop(stop, listener, |payload| emit_capture_event(&app, payload));
+        Ok(())
+    })
 }
 
 fn registration_loop(
@@ -662,5 +794,168 @@ mod tests {
             serde_json::to_value(error).unwrap(),
             json!({"kind": "error", "message": "permission required"})
         );
+    }
+}
+
+#[cfg(test)]
+mod recovery_tests {
+    use super::*;
+
+    fn worker() -> WorkerLease {
+        WorkerLease::spawn("test-shortcuts", |stop| {
+            let _ = stop.recv();
+            Ok(())
+        })
+        .unwrap()
+    }
+
+    fn configured() -> HotkeyCoordinator {
+        let hotkeys = HotkeyCoordinator::default();
+        hotkeys.bindings.lock().push(RegisteredHotkey {
+            hotkey: "Ctrl+Shift+A".parse().unwrap(),
+            action: ShortcutAction::Toggle,
+            options: ShortcutOptions::default(),
+        });
+        hotkeys
+    }
+
+    #[test]
+    fn permission_recovery_does_not_interrupt_shortcut_editing() {
+        let hotkeys = configured();
+        hotkeys
+            .start_capture_with(|| Ok(worker()), |_| panic!("Editing did not fail"))
+            .unwrap();
+        assert_eq!(
+            hotkeys.recover_with(true, |_| panic!("Must not replace editing")),
+            ShortcutStatus::Capturing
+        );
+        assert!(
+            hotkeys.is_capturing(),
+            "Permission recovery cancelled shortcut editing"
+        );
+        assert!(hotkeys.capture.lock().is_some());
+        assert!(!hotkeys.registration_is_running());
+        hotkeys.finish_capture_with(|_| Ok(worker())).unwrap();
+        assert!(!hotkeys.is_capturing());
+        assert!(hotkeys.registration_is_running());
+    }
+
+    #[test]
+    fn revocation_stops_registration_and_recovery_is_idempotent() {
+        let hotkeys = configured();
+        assert_eq!(
+            hotkeys.recover_with(true, |_| Ok(worker())),
+            ShortcutStatus::Ready
+        );
+        assert_eq!(
+            hotkeys.recover_with(true, |_| panic!("Already registered")),
+            ShortcutStatus::Ready
+        );
+        assert_eq!(
+            hotkeys.recover_with(false, |_| panic!("No permission")),
+            ShortcutStatus::AccessibilityRequired
+        );
+        assert!(!hotkeys.registration_is_running());
+        assert_eq!(
+            hotkeys.recover_with(true, |_| Err(anyhow!("Listener failed"))),
+            ShortcutStatus::Unavailable
+        );
+        assert_eq!(
+            hotkeys.recover_with(true, |_| Ok(worker())),
+            ShortcutStatus::Ready
+        );
+    }
+
+    #[test]
+    fn disabled_shortcuts_never_create_a_listener() {
+        assert_eq!(
+            HotkeyCoordinator::default().recover_with(true, |_| panic!("Disabled")),
+            ShortcutStatus::Disabled
+        );
+    }
+
+    #[test]
+    fn failed_editing_restores_recording_and_clears_capture_mode() {
+        let hotkeys = configured();
+        assert!(hotkeys
+            .start_capture_with(|| Err(anyhow!("No editing listener")), |_| Ok(worker()))
+            .is_err());
+        assert!(!hotkeys.is_capturing());
+        assert!(hotkeys.registration_is_running());
+    }
+
+    #[test]
+    fn finishing_editing_retries_a_failed_restore_without_restarting_a_healthy_listener() {
+        let hotkeys = configured();
+        hotkeys
+            .start_capture_with(|| Ok(worker()), |_| panic!("No capture failure"))
+            .unwrap();
+        assert!(hotkeys
+            .finish_capture_with(|_| Err(anyhow!("Permission not ready")))
+            .is_err());
+        assert!(!hotkeys.registration_is_running());
+        hotkeys.finish_capture_with(|_| Ok(worker())).unwrap();
+        assert!(
+            hotkeys.registration_is_running(),
+            "A second finish must recover the listener"
+        );
+        hotkeys
+            .finish_capture_with(|_| panic!("The listener is already healthy"))
+            .unwrap();
+    }
+
+    #[test]
+    fn bindings_changed_during_editing_are_used_when_editing_finishes() {
+        let hotkeys = configured();
+        hotkeys
+            .start_capture_with(|| Ok(worker()), |_| panic!("No failure"))
+            .unwrap();
+        let new_hotkey = "Ctrl+Shift+B".parse().unwrap();
+        hotkeys
+            .replace_with(
+                vec![RegisteredHotkey {
+                    hotkey: new_hotkey,
+                    action: ShortcutAction::Hold,
+                    options: ShortcutOptions::default(),
+                }],
+                |_| panic!("Editing must keep its worker"),
+            )
+            .unwrap();
+        assert!(hotkeys.is_capturing());
+        hotkeys
+            .finish_capture_with(|bindings| {
+                assert_eq!(bindings.len(), 1);
+                assert_eq!(bindings[0].hotkey, new_hotkey);
+                Ok(worker())
+            })
+            .unwrap();
+    }
+
+    #[test]
+    fn competing_recovery_requests_only_create_one_registration() {
+        use std::sync::atomic::AtomicUsize;
+        use std::sync::{Arc, Barrier};
+        let hotkeys = Arc::new(configured());
+        let start = Arc::new(Barrier::new(3));
+        let created = Arc::new(AtomicUsize::new(0));
+        let threads: Vec<_> = (0..2)
+            .map(|_| {
+                let hotkeys = Arc::clone(&hotkeys);
+                let start = Arc::clone(&start);
+                let created = Arc::clone(&created);
+                thread::spawn(move || {
+                    start.wait();
+                    hotkeys.recover_with(true, |_| {
+                        created.fetch_add(1, Ordering::SeqCst);
+                        Ok(worker())
+                    })
+                })
+            })
+            .collect();
+        start.wait();
+        for thread in threads {
+            assert_eq!(thread.join().unwrap(), ShortcutStatus::Ready);
+        }
+        assert_eq!(created.load(Ordering::SeqCst), 1);
     }
 }

@@ -2,7 +2,6 @@
 // Mantiene fuera del componente el contrato Tauri de este gesto de captura.
 import { invoke } from "@tauri-apps/api/core";
 import { getCurrentWindow } from "@tauri-apps/api/window";
-import { OVERLAY_USER_DRAG_EVENT } from "./overlay";
 import { listen, type UnlistenFn } from "@tauri-apps/api/event";
 
 export type CapturePillPresentation = "dock" | "floating";
@@ -33,7 +32,6 @@ export async function setPreflightLanguageMenuOpen(
 // tracking is frozen first: polling through a drag collapses the pill mid-move
 // and can hand the panel back to click-through while the user still holds it.
 export async function beginOverlayDrag(): Promise<void> {
-  window.dispatchEvent(new Event(OVERLAY_USER_DRAG_EVENT));
   await invoke("set_pill_dragging", { dragging: true });
   await getCurrentWindow().startDragging();
 }

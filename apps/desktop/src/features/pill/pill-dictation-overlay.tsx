@@ -731,6 +731,7 @@ const DictationPillOverlay: React.FC<PillOverlayProps> = ({
               {!isExpanded && (
                 <div className="absolute inset-0 z-[2] flex items-center justify-center">
                   <SignalRailContent
+                    nativeDragRegions={false}
                     revealOnGroupInteraction={false}
                     actionsVisible={
                       !isExpanded &&
@@ -755,7 +756,6 @@ const DictationPillOverlay: React.FC<PillOverlayProps> = ({
                     signal={
                       <div
                         ref={containerRef}
-                        data-tauri-drag-region
                         className="relative overflow-hidden rounded-full"
                         style={{
                           width: COMPACT_SIGNAL_WIDTH,

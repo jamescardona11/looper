@@ -3,7 +3,7 @@ use std::{
     sync::atomic::{AtomicU64, Ordering},
     time::Duration,
 };
-use tauri::AppHandle;
+use tauri::{AppHandle, Manager};
 
 static ACCESSIBILITY_GENERATION: AtomicU64 = AtomicU64::new(0);
 static MICROPHONE_GENERATION: AtomicU64 = AtomicU64::new(0);
@@ -106,13 +106,11 @@ fn accessibility_ready(app: &AppHandle<AppRuntime>) -> bool {
     if !crate::permissions::check_accessibility_permission() {
         return false;
     }
-    match crate::restore_recording_shortcuts(app) {
-        Ok(()) => true,
-        Err(error) => {
-            tracing::warn!("Accessibility granted but shortcuts are not ready: {error}");
-            false
-        }
-    }
+    use crate::core::hotkeys::ShortcutStatus;
+    matches!(
+        app.state::<crate::AppState>().hotkeys.recover(app),
+        ShortcutStatus::Ready | ShortcutStatus::Disabled | ShortcutStatus::Capturing
+    )
 }
 
 #[cfg(test)]

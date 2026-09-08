@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, test, vi } from "vitest";
 import {
   checkShortcutPermission,
+  openShortcutPermissionHelp,
   openShortcutPermissionSettings,
   retryShortcuts,
   subscribeShortcutCapture,
@@ -45,4 +46,26 @@ describe("shortcut data bridge", () => {
       shortcut: "Control+K",
     });
   });
+});
+
+test("opens macOS Accessibility directly when Fn permission is missing", async () => {
+  tauri.invoke.mockResolvedValueOnce(false).mockResolvedValueOnce(undefined);
+
+  await openShortcutPermissionHelp();
+
+  expect(tauri.invoke.mock.calls).toEqual([
+    ["check_accessibility_permission"],
+    ["open_accessibility_settings"],
+  ]);
+});
+
+test("keeps in-app troubleshooting for an unavailable shortcut with permission", async () => {
+  tauri.invoke.mockResolvedValueOnce(true).mockResolvedValueOnce(undefined);
+
+  await openShortcutPermissionHelp();
+
+  expect(tauri.invoke.mock.calls).toEqual([
+    ["check_accessibility_permission"],
+    ["open_accessibility_help"],
+  ]);
 });

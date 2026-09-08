@@ -61,9 +61,7 @@ macro_rules! bool_command {
 
 result_command!(open_accessibility_settings => permissions::open_accessibility_settings);
 
-/// Los ajustes del sistema muestran el permiso ya marcado aunque el sistema lo
-/// niegue para este binario, así que mandar ahí a alguien es dejarlo sin salida.
-/// La explicación vive en Ajustes → App.
+/// In-app troubleshooting for shortcuts that remain unavailable with Accessibility granted.
 #[tauri::command]
 pub(crate) fn open_accessibility_help(app: tauri::AppHandle<crate::AppRuntime>) {
     if let Err(error) = crate::tray::open_settings_app_privacy(&app) {

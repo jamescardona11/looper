@@ -1,5 +1,11 @@
 import { useLingui } from "@lingui/react/macro";
-import { CaretDown, Check, Microphone, Plus } from "@phosphor-icons/react";
+import {
+  CaretDown,
+  Check,
+  Microphone,
+  Plus,
+  WarningCircle,
+} from "@phosphor-icons/react";
 import type { CapturePillDockPosition } from "../../data/capture/dictation";
 import type { TranscriptionLanguageOption } from "../../shared/lib/transcriptionLanguages";
 import { LooperLogo } from "../../shared/ui/LooperLogo";
@@ -9,6 +15,8 @@ import {
 } from "./pill-preflight-layout";
 import { useOverlayDrag } from "./use-overlay-drag";
 import { usePillPreflight } from "./use-pill-preflight";
+import { useShortcutStatus } from "./use-shortcut-status";
+import { openShortcutPermissionHelp } from "../../data/capture/shortcuts";
 
 const tenPixelTextClass = "ui-text-meta";
 const elevenPixelTextClass = "ui-text-label";
@@ -67,8 +75,12 @@ function DragHandle({ onPointerDown, compact = false }: DragHandleProps) {
 function FloatingLauncher({
   onPointerDown,
   placement,
+  shortcutStatus,
+  beginDictation,
 }: Pick<ReturnType<typeof useOverlayDrag>, "onPointerDown"> & {
   placement?: string;
+  shortcutStatus: ReturnType<typeof useShortcutStatus>;
+  beginDictation: () => void;
 }) {
   return (
     <div
@@ -77,19 +89,61 @@ function FloatingLauncher({
       }`}
     >
       <DragHandle onPointerDown={onPointerDown} compact />
-      <span
-        data-overlay-expand-zone
-        aria-hidden="true"
-        className="flex h-full w-[46px] shrink-0 items-center justify-center gap-1.5 border-l border-white/10 px-2 ui-text-meta font-semibold text-[var(--color-pill-preview-text)]"
-      >
-        <span>Fn</span>
-        <span className="h-1 w-1 shrink-0 rounded-full bg-[var(--color-accent)]" />
-      </span>
+      <ShortcutControl status={shortcutStatus} onReadyClick={beginDictation} />
     </div>
   );
 }
 
+function ShortcutControl({
+  status,
+  onReadyClick,
+}: {
+  status: ReturnType<typeof useShortcutStatus>;
+  onReadyClick: () => void;
+}) {
+  const { t } = useLingui();
+  const ready = status === "ready";
+  const checking = status === "checking" || status === "capturing";
+  const label =
+    status === "accessibility_required"
+      ? t({
+          id: "pill.shortcut.permission",
+          message:
+            "Enable Accessibility to use Fn. You can still click Dictate.",
+        })
+      : t({
+          id: "pill.shortcut.unavailable",
+          message:
+            "Keyboard shortcut unavailable. Open settings to fix it, or click Dictate.",
+        });
+  return (
+    <button
+      type="button"
+      data-overlay-expand-zone
+      disabled={checking}
+      aria-label={
+        ready ? t({ id: "pill.preflight.dictate", message: "Dictate" }) : label
+      }
+      title={ready ? "Fn" : label}
+      onClick={
+        ready
+          ? onReadyClick
+          : () => {
+              void openShortcutPermissionHelp();
+            }
+      }
+      className="flex h-full w-[46px] shrink-0 items-center justify-center gap-1 border-l border-white/10 ui-text-meta font-semibold text-[var(--color-pill-preview-text)]"
+    >
+      {checking ? "…" : "Fn"}
+      {!ready && !checking && (
+        <WarningCircle size={10} weight="fill" aria-hidden="true" />
+      )}
+    </button>
+  );
+}
+
 type DockControlsProps = {
+  shortcutStatus: ReturnType<typeof useShortcutStatus>;
   onPointerDown: ReturnType<typeof useOverlayDrag>["onPointerDown"];
   language: string;
   menuOpen: boolean;
@@ -101,6 +155,7 @@ type DockControlsProps = {
 };
 
 function DockControls({
+  shortcutStatus,
   onPointerDown,
   language,
   menuOpen,
@@ -118,7 +173,7 @@ function DockControls({
         type="button"
         onClick={beginDictation}
         disabled={starting}
-        className="ui-text-body-sm inline-flex h-10 w-[149px] shrink-0 cursor-pointer items-center gap-2 rounded-full px-2 font-semibold text-[var(--ui-capture-fg-strong)] transition-colors duration-150 hover:bg-[var(--surface-pill-control-muted)] active:bg-[var(--surface-pill-control-active)] disabled:opacity-60"
+        className={`ui-text-body-sm inline-flex h-10 ${shortcutStatus === "ready" ? "w-[149px]" : "w-[103px]"} shrink-0 cursor-pointer items-center gap-2 rounded-full px-2 font-semibold text-[var(--ui-capture-fg-strong)] transition-colors duration-150 hover:bg-[var(--surface-pill-control-muted)] active:bg-[var(--surface-pill-control-active)] disabled:opacity-60`}
       >
         <span className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[var(--color-accent)] ui-color-on-solid [box-shadow:var(--ui-pill-signal-shadow)]">
           <Microphone size={13} weight="fill" />
@@ -126,12 +181,20 @@ function DockControls({
         {starting
           ? t({ id: "pill.preflight.starting", message: "Starting…" })
           : t({ id: "pill.preflight.dictate", message: "Dictate" })}
-        <kbd
-          className={`ml-auto rounded-md border border-[var(--ui-pill-shell-border)] bg-[var(--ui-capture-key-bg)] px-1.5 py-0.5 ${tenPixelTextClass} font-medium text-[var(--ui-capture-fg)] [box-shadow:var(--ui-pill-key-shadow)]`}
-        >
-          Fn
-        </kbd>
+        {shortcutStatus === "ready" ? (
+          <kbd
+            className={`ml-auto rounded-md border border-[var(--ui-pill-shell-border)] bg-[var(--ui-capture-key-bg)] px-1.5 py-0.5 ${tenPixelTextClass} font-medium text-[var(--ui-capture-fg)] [box-shadow:var(--ui-pill-key-shadow)]`}
+          >
+            Fn
+          </kbd>
+        ) : null}
       </button>
+      {shortcutStatus !== "ready" ? (
+        <ShortcutControl
+          status={shortcutStatus}
+          onReadyClick={beginDictation}
+        />
+      ) : null}
       <span
         aria-hidden="true"
         className="h-5 w-px shrink-0 bg-[var(--color-pill-control-border)]"
@@ -228,6 +291,7 @@ export function CapturePreflight({
 }: CapturePreflightProps) {
   const { t } = useLingui();
   const preflight = usePillPreflight();
+  const shortcutStatus = useShortcutStatus();
   const drag = useOverlayDrag();
   const expanded = !sticky || isHovered || preflight.menuOpen;
   const layout = resolveDockLayout(
@@ -248,6 +312,8 @@ export function CapturePreflight({
       >
         {sticky && !expanded ? (
           <FloatingLauncher
+            shortcutStatus={shortcutStatus}
+            beginDictation={preflight.beginDictation}
             onPointerDown={drag.onPointerDown}
             placement={
               preflight.presentation === "dock"
@@ -267,6 +333,7 @@ export function CapturePreflight({
             })}
           >
             <DockControls
+              shortcutStatus={shortcutStatus}
               onPointerDown={drag.onPointerDown}
               language={preflight.language}
               menuOpen={preflight.menuOpen}

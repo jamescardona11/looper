@@ -11,8 +11,7 @@ vi.mock("@tauri-apps/api/core", () => ({ invoke: tauri.invoke }));
 vi.mock("@tauri-apps/api/event", () => ({ listen: tauri.listen }));
 
 import {
-  OVERLAY_POSITION_AUTOMATIC_MOVE_EVENT,
-  persistOverlayPosition,
+  subscribeOverlayPosition,
   setMeetingOverlayPresentation,
   setOverlayPosition,
   subscribePillInserted,
@@ -25,22 +24,18 @@ describe("overlay native gateway", () => {
     tauri.listen.mockReset();
   });
 
-  test("keeps automatic and persisted movement as separate commands", async () => {
+  test("restores a canonical anchor through the native owner", async () => {
     const position = { x: 120, y: 80 };
     tauri.invoke.mockResolvedValue(position);
 
     await expect(setOverlayPosition(position)).resolves.toEqual(position);
-    await expect(persistOverlayPosition(position)).resolves.toEqual(position);
 
     expect(tauri.invoke.mock.calls).toEqual([
       ["set_overlay_position", position],
-      ["persist_overlay_position", position],
     ]);
   });
 
-  test("announces native layout moves before resizing the meeting surface", async () => {
-    const moved = vi.fn();
-    window.addEventListener(OVERLAY_POSITION_AUTOMATIC_MOVE_EVENT, moved);
+  test("updates meeting presentation through the native owner", async () => {
     tauri.invoke.mockResolvedValue({
       placement: "above",
       sideAlignment: "top",
@@ -52,12 +47,11 @@ describe("overlay native gateway", () => {
       transcriptPinned: false,
     });
 
-    expect(moved).toHaveBeenCalledOnce();
     expect(result).toEqual({ placement: "above", sideAlignment: "top" });
-    window.removeEventListener(OVERLAY_POSITION_AUTOMATIC_MOVE_EVENT, moved);
   });
 
   test("unwraps pill insertion and mode events", async () => {
+    const position = vi.fn();
     const inserted = vi.fn();
     const mode = vi.fn();
     tauri.listen.mockResolvedValue(vi.fn());
@@ -71,6 +65,10 @@ describe("overlay native gateway", () => {
       payload: { expanded: true, tone: "preview" },
     });
 
+    await subscribeOverlayPosition(position);
+    tauri.listen.mock.calls[2]?.[1]({ payload: { x: 120, y: 50 } });
+    expect(tauri.listen.mock.calls[2]?.[0]).toBe("pill:position");
+    expect(position).toHaveBeenCalledWith({ x: 120, y: 50 });
     expect(inserted).toHaveBeenCalledWith({ chars: 12, can_undo: true });
     expect(mode).toHaveBeenCalledWith({ expanded: true, tone: "preview" });
   });

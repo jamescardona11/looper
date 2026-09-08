@@ -11,7 +11,7 @@ describe("English catalog", () => {
     expect(i18n._("meeting.capture.shortcut_enable_hint")).toBe(
       "Accessibility needed",
     );
-    expect(i18n._("meeting.capture.shortcut_enable")).toBe("Why?");
+    expect(i18n._("meeting.capture.shortcut_enable")).toBe("Fix Fn");
     expect(i18n._("settings.app.accessibility.stale_help")).toContain(
       "Remove Looper from Accessibility",
     );

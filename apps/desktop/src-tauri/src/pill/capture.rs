@@ -351,42 +351,6 @@ fn exit_rect(
         .inflate(HOVER_EXIT_MARGIN * scale)
 }
 
-/// Puts a cursor reading and a window frame into one coordinate space.
-///
-/// The window toolkit measures them with two different rulers: the cursor is
-/// scaled by the PRIMARY screen's factor, window geometry by the factor of the
-/// screen the window sits on. On a single-density desktop the two agree and
-/// nothing shows. Put a 2x display next to a 1x primary and they disagree by
-/// that factor, so subtracting one from the other lands the pill's hit area
-/// off-screen and the pill stops answering the pointer entirely.
-///
-/// Logical points are the space that stays continuous across both, so every
-/// hit test is done there - which is why the rects above are in points and
-/// take a scale of 1.
-pub fn to_shared_points(
-    cursor: (f64, f64),
-    cursor_scale: f64,
-    origin: (f64, f64),
-    size: (f64, f64),
-    window_scale: f64,
-) -> ((f64, f64), (f64, f64), (f64, f64)) {
-    let cursor_scale = if cursor_scale > 0.0 {
-        cursor_scale
-    } else {
-        1.0
-    };
-    let window_scale = if window_scale > 0.0 {
-        window_scale
-    } else {
-        1.0
-    };
-    (
-        (cursor.0 / cursor_scale, cursor.1 / cursor_scale),
-        (origin.0 / window_scale, origin.1 / window_scale),
-        (size.0 / window_scale, size.1 / window_scale),
-    )
-}
-
 pub fn hit_test(
     cursor: (f64, f64),
     window_size: (f64, f64),
@@ -493,6 +457,7 @@ fn squared_distance_to_rect(point: (i32, i32), rect: (i32, i32, u32, u32)) -> i6
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::platform::coordinates::CursorCoordinates;
 
     const EVERY_PLACEMENT: [(CapturePillPresentation, CapturePillDockPosition); 8] = [
         (
@@ -751,7 +716,7 @@ mod tests {
     fn a_retina_screen_beside_a_1x_primary_keeps_the_pill_reachable() {
         // The compact pill sits at logical (254, 1474) on the 2x screen; the
         // pointer is dead centre on it at logical (302, 1492).
-        let (cursor, origin, size) = to_shared_points(
+        let (cursor, origin, size) = CursorCoordinates::PrimaryMonitorScaled.to_shared_points(
             (302.0, 1492.0), // cursor, scaled by the 1x primary
             1.0,
             (508.0, 2948.0), // window origin, scaled by the 2x screen
@@ -774,8 +739,13 @@ mod tests {
 
     #[test]
     fn a_uniform_desktop_is_left_exactly_as_it_was() {
-        let (cursor, origin, size) =
-            to_shared_points((302.0, 1492.0), 1.0, (254.0, 1474.0), (96.0, 36.0), 1.0);
+        let (cursor, origin, size) = CursorCoordinates::PrimaryMonitorScaled.to_shared_points(
+            (302.0, 1492.0),
+            1.0,
+            (254.0, 1474.0),
+            (96.0, 36.0),
+            1.0,
+        );
 
         assert_eq!(cursor, (302.0, 1492.0));
         assert_eq!(origin, (254.0, 1474.0));

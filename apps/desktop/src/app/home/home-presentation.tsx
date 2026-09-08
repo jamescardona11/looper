@@ -788,8 +788,9 @@ function HomeWorkspace({
         </WorkspaceRoute>
         <WorkspaceRoute active={state.activeView === "settings"} width="full">
           <SettingsRoute
-            key={`${state.activeView}:${state.settingsTab}`}
+            key={`${state.activeView}:${state.settingsRequest}`}
             initialTab={state.settingsTab}
+            initialSection={state.settingsSection}
             isOpen={state.activeView === "settings"}
             onClose={() => dispatch({ type: "activate-view", view: "home" })}
             transcriptionMode={transcriptionMode}

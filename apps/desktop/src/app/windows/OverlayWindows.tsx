@@ -19,7 +19,7 @@ export function MainOverlayWindow() {
   const meeting = useMeetingCapture().data;
   const meetingActive =
     meeting != null && meetingCaptureIsVisible(meeting.phase);
-  useOverlayPosition(true);
+  useOverlayPosition();
 
   return (
     <div className={centeredWindowClass}>

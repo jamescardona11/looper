@@ -1,8 +1,8 @@
-use crate::pill::capture::{CapturePillDockPosition, CapturePillPresentation};
 use crate::library::meeting_commands::{
     join_calendar_meeting_from_menu, meeting_toggle_label, toggle_meeting_from_menu,
     MENU_ID_MEETING_TOGGLE,
 };
+use crate::pill::capture::{CapturePillDockPosition, CapturePillPresentation};
 use crate::recent_transcriptions::{
     build_recent_transcriptions_menu, copy_transcription_to_clipboard,
     MENU_ID_RECENT_TRANSCRIPTION_PREFIX,
@@ -11,28 +11,27 @@ use crate::settings::UserSettings;
 use crate::speech::menu::{
     build_model_status_items, build_models_submenu, handle_speech_menu_event,
 };
-use crate::{audio, AppRuntime, AppState};
+use crate::{AppRuntime, AppState};
 use chrono::Utc;
 use parking_lot::Mutex;
 use std::sync::OnceLock;
-use tauri::menu::{CheckMenuItemBuilder, Menu, MenuBuilder, MenuItem, SubmenuBuilder};
+use tauri::menu::{Menu, MenuBuilder, MenuItem, SubmenuBuilder};
 use tauri::tray::{TrayIcon, TrayIconBuilder};
 use tauri::{AppHandle, Emitter, Manager};
 
 mod tray_calendar;
+mod tray_dictation;
+pub(crate) use tray_dictation::build_dictation_item;
 mod tray_pill_menu;
 mod tray_settings_window;
 use tray_calendar::{calendar_agenda_entries, calendar_menu_bar_title};
-use tray_pill_menu::{build_capture_pill_submenu, build_dictation_language_submenu};
+pub(crate) use tray_pill_menu::build_capture_pill_submenu;
+use tray_pill_menu::build_dictation_language_submenu;
 pub use tray_settings_window::toggle_settings_window;
 
-// On macOS, share mic constants with the app menu; on other platforms, define locally
-#[cfg(target_os = "macos")]
-use crate::platform::macos::menu::{MENU_ID_MIC_DEFAULT, MENU_ID_MIC_PREFIX};
-#[cfg(not(target_os = "macos"))]
-const MENU_ID_MIC_PREFIX: &str = "menu_mic_";
-#[cfg(not(target_os = "macos"))]
-const MENU_ID_MIC_DEFAULT: &str = "menu_mic_default";
+mod microphone;
+pub(crate) use microphone::build_microphone_submenu;
+use microphone::{select_microphone, MENU_ID_MIC_DEFAULT, MENU_ID_MIC_PREFIX};
 const MENU_ID_CHECK_UPDATES: &str = "menu_check_updates";
 const MENU_ID_FEATURE_LAB: &str = "menu_feature_lab";
 const MENU_ID_CALENDAR_NEXT: &str = "menu_calendar_next";
@@ -302,76 +301,6 @@ pub(crate) fn open_settings_app_privacy(app: &AppHandle<AppRuntime>) -> tauri::R
     open_settings_navigation(app, SettingsNavigationTarget::AppPrivacy)
 }
 
-enum MicrophoneMenuEntry {
-    Choice {
-        id: String,
-        label: String,
-        checked: bool,
-    },
-    Notice {
-        id: &'static str,
-        label: String,
-    },
-}
-
-fn microphone_menu_entries(
-    settings: &UserSettings,
-    devices: &[audio::DeviceInfo],
-) -> Vec<MicrophoneMenuEntry> {
-    let mut entries = vec![MicrophoneMenuEntry::Choice {
-        id: MENU_ID_MIC_DEFAULT.to_string(),
-        label: "System Default".to_string(),
-        checked: settings.microphone_device.is_none(),
-    }];
-    if devices.is_empty() {
-        entries.push(MicrophoneMenuEntry::Notice {
-            id: "menu_mic_none",
-            label: "No input devices found".to_string(),
-        });
-        return entries;
-    }
-
-    entries.extend(devices.iter().map(|device| MicrophoneMenuEntry::Choice {
-        id: format!("{MENU_ID_MIC_PREFIX}dev:{}", device.id),
-        label: if device.is_default {
-            format!("{} (Default)", device.name)
-        } else {
-            device.name.clone()
-        },
-        checked: settings.microphone_device.as_deref() == Some(device.id.as_str()),
-    }));
-    entries
-}
-
-fn build_microphone_submenu(
-    app: &AppHandle<AppRuntime>,
-    settings: &UserSettings,
-) -> tauri::Result<tauri::menu::Submenu<AppRuntime>> {
-    let entries = match audio::list_input_devices() {
-        Ok(devices) => microphone_menu_entries(settings, &devices),
-        Err(error) => vec![MicrophoneMenuEntry::Notice {
-            id: "menu_mic_error",
-            label: format!("Microphone unavailable ({error})"),
-        }],
-    };
-    let mut menu = SubmenuBuilder::new(app, "Microphone");
-    for entry in entries {
-        match entry {
-            MicrophoneMenuEntry::Choice { id, label, checked } => {
-                let item = CheckMenuItemBuilder::with_id(id, label)
-                    .checked(checked)
-                    .build(app)?;
-                menu = menu.item(&item);
-            }
-            MicrophoneMenuEntry::Notice { id, label } => {
-                let item = MenuItem::with_id(app, id, label, false, None::<&str>)?;
-                menu = menu.item(&item);
-            }
-        }
-    }
-    menu.build()
-}
-
 fn build_tray_menu(
     app: &AppHandle<AppRuntime>,
     settings: &UserSettings,
@@ -385,8 +314,7 @@ fn build_tray_menu(
         true,
         None::<&str>,
     )?;
-    menu = menu.item(&check_updates);
-    menu = menu.separator();
+    menu = menu.item(&build_dictation_item(app)?);
     let meeting_toggle = MenuItem::with_id(
         app,
         MENU_ID_MEETING_TOGGLE,
@@ -394,7 +322,10 @@ fn build_tray_menu(
         true,
         None::<&str>,
     )?;
-    menu = menu.item(&meeting_toggle);
+    menu = menu
+        .item(&meeting_toggle)
+        .text("menu_pill_recover", "Show Capture Pill")
+        .separator();
     if settings.calendar_meeting_awareness_enabled {
         let state = app.state::<AppState>();
         let entries = calendar_agenda_entries(&state.meeting_awareness().agenda(), Utc::now());
@@ -434,44 +365,59 @@ fn build_tray_menu(
         }
         menu = menu.item(&agenda.build()?);
     }
-    menu = menu.item(&build_capture_pill_submenu(app, settings)?);
-    menu = menu.item(&build_dictation_language_submenu(app, settings)?);
-    if cfg!(debug_assertions) {
-        let feature_lab =
-            MenuItem::with_id(app, MENU_ID_FEATURE_LAB, "Feature Lab", true, None::<&str>)?;
-        menu = menu.item(&feature_lab);
-    }
-    menu = menu.separator();
-    let status_items = build_model_status_items(app, settings)?;
-    for item in &status_items {
-        menu = menu.item(item);
-    }
-    if !status_items.is_empty() {
-        menu = menu.separator();
-    }
-
-    // TODO: add back Mode submenu when cloud is added.
-    // let mode_submenu = SubmenuBuilder::new(app, "Mode") ...
-
-    menu = menu.item(&build_models_submenu(app, settings)?);
-
-    menu = menu.item(&build_microphone_submenu(app, settings)?);
+    menu = menu.item(&build_recent_transcriptions_menu(
+        app,
+        "Recent Transcriptions",
+    )?);
+    menu = menu
+        .separator()
+        .item(&build_capture_settings_submenu(app, settings)?);
     #[cfg(debug_assertions)]
     {
-        menu = menu.separator();
-        menu = menu.item(&crate::qa_lab::build_submenu(app)?);
+        menu = menu
+            .text(MENU_ID_FEATURE_LAB, "Feature Lab")
+            .item(&crate::qa_lab::build_submenu(app)?);
     }
-
-    menu = menu.separator();
-    let recent_submenu = build_recent_transcriptions_menu(app, "Last Transcriptions")?;
-    menu = menu.item(&recent_submenu);
     menu = menu.separator();
 
     let open_settings = MenuItem::with_id(app, "open_settings", "Open Looper", true, None::<&str>)?;
     let quit = MenuItem::with_id(app, "quit_looper", "Quit Looper", true, None::<&str>)?;
-    menu = menu.item(&open_settings).item(&quit);
+    menu = menu
+        .item(&open_settings)
+        .item(&check_updates)
+        .separator()
+        .item(&quit);
 
     menu.build()
+}
+
+fn build_capture_settings_submenu(
+    app: &AppHandle<AppRuntime>,
+    settings: &UserSettings,
+) -> tauri::Result<tauri::menu::Submenu<AppRuntime>> {
+    let mut menu = SubmenuBuilder::new(app, "Capture Settings")
+        .item(&build_dictation_language_submenu(app, settings)?)
+        .item(&build_microphone_submenu(app, settings)?)
+        .item(&build_models_submenu(app, settings)?);
+    let status_items = build_model_status_items(app, settings)?;
+    if !status_items.is_empty() {
+        menu = menu.separator();
+        for item in &status_items {
+            menu = menu.item(item);
+        }
+    }
+    menu.separator()
+        .item(&build_capture_pill_submenu(app, settings)?)
+        .build()
+}
+
+pub(crate) fn refresh_capture_menus(app: &AppHandle<AppRuntime>) {
+    let task_app = app.clone();
+    let _ = app.run_on_main_thread(move || {
+        if let Err(error) = tray_dictation::refresh(&task_app) {
+            tracing::error!("Failed to update dictation menu action: {error}");
+        }
+    });
 }
 
 pub(crate) fn refresh_tray_menu(
@@ -479,9 +425,10 @@ pub(crate) fn refresh_tray_menu(
     settings: &UserSettings,
 ) -> tauri::Result<()> {
     let state = app.state::<AppState>();
-    if let Some(tray) = state.tray.lock().clone() {
+    if let Some(tray) = state.tray_handle() {
         let menu = build_tray_menu(app, settings)?;
-        tray.set_menu(Some(menu))?;
+        tray.set_menu(Some(menu.clone()))?;
+        *state.tray_menu.lock() = Some(menu);
         set_calendar_tray_title(&tray, settings, state.meeting_awareness().agenda())?;
     }
     Ok(())
@@ -492,7 +439,7 @@ pub(crate) fn refresh_calendar_tray_title(
     settings: &UserSettings,
 ) -> tauri::Result<()> {
     let state = app.state::<AppState>();
-    if let Some(tray) = state.tray.lock().clone() {
+    if let Some(tray) = state.tray_handle() {
         set_calendar_tray_title(&tray, settings, state.meeting_awareness().agenda())?;
     }
     Ok(())
@@ -521,29 +468,14 @@ fn refresh_speech_menus(app: &AppHandle<AppRuntime>, settings: &UserSettings) {
     }
 }
 
-fn set_microphone_from_menu(app: &AppHandle<AppRuntime>, device_id: Option<&str>) {
-    let state = app.state::<AppState>();
-    let mut settings = state.current_settings();
-    if settings.microphone_device.as_deref() == device_id {
-        return;
-    }
-    settings.microphone_device = device_id.map(|id| id.to_string());
-    match state.persist_settings(settings.clone()) {
-        Ok(saved) => {
-            refresh_speech_menus(app, &saved);
-            if let Err(err) = app.emit(crate::EVENT_SETTINGS_CHANGED, &saved) {
-                tracing::error!("Failed to emit settings change: {err}");
-            }
-        }
-        Err(err) => tracing::error!("Failed to update microphone selection: {err}"),
-    }
-}
-
 enum TrayAction<'a> {
+    DictationStart,
+    DictationStop,
     MeetingToggle,
     DefaultMicrophone,
     CheckUpdates,
     FeatureLab,
+    PillRecover,
     PillPosition(CapturePillDockPosition),
     PillPresentation(CapturePillPresentation),
     DictationLanguage(&'static str),
@@ -556,6 +488,9 @@ enum TrayAction<'a> {
 impl<'a> TrayAction<'a> {
     fn decode(id: &'a str) -> Self {
         match id {
+            tray_dictation::START_ID => return Self::DictationStart,
+            tray_dictation::STOP_ID => return Self::DictationStop,
+            "menu_pill_recover" => return Self::PillRecover,
             MENU_ID_MEETING_TOGGLE => return Self::MeetingToggle,
             MENU_ID_MIC_DEFAULT => return Self::DefaultMicrophone,
             MENU_ID_CHECK_UPDATES => return Self::CheckUpdates,
@@ -600,15 +535,27 @@ impl<'a> TrayAction<'a> {
     }
 }
 
-fn handle_tray_menu_event(app: &AppHandle<AppRuntime>, id: &str) {
+pub(crate) fn handle_native_menu_event(app: &AppHandle<AppRuntime>, id: &str) {
+    #[cfg(debug_assertions)]
+    if crate::qa_lab::handle_menu_event(app, id) {
+        refresh_speech_menus(app, &app.state::<AppState>().current_settings_unmasked());
+        return;
+    }
     if let Some(saved) = handle_speech_menu_event(app, id) {
         refresh_speech_menus(app, &saved);
         return;
     }
 
     match TrayAction::decode(id) {
+        TrayAction::DictationStart => tray_dictation::dictate_from_menu(app, false),
+        TrayAction::DictationStop => tray_dictation::dictate_from_menu(app, true),
+        TrayAction::PillRecover => {
+            if let Err(error) = crate::pill::recover_idle_sticky(app) {
+                crate::toast::show(app, "error", Some("Capture Pill"), &error);
+            }
+        }
         TrayAction::MeetingToggle => toggle_meeting_from_menu(app),
-        TrayAction::DefaultMicrophone => set_microphone_from_menu(app, None),
+        TrayAction::DefaultMicrophone => select_microphone(app, None),
         TrayAction::CheckUpdates => {
             if let Err(err) = open_settings_about(app) {
                 tracing::error!("Failed to open settings for update check: {err}");
@@ -639,7 +586,7 @@ fn handle_tray_menu_event(app: &AppHandle<AppRuntime>, id: &str) {
         TrayAction::CopyTranscription(transcription_id) => {
             copy_transcription_to_clipboard(app, transcription_id)
         }
-        TrayAction::SelectMicrophone(device_id) => set_microphone_from_menu(app, Some(device_id)),
+        TrayAction::SelectMicrophone(device_id) => select_microphone(app, Some(device_id)),
         TrayAction::Ignore => {}
     }
 }
@@ -719,42 +666,6 @@ mod capture_pill_menu_tests {
             TrayAction::SelectMicrophone("device-9")
         ));
     }
-
-    #[test]
-    fn microphone_menu_marks_the_selected_device_and_default_hardware() {
-        let settings = UserSettings {
-            microphone_device: Some("usb-mic".to_string()),
-            ..UserSettings::default()
-        };
-        let entries = microphone_menu_entries(
-            &settings,
-            &[
-                audio::DeviceInfo {
-                    id: "built-in".to_string(),
-                    name: "MacBook Microphone".to_string(),
-                    is_default: true,
-                },
-                audio::DeviceInfo {
-                    id: "usb-mic".to_string(),
-                    name: "USB Microphone".to_string(),
-                    is_default: false,
-                },
-            ],
-        );
-
-        assert!(matches!(
-            &entries[0],
-            MicrophoneMenuEntry::Choice { id, checked: false, .. } if id == MENU_ID_MIC_DEFAULT
-        ));
-        assert!(matches!(
-            &entries[1],
-            MicrophoneMenuEntry::Choice { label, checked: false, .. } if label == "MacBook Microphone (Default)"
-        ));
-        assert!(matches!(
-            &entries[2],
-            MicrophoneMenuEntry::Choice { id, checked: true, .. } if id == "menu_mic_dev:usb-mic"
-        ));
-    }
 }
 
 pub fn build_tray(app: &AppHandle<AppRuntime>) -> tauri::Result<TrayIcon<AppRuntime>> {
@@ -788,9 +699,14 @@ pub fn build_tray(app: &AppHandle<AppRuntime>) -> tauri::Result<TrayIcon<AppRunt
             "quit_looper" => {
                 app.exit(0);
             }
-            other => handle_tray_menu_event(app, other),
+            #[cfg(not(target_os = "macos"))]
+            other => handle_native_menu_event(app, other),
+            // macOS already dispatches shared actions through the app's global menu handler.
+            #[cfg(target_os = "macos")]
+            _ => {}
         })
         .build(app)?;
+    *app.state::<AppState>().tray_menu.lock() = Some(menu);
     set_calendar_tray_title(
         &tray,
         &settings,

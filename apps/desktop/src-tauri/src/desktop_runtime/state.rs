@@ -95,7 +95,6 @@ impl TokenRegistry {
 struct SettingsRuntime {
     current: Mutex<UserSettings>,
     cloud_token: Mutex<Option<String>>,
-    shortcut_capture: AtomicBool,
     start_hidden: bool,
 }
 
@@ -180,7 +179,8 @@ pub struct AppState {
     pub(crate) local_llm_runtime: Arc<local_llm::LocalLlmRuntime>,
     pub(crate) settings_store: Arc<SettingsStore>,
     pub(crate) hotkeys: core::hotkeys::HotkeyCoordinator,
-    pub(crate) tray: Mutex<Option<tauri::tray::TrayIcon<AppRuntime>>>,
+    tray: Mutex<Option<tauri::tray::TrayIcon<AppRuntime>>>,
+    pub(crate) tray_menu: Mutex<Option<tauri::menu::Menu<AppRuntime>>>,
     pub(crate) settings_close_handler_registered: AtomicBool,
 }
 
@@ -216,7 +216,6 @@ impl AppState {
                 start_hidden: launched_at_login && settings.start_in_background,
                 current: Mutex::new(settings),
                 cloud_token: Mutex::new(None),
-                shortcut_capture: AtomicBool::new(false),
             },
             recording: RecordingRuntime::default(),
             downloads: TokenRegistry::default(),
@@ -230,6 +229,7 @@ impl AppState {
             settings_store,
             hotkeys: core::hotkeys::HotkeyCoordinator::default(),
             tray: Mutex::new(None),
+            tray_menu: Mutex::new(None),
             settings_close_handler_registered: AtomicBool::new(false),
         }
     }
@@ -362,14 +362,8 @@ impl AppState {
         self.pill.as_ref()
     }
 
-    pub fn set_shortcut_capture_active(&self, active: bool) {
-        self.settings
-            .shortcut_capture
-            .store(active, Ordering::SeqCst);
-    }
-
     pub fn is_shortcut_capture_active(&self) -> bool {
-        self.settings.shortcut_capture.load(Ordering::SeqCst)
+        self.hotkeys.is_capturing()
     }
 
     pub fn record_transcription_completed(&self) {
@@ -413,6 +407,12 @@ impl AppState {
 
     pub fn store_tray(&self, tray: tauri::tray::TrayIcon<AppRuntime>) {
         self.tray.lock().replace(tray);
+    }
+
+    /// Native tray calls may wait for the main thread, so callers must never
+    /// retain the state lock while updating the tray.
+    pub(crate) fn tray_handle(&self) -> Option<tauri::tray::TrayIcon<AppRuntime>> {
+        self.tray.lock().clone()
     }
 
     pub fn request_cancellation(&self) {

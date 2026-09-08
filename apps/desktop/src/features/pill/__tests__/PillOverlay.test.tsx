@@ -31,6 +31,17 @@ const actions = vi.hoisted(() => ({
   undoLastInsertion: vi.fn(() => Promise.resolve()),
 }));
 
+const shortcut = vi.hoisted(() => ({
+  status: "ready",
+  openHelp: vi.fn(() => Promise.resolve()),
+}));
+vi.mock("../use-shortcut-status", () => ({
+  useShortcutStatus: () => shortcut.status,
+}));
+vi.mock("../../../data/capture/shortcuts", () => ({
+  openShortcutPermissionHelp: shortcut.openHelp,
+}));
+
 const pillState = vi.hoisted(() => ({
   pillStatus: "processing",
   spectrumBinsRef: { current: new Uint8Array(256) },
@@ -164,6 +175,7 @@ beforeAll(() => {
 });
 
 afterEach(() => {
+  shortcut.status = "ready";
   cleanup();
   actions.cancelEditAction.mockClear();
   actions.cancelPendingInsertion.mockClear();
@@ -522,6 +534,35 @@ describe("PillOverlay result", () => {
     expect(
       screen.queryByRole("button", { name: "Cancel recording" }),
     ).toBeNull();
+  });
+
+  test("keeps missing Fn access visible and offers help without disabling click dictation", async () => {
+    shortcut.status = "accessibility_required";
+    pillState.pillStatus = "idle";
+    pillState.isHovered = false;
+    const view = render(
+      <I18nProvider i18n={i18n}>
+        <PillOverlay />
+      </I18nProvider>,
+    );
+    await act(async () => {});
+    const help = screen.getByRole("button", {
+      name: /Enable Accessibility to use Fn/,
+    });
+    expect(help.textContent).toBe("Fn");
+    fireEvent.click(help);
+    expect(shortcut.openHelp).toHaveBeenCalledOnce();
+    pillState.isHovered = true;
+    view.rerender(
+      <I18nProvider i18n={i18n}>
+        <PillOverlay />
+      </I18nProvider>,
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Dictate" }));
+    expect(actions.startDictationFromDock).toHaveBeenCalledOnce();
+    expect(
+      screen.getByRole("button", { name: /Enable Accessibility to use Fn/ }),
+    ).toBeTruthy();
   });
 
   test("renders the compact black launcher until native hover reveals the full dock", async () => {

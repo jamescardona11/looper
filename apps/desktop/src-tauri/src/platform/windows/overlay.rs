@@ -165,3 +165,18 @@ mod tests {
         assert!(!ExtendedStylePlan::for_overlay(current, false).changed());
     }
 }
+
+pub fn primary_button_pressed() -> bool {
+    use windows::Win32::UI::{
+        Input::KeyboardAndMouse::{GetAsyncKeyState, VK_LBUTTON, VK_RBUTTON},
+        WindowsAndMessaging::{GetSystemMetrics, SM_SWAPBUTTON},
+    };
+    unsafe {
+        let button = if GetSystemMetrics(SM_SWAPBUTTON) != 0 {
+            VK_RBUTTON
+        } else {
+            VK_LBUTTON
+        };
+        GetAsyncKeyState(i32::from(button.0)) < 0
+    }
+}
