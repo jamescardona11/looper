@@ -5,9 +5,13 @@ use crate::meeting_awareness::MeetingAwarenessPhase;
 use crate::pill::PillStatus;
 use crate::{AppRuntime, AppState};
 
+use super::capture_start_failure::{
+    CaptureStartFailure, MISSING_MEETING_MODEL, show_capture_start_failure,
+};
+
 use super::types::{
-    LibraryItemStatus, MeetingCalendarContext, MeetingCaptureState, MeetingDetails,
-    MeetingNotesUpdate, MeetingStartOptions, EVENT_MEETING_DETAILS_CHANGED,
+    EVENT_MEETING_DETAILS_CHANGED, LibraryItemStatus, MeetingCalendarContext, MeetingCaptureState,
+    MeetingDetails, MeetingNotesUpdate, MeetingStartOptions,
 };
 
 pub(crate) const MENU_ID_MEETING_TOGGLE: &str = "menu_meeting_toggle";
@@ -44,7 +48,7 @@ pub(crate) fn join_calendar_meeting_from_menu(app: &AppHandle<AppRuntime>, event
     tauri::async_runtime::spawn(async move {
         let state = app.state::<AppState>();
         if let Err(message) = start_calendar_meeting(&app, &state, meeting).await {
-            crate::toast::show(&app, "error", Some("Meeting recording"), &message);
+            show_capture_start_failure(&app, message);
         }
     });
 }
@@ -65,14 +69,14 @@ pub(crate) fn toggle_meeting_from_menu(app: &AppHandle<AppRuntime>) {
             state.meeting_capture().stop(&app, &state).await.map(|_| ())
         } else {
             if let Err(message) = require_meeting_license(&state) {
-                crate::toast::show(&app, "error", Some("Meeting recording"), &message);
+                show_capture_start_failure(&app, message);
                 return;
             }
             let settings = state.current_settings_unmasked();
             let model_key = match default_meeting_model(&app, &settings) {
                 Ok(model_key) => model_key,
                 Err(message) => {
-                    crate::toast::show(&app, "error", Some("Meeting recording"), &message);
+                    show_capture_start_failure(&app, message);
                     return;
                 }
             };
@@ -93,7 +97,7 @@ pub(crate) fn toggle_meeting_from_menu(app: &AppHandle<AppRuntime>) {
                 .map(|_| ())
         };
         if let Err(message) = result {
-            crate::toast::show(&app, "error", Some("Meeting recording"), &message);
+            show_capture_start_failure(&app, message);
         }
     });
 }
@@ -110,7 +114,9 @@ fn select_live_meeting_model(
     enabled: bool,
     models: &[crate::speech::SpeechModel],
 ) -> Option<String> {
-    enabled.then(|| select_default_live_meeting_model(models)).flatten()
+    enabled
+        .then(|| select_default_live_meeting_model(models))
+        .flatten()
 }
 
 fn select_default_live_meeting_model(models: &[crate::speech::SpeechModel]) -> Option<String> {
@@ -132,10 +138,8 @@ pub(crate) fn default_meeting_model(
     settings: &crate::settings::UserSettings,
 ) -> Result<String, String> {
     let models = crate::speech::list_models(app, settings);
-    select_default_meeting_model(&models, &settings.local_model).ok_or_else(|| {
-        "Install a local transcription model or configure a remote speech provider before recording a meeting."
-            .to_string()
-    })
+    select_default_meeting_model(&models, &settings.local_model)
+        .ok_or_else(|| MISSING_MEETING_MODEL.to_string())
 }
 
 fn select_default_meeting_model(
@@ -176,17 +180,21 @@ pub(crate) fn require_meeting_license(state: &AppState) -> Result<(), String> {
 pub async fn start_default_meeting_capture(
     app: AppHandle<AppRuntime>,
     state: tauri::State<'_, AppState>,
-) -> Result<MeetingCaptureState, String> {
-    start_unscheduled_meeting(&app, &state).await
+) -> Result<MeetingCaptureState, CaptureStartFailure> {
+    start_unscheduled_meeting(&app, &state)
+        .await
+        .map_err(Into::into)
 }
 
 #[tauri::command]
 pub async fn start_note_from_dock(
     app: AppHandle<AppRuntime>,
     state: tauri::State<'_, AppState>,
-) -> Result<MeetingCaptureState, String> {
+) -> Result<MeetingCaptureState, CaptureStartFailure> {
     if state.meeting_capture().is_active() {
-        return Err("A note or meeting recording is already active.".to_string());
+        return Err("A note or meeting recording is already active."
+            .to_string()
+            .into());
     }
     if state.pill().is_recording()
         || !matches!(
@@ -194,7 +202,9 @@ pub async fn start_note_from_dock(
             PillStatus::Idle | PillStatus::Preflight
         )
     {
-        return Err("Finish the current Dictation before starting a note.".to_string());
+        return Err("Finish the current Dictation before starting a note."
+            .to_string()
+            .into());
     }
 
     require_meeting_license(&state)?;
@@ -208,6 +218,7 @@ pub async fn start_note_from_dock(
             default_live_meeting_model(&app, &settings),
         )
         .await
+        .map_err(Into::into)
 }
 
 #[tauri::command]
@@ -215,9 +226,11 @@ pub async fn resume_capture(
     id: String,
     app: AppHandle<AppRuntime>,
     state: tauri::State<'_, AppState>,
-) -> Result<MeetingCaptureState, String> {
+) -> Result<MeetingCaptureState, CaptureStartFailure> {
     if state.meeting_capture().is_active() {
-        return Err("A note or meeting recording is already active.".to_string());
+        return Err("A note or meeting recording is already active."
+            .to_string()
+            .into());
     }
     require_meeting_license(&state)?;
     let item = state
@@ -232,13 +245,16 @@ pub async fn resume_capture(
         item.status,
         LibraryItemStatus::Complete | LibraryItemStatus::Error { .. }
     ) {
-        return Err("Wait for this recording to finish before continuing it.".to_string());
+        return Err("Wait for this recording to finish before continuing it."
+            .to_string()
+            .into());
     }
     let settings = state.current_settings_unmasked();
     state
         .meeting_capture()
         .resume_capture(&app, &state, &item, default_meeting_model(&app, &settings)?)
         .await
+        .map_err(Into::into)
 }
 
 #[tauri::command]
@@ -246,12 +262,14 @@ pub async fn start_calendar_meeting_capture(
     app: AppHandle<AppRuntime>,
     state: tauri::State<'_, AppState>,
     event_id: String,
-) -> Result<MeetingCaptureState, String> {
+) -> Result<MeetingCaptureState, CaptureStartFailure> {
     let meeting = state
         .meeting_awareness()
         .meeting_by_id(&event_id)
         .ok_or_else(|| "The calendar meeting is no longer available.".to_string())?;
-    start_calendar_meeting(&app, &state, meeting).await
+    start_calendar_meeting(&app, &state, meeting)
+        .await
+        .map_err(Into::into)
 }
 
 /// Este comando pertenece exclusivamente al aviso sin calendario que produce
@@ -261,12 +279,16 @@ pub async fn start_calendar_meeting_capture(
 pub async fn start_prompted_meeting_capture(
     app: AppHandle<AppRuntime>,
     state: tauri::State<'_, AppState>,
-) -> Result<MeetingCaptureState, String> {
+) -> Result<MeetingCaptureState, CaptureStartFailure> {
     let awareness = state.meeting_awareness().state();
     if awareness.phase == MeetingAwarenessPhase::Detected && awareness.meeting.is_none() {
-        start_unscheduled_meeting(&app, &state).await
+        start_unscheduled_meeting(&app, &state)
+            .await
+            .map_err(Into::into)
     } else {
-        Err("The detected call prompt is no longer available.".to_string())
+        Err("The detected call prompt is no longer available."
+            .to_string()
+            .into())
     }
 }
 

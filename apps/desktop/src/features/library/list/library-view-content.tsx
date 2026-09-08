@@ -2,6 +2,7 @@ import { useLingui } from "@lingui/react/macro";
 import { useQueryClient } from "@tanstack/react-query";
 import { open } from "@tauri-apps/plugin-dialog";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { showCaptureStartError } from "../../../data/meeting/capture-start-error";
 
 import { showLibraryToast } from "../../../data/library";
 import { useDebouncedValue } from "../../../shared/hooks/useDebouncedValue";
@@ -270,7 +271,12 @@ export default function LibraryViewContent({
             await deleteWithToast(selectedItem.id);
             closeDetail();
           }}
-          onContinueRecording={() => resumeCapture.mutate(selectedItem.id)}
+          onContinueRecording={() => {
+            void resumeCapture
+              .mutateAsync(selectedItem.id)
+              .catch(showCaptureStartError)
+              .catch(() => {});
+          }}
           onRetry={() => retryTranscription.mutateAsync(selectedItem.id)}
           onCancel={() => cancelTranscription.mutateAsync(selectedItem.id)}
           onUpdate={(patch) => updateWithTags(selectedItem.id, patch)}
@@ -286,10 +292,7 @@ export default function LibraryViewContent({
             onSearchChange={setSearchQuery}
             onStartNote={() => {
               void startNote.mutateAsync().catch((error) => {
-                void showLibraryToast(
-                  "error",
-                  error instanceof Error ? error.message : String(error),
-                ).catch(() => {});
+                void showCaptureStartError(error).catch(() => {});
               });
             }}
             noteDisabled={
@@ -301,10 +304,7 @@ export default function LibraryViewContent({
             }
             onOpenMeeting={() => {
               void startMeeting.mutateAsync().catch((error) => {
-                void showLibraryToast(
-                  "error",
-                  error instanceof Error ? error.message : String(error),
-                ).catch(() => {});
+                void showCaptureStartError(error).catch(() => {});
               });
             }}
             meetingDisabled={Boolean(

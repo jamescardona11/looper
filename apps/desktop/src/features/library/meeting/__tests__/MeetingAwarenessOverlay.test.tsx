@@ -19,6 +19,7 @@ const meetingActions = vi.hoisted(() => ({
   startCalendarCapture: vi.fn(),
   startPromptedCapture: vi.fn(),
   openUrl: vi.fn(),
+  recover: vi.fn(),
 }));
 vi.mock("../../../../data/meeting/meeting-awareness", () => ({
   dismissMeetingAwareness: meetingActions.dismissAwareness,
@@ -29,6 +30,10 @@ vi.mock("../../../../data/meeting/meeting-awareness", () => ({
 
 vi.mock("@tauri-apps/plugin-opener", () => ({
   openUrl: meetingActions.openUrl,
+}));
+
+vi.mock("../../../../data/capture/toast", () => ({
+  runToastAction: meetingActions.recover,
 }));
 
 const awarenessState: MeetingAwarenessState = {
@@ -56,6 +61,10 @@ i18n.loadAndActivate({
     "meeting.awareness.starting": "Starting…",
     "meeting.awareness.retry": "Retry",
     "meeting.awareness.record": "Record",
+    "capture.recovery.models": "Get model",
+    "capture.recovery.microphone": "Allow mic",
+    "capture.recovery.system_audio": "Allow audio",
+    "capture.recovery.opening": "Opening…",
     "meeting.awareness.take_notes": "Take notes",
     "meeting.awareness.call_detected": "Call detected",
     "meeting.awareness.meeting_starting": "Meeting starting",
@@ -85,6 +94,7 @@ afterEach(() => {
   meetingActions.startCalendarCapture.mockReset();
   meetingActions.startPromptedCapture.mockReset();
   meetingActions.openUrl.mockReset();
+  meetingActions.recover.mockReset();
 });
 
 describe("MeetingAwarenessOverlay", () => {
@@ -355,4 +365,66 @@ describe("MeetingAwarenessOverlay", () => {
       ),
     );
   });
+});
+
+describe("capture setup recovery", () => {
+  test("keeps recovery available when opening setup fails", async () => {
+    meetingActions.startPromptedCapture.mockRejectedValue({
+      message: "Download a model to record.",
+      recovery: "models",
+    });
+    meetingActions.recover.mockRejectedValueOnce(
+      new Error("Settings could not open"),
+    );
+    renderAwareness({ phase: "detected" });
+    fireEvent.click(
+      screen.getByRole("button", { name: "Start recording this call" }),
+    );
+    fireEvent.click(await screen.findByRole("button", { name: "Get model" }));
+    await waitFor(() =>
+      expect(screen.getByRole("alert").textContent).toBe(
+        "Settings could not open",
+      ),
+    );
+    expect(
+      screen
+        .getByRole("button", { name: "Get model" })
+        .hasAttribute("disabled"),
+    ).toBe(false);
+    expect(meetingActions.startPromptedCapture).toHaveBeenCalledTimes(1);
+  });
+
+  test.each([
+    ["models", "Get model", "open_llm_cleanup_settings"],
+    ["microphone", "Allow mic", "open_microphone_settings"],
+    ["system_audio", "Allow audio", "open_system_audio_settings"],
+  ])(
+    "offers an actionable %s blocker instead of repeating Record",
+    async (recovery, label, action) => {
+      meetingActions.startPromptedCapture.mockRejectedValue({
+        message: "Setup needed to record.",
+        recovery,
+      });
+      renderAwareness({ phase: "detected" });
+      fireEvent.click(
+        screen.getByRole("button", { name: "Start recording this call" }),
+      );
+      const recover = await screen.findByRole("button", { name: label });
+      expect(screen.getByRole("alert").textContent).toBe(
+        "Setup needed to record.",
+      );
+      expect(screen.getByRole("alert").className).not.toContain("truncate");
+      fireEvent.click(recover);
+      await waitFor(() =>
+        expect(meetingActions.recover).toHaveBeenCalledWith(action),
+      );
+      expect(meetingActions.startPromptedCapture).toHaveBeenCalledTimes(1);
+      expect(meetingActions.dismissAwareness).not.toHaveBeenCalled();
+      expect(
+        await screen.findByRole("button", {
+          name: "Start recording this call",
+        }),
+      ).toBeTruthy();
+    },
+  );
 });

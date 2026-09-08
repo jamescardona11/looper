@@ -6623,3 +6623,15 @@ msgstr "Your trial has ended"
 #: src/features/library/import/library-youtube-source.tsx
 msgid "library.youtube.url"
 msgstr "Add link"
+
+msgid "capture.recovery.models"
+msgstr "Get model"
+
+msgid "capture.recovery.microphone"
+msgstr "Allow mic"
+
+msgid "capture.recovery.system_audio"
+msgstr "Allow audio"
+
+msgid "capture.recovery.opening"
+msgstr "Opening…"
