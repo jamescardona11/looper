@@ -201,6 +201,8 @@ function DockControls({
         aria-label={t({ id: "pill.preflight.new_note", message: "New note" })}
         title={t({ id: "pill.preflight.new_note", message: "New note" })}
         onClick={beginNote}
+        disabled={starting}
+        aria-busy={starting}
         className="inline-flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-full text-[var(--ui-capture-fg)] transition-colors duration-150 hover:bg-[var(--surface-pill-control-muted)] hover:text-[var(--ui-capture-fg-strong)] active:bg-[var(--surface-pill-control-active)]"
       >
         <Plus size={17} weight="bold" />
