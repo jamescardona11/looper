@@ -41,6 +41,28 @@ export const subscribeMeetingAwareness = (
     handler(payload),
   );
 
+export async function observeMeetingAwareness(
+  handler: (state: MeetingAwarenessState) => void,
+) {
+  let active = true;
+  let receivedEvent = false;
+  const stop = await subscribeMeetingAwareness((state) => {
+    receivedEvent = true;
+    if (active) handler(state);
+  });
+  void getMeetingAwarenessState()
+    .then((snapshot) => {
+      if (active && !receivedEvent) handler(snapshot);
+    })
+    .catch(() => {
+      console.warn("Meeting notification snapshot unavailable");
+    });
+  return () => {
+    active = false;
+    stop();
+  };
+}
+
 export const disableMeetingAwarenessNotifications = (
   source: MeetingAwarenessSource,
 ) => invoke<void>("disable_meeting_awareness_notifications", { source });

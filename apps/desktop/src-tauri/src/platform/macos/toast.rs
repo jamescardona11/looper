@@ -66,6 +66,14 @@ fn schedule_panel_change(
     let label = window.label().to_owned();
     app.run_on_main_thread(move || {
         if let Ok(panel) = handle.get_webview_panel(&label) {
+            let change = if label == crate::awareness_notification::WINDOW_LABEL {
+                meeting_panel_change(
+                    change,
+                    crate::awareness_notification::awareness_is_current(&handle),
+                )
+            } else {
+                change
+            };
             match change {
                 PanelChange::Reveal => panel.as_panel().orderFront(None),
                 PanelChange::PointerInput(accepts_pointer) => {
@@ -99,9 +107,39 @@ fn park_outside_visible_area(window: &WebviewWindow<AppRuntime>) {
     let _ = window.set_position(parked);
 }
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug, PartialEq)]
 enum PanelChange {
     Reveal,
     PointerInput(bool),
     Conceal,
+}
+
+// Resolve on the main thread so queued work cannot revive an expired prompt.
+fn meeting_panel_change(change: PanelChange, prompt_current: bool) -> PanelChange {
+    if prompt_current {
+        change
+    } else {
+        PanelChange::Conceal
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn expired_prompt_cannot_be_revealed_or_accept_pointer_from_queued_work() {
+        for change in [PanelChange::Reveal, PanelChange::PointerInput(true)] {
+            assert_eq!(meeting_panel_change(change, false), PanelChange::Conceal);
+            assert_eq!(meeting_panel_change(change, true), change);
+        }
+    }
+
+    #[test]
+    fn current_prompt_does_not_cancel_an_explicit_hide() {
+        assert_eq!(
+            meeting_panel_change(PanelChange::Conceal, true),
+            PanelChange::Conceal
+        );
+    }
 }

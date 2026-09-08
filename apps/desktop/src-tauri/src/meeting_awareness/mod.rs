@@ -212,6 +212,7 @@ impl MeetingAwarenessManager {
                     replace_agenda(&app, &agenda, Vec::new());
                     let was_prompting = state.read().phase != MeetingAwarenessPhase::Idle;
                     update_shared_state(&app, &state, MeetingAwarenessState::default());
+                    awareness_notification::hide(&app);
                     if was_prompting {
                         hide_prompt_if_safe(&app);
                     }
@@ -251,6 +252,7 @@ impl MeetingAwarenessManager {
                 {
                     let was_prompting = state.read().phase != MeetingAwarenessPhase::Idle;
                     update_shared_state(&app, &state, MeetingAwarenessState::default());
+                    awareness_notification::hide(&app);
                     if was_prompting && !app.state::<AppState>().meeting_capture().is_active() {
                         hide_prompt_if_safe(&app);
                     }
@@ -304,6 +306,7 @@ impl MeetingAwarenessManager {
                     timed_prompt = None;
                     hide_prompt_if_safe(&app);
                 } else if !should_show {
+                    awareness_notification::hide(&app);
                     timed_prompt = None;
                 }
             }

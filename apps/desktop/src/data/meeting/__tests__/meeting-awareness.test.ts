@@ -9,6 +9,7 @@ vi.mock("@tauri-apps/api/core", () => ({ invoke: tauri.invoke }));
 vi.mock("@tauri-apps/api/event", () => ({ listen: tauri.listen }));
 
 import {
+  observeMeetingAwareness,
   dismissMeetingAwareness,
   disableMeetingAwarenessNotifications,
   getCalendarAccessStatus,
@@ -24,6 +25,91 @@ describe("meeting awareness native gateway", () => {
   beforeEach(() => {
     tauri.invoke.mockReset();
     tauri.listen.mockReset();
+  });
+
+  test("subscribes before reading the initial state", async () => {
+    let finishListening!: (stop: () => void) => void;
+    tauri.listen.mockImplementation(
+      () =>
+        new Promise((resolve) => {
+          finishListening = resolve;
+        }),
+    );
+    tauri.invoke.mockResolvedValue({ phase: "detected" });
+    const handler = vi.fn();
+    const observation = observeMeetingAwareness(handler);
+    expect(tauri.invoke).not.toHaveBeenCalled();
+    finishListening(vi.fn());
+    await observation;
+    expect(handler).toHaveBeenCalledWith({ phase: "detected" });
+  });
+
+  test("a late idle snapshot cannot erase a detected meeting", async () => {
+    let finishSnapshot!: (state: { phase: string }) => void;
+    tauri.listen.mockResolvedValue(vi.fn());
+    tauri.invoke.mockImplementation(
+      () =>
+        new Promise((resolve) => {
+          finishSnapshot = resolve;
+        }),
+    );
+    const handler = vi.fn();
+    const observation = observeMeetingAwareness(handler);
+    await vi.waitFor(() => expect(tauri.invoke).toHaveBeenCalled());
+    tauri.listen.mock.calls[0][1]({ payload: { phase: "detected" } });
+    finishSnapshot({ phase: "idle" });
+    await observation;
+    expect(handler.mock.calls).toEqual([[{ phase: "detected" }]]);
+  });
+
+  test("a late detected snapshot cannot restore an expired meeting", async () => {
+    let finishSnapshot!: (state: { phase: string }) => void;
+    tauri.listen.mockResolvedValue(vi.fn());
+    tauri.invoke.mockImplementation(
+      () =>
+        new Promise((resolve) => {
+          finishSnapshot = resolve;
+        }),
+    );
+    const handler = vi.fn();
+    const observation = observeMeetingAwareness(handler);
+    await vi.waitFor(() => expect(tauri.invoke).toHaveBeenCalled());
+    tauri.listen.mock.calls[0][1]({ payload: { phase: "idle" } });
+    finishSnapshot({ phase: "detected" });
+    await observation;
+    expect(handler.mock.calls).toEqual([[{ phase: "idle" }]]);
+  });
+
+  test("keeps receiving live events if the snapshot fails", async () => {
+    const stop = vi.fn();
+    tauri.listen.mockResolvedValue(stop);
+    tauri.invoke.mockRejectedValue(new Error("unavailable"));
+    const handler = vi.fn();
+    const unsubscribe = await observeMeetingAwareness(handler);
+    expect(stop).not.toHaveBeenCalled();
+    tauri.listen.mock.calls[0][1]({ payload: { phase: "detected" } });
+    expect(handler).toHaveBeenCalledWith({ phase: "detected" });
+    unsubscribe();
+    expect(stop).toHaveBeenCalledOnce();
+  });
+
+  test("unsubscribes without waiting for a pending snapshot", async () => {
+    let finishSnapshot!: (state: { phase: string }) => void;
+    const stop = vi.fn();
+    tauri.listen.mockResolvedValue(stop);
+    tauri.invoke.mockImplementation(
+      () =>
+        new Promise((resolve) => {
+          finishSnapshot = resolve;
+        }),
+    );
+    const handler = vi.fn();
+    const unsubscribe = await observeMeetingAwareness(handler);
+    unsubscribe();
+    expect(stop).toHaveBeenCalledOnce();
+    finishSnapshot({ phase: "detected" });
+    await Promise.resolve();
+    expect(handler).not.toHaveBeenCalled();
   });
 
   test("routes calendar and prompted-capture commands", async () => {
