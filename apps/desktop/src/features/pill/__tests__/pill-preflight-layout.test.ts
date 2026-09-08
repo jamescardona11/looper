@@ -46,6 +46,24 @@ describe("preflight dock layout", () => {
     expect(open.shellPlacement).toBe(placement);
   });
 
+  test.each([
+    ["floating", "top_center", 84, 6],
+    ["floating", "bottom_center", 84, 6],
+    ["floating", "left_center", 84, 6],
+    ["floating", "right_center", 84, 6],
+    ["dock", "top_center", 84, 0],
+    ["dock", "bottom_center", 84, 12],
+    ["dock", "left_center", 0, 6],
+    ["dock", "right_center", 168, 6],
+  ] as const)(
+    "matches the native compact hit area for %s/%s",
+    (presentation, dock, left, top) => {
+      const layout = resolveDockLayout(dock, presentation, false);
+      expect(layout.compactLeft).toBe(left);
+      expect(layout.compactTop).toBe(top);
+    },
+  );
+
   test("places Language outside the shell on both vertical edges", () => {
     expect(languageMenuPlacement(true, "top_center")).toContain("top-[54px]");
     expect(languageMenuPlacement(true, "bottom_center")).toContain(
@@ -82,8 +100,8 @@ describe("preflight dock layout", () => {
       const menuPlacement = languageMenuPlacement(true, dock);
 
       const shellTop = shellPlacement.includes("top-0")
-          ? 0
-          : windowHeight - shellHeight;
+        ? 0
+        : windowHeight - shellHeight;
       const menuTop = menuPlacement.includes("top-[54px]")
         ? 54
         : windowHeight - 54 - menuHeight;

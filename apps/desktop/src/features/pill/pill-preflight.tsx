@@ -290,7 +290,12 @@ export function CapturePreflight({
       >
         <section
           onClickCapture={drag.onClickCapture}
-          className={`pill-size-transition relative flex items-center overflow-hidden rounded-full text-[var(--ui-capture-fg)] ${expanded ? "ui-pill-shell h-12 w-[264px] border border-[var(--ui-pill-shell-border)] px-1" : "ui-sticky-launcher h-9 w-24"} ${sticky ? `absolute z-20 ${expanded ? "ui-capture-dock" : ""} ${layout.morphPlacement}` : ""}`}
+          className={`pill-preflight-reveal relative flex h-12 w-[264px] items-center overflow-hidden rounded-full text-[var(--ui-capture-fg)] ${expanded ? "ui-pill-shell ui-capture-dock" : "ui-sticky-launcher"} ${sticky ? `absolute z-20 ${layout.shellPlacement}` : ""}`}
+          style={{
+            clipPath: expanded
+              ? "inset(0px 0px 0px 0px round 24px)"
+              : `inset(${layout.compactTop}px ${168 - layout.compactLeft}px ${12 - layout.compactTop}px ${layout.compactLeft}px round 18px)`,
+          }}
           role={expanded ? "group" : undefined}
           aria-label={
             expanded
@@ -301,7 +306,7 @@ export function CapturePreflight({
           {expanded ? (
             <div
               key="expanded"
-              className="pill-controls-enter flex h-12 w-[254px] shrink-0 items-center"
+              className="pill-controls-reveal ml-1 flex h-12 w-[254px] shrink-0 items-center"
             >
               <DockControls
                 shortcutStatus={shortcutStatus}
@@ -318,7 +323,8 @@ export function CapturePreflight({
           ) : (
             <div
               key="compact"
-              className="pill-controls-enter flex h-9 w-[94px] shrink-0 items-center"
+              className="absolute flex h-9 w-[94px] shrink-0 items-center"
+              style={{ left: layout.compactLeft, top: layout.compactTop - 1 }}
             >
               <DragHandle onPointerDown={drag.onPointerDown} compact />
               <ShortcutControl

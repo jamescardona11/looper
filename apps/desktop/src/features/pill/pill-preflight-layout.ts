@@ -50,13 +50,30 @@ export function resolveDockLayout(
         : "right-0 top-1/2 -translate-y-1/2";
   }
 
-  const morphPlacement = menuOpen
-    ? shellPlacement
-    : presentation === "dock"
-      ? launcherPlacement
-      : "left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2";
+  const compactLeft =
+    presentation === "floating"
+      ? 84
+      : dock === "left_center"
+        ? 0
+        : dock === "right_center"
+          ? 168
+          : 84;
+  const compactTop =
+    presentation === "floating"
+      ? 6
+      : dock === "top_center"
+        ? 0
+        : dock === "bottom_center"
+          ? 12
+          : 6;
 
-  return { alignment, launcherPlacement, shellPlacement, morphPlacement };
+  return {
+    alignment,
+    launcherPlacement,
+    shellPlacement,
+    compactLeft,
+    compactTop,
+  };
 }
 
 export function languageMenuPlacement(
