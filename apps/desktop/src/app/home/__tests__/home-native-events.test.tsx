@@ -172,7 +172,7 @@ describe("Home native event bridge", () => {
     });
   });
 
-  test("routes Fn help directly to Privacy and renews repeated navigation", async () => {
+  test("routes Fn help directly to Privacy without remounting it", async () => {
     render(<BridgeHarness />);
     await finishRegistrations();
     act(bridge.state.handlers["navigate-app-privacy"] as () => void);
@@ -183,7 +183,7 @@ describe("Home native event bridge", () => {
     });
     const request = currentState().settingsRequest;
     act(bridge.state.handlers["navigate-app-privacy"] as () => void);
-    expect(currentState().settingsRequest).toBe(request + 1);
+    expect(currentState().settingsRequest).toBe(request);
   });
 
   test("deduplicates native drops and routes returned checkout events", async () => {
