@@ -80,6 +80,7 @@ result_command!(open_screen_capture_settings => permissions::open_screen_capture
 
 #[tauri::command]
 pub(crate) fn open_llm_cleanup_settings(app: AppHandle<AppRuntime>) -> Result<(), String> {
+    app.state::<AppState>().meeting_awareness().keep_prompt_for_setup();
     tray::open_settings_models(&app).map_err(|failure| {
         tracing::error!("Failed to open settings window: {failure}");
         failure.to_string()
