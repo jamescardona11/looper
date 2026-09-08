@@ -579,6 +579,11 @@ describe("PillOverlay result", () => {
 
     const compactShell = document.querySelector(".ui-sticky-launcher");
     expect(compactShell).toBeTruthy();
+    expect(compactShell?.className).toContain("h-9 w-24");
+    expect((compactShell as HTMLElement).style.clipPath).toBe("");
+    expect(compactShell?.firstElementChild?.className).not.toContain(
+      "absolute",
+    );
     expect(
       screen.queryByRole("group", { name: "Dictation controls" }),
     ).toBeNull();

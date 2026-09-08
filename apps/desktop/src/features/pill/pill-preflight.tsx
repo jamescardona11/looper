@@ -1,3 +1,4 @@
+import type { CSSProperties } from "react";
 import { useLingui } from "@lingui/react/macro";
 import {
   CaretDown,
@@ -290,12 +291,12 @@ export function CapturePreflight({
       >
         <section
           onClickCapture={drag.onClickCapture}
-          className={`pill-preflight-reveal relative flex h-12 w-[264px] items-center overflow-hidden rounded-full text-[var(--ui-capture-fg)] ${expanded ? "ui-pill-shell ui-capture-dock" : "ui-sticky-launcher"} ${sticky ? `absolute z-20 ${layout.shellPlacement}` : ""}`}
-          style={{
-            clipPath: expanded
-              ? "inset(0px 0px 0px 0px round 24px)"
-              : `inset(${layout.compactTop}px ${168 - layout.compactLeft}px ${12 - layout.compactTop}px ${layout.compactLeft}px round 18px)`,
-          }}
+          className={`relative flex items-center overflow-hidden rounded-full text-[var(--ui-capture-fg)] ${expanded ? "pill-preflight-reveal ui-pill-shell ui-capture-dock h-12 w-[264px]" : "ui-sticky-launcher h-9 w-24"} ${sticky ? `absolute z-20 ${expanded ? layout.shellPlacement : layout.launcherPlacement}` : ""}`}
+          style={
+            {
+              "--pill-reveal-from": `inset(${layout.compactTop}px ${168 - layout.compactLeft}px ${12 - layout.compactTop}px ${layout.compactLeft}px round 18px)`,
+            } as CSSProperties
+          }
           role={expanded ? "group" : undefined}
           aria-label={
             expanded
@@ -323,8 +324,7 @@ export function CapturePreflight({
           ) : (
             <div
               key="compact"
-              className="absolute flex h-9 w-[94px] shrink-0 items-center"
-              style={{ left: layout.compactLeft, top: layout.compactTop - 1 }}
+              className="flex h-9 w-[94px] shrink-0 items-center"
             >
               <DragHandle onPointerDown={drag.onPointerDown} compact />
               <ShortcutControl
