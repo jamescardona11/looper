@@ -1,3 +1,4 @@
+import { setupI18n } from "@lingui/core";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -58,6 +59,29 @@ describe("contrato del renderer Vite", { timeout: 20_000 }, () => {
         process.env.TAURI_DEV_HOST = previousHost;
       }
       vi.resetModules();
+    }
+  });
+
+  test("conserva las claves de recuperación en el catálogo compilado", async () => {
+    const server = await createServer({
+      configFile: viteConfigPath,
+      appType: "custom",
+      server: { middlewareMode: true },
+    });
+    try {
+      const catalog = await server.ssrLoadModule("/src/locales/en/messages.po");
+      const runtime = setupI18n({
+        locale: "en",
+        messages: { en: catalog.messages },
+      });
+      expect(runtime._("capture.recovery.models")).toBe("Get model");
+      expect(runtime._("capture.recovery.microphone")).toBe("Allow mic");
+      expect(runtime._("capture.recovery.system_audio")).toBe("Allow audio");
+      expect(runtime._("library.save.failed")).toBe(
+        "Not saved. Your edits are still here. Retry before leaving.",
+      );
+    } finally {
+      await server.close();
     }
   });
 
