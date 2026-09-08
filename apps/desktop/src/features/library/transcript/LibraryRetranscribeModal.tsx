@@ -77,6 +77,7 @@ function RetranscriptionSession({
   modelOptions: ReturnType<typeof retranscribeModelOptions>;
   sessionKey: string;
 }) {
+  const [error, setError] = useState<string | null>(null);
   const initialState = initialRetranscriptionState(item, models);
   const [storedSession, setSession] = useState(() => ({
     ...initialState,
@@ -112,6 +113,7 @@ function RetranscriptionSession({
   const confirm = async () => {
     if (!session.modelKey) return;
     setSession((current) => ({ ...current, isSubmitting: true }));
+    setError(null);
     try {
       await onConfirm(
         confirmedRetranscriptionOptions(
@@ -121,6 +123,8 @@ function RetranscriptionSession({
           capabilities,
         ),
       );
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : String(cause));
     } finally {
       setSession((current) => ({ ...current, isSubmitting: false }));
     }
@@ -155,6 +159,11 @@ function RetranscriptionSession({
             setSession((current) => ({ ...current, detectSpeakers }))
           }
         />
+        {error && (
+          <p role="alert" className="px-5 pb-3 ui-text-body-sm text-error">
+            {error}
+          </p>
+        )}
         <LibraryRetranscribeActions
           canConfirm={Boolean(session.modelKey)}
           isSubmitting={session.isSubmitting}

@@ -1,5 +1,4 @@
-import { useRef, type Dispatch, type SetStateAction } from "react";
-
+import { useRef, useState, type Dispatch, type SetStateAction } from "react";
 import { useMountEffect } from "../../../shared/hooks/useMountEffect";
 import type { LibraryDetailProps } from "./library-detail-types";
 
@@ -12,26 +11,62 @@ type AutosaveInput = {
 };
 
 export function useTranscriptAutosave(input: AutosaveInput) {
+  const [status, setStatus] = useState<
+    "saved" | "pending" | "saving" | "error"
+  >("saved");
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const latest = useRef(input);
   latest.current = input;
+  const draft = useRef(input.value);
+  const saved = useRef(input.source);
+  const writing = useRef<Promise<boolean> | null>(null);
 
   useMountEffect(() => () => {
     if (timer.current) clearTimeout(timer.current);
   });
 
-  return (value: string) => {
-    input.setValue(value);
+  const save = (): Promise<boolean> => {
     if (timer.current) clearTimeout(timer.current);
-    if (!input.available) return;
+    if (writing.current) return writing.current;
+    const write = async () => {
+      if (!latest.current.available) return false;
+      try {
+        while (draft.current !== saved.current) {
+          const value = draft.current;
+          setStatus("saving");
+          await latest.current.onUpdate({ transcript: value });
+          saved.current = value;
+        }
+        setStatus("saved");
+        return true;
+      } catch {
+        setStatus("error");
+        return false;
+      }
+    };
+    writing.current = write().finally(() => {
+      writing.current = null;
+    });
+    return writing.current;
+  };
+
+  const change = (value: string) => {
+    draft.current = value;
+    input.setValue(value);
+    setStatus("pending");
+    if (timer.current) clearTimeout(timer.current);
     timer.current = setTimeout(() => {
-      const current = latest.current;
-      if (current.value !== value || current.source === value) return;
-      void Promise.resolve(current.onUpdate({ transcript: value })).catch(
-        (error) => {
-          console.error("failed to save transcript:", error);
-        },
-      );
+      void save();
     }, 600);
   };
+
+  const close = (onClose: () => void) => {
+    if (status === "saved") onClose();
+    else
+      void save().then((saved) => {
+        if (saved) onClose();
+      });
+  };
+
+  return { change, save, status, close };
 }

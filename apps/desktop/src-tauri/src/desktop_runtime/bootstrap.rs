@@ -383,6 +383,7 @@ fn register_commands(builder: tauri::Builder<AppRuntime>) -> tauri::Builder<AppR
         system::request_screen_capture_permission,
         system::open_screen_capture_settings,
         system::open_llm_cleanup_settings,
+        system::open_meeting_ai_settings,
         system::open_ffmpeg_install,
         preferences::complete_onboarding,
         interaction::cancel_recording,

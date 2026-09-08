@@ -25,3 +25,8 @@ export const subscribeNavigateFeatureLab = (handler: () => void) =>
 
 export const subscribeNavigateAppPrivacy = (handler: () => void) =>
   subscribeNavigation("navigate:app-privacy", handler);
+
+export const subscribeNavigateProviders = (handler: () => void) =>
+  subscribeNavigation("navigate:providers", handler);
+export const subscribeNavigateAccount = (handler: () => void) =>
+  subscribeNavigation("navigate:account", handler);

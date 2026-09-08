@@ -1,3 +1,4 @@
+import { completeLibraryRetranscription } from "../library-detail-modals-retranscription";
 // @vitest-environment jsdom
 
 import { setupI18n } from "@lingui/core";
@@ -176,24 +177,25 @@ describe("library detail modals", () => {
     expect(props.setShowRetranscribe).toHaveBeenCalledWith(false);
   });
 
-  test("logs a retranscription failure without retrying or closing", async () => {
-    vi.spyOn(console, "error").mockImplementation(() => undefined);
+  test("propagates a retranscription failure to the modal without closing", async () => {
     const failure = new Error("write failed");
     const { props } = renderModals({
       showRetranscribe: true,
       onUpdate: vi.fn().mockRejectedValue(failure),
     });
-
-    fireEvent.click(
-      screen.getByRole("button", { name: "Confirm retranscription" }),
-    );
-
-    await waitFor(() =>
-      expect(console.error).toHaveBeenCalledWith(
-        "Failed to retranscribe:",
-        failure,
-      ),
-    );
+    await expect(
+      completeLibraryRetranscription({
+        item: props.item,
+        options: {
+          model_key: "parakeet-v3",
+          show_timestamps: true,
+          detect_speakers: true,
+        },
+        onUpdate: props.onUpdate,
+        onRetry: props.onRetry,
+        onClose: () => props.setShowRetranscribe(false),
+      }),
+    ).rejects.toBe(failure);
     expect(props.onRetry).not.toHaveBeenCalled();
     expect(props.setShowRetranscribe).not.toHaveBeenCalled();
   });

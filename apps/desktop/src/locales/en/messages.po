@@ -6635,3 +6635,33 @@ msgstr "Allow audio"
 
 msgid "capture.recovery.opening"
 msgstr "Opening…"
+
+msgid "library.save.failed"
+msgstr "Not saved. Your edits are still here. Retry before leaving."
+
+msgid "library.save.saving"
+msgstr "Saving changes…"
+
+msgid "library.save.retry"
+msgstr "Retry saving"
+
+msgid "library.watch.model_required"
+msgstr "Install a compatible transcription model before adding a folder."
+
+msgid "library.ai.check_failed"
+msgstr "Could not check meeting intelligence."
+
+msgid "library.ai.preparing"
+msgstr "Meeting intelligence is preparing. Please wait."
+
+msgid "library.ai.check_retry"
+msgstr "Check again"
+
+msgid "library.setup.ai"
+msgstr "Set up meeting intelligence"
+
+msgid "library.setup.models"
+msgstr "Open models"
+
+msgid "library.setup.failed"
+msgstr "Could not open settings. Try again."

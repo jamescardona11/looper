@@ -1,6 +1,8 @@
 import { useLingui } from "@lingui/react/macro";
 import { ArrowUp, Pause, Play, Sparkle } from "@phosphor-icons/react";
 import { useState } from "react";
+import type { MeetingAiStatus } from "../../../contracts";
+import { LibrarySetupAction } from "../library-setup-action";
 
 import { useMeetingAiStatus } from "../../settings/models/local-llm-queries";
 import { useAskMeeting } from "../queries";
@@ -148,7 +150,11 @@ export function MeetingQuestionComposer({
 }: Pick<MeetingDocumentDockProps, "id">) {
   const { t } = useLingui();
   const askMeeting = useAskMeeting();
-  const { data: meetingAiStatus } = useMeetingAiStatus();
+  const {
+    data: meetingAiStatus,
+    isError: statusFailed,
+    refetch,
+  } = useMeetingAiStatus();
   const [question, setQuestion] = useState("");
   const [answer, setAnswer] = useState("");
   const meetingAiReady = meetingAiStatus?.state === "ready";
@@ -197,6 +203,11 @@ export function MeetingQuestionComposer({
         </div>
       ) : null}
 
+      <MeetingAiSetupNotice
+        status={meetingAiStatus}
+        failed={statusFailed}
+        onRetry={() => void refetch()}
+      />
       <div className="flex min-h-11 items-center gap-2 rounded-xl bg-surface-secondary px-3 focus-within:ring-2 focus-within:ring-[var(--color-toggle-on)]/35">
         <label className="min-w-0 flex-1">
           <input
@@ -269,6 +280,45 @@ export function MeetingDocumentDock(props: MeetingDocumentDockProps) {
     <div data-ui-dock="meeting-document">
       <MeetingAudioSource {...props} />
       <MeetingQuestionComposer id={props.id} />
+    </div>
+  );
+}
+
+function MeetingAiSetupNotice({
+  status,
+  failed,
+  onRetry,
+}: {
+  status: MeetingAiStatus | undefined;
+  failed: boolean;
+  onRetry: () => void;
+}) {
+  const { t } = useLingui();
+  if (status?.state === "ready") return null;
+  const preparing =
+    status?.state === "downloading" || status?.state === "verifying";
+  const fallback = t({
+    id: "library.ai.preparing",
+    message: "Meeting intelligence is preparing. Please wait.",
+  });
+  const message = failed
+    ? t({
+        id: "library.ai.check_failed",
+        message: "Could not check meeting intelligence.",
+      })
+    : preparing
+      ? fallback
+      : (status?.actionableMessage ?? fallback);
+  return (
+    <div className="mb-2 ui-text-body-sm text-content-secondary">
+      <p role="status">{message}</p>
+      {failed ? (
+        <button type="button" className="underline" onClick={onRetry}>
+          {t({ id: "library.ai.check_retry", message: "Check again" })}
+        </button>
+      ) : (
+        status && <LibrarySetupAction meetingAi />
+      )}
     </div>
   );
 }

@@ -57,6 +57,8 @@ enum SettingsNavigationTarget {
     About,
     History,
     Models,
+    Providers,
+    Account,
     FeatureLab,
     /// Ajustes → App, donde vive la fila de Accesibilidad y su explicación.
     AppPrivacy,
@@ -70,6 +72,8 @@ impl SettingsNavigationTarget {
             Self::About => EVENT_NAVIGATE_ABOUT,
             Self::History => EVENT_NAVIGATE_HISTORY,
             Self::Models => EVENT_NAVIGATE_MODELS,
+            Self::Providers => "navigate:providers",
+            Self::Account => "navigate:account",
             Self::FeatureLab => EVENT_NAVIGATE_FEATURE_LAB,
             Self::AppPrivacy => EVENT_NAVIGATE_APP_PRIVACY,
         }
@@ -291,6 +295,18 @@ pub(crate) fn open_settings_history(app: &AppHandle<AppRuntime>) -> tauri::Resul
 
 pub(crate) fn open_settings_models(app: &AppHandle<AppRuntime>) -> tauri::Result<()> {
     open_settings_navigation(app, SettingsNavigationTarget::Models)
+}
+
+pub(crate) fn open_meeting_ai_settings(
+    app: &AppHandle<AppRuntime>,
+    licensed: bool,
+) -> tauri::Result<()> {
+    let target = if licensed {
+        SettingsNavigationTarget::Providers
+    } else {
+        SettingsNavigationTarget::Account
+    };
+    open_settings_navigation(app, target)
 }
 
 pub(crate) fn open_settings_feature_lab(app: &AppHandle<AppRuntime>) -> tauri::Result<()> {

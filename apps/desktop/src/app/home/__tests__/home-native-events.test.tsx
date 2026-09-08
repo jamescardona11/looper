@@ -47,6 +47,10 @@ vi.mock("../../../data/license", () => ({
     bridge.subscribe("license-return", handler),
 }));
 vi.mock("../../../data/system/navigation", () => ({
+  subscribeNavigateProviders: (handler: unknown) =>
+    bridge.subscribe("navigate-providers", handler),
+  subscribeNavigateAccount: (handler: unknown) =>
+    bridge.subscribe("navigate-account", handler),
   subscribeNavigateCalendar: (handler: unknown) =>
     bridge.subscribe("navigate-calendar", handler),
   subscribeNavigateAbout: (handler: unknown) =>
@@ -118,6 +122,18 @@ afterEach(() => {
 });
 
 describe("Home native event bridge", () => {
+  test.each(["providers", "account"])(
+    "opens the %s recovery destination",
+    async (tab) => {
+      render(<BridgeHarness />);
+      await finishRegistrations();
+      act(bridge.state.handlers[`navigate-${tab}`] as () => void);
+      expect(currentState()).toMatchObject({
+        activeView: "settings",
+        settingsTab: tab,
+      });
+    },
+  );
   test("announces readiness after retaining navigation listeners", async () => {
     const view = render(<BridgeHarness />);
     await finishRegistrations();

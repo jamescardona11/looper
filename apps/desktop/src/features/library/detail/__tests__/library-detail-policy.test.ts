@@ -60,6 +60,14 @@ function item(patch: Partial<LibraryItem> = {}): LibraryItem {
 }
 
 describe("library detail policies", () => {
+  test("keeps newer local edits when an older save is acknowledged", () => {
+    const initial = initialDetailState(item({ transcript: "original" }));
+    const dirty = { ...initial, transcriptDraft: "newer edit" };
+    expect(
+      synchronizeDetailState(dirty, item({ transcript: "older edit" }))
+        .transcriptDraft,
+    ).toBe("newer edit");
+  });
   test("reconciles external data without overwriting an active name edit", () => {
     const initial = initialDetailState(item());
     const idle = synchronizeDetailState(initial, item({ name: "Server name" }));

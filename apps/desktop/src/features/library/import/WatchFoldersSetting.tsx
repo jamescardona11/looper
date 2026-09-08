@@ -3,6 +3,7 @@ import { useMemo } from "react";
 import { open } from "@tauri-apps/plugin-dialog";
 import { ArrowsClockwise, FolderSimplePlus, X } from "@phosphor-icons/react";
 import { showLibraryErrorToast } from "../../../data/library";
+import { LibrarySetupAction } from "../library-setup-action";
 
 import {
   hasModelCapability,
@@ -97,6 +98,18 @@ const WatchFoldersSetting = ({ isActive = true }: { isActive?: boolean }) => {
         </button>
       </div>
 
+      {!defaultSpeechModelKey && (
+        <div className="mt-2 ui-text-body-sm text-content-secondary">
+          <p>
+            {t({
+              id: "library.watch.model_required",
+              message:
+                "Install a compatible transcription model before adding a folder.",
+            })}
+          </p>
+          <LibrarySetupAction />
+        </div>
+      )}
       {watchFolders.length > 0 ? (
         <div className="mt-2.5 flex flex-wrap items-center gap-2 rounded-lg border border-border-primary bg-surface-secondary px-3 py-2">
           <span className="ui-text-micro ui-color-muted">
