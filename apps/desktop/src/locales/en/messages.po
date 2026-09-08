@@ -6624,44 +6624,58 @@ msgstr "Your trial has ended"
 msgid "library.youtube.url"
 msgstr "Add link"
 
+#. js-lingui-explicit-id
 msgid "capture.recovery.models"
 msgstr "Get model"
 
+#. js-lingui-explicit-id
 msgid "capture.recovery.microphone"
 msgstr "Allow mic"
 
+#. js-lingui-explicit-id
 msgid "capture.recovery.system_audio"
 msgstr "Allow audio"
 
+#. js-lingui-explicit-id
 msgid "capture.recovery.opening"
 msgstr "Opening…"
 
+#. js-lingui-explicit-id
 msgid "library.save.failed"
 msgstr "Not saved. Your edits are still here. Retry before leaving."
 
+#. js-lingui-explicit-id
 msgid "library.save.saving"
 msgstr "Saving changes…"
 
+#. js-lingui-explicit-id
 msgid "library.save.retry"
 msgstr "Retry saving"
 
+#. js-lingui-explicit-id
 msgid "library.watch.model_required"
 msgstr "Install a compatible transcription model before adding a folder."
 
+#. js-lingui-explicit-id
 msgid "library.ai.check_failed"
 msgstr "Could not check meeting intelligence."
 
+#. js-lingui-explicit-id
 msgid "library.ai.preparing"
 msgstr "Meeting intelligence is preparing. Please wait."
 
+#. js-lingui-explicit-id
 msgid "library.ai.check_retry"
 msgstr "Check again"
 
+#. js-lingui-explicit-id
 msgid "library.setup.ai"
 msgstr "Set up meeting intelligence"
 
+#. js-lingui-explicit-id
 msgid "library.setup.models"
 msgstr "Open models"
 
+#. js-lingui-explicit-id
 msgid "library.setup.failed"
 msgstr "Could not open settings. Try again."
