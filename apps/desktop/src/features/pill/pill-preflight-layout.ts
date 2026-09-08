@@ -33,8 +33,7 @@ export function resolveDockLayout(
     // Language amplía la ventana hacia el lado libre. El frame cerrado mide
     // exactamente lo mismo que el shell, así que anclarlo al borde conserva
     // su coordenada global sin márgenes transparentes.
-    shellPlacement =
-      dock === "top_center" ? "left-0 top-0" : "bottom-0 left-0";
+    shellPlacement = dock === "top_center" ? "left-0 top-0" : "bottom-0 left-0";
   } else if (menuOpen && (dock === "left_center" || dock === "right_center")) {
     shellPlacement =
       dock === "left_center" ? "bottom-0 left-0" : "bottom-0 right-0";
@@ -51,7 +50,13 @@ export function resolveDockLayout(
         : "right-0 top-1/2 -translate-y-1/2";
   }
 
-  return { alignment, launcherPlacement, shellPlacement };
+  const morphPlacement = menuOpen
+    ? shellPlacement
+    : presentation === "dock"
+      ? launcherPlacement
+      : "left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2";
+
+  return { alignment, launcherPlacement, shellPlacement, morphPlacement };
 }
 
 export function languageMenuPlacement(

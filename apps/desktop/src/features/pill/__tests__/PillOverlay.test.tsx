@@ -577,7 +577,8 @@ describe("PillOverlay result", () => {
     );
     await act(async () => {});
 
-    expect(document.querySelector(".ui-sticky-launcher")).toBeTruthy();
+    const compactShell = document.querySelector(".ui-sticky-launcher");
+    expect(compactShell).toBeTruthy();
     expect(
       screen.queryByRole("group", { name: "Dictation controls" }),
     ).toBeNull();
@@ -589,6 +590,7 @@ describe("PillOverlay result", () => {
       </I18nProvider>,
     );
     const dock = screen.getByRole("group", { name: "Dictation controls" });
+    expect(dock).toBe(compactShell);
     expect(dock.className).toContain("ui-pill-shell");
     expect(dock.className).toContain("ui-capture-dock");
     expect(dock.className).toContain("h-12 w-[264px]");

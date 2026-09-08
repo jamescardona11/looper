@@ -72,28 +72,6 @@ function DragHandle({ onPointerDown, compact = false }: DragHandleProps) {
   );
 }
 
-function FloatingLauncher({
-  onPointerDown,
-  placement,
-  shortcutStatus,
-  beginDictation,
-}: Pick<ReturnType<typeof useOverlayDrag>, "onPointerDown"> & {
-  placement?: string;
-  shortcutStatus: ReturnType<typeof useShortcutStatus>;
-  beginDictation: () => void;
-}) {
-  return (
-    <div
-      className={`ui-sticky-launcher absolute flex h-9 w-24 overflow-hidden rounded-full ${
-        placement ?? "left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2"
-      }`}
-    >
-      <DragHandle onPointerDown={onPointerDown} compact />
-      <ShortcutControl status={shortcutStatus} onReadyClick={beginDictation} />
-    </div>
-  );
-}
-
 function ShortcutControl({
   status,
   onReadyClick,
@@ -310,41 +288,46 @@ export function CapturePreflight({
           if (preflight.menuOpen) preflight.setMenuOpen(false);
         }}
       >
-        {sticky && !expanded ? (
-          <FloatingLauncher
-            shortcutStatus={shortcutStatus}
-            beginDictation={preflight.beginDictation}
-            onPointerDown={drag.onPointerDown}
-            placement={
-              preflight.presentation === "dock"
-                ? layout.launcherPlacement
-                : undefined
-            }
-          />
-        ) : null}
-        {expanded ? (
-          <section
-            onClickCapture={drag.onClickCapture}
-            className={`ui-pill-shell relative flex h-12 w-[264px] items-center overflow-hidden rounded-full border border-[var(--ui-pill-shell-border)] px-1 text-[var(--ui-capture-fg)] ${sticky ? `ui-capture-dock absolute z-20 ${layout.shellPlacement}` : ""}`}
-            role="group"
-            aria-label={t({
-              id: "pill.preflight.label",
-              message: "Dictation controls",
-            })}
-          >
-            <DockControls
-              shortcutStatus={shortcutStatus}
-              onPointerDown={drag.onPointerDown}
-              language={preflight.language}
-              menuOpen={preflight.menuOpen}
-              starting={preflight.starting}
-              currentLanguage={preflight.currentLanguage}
-              beginDictation={preflight.beginDictation}
-              beginNote={preflight.beginNote}
-              setMenuOpen={preflight.setMenuOpen}
-            />
-          </section>
-        ) : null}
+        <section
+          onClickCapture={drag.onClickCapture}
+          className={`pill-size-transition relative flex items-center overflow-hidden rounded-full text-[var(--ui-capture-fg)] ${expanded ? "ui-pill-shell h-12 w-[264px] border border-[var(--ui-pill-shell-border)] px-1" : "ui-sticky-launcher h-9 w-24"} ${sticky ? `absolute z-20 ${expanded ? "ui-capture-dock" : ""} ${layout.morphPlacement}` : ""}`}
+          role={expanded ? "group" : undefined}
+          aria-label={
+            expanded
+              ? t({ id: "pill.preflight.label", message: "Dictation controls" })
+              : undefined
+          }
+        >
+          {expanded ? (
+            <div
+              key="expanded"
+              className="pill-controls-enter flex h-12 w-[254px] shrink-0 items-center"
+            >
+              <DockControls
+                shortcutStatus={shortcutStatus}
+                onPointerDown={drag.onPointerDown}
+                language={preflight.language}
+                menuOpen={preflight.menuOpen}
+                starting={preflight.starting}
+                currentLanguage={preflight.currentLanguage}
+                beginDictation={preflight.beginDictation}
+                beginNote={preflight.beginNote}
+                setMenuOpen={preflight.setMenuOpen}
+              />
+            </div>
+          ) : (
+            <div
+              key="compact"
+              className="pill-controls-enter flex h-9 w-[94px] shrink-0 items-center"
+            >
+              <DragHandle onPointerDown={drag.onPointerDown} compact />
+              <ShortcutControl
+                status={shortcutStatus}
+                onReadyClick={preflight.beginDictation}
+              />
+            </div>
+          )}
+        </section>
         {preflight.menuOpen ? (
           <LanguageMenu
             dockPosition={preflight.dockPosition}
