@@ -20,7 +20,12 @@ import {
 } from "../../shared/lib/transcriptionLanguages";
 import { isRemoteSpeechConfigured } from "../../shared/lib/speechProviders";
 import { safeUnlisten } from "../../shared/lib/safeUnlisten";
-import { showCaptureStartError } from "../../data/meeting/capture-start-error";
+import {
+  captureStartError,
+  captureRecoveryActions,
+  showCaptureStartError,
+} from "../../data/meeting/capture-start-error";
+import { runToastAction } from "../../data/capture/toast";
 
 type PreflightState = {
   language: string;
@@ -156,10 +161,24 @@ export function usePillPreflight() {
     });
   }, []);
 
-  const beginNote = useCallback(() => {
-    void startNoteFromDock().catch((error) => {
-      void showCaptureStartError(error).catch(() => {});
-    });
+  const beginNote = useCallback(async () => {
+    setState((current) => ({ ...current, starting: true }));
+    try {
+      await startNoteFromDock();
+    } catch (cause) {
+      const error = captureStartError(cause);
+      try {
+        if (error.recovery) {
+          await runToastAction(captureRecoveryActions[error.recovery].command);
+        } else {
+          await showCaptureStartError(error);
+        }
+      } catch (recoveryError) {
+        console.error("Failed to open note setup:", recoveryError);
+      }
+    } finally {
+      setState((current) => ({ ...current, starting: false }));
+    }
   }, []);
 
   return {

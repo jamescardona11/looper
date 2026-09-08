@@ -8,6 +8,7 @@ import {
   fireEvent,
   render,
   screen,
+  waitFor,
 } from "@testing-library/react";
 import { afterEach, beforeAll, describe, expect, test, vi } from "vitest";
 import PillOverlay from "../PillOverlay";
@@ -29,6 +30,13 @@ const actions = vi.hoisted(() => ({
   startDictationFromDock: vi.fn(() => Promise.resolve()),
   startNoteFromDock: vi.fn(() => Promise.resolve()),
   undoLastInsertion: vi.fn(() => Promise.resolve()),
+}));
+
+const recoveryActions = vi.hoisted(() => ({
+  open: vi.fn(() => Promise.resolve()),
+}));
+vi.mock("../../../data/capture/toast", () => ({
+  runToastAction: recoveryActions.open,
 }));
 
 const shortcut = vi.hoisted(() => ({
@@ -656,8 +664,10 @@ describe("PillOverlay result", () => {
     expect(actions.setDictationLanguage).toHaveBeenCalledWith("en");
     expect(actions.setPreflightLanguageMenuOpen).toHaveBeenCalledWith(false);
 
-    fireEvent.click(screen.getByRole("button", { name: "New note" }));
-    expect(actions.startNoteFromDock).toHaveBeenCalledTimes(1);
+    expect(
+      (screen.getByRole("button", { name: "New note" }) as HTMLButtonElement)
+        .disabled,
+    ).toBe(true);
   });
 
   test("keeps a six-dot drag handle in the expanded capture dock", () => {
@@ -685,4 +695,52 @@ describe("PillOverlay result", () => {
       screen.getByRole("button", { name: "Move Capture pill" }),
     ).toBeTruthy();
   });
+});
+
+test.each([
+  ["models", "open_llm_cleanup_settings"],
+  ["microphone", "open_microphone_settings"],
+])(
+  "opens %s setup when the plus cannot start a note",
+  async (recovery, command) => {
+    pillState.pillStatus = "preflight";
+    actions.startNoteFromDock.mockRejectedValueOnce({
+      message: "Setup required",
+      recovery,
+    });
+    render(
+      <I18nProvider i18n={i18n}>
+        <PillOverlay />
+      </I18nProvider>,
+    );
+    fireEvent.click(screen.getByRole("button", { name: "New note" }));
+    await waitFor(() =>
+      expect(recoveryActions.open).toHaveBeenCalledWith(command),
+    );
+  },
+);
+
+test("starts one note while repeated plus clicks are pending", async () => {
+  pillState.pillStatus = "preflight";
+  let finish!: () => void;
+  actions.startNoteFromDock.mockImplementationOnce(
+    () =>
+      new Promise<void>((resolve) => {
+        finish = resolve;
+      }),
+  );
+  render(
+    <I18nProvider i18n={i18n}>
+      <PillOverlay />
+    </I18nProvider>,
+  );
+  const plus = screen.getByRole("button", {
+    name: "New note",
+  }) as HTMLButtonElement;
+  fireEvent.click(plus);
+  fireEvent.click(plus);
+  expect(actions.startNoteFromDock).toHaveBeenCalledOnce();
+  expect(plus.disabled).toBe(true);
+  await act(async () => finish());
+  expect(plus.disabled).toBe(false);
 });
