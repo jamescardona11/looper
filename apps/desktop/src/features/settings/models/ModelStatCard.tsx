@@ -109,6 +109,13 @@ const ModelStatCard = ({
 
 const ActivityLabel = ({ activity }: { activity: ModelCardActivity }) => {
   const { t } = useLingui();
+  if (activity.kind === "error") {
+    return (
+      <p role="alert" className="min-w-0 break-words text-error ui-text-meta">
+        {activity.message}
+      </p>
+    );
+  }
   if (activity.kind === "verifying") {
     return (
       <div className="flex min-w-0 items-center gap-2">

@@ -13,6 +13,7 @@ import { WAVE_COLS, waveDots } from "./ModelCardShell";
 export type ModelCardAction = "cancel" | "delete" | "download" | null;
 
 export type ModelCardActivity =
+  | { kind: "error"; message: string }
   | { kind: "verifying" }
   | { kind: "downloading"; fileName: string | null; percent: number }
   | { kind: "idle"; facts: string[] };
@@ -66,15 +67,18 @@ export function buildModelCardPresentation(
   const quantization = formatQuantLabel(model.variant);
   if (quantization && !compact) facts.push(quantization);
 
-  const activity: ModelCardActivity = verifying
-    ? { kind: "verifying" }
-    : downloading
-      ? {
-          kind: "downloading",
-          fileName: progress.file.split("/").pop() || null,
-          percent,
-        }
-      : { kind: "idle", facts };
+  const activity: ModelCardActivity =
+    progress?.status === "error"
+      ? { kind: "error", message: progress.message }
+      : verifying
+        ? { kind: "verifying" }
+        : downloading
+          ? {
+              kind: "downloading",
+              fileName: progress.file.split("/").pop() || null,
+              percent,
+            }
+          : { kind: "idle", facts };
   const action: ModelCardAction = !showActions
     ? null
     : downloading
