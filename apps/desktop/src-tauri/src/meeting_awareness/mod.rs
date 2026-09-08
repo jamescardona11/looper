@@ -89,6 +89,7 @@ pub struct MeetingAwarenessManager {
     /// Identifica al aviso detectado que está en pantalla, para que el
     /// temporizador de uno viejo no retire el que acaba de aparecer.
     detected_generation: Arc<AtomicU64>,
+    prompt_timeout_cancelled: Arc<AtomicBool>,
     refresh_requested: Arc<Notify>,
     started: AtomicBool,
 }
@@ -101,6 +102,7 @@ impl Default for MeetingAwarenessManager {
             dismissed_event_ids: Arc::new(parking_lot::Mutex::new(HashSet::new())),
             detected_dismissed: Arc::new(AtomicBool::new(false)),
             detected_generation: Arc::new(AtomicU64::new(0)),
+            prompt_timeout_cancelled: Arc::new(AtomicBool::new(false)),
             refresh_requested: Arc::new(Notify::new()),
             started: AtomicBool::new(false),
         }
@@ -126,6 +128,15 @@ impl MeetingAwarenessManager {
 
     pub fn request_refresh(&self) {
         self.refresh_requested.notify_one();
+    }
+
+    /// Opening model setup is an explicit response, so the displayed prompt
+    /// must not expire while its prerequisite is being installed. The poller
+    /// still retires it when the call ends, capture starts, or it is dismissed.
+    pub fn keep_prompt_for_setup(&self) {
+        if self.state.read().phase != MeetingAwarenessPhase::Idle {
+            self.prompt_timeout_cancelled.store(true, Ordering::SeqCst);
+        }
     }
 
     pub fn dismiss(&self, app: &AppHandle<AppRuntime>) {
@@ -177,6 +188,7 @@ impl MeetingAwarenessManager {
         let dismissed = Arc::clone(&self.dismissed_event_ids);
         let detected_dismissed = Arc::clone(&self.detected_dismissed);
         let detected_generation = Arc::clone(&self.detected_generation);
+        let prompt_timeout_cancelled = Arc::clone(&self.prompt_timeout_cancelled);
         let refresh_requested = Arc::clone(&self.refresh_requested);
         platform::setup_change_notification({
             let refresh_requested = Arc::clone(&refresh_requested);
@@ -294,6 +306,7 @@ impl MeetingAwarenessManager {
                             &dismissed,
                             &detected_dismissed,
                             &detected_generation,
+                            &prompt_timeout_cancelled,
                         );
                         timed_prompt = next_prompt.clone();
                     }
@@ -486,7 +499,10 @@ fn arm_prompt_timeout(
     dismissed_event_ids: &Arc<parking_lot::Mutex<HashSet<String>>>,
     detected_dismissed: &Arc<AtomicBool>,
     detected_generation: &Arc<AtomicU64>,
+    prompt_timeout_cancelled: &Arc<AtomicBool>,
 ) {
+    prompt_timeout_cancelled.store(false, Ordering::SeqCst);
+    let prompt_timeout_cancelled = Arc::clone(prompt_timeout_cancelled);
     let token = detected_generation.fetch_add(1, Ordering::SeqCst) + 1;
     let app = app.clone();
     let state = Arc::clone(state);
@@ -495,7 +511,9 @@ fn arm_prompt_timeout(
     let detected_generation = Arc::clone(detected_generation);
     tauri::async_runtime::spawn(async move {
         tokio::time::sleep(std::time::Duration::from_secs(PROMPT_TTL_SECONDS)).await;
-        if detected_generation.load(Ordering::SeqCst) != token {
+        if prompt_timeout_cancelled.load(Ordering::SeqCst)
+            || detected_generation.load(Ordering::SeqCst) != token
+        {
             return;
         }
         let Some(showing) = prompt_identity(&state.read()) else {
@@ -861,6 +879,30 @@ mod tests {
             None,
             "sin aviso no hay nada que caducar"
         );
+    }
+
+    #[test]
+    fn model_setup_invalidates_timeout_without_dismissing_the_call() {
+        let manager = MeetingAwarenessManager::default();
+        manager.state.write().phase = MeetingAwarenessPhase::Detected;
+        let timeout_token = manager.detected_generation.load(Ordering::SeqCst);
+
+        manager.keep_prompt_for_setup();
+
+        assert!(manager.prompt_timeout_cancelled.load(Ordering::SeqCst));
+        assert_eq!(manager.detected_generation.load(Ordering::SeqCst), timeout_token);
+        assert_eq!(manager.state().phase, MeetingAwarenessPhase::Detected);
+        assert!(!manager.detected_dismissed.load(Ordering::SeqCst));
+        assert!(manager.dismissed_event_ids.lock().is_empty());
+    }
+
+    #[test]
+    fn opening_models_without_a_prompt_does_not_change_its_generation() {
+        let manager = MeetingAwarenessManager::default();
+        manager.keep_prompt_for_setup();
+        assert!(!manager.prompt_timeout_cancelled.load(Ordering::SeqCst));
+        assert_eq!(manager.detected_generation.load(Ordering::SeqCst), 0);
+        assert_eq!(manager.state().phase, MeetingAwarenessPhase::Idle);
     }
 
     #[test]
