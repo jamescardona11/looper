@@ -1,4 +1,8 @@
-import type { SettingsSection } from "../../features/settings/preferences/settings-navigation";
+import {
+  initialSettingsSection,
+  type SettingsSection,
+  type SettingsTab,
+} from "../../features/settings/preferences/settings-navigation";
 import type { MemorySearchResult } from "../../data/memory";
 import type { SignalStage } from "../../features/transcriptions/components/CaptureStatusCard";
 
@@ -13,8 +17,7 @@ export type HomeView =
   | "feature-lab"
   | "settings";
 
-export type HomeSettingsTab =
-  "general" | "account" | "models" | "providers" | "about" | "app";
+export type HomeSettingsTab = SettingsTab;
 
 export type LibraryFocus = { id: string; query: string };
 
@@ -49,6 +52,11 @@ export type HomeAction =
   | { type: "open-memory-shortcut" }
   | { type: "open-meeting"; item: LibraryFocus }
   | { type: "open-settings"; tab: HomeSettingsTab; section?: SettingsSection }
+  | {
+      type: "settings-location";
+      tab: HomeSettingsTab;
+      section: SettingsSection;
+    }
   | { type: "return-home" }
   | { type: "show-feature-lab" }
   | { type: "set-drag-active"; active: boolean }
@@ -139,7 +147,20 @@ export function reduceHomeState(
         activeView: "library",
         libraryFocus: action.item,
       };
+    case "settings-location":
+      return {
+        ...state,
+        settingsTab: action.tab,
+        settingsSection: action.section,
+      };
     case "open-settings":
+      if (
+        state.activeView === "settings" &&
+        state.settingsTab === action.tab &&
+        (state.settingsSection ?? initialSettingsSection[state.settingsTab]) ===
+          (action.section ?? initialSettingsSection[action.tab])
+      )
+        return state;
       return {
         ...state,
         activeView: "settings",

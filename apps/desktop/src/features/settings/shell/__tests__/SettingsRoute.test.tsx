@@ -64,10 +64,16 @@ describe("SettingsRoute", () => {
 
   test("keeps every real destination interactive and exposes the active page", () => {
     mocks.useSettingsForm.mockReturnValue(settingsForm());
+    const onNavigate = vi.fn();
 
     render(
       <I18nProvider i18n={i18n}>
-        <SettingsRoute isOpen onClose={vi.fn()} transcriptionMode="local" />
+        <SettingsRoute
+          isOpen
+          onClose={vi.fn()}
+          transcriptionMode="local"
+          onNavigate={onNavigate}
+        />
       </I18nProvider>,
     );
 
@@ -82,6 +88,7 @@ describe("SettingsRoute", () => {
     );
 
     expect(mocks.selectTab).toHaveBeenCalledWith("app");
+    expect(onNavigate).toHaveBeenCalledWith("app", "calendar");
     expect(
       screen
         .getByRole("button", { name: "Calendar & Meetings" })
