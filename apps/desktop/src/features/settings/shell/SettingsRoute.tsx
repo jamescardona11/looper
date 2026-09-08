@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, type SetStateAction } from "react";
 import { useLingui } from "@lingui/react/macro";
 
 import FAQModal from "../../../shared/ui/FAQModal";
@@ -7,6 +7,7 @@ import {
   initialSettingsSection,
   settingsSectionTab,
   type SettingsSection,
+  type SettingsTab,
 } from "../preferences/settings-navigation";
 import { useSettingsForm } from "../preferences/useSettingsForm";
 import { SettingsErrorBanner } from "./SettingsErrorBanner";
@@ -18,6 +19,7 @@ export { SettingsErrorBanner } from "./SettingsErrorBanner";
 type SettingsRouteProps = Parameters<typeof useSettingsForm>[0] & {
   isOpen: boolean;
   initialSection?: SettingsSection;
+  onNavigate?: (tab: SettingsTab, section: SettingsSection) => void;
 };
 
 const pageFrameClass =
@@ -31,6 +33,7 @@ function SettingsRoute({
   onClose,
   initialTab = "general",
   initialSection,
+  onNavigate,
   transcriptionMode,
 }: SettingsRouteProps) {
   const { t } = useLingui();
@@ -44,16 +47,25 @@ function SettingsRoute({
     initialSection ?? initialSettingsSection[initialTab],
   );
 
-  const selectSection = (section: SettingsSection) => {
+  const selectTab = (
+    next: SetStateAction<SettingsTab>,
+    requestedSection?: SettingsSection,
+  ) => {
+    const tab =
+      typeof next === "function" ? next(form.navigation.activeTab) : next;
+    const section = requestedSection ?? initialSettingsSection[tab];
     setActiveSection(section);
-    form.navigation.selectTab(settingsSectionTab[section]);
+    form.navigation.selectTab(tab);
+    onNavigate?.(tab, section);
+  };
+  const selectSection = (section: SettingsSection) => {
+    selectTab(settingsSectionTab[section], section);
   };
 
   const openErrorTab = (
     tab: "general" | "models" | "providers" | "about" | "app",
   ) => {
-    form.navigation.selectTab(tab);
-    setActiveSection(initialSettingsSection[tab]);
+    selectTab(tab);
   };
 
   const faq = <FAQModal isOpen={form.faq.isOpen} onClose={form.faq.close} />;
@@ -100,7 +112,10 @@ function SettingsRoute({
                 ) : (
                   <div className="min-w-0 w-full max-w-[630px]">
                     <SettingsTabContent
-                      form={form}
+                      form={{
+                        ...form,
+                        navigation: { ...form.navigation, selectTab },
+                      }}
                       activeSection={activeSection}
                     />
                   </div>

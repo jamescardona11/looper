@@ -791,6 +791,9 @@ function HomeWorkspace({
             key={`${state.activeView}:${state.settingsRequest}`}
             initialTab={state.settingsTab}
             initialSection={state.settingsSection}
+            onNavigate={(tab, section) =>
+              dispatch({ type: "settings-location", tab, section })
+            }
             isOpen={state.activeView === "settings"}
             onClose={() => dispatch({ type: "activate-view", view: "home" })}
             transcriptionMode={transcriptionMode}

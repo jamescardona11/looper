@@ -84,3 +84,25 @@ describe("model card presentation", () => {
     expect(onSelect).not.toHaveBeenCalled();
   });
 });
+
+test("shows a failed download and lets the user retry", () => {
+  const retry = vi.fn();
+  render(
+    <I18nProvider i18n={i18n}>
+      <ModelStatCard
+        model={model}
+        progress={{
+          status: "error",
+          percent: 0,
+          message: "Model server is unavailable",
+        }}
+        onDownload={retry}
+      />
+    </I18nProvider>,
+  );
+  expect(screen.getByRole("alert").textContent).toContain(
+    "Model server is unavailable",
+  );
+  fireEvent.click(screen.getByRole("button", { name: "Download model" }));
+  expect(retry).toHaveBeenCalledOnce();
+});

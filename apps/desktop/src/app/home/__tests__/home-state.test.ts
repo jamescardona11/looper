@@ -111,3 +111,30 @@ describe("home state transitions", () => {
     });
   });
 });
+
+test("repeated setup navigation preserves the screen but respects local tab changes", () => {
+  const models = reduceHomeState(createHomeState(false), {
+    type: "open-settings",
+    tab: "models",
+  });
+  expect(
+    reduceHomeState(models, { type: "open-settings", tab: "models" }),
+  ).toBe(models);
+  const privacy = reduceHomeState(models, {
+    type: "settings-location",
+    tab: "app",
+    section: "privacy",
+  });
+  expect(privacy.settingsRequest).toBe(models.settingsRequest);
+  expect(
+    reduceHomeState(privacy, {
+      type: "open-settings",
+      tab: "app",
+      section: "privacy",
+    }),
+  ).toBe(privacy);
+  expect(
+    reduceHomeState(privacy, { type: "open-settings", tab: "models" })
+      .settingsRequest,
+  ).toBe(models.settingsRequest + 1);
+});
