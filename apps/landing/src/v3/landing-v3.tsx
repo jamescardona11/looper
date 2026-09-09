@@ -39,6 +39,7 @@ export function LandingV3() {
           <a href="#mobile">
             On the go <span>soon</span>
           </a>
+          <a href="https://github.com/jamescardona11/looper">GitHub</a>
         </nav>
         <div className="v3-header-actions">
           <button
@@ -181,7 +182,7 @@ export function LandingV3() {
           <nav aria-label="Footer navigation">
             <a href="https://github.com/jamescardona11/looper">GitHub</a>
             <a href={releases}>Releases</a>
-            <a href="/">V1</a>
+            <a href="/v1/">V1</a>
             <a href="/v2/">V2</a>
             <a href="#top">Back to top ↑</a>
           </nav>
