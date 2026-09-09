@@ -98,6 +98,11 @@
 .v3-header nav a {
   padding-block: 12px;
 }
+.v3-github-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
 .v3-header nav a:hover,
 .v3-footer nav a:hover {
   color: var(--primary);
