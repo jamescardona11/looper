@@ -1,4 +1,3 @@
-import type { CSSProperties } from "react";
 import { useLingui } from "@lingui/react/macro";
 import {
   CaretDown,
@@ -293,12 +292,7 @@ export function CapturePreflight({
       >
         <section
           onClickCapture={drag.onClickCapture}
-          className={`relative flex items-center overflow-hidden rounded-full text-[var(--ui-capture-fg)] ${expanded ? "pill-preflight-reveal ui-pill-shell ui-capture-dock h-12 w-[264px]" : "ui-sticky-launcher h-9 w-24"} ${sticky ? `absolute z-20 ${expanded ? layout.shellPlacement : layout.launcherPlacement}` : ""}`}
-          style={
-            {
-              "--pill-reveal-from": `inset(${layout.compactTop}px ${168 - layout.compactLeft}px ${12 - layout.compactTop}px ${layout.compactLeft}px round 18px)`,
-            } as CSSProperties
-          }
+          className={`ui-pill-shell pill-hover-size-transition flex items-center overflow-hidden rounded-full text-[var(--ui-capture-fg)] ${expanded ? "ui-capture-dock h-12 w-[264px]" : "ui-sticky-launcher h-9 w-24"} ${sticky ? `absolute z-20 ${layout.hoverShellPlacement}` : "relative"}`}
           role={expanded ? "group" : undefined}
           aria-label={
             expanded

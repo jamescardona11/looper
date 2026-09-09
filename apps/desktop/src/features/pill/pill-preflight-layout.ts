@@ -3,10 +3,9 @@ import type {
   CapturePillPresentation,
 } from "../../data/capture/dictation";
 
-// `shellPlacement` decides where the expanded pill lands, and the native hover
-// hit-test reproduces that anchor in `capture_pill.rs::expanded_rect`. Moving a
-// shell anchor here without moving it there leaves a strip of the pill inert;
-// the Rust side has the tests that catch it.
+// `launcherPlacement` anchors the same shell before and during hover expansion.
+// The native window grows around that anchor in `pill/capture.rs`; changing one
+// side without the other makes the visible pill move as hover begins.
 export function resolveDockLayout(
   dock: CapturePillDockPosition,
   presentation: CapturePillPresentation,
@@ -50,29 +49,17 @@ export function resolveDockLayout(
         : "right-0 top-1/2 -translate-y-1/2";
   }
 
-  const compactLeft =
-    presentation === "floating"
-      ? 84
-      : dock === "left_center"
-        ? 0
-        : dock === "right_center"
-          ? 168
-          : 84;
-  const compactTop =
-    presentation === "floating"
-      ? 6
-      : dock === "top_center"
-        ? 0
-        : dock === "bottom_center"
-          ? 12
-          : 6;
+  const hoverShellPlacement = menuOpen
+    ? shellPlacement
+    : presentation === "floating"
+      ? "left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2"
+      : launcherPlacement;
 
   return {
     alignment,
     launcherPlacement,
     shellPlacement,
-    compactLeft,
-    compactTop,
+    hoverShellPlacement,
   };
 }
 

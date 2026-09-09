@@ -50,6 +50,11 @@ const COMMAND_RESULTS: Record<string, unknown> = {
     remote_speech_model: "auto",
     transcription_mode: "local",
   },
+  get_capture_pill_preferences: {
+    presentation: "dock",
+    dockPosition: "bottom_center",
+    language: "en",
+  },
   list_models: [
     {
       key: "parakeet",
