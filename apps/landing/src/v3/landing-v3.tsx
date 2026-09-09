@@ -39,6 +39,7 @@ export function LandingV3() {
           <a href="#mobile">
             On the go <span>soon</span>
           </a>
+          <a href="https://github.com/jamescardona11/looper">GitHub</a>
         </nav>
         <div className="v3-header-actions">
           <button
