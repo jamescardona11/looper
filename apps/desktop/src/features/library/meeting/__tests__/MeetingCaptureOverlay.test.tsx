@@ -154,6 +154,8 @@ i18n.loadAndActivate({
     "meeting.capture.shortcut_unavailable": "Fn blocked",
     "meeting.capture.shortcut_enable_hint": "Accessibility needed",
     "meeting.capture.shortcut_enable": "Why?",
+    "meeting.capture.shortcut_enable_tooltip":
+      "Looper can't use Fn to mark moments right now. The meeting keeps recording. Click Fix Fn to check macOS Accessibility.",
     "meeting.capture.note.release_max_compact": "Release to save",
     "meeting.capture.note.saved_compact": "still recording",
     "meeting.capture.important_moment.saved_compact":
@@ -271,7 +273,15 @@ describe("MeetingCaptureOverlay", () => {
     expect(pill.textContent).toContain("1:24");
     expect(pill.textContent).toContain("Meeting");
     expect(pill.textContent).not.toContain("Fn blocked");
-    expect(screen.getByRole("button", { name: "Why?" })).toBeTruthy();
+    const fixFn = screen.getByRole("button", { name: "Why?" });
+    expect(fixFn.getAttribute("title")).toBe(
+      "Looper can't use Fn to mark moments right now. The meeting keeps recording. Click Fix Fn to check macOS Accessibility.",
+    );
+    const descriptionId = fixFn.getAttribute("aria-describedby");
+    expect(descriptionId).toBe("meeting-capture-shortcut-explanation");
+    expect(document.getElementById(descriptionId ?? "")?.textContent).toBe(
+      "Looper can't use Fn to mark moments right now. The meeting keeps recording. Click Fix Fn to check macOS Accessibility.",
+    );
 
     fireEvent.click(screen.getByRole("button", { name: "Why?" }));
     expect(shortcutPermission.help).toHaveBeenCalledTimes(1);

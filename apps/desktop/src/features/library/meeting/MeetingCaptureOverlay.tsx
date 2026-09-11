@@ -26,6 +26,7 @@ import { MeetingTranscriptPanel } from "./MeetingTranscriptPanel";
 const NOTE_SAVED_VISIBLE_MS = 2_400;
 const HOVER_PREVIEW_DELAY_MS = 300;
 const TRANSCRIPT_PANEL_ID = "meeting-live-transcript";
+const SHORTCUT_EXPLANATION_ID = "meeting-capture-shortcut-explanation";
 
 type TranscriptMode = "hidden" | "preview" | "pinned";
 
@@ -277,6 +278,11 @@ const MeetingCaptureOverlay = ({ state }: { state: MeetingCaptureState }) => {
       shortcutStatus === "unavailable" ||
       shortcutStatus === "disabled") &&
     !statusLabel;
+  const shortcutExplanation = t({
+    id: "meeting.capture.shortcut_enable_tooltip",
+    message:
+      "Looper can't use Fn to mark moments right now. The meeting keeps recording. Click Fix Fn to check macOS Accessibility.",
+  });
 
   const transcriptPanel = transcriptVisible ? (
     <div
@@ -338,18 +344,25 @@ const MeetingCaptureOverlay = ({ state }: { state: MeetingCaptureState }) => {
         </p>
       </div>
       {shortcutWarning ? (
-        <button
-          type="button"
-          onClick={() => {
-            void openShortcutPermissionHelp().catch((error) =>
-              console.error("Failed to open the Fn help:", error),
-            );
-          }}
-          className="mr-1 inline-flex h-8 shrink-0 items-center rounded-[9px] border border-amber-300/25 bg-amber-300/10 px-1.5 ui-text-micro font-semibold text-amber-100 hover:bg-amber-300/20"
-        >
-          <Key size={11} weight="bold" className="mr-1" />
-          {t({ id: "meeting.capture.shortcut_enable", message: "Fix Fn" })}
-        </button>
+        <>
+          <button
+            type="button"
+            title={shortcutExplanation}
+            aria-describedby={SHORTCUT_EXPLANATION_ID}
+            onClick={() => {
+              void openShortcutPermissionHelp().catch((error) =>
+                console.error("Failed to open the Fn help:", error),
+              );
+            }}
+            className="mr-1 inline-flex h-8 shrink-0 items-center rounded-[9px] border border-amber-300/25 bg-amber-300/10 px-1.5 ui-text-micro font-semibold text-amber-100 hover:bg-amber-300/20"
+          >
+            <Key size={11} weight="bold" className="mr-1" />
+            {t({ id: "meeting.capture.shortcut_enable", message: "Fix Fn" })}
+          </button>
+          <span id={SHORTCUT_EXPLANATION_ID} className="sr-only">
+            {shortcutExplanation}
+          </span>
+        </>
       ) : null}
       {processing || finalizing || state.phase === "starting" ? (
         <span className="mr-1 grid h-8 w-8 shrink-0 place-items-center rounded-[9px] text-white/45">
