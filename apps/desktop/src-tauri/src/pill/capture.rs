@@ -70,7 +70,7 @@ const SHELL_HEIGHT: f64 = WINDOW_HEIGHT;
 /// is the drag handle; the remaining area is the explicit expansion target.
 const FLOATING_LAUNCHER_WIDTH: f64 = COMPACT_WINDOW_WIDTH;
 const FLOATING_LAUNCHER_HEIGHT: f64 = COMPACT_WINDOW_HEIGHT;
-const FLOATING_DRAG_HANDLE_WIDTH: f64 = 50.0;
+const COMPACT_DRAG_HANDLE_WIDTH: f64 = 50.0;
 /// Collapsing again takes a deliberate move away, not a pixel of jitter.
 const HOVER_EXIT_MARGIN: f64 = 10.0;
 
@@ -288,11 +288,7 @@ fn expand_rect(
     dock_position: CapturePillDockPosition,
 ) -> Rect {
     let collapsed = collapsed_rect(window_size, scale, presentation, dock_position);
-    if presentation != CapturePillPresentation::Floating {
-        return collapsed;
-    }
-
-    let handle = FLOATING_DRAG_HANDLE_WIDTH * scale;
+    let handle = COMPACT_DRAG_HANDLE_WIDTH * scale;
     Rect {
         x: collapsed.x + handle,
         y: collapsed.y,
@@ -636,34 +632,33 @@ mod tests {
     }
 
     #[test]
-    fn floating_drag_handle_is_interactive_without_triggering_expansion() {
+    fn compact_drag_handle_is_interactive_without_triggering_expansion() {
         let size = (COMPACT_WINDOW_WIDTH, COMPACT_WINDOW_HEIGHT);
-        let presentation = CapturePillPresentation::Floating;
-        let dock = CapturePillDockPosition::BottomCenter;
+        for (presentation, dock) in EVERY_PLACEMENT {
+            // Left area: logo + six dots. It must receive the pointer for a
+            // drag but never become hover intent.
+            let handle = (20.0, 18.0);
+            assert!(hit_test(handle, size, 1.0, presentation, dock, false));
+            assert!(!hover_target(handle, size, 1.0, presentation, dock, false));
 
-        // Left area: logo + six dots. It must receive the pointer for a drag
-        // but never become hover intent.
-        let handle = (20.0, 18.0);
-        assert!(hit_test(handle, size, 1.0, presentation, dock, false));
-        assert!(!hover_target(handle, size, 1.0, presentation, dock, false));
+            // The expand zone begins immediately after the visible grip; there
+            // is no inert strip between the logo and the opening target.
+            let just_after_handle = (50.0, 18.0);
+            assert!(hover_target(
+                just_after_handle,
+                size,
+                1.0,
+                presentation,
+                dock,
+                false,
+            ));
 
-        // The expand zone begins immediately after the visible grip; there is
-        // no inert strip between the logo and the opening target.
-        let just_after_handle = (50.0, 18.0);
-        assert!(hover_target(
-            just_after_handle,
-            size,
-            1.0,
-            presentation,
-            dock,
-            false,
-        ));
-
-        // Right area: Looper label and status dot. This is the only entry
-        // target for opening the full capture dock.
-        let opener = (75.0, 18.0);
-        assert!(hit_test(opener, size, 1.0, presentation, dock, false));
-        assert!(hover_target(opener, size, 1.0, presentation, dock, false));
+            // Right area: Fn and its status dot. This is the only entry target
+            // for opening the full capture dock.
+            let opener = (75.0, 18.0);
+            assert!(hit_test(opener, size, 1.0, presentation, dock, false));
+            assert!(hover_target(opener, size, 1.0, presentation, dock, false));
+        }
     }
 
     /// The oscillation guard. Every point that expands the pill must still be
