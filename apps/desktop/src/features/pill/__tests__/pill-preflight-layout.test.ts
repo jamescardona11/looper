@@ -18,6 +18,7 @@ describe("preflight dock layout", () => {
 
       expect(closed.shellPlacement).toContain("top-1/2");
       expect(open.shellPlacement).toBe(openPlacement);
+      expect(open.hoverShellPlacement).toBe(openPlacement);
     },
   );
 
@@ -32,6 +33,7 @@ describe("preflight dock layout", () => {
 
       expect(closed.shellPlacement).toContain("top-1/2");
       expect(open.shellPlacement).toBe(openPlacement);
+      expect(open.hoverShellPlacement).toBe(openPlacement);
     },
   );
 
@@ -44,23 +46,40 @@ describe("preflight dock layout", () => {
 
     expect(closed.shellPlacement).toBe(placement);
     expect(open.shellPlacement).toBe(placement);
+    expect(open.hoverShellPlacement).toBe(placement);
   });
 
   test.each([
-    ["floating", "top_center", 84, 6],
-    ["floating", "bottom_center", 84, 6],
-    ["floating", "left_center", 84, 6],
-    ["floating", "right_center", 84, 6],
-    ["dock", "top_center", 84, 0],
-    ["dock", "bottom_center", 84, 12],
-    ["dock", "left_center", 0, 6],
-    ["dock", "right_center", 168, 6],
+    [
+      "floating",
+      "top_center",
+      "left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2",
+    ],
+    [
+      "floating",
+      "left_center",
+      "left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2",
+    ],
+    [
+      "floating",
+      "right_center",
+      "left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2",
+    ],
+    [
+      "floating",
+      "bottom_center",
+      "left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2",
+    ],
+    ["dock", "top_center", "left-1/2 top-0 -translate-x-1/2"],
+    ["dock", "left_center", "left-0 top-1/2 -translate-y-1/2"],
+    ["dock", "right_center", "right-0 top-1/2 -translate-y-1/2"],
+    ["dock", "bottom_center", "bottom-0 left-1/2 -translate-x-1/2"],
   ] as const)(
-    "matches the native compact hit area for %s/%s",
-    (presentation, dock, left, top) => {
-      const layout = resolveDockLayout(dock, presentation, false);
-      expect(layout.compactLeft).toBe(left);
-      expect(layout.compactTop).toBe(top);
+    "keeps the %s/%s shell on its native hover anchor",
+    (presentation, dock, placement) => {
+      expect(
+        resolveDockLayout(dock, presentation, false).hoverShellPlacement,
+      ).toBe(placement);
     },
   );
 

@@ -205,6 +205,8 @@ export default function SignalPreviewPill() {
       <div
         data-testid="pill-preview-stage"
         className="flex h-[190px] w-[300px] items-center justify-center overflow-hidden"
+        onPointerEnter={() => emitPillEvent("pill:hover", { hovering: true })}
+        onPointerLeave={() => emitPillEvent("pill:hover", { hovering: false })}
       >
         <PillOverlay />
       </div>

@@ -588,6 +588,9 @@ describe("PillOverlay result", () => {
     const compactShell = document.querySelector(".ui-sticky-launcher");
     expect(compactShell).toBeTruthy();
     expect(compactShell?.className).toContain("h-9 w-24");
+    expect(compactShell?.className).toContain("pill-hover-size-transition");
+    expect(compactShell?.classList.contains("absolute")).toBe(true);
+    expect(compactShell?.classList.contains("relative")).toBe(false);
     expect((compactShell as HTMLElement).style.clipPath).toBe("");
     expect(compactShell?.firstElementChild?.className).not.toContain(
       "absolute",
@@ -604,6 +607,9 @@ describe("PillOverlay result", () => {
     );
     const dock = screen.getByRole("group", { name: "Dictation controls" });
     expect(dock).toBe(compactShell);
+    expect(dock.className).toContain("pill-hover-size-transition");
+    expect(dock.className).toContain("bottom-0 left-1/2 -translate-x-1/2");
+    expect(dock.className).not.toContain("pill-preflight-reveal");
     expect(dock.className).toContain("ui-pill-shell");
     expect(dock.className).toContain("ui-capture-dock");
     expect(dock.className).toContain("h-12 w-[264px]");

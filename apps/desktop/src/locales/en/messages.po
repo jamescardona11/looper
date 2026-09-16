@@ -3077,6 +3077,11 @@ msgid "meeting.capture.shortcut_enable"
 msgstr "Fix Fn"
 
 #. js-lingui-explicit-id
+#: src/features/library/meeting/MeetingCaptureOverlay.tsx
+msgid "meeting.capture.shortcut_enable_tooltip"
+msgstr "Looper can't use Fn to mark moments right now. The meeting keeps recording. Click Fix Fn to check macOS Accessibility."
+
+#. js-lingui-explicit-id
 #: src/features/voice/components/VoiceView.tsx
 msgid "voice.step.automations"
 msgstr "Flows"
