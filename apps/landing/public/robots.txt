@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://looper.app/sitemap.xml
+Sitemap: https://uselooper.app/sitemap.xml
