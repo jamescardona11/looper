@@ -54,7 +54,7 @@ El nombre exacto del DMG incluye la versión y arquitectura actuales. Este
 artefacto es para QA o transferencia privada: macOS puede mostrar una alerta
 porque no está notarizado ni firmado con un certificado de distribución.
 
-## Release firmado
+## Release firmado y notarizado
 
 El workflow manual `.github/workflows/desktop-release.yml` debe ejecutarse
 desde `main` y comprueba que `package.json`, Cargo y el commit publicado estén
@@ -64,10 +64,19 @@ alineados. Genera:
 - Windows x64: `.msi` y `.exe` NSIS.
 - `latest.json` y firmas para el updater de Tauri.
 
-El workflow necesita `TAURI_SIGNING_PRIVATE_KEY` y
-`TAURI_SIGNING_PRIVATE_KEY_PASSWORD`. Los instaladores de release son la fuente
-para distribución; `make build-download` nunca reemplaza la firma, notarización
-ni verificación del CI.
+Para la distribución directa de macOS, el certificado debe ser
+`Developer ID Application`, no `Apple Development`. El workflow importa el
+certificado, firma la app, la notariza con Apple y verifica Gatekeeper antes de
+crear el release. Requiere estos secretos de GitHub:
+
+- `APPLE_CERTIFICATE`: certificado `.p12` codificado en base64.
+- `APPLE_CERTIFICATE_PASSWORD`: contraseña del `.p12`.
+- `KEYCHAIN_PASSWORD`: contraseña efímera del keychain de CI.
+- `APPLE_ID`, `APPLE_PASSWORD` y `APPLE_TEAM_ID`: credenciales de notarización.
+- `TAURI_SIGNING_PRIVATE_KEY` y `TAURI_SIGNING_PRIVATE_KEY_PASSWORD`: firma del updater de Tauri.
+
+Los instaladores creados con `make build-download` siguen siendo locales y no
+reemplazan la firma, notarización ni verificación del CI.
 
 ## Verificación
 

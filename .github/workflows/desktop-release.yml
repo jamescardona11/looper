@@ -17,6 +17,12 @@ jobs:
     env:
       TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
       TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+      APPLE_ID: ${{ secrets.APPLE_ID }}
+      APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
+      APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+      APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
+      APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
+      KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -51,6 +57,12 @@ jobs:
           required=(
             TAURI_SIGNING_PRIVATE_KEY
             TAURI_SIGNING_PRIVATE_KEY_PASSWORD
+            APPLE_ID
+            APPLE_PASSWORD
+            APPLE_TEAM_ID
+            APPLE_CERTIFICATE
+            APPLE_CERTIFICATE_PASSWORD
+            KEYCHAIN_PASSWORD
           )
           missing=()
           for name in "${required[@]}"; do
@@ -101,6 +113,45 @@ jobs:
       - name: Install workspace dependencies
         run: pnpm install --frozen-lockfile --config.node-linker=isolated --package-import-method copy
 
+      - name: Import Apple Developer ID certificate
+        if: matrix.os == 'macos'
+        shell: bash
+        env:
+          APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
+          APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
+          KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}
+        run: |
+          set -euo pipefail
+
+          keychain_path="$RUNNER_TEMP/looper-build.keychain-db"
+          certificate_path="$RUNNER_TEMP/looper-developer-id.p12"
+          trap 'rm -f "$certificate_path"' EXIT
+
+          printf '%s' "$APPLE_CERTIFICATE" | base64 --decode > "$certificate_path"
+          security create-keychain -p "$KEYCHAIN_PASSWORD" "$keychain_path"
+          security default-keychain -s "$keychain_path"
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$keychain_path"
+          security set-keychain-settings -t 3600 -u "$keychain_path"
+          security import "$certificate_path" \
+            -k "$keychain_path" \
+            -P "$APPLE_CERTIFICATE_PASSWORD" \
+            -T /usr/bin/codesign
+          security set-key-partition-list \
+            -S apple-tool:,apple:,codesign: \
+            -s \
+            -k "$KEYCHAIN_PASSWORD" \
+            "$keychain_path"
+
+          identities="$(security find-identity -v -p codesigning "$keychain_path")"
+          printf '%s\n' "$identities"
+          signing_identity="$(printf '%s\n' "$identities" | sed -n 's/.*"\(Developer ID Application: [^"]*\)".*/\1/p' | head -n 1)"
+          if [[ -z "$signing_identity" ]]; then
+            echo "The imported certificate is not a Developer ID Application certificate." >&2
+            exit 1
+          fi
+
+          printf 'APPLE_SIGNING_IDENTITY=%s\n' "$signing_identity" >> "$GITHUB_ENV"
+
       - name: Cache Vulkan SDK
         if: matrix.os == 'windows'
         uses: actions/cache@v4
@@ -139,6 +190,11 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+          APPLE_CERTIFICATE: ${{ matrix.os == 'macos' && secrets.APPLE_CERTIFICATE || '' }}
+          APPLE_CERTIFICATE_PASSWORD: ${{ matrix.os == 'macos' && secrets.APPLE_CERTIFICATE_PASSWORD || '' }}
+          APPLE_ID: ${{ matrix.os == 'macos' && secrets.APPLE_ID || '' }}
+          APPLE_PASSWORD: ${{ matrix.os == 'macos' && secrets.APPLE_PASSWORD || '' }}
+          APPLE_TEAM_ID: ${{ matrix.os == 'macos' && secrets.APPLE_TEAM_ID || '' }}
         with:
           projectPath: apps/desktop
           tauriScript: pnpm tauri
@@ -146,7 +202,7 @@ jobs:
           tagName: desktop-v__VERSION__
           releaseName: Looper Desktop v__VERSION__
           releaseBody: |
-            > Preview installers are not yet code-signed by Apple or Windows and may trigger an operating-system warning. Updater artifacts are signed and verified by Looper.
+            > macOS installers are signed with Developer ID Application and notarized by Apple. Windows installers may still trigger an operating-system warning until Windows code signing is configured. Updater artifacts are signed and verified by Looper.
           releaseDraft: true
           prerelease: false
           generateReleaseNotes: true
@@ -170,4 +226,14 @@ jobs:
           fi
 
           codesign --verify --deep --strict --verbose=2 "$app_path"
+          signing_identity="$(codesign -dv --verbose=4 "$app_path" 2>&1 | sed -n 's/^Authority=//p' | head -n 1)"
+          case "$signing_identity" in
+            "Developer ID Application: "*) ;;
+            *)
+              echo "Unexpected macOS signing identity: ${signing_identity:-<missing>}" >&2
+              exit 1
+              ;;
+          esac
+          xcrun stapler validate "$app_path"
+          spctl --assess --type execute --verbose=4 "$app_path"
           hdiutil verify "$dmg_path"

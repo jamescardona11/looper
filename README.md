@@ -102,8 +102,9 @@ _Desktop design preview; this is not a runtime capture._
 
 Desktop installers for macOS 14+ and Windows are published through the manual
 [GitHub Releases](https://github.com/jamescardona11/looper/releases/latest)
-workflow. Looper is free for now. Preview installers
-may show an operating-system warning until distribution certificates are added.
+workflow. Looper is free for now. Public macOS installers are signed with
+Developer ID Application and notarized by Apple before distribution. Local
+preview installers remain unsigned and may show an operating-system warning.
 
 To create a local macOS download for QA or a private handoff, run:
 
